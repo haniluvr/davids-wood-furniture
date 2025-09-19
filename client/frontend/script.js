@@ -1,7 +1,3 @@
-// ──────────────────────────────────────────────────────────────────────
-// 🚀 script.js — Centralized Component & Feature Loader
-// ──────────────────────────────────────────────────────────────────────
-
 import { products } from './data/products.js';
 
 // ── Generic Component Loader ──
@@ -15,17 +11,11 @@ async function loadComponent(url, targetId, initCallback = null) {
 
         container.innerHTML = await response.text();
 
-        // Always re-init Feather icons after injecting HTML
-        if (typeof feather !== 'undefined') {
-            feather.replace();
-        }
+        // Re-init Lucide & Feather
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        if (typeof feather !== 'undefined') feather.replace();
 
-        // Make sure Lucide is available
-        if (typeof lucide !== 'undefined') {
-            lucide.replace(); // Run once on page load
-        }
-
-        // Run optional init logic (Bootstrap, event listeners, etc.)
+        // Run optional init logic
         if (initCallback && typeof initCallback === 'function') {
             initCallback();
         }
@@ -35,7 +25,7 @@ async function loadComponent(url, targetId, initCallback = null) {
     }
 }
 
-// ── Initialize Bootstrap Offcanvas (Reusable) ──
+// ── Initialize Bootstrap Offcanvas ──
 function initOffcanvas(id) {
     const el = document.getElementById(id);
     if (el) {
@@ -47,7 +37,7 @@ function initOffcanvas(id) {
     }
 }
 
-// ── Initialize Bootstrap Modal (Reusable) ──
+// ── Initialize Bootstrap Modal ──
 function initModal(id) {
     const el = document.getElementById(id);
     if (el) {
@@ -55,27 +45,25 @@ function initModal(id) {
     }
 }
 
-// ── Initialize Products Section (Featured Furniture) ──
+// ── Initialize Products Section ──
 function initProductsSection() {
     const grid = document.getElementById('product-grid');
-    const seeMoreBtn = document.getElementById('see-more-btn');
-
     if (!grid) return;
 
     let displayedProducts = [];
 
-    // Initial render (first 6)
-    renderProducts(products.slice(0, 6));
+    // Initial render
+    renderProductsWithFilter(products.slice(0, 6));
 
     // Filter buttons
-    document.querySelectorAll('.btn[data-filter]').forEach(btn => {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.btn[data-filter]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
             const filter = btn.getAttribute('data-filter');
             const filtered = products.filter(p => filter === 'all' || p.category === filter);
-            renderProducts(filtered.slice(0, 6));
+            renderProductsWithFilter(filtered.slice(0, 6));
         });
     });
 
@@ -94,22 +82,15 @@ function initProductsSection() {
             case 'newest':
                 sorted.sort((a, b) => b.id - a.id);
                 break;
-            default: // popularity = by rating
+            default: // popularity
                 sorted.sort((a, b) => b.rating - a.rating);
         }
 
-        renderProducts(sorted.slice(0, 6));
-    });
-
-    // See more
-    seeMoreBtn?.addEventListener('click', () => {
-        const currentCount = displayedProducts.length;
-        const nextProducts = products.slice(currentCount, currentCount + 6);
-        renderProducts([...displayedProducts, ...nextProducts]);
+        renderProductsWithFilter(sorted.slice(0, 6));
     });
 
     // Render function
-    function renderProducts(products) {
+    function renderProductsWithFilter(products) {
         grid.innerHTML = '';
         displayedProducts = products;
 
@@ -146,7 +127,7 @@ function initProductsSection() {
                             <div class="price">₱${product.price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
                         </div>
                     </div>
-                    <div class="buttons mt-3">
+                    <div class="buttons">
                         <div class="btn-quick-view-icon p-1 d-flex flex-row align-items-center">
                             <button class="btn btn-quick-view" data-product-id="${product.id}">
                                 <i data-lucide="proportions" class="lucide-small"></i> 
@@ -165,11 +146,9 @@ function initProductsSection() {
             grid.appendChild(col);
         });
 
-        // Re-init feather icons
-        if (typeof feather !== 'undefined') {
-            feather.replace();
-        }
-        
+        // Re-init icons
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        if (typeof feather !== 'undefined') feather.replace();
 
         // Attach Quick View handlers
         initQuickViewModals();
@@ -186,17 +165,14 @@ function initQuickViewModals() {
 
             const productId = parseInt(this.getAttribute('data-product-id'));
             const product = products.find(p => p.id === productId);
-
             if (!product) return;
 
-            // Fill modal with product data
+            // Fill modal
             document.getElementById('quickViewLabel').textContent = product.name;
             document.getElementById('quick-view-image').src = product.image;
             document.getElementById('quick-view-desc').textContent = product.desc;
             document.getElementById('quick-view-rating').textContent = product.rating;
-            document.getElementById('quick-view-price').textContent = `₱${product.price.toLocaleString('en-US', { 
-                minimumFractionDigits: 0, maximumFractionDigits: 0
-            })}`;
+            document.getElementById('quick-view-price').textContent = `₱${product.price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
             document.getElementById('quick-view-material').textContent = product.material;
             document.getElementById('quick-view-dimensions').textContent = product.dimensions;
 
@@ -204,11 +180,9 @@ function initQuickViewModals() {
             const modal = bootstrap.Modal.getInstance(document.getElementById('modal-quick-view'));
             modal.show();
 
-            // ✅ Re-init Lucide icons after modal is fully opened
+            // Re-init icons after modal opens
             modal._element.addEventListener('shown.bs.modal', function () {
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             });
         });
     });
@@ -231,7 +205,7 @@ async function loadQuickViewModal() {
             new bootstrap.Modal(modalEl);
         }
 
-        // ✅ Re-init Lucide icons after injecting modal HTML
+        // Re-init Lucide
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
@@ -239,6 +213,69 @@ async function loadQuickViewModal() {
     } catch (error) {
         console.error('Error loading quick view modal:', error);
     }
+}
+
+// ── Initialize Hero Slider (jQuery) ──
+function initHeroSlider() {
+    let currentIndex = 0;
+    const $slides = $('.slide');
+    const $indicators = $('.indicator');
+    let autoSlideInterval;
+
+    function showSlide(index) {
+        $slides.removeClass('active');
+        $indicators.removeClass('active');
+
+        $slides.eq(index).addClass('active');
+        $indicators.eq(index).addClass('active');
+
+        // Update text
+        const currentSlide = $slides.eq(index);
+        $('#slide-title').text(currentSlide.data('name'));
+        $('#slide-desc').text(currentSlide.data('price'));
+    }
+
+    function nextSlide() {
+        currentIndex = (currentIndex + 1) % $slides.length;
+        showSlide(currentIndex);
+    }
+
+    // Auto-slide
+    function startAutoSlide() {
+        autoSlideInterval = setInterval(nextSlide, 1500);
+    }
+
+    function stopAutoSlide() {
+        clearInterval(autoSlideInterval);
+    }
+
+    // Start auto-slide
+    startAutoSlide();
+
+    // Pause on hover
+    $('.hero-slider').hover(
+        function() { stopAutoSlide(); },
+        function() { startAutoSlide(); }
+    );
+
+    // Dot click
+    $indicators.click(function() {
+        currentIndex = $(this).index();
+        showSlide(currentIndex);
+    });
+
+    // Arrow click
+    $('.carousel-next').click(function() {
+        nextSlide();
+    });
+
+    $('.carousel-prev').click(function() {
+        currentIndex = (currentIndex - 1 + $slides.length) % $slides.length;
+        showSlide(currentIndex);
+    });
+
+    // Initialize
+    showSlide(currentIndex);
 }
 
 // ── DOM Ready Handler ──
@@ -251,13 +288,11 @@ document.addEventListener('DOMContentLoaded', function () {
         () => initModal('modal-search')
     );
 
-    // Attach click handler
     const openSearchBtn = document.getElementById('openSearchModal');
     if (openSearchBtn) {
         openSearchBtn.addEventListener('click', function (event) {
             event.preventDefault();
             event.stopPropagation();
-
             const modalEl = document.getElementById('modal-search');
             if (modalEl) {
                 const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -273,13 +308,11 @@ document.addEventListener('DOMContentLoaded', function () {
         () => initOffcanvas('offcanvas-wishlist')
     );
 
-    // Attach click handler
     const openWishlistBtn = document.getElementById('openOffcanvas');
     if (openWishlistBtn) {
         openWishlistBtn.addEventListener('click', function (event) {
             event.preventDefault();
             event.stopPropagation();
-
             const el = document.getElementById('offcanvas-wishlist');
             if (el) {
                 const bs = bootstrap.Offcanvas.getInstance(el) || new bootstrap.Offcanvas(el);
@@ -295,13 +328,11 @@ document.addEventListener('DOMContentLoaded', function () {
         () => initOffcanvas('offcanvas-cart')
     );
 
-    // Attach click handler
     const openCartBtn = document.getElementById('openCartOffcanvas');
     if (openCartBtn) {
         openCartBtn.addEventListener('click', function (event) {
             event.preventDefault();
             event.stopPropagation();
-
             const el = document.getElementById('offcanvas-cart');
             if (el) {
                 const bs = bootstrap.Offcanvas.getInstance(el) || new bootstrap.Offcanvas(el);
@@ -310,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ── 4. PRODUCTS SECTION (Featured Furniture) ──
+    // ── 4. PRODUCTS SECTION ──
     if (document.getElementById('product-grid')) {
         initProductsSection();
     }
@@ -318,4 +349,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── 5. QUICK VIEW MODAL ──
     loadQuickViewModal();
 
+    // ── 6. HERO SLIDER (jQuery) ──
+    if ($('.hero-slider').length) {
+        initHeroSlider();
+    }
 });

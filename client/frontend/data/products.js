@@ -18,7 +18,7 @@ export const products = [
     name: "Chesterfield Leather Sofa",
     desc: "Classic Chesterfield styling with button-tufted back. Premium Italian leather in rich brown.",
     price: 1899.99,
-    image: "https://via.placeholder.com/300x250?text=Sofa+2",
+    image: "data/assets/sofa-3.avif",
     rating: 4.5,
     category: "sofas",
     stock: "low",

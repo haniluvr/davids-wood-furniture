@@ -7,6 +7,9 @@
         - modal
         - offcanvas
         - hero
+        - products
+        - about
+        - footer
 -->
 <!doctype html>
 <html>
@@ -23,34 +26,36 @@
         <!-- javascript -->
         <script src="https://unpkg.com/feather-icons"></script>
         <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/lucide@0.259.0/dist/lucide.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     </head>
     <body>
         <!-- navbar -->
         <nav class="navbar navbar-expand-lg fixed-top">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">MyBrand</a>
+                <a class="navbar-brand fw-semibold" href="#">DAVID'S WOOD</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav center-links">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">
+                            <a class="nav-link active" aria-current="page" href="#home">
                                 <button class="btn" type="button">Home</button>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
+                            <a class="nav-link" href="#products">
                                 <button class="btn" type="button">Products</button>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
+                            <a class="nav-link" href="#about">
                                 <button class="btn" type="button">About</button>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
+                            <a class="nav-link" href="#contact">
                                 <button class="btn" type="button">Contact</button>
                             </a>
                         </li>
@@ -67,12 +72,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <button class="btn px-2" id="openOffcanvas" type="button">
+                            <button class="btn px-2 mx-2" id="openOffcanvas" type="button">
                                 <i class="feather-small" data-feather="heart"></i>
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button class="btn px-2" id="openCartOffcanvas" type="button">
+                            <button class="btn px-2 ms-2" id="openCartOffcanvas" type="button">
                                 <i class="feather-small" data-feather="shopping-cart"></i>
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count"></span>
                             </button>
@@ -88,53 +93,81 @@
         <div id="offcanvas-container"></div>
         <div id="offcanvas-cart-container"></div>
         <!-- hero -->
-        <section class="container-fluid hero-container">
-            <div class="hero-content">
-                <!-- <img src="assets/cabinet.png" alt="Cabinet" class="parallax-reveal cabinet">
-                <img src="" alt="Chair" class="parallax-reveal chair"> -->
-            </div>
-            
-        </section>
-
-        <!-- products -->
-        <section class="featured-furniture">
-            <div class="container-featured">
-                <h2>Featured Furniture</h2>
-                <p>Handcrafted pieces in natural wood tones. Subtle 3D interactions, refined details.</p>
-                <!-- Filters -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="filter-group btn-group" role="group">
-                        <button class="btn btn-outline-secondary active" data-filter="all">All</button>
-                        <button class="btn btn-outline-secondary" data-filter="chairs">Chairs</button>
-                        <button class="btn btn-outline-secondary" data-filter="tables">Tables</button>
-                        <button class="btn btn-outline-secondary" data-filter="cabinets">Cabinets</button>
-                        <button class="btn btn-outline-secondary" data-filter="sofas">Sofas</button>
-                        <button class="btn btn-outline-secondary" data-filter="stools">Stools</button>
-                        <button class="btn btn-outline-secondary" data-filter="shelves">Shelves</button>
+        <section class="hero-container" id="home">
+            <div class="container-fluid hero-content">
+                <div class="hero-text text-center">
+                    <span class="badge-text rounded-pill px-4 py-1 align-items-center">
+                        <i class="feather-small me-2" data-lucide="pencil-ruler"></i>
+                        Crafted with specialty in Tagyatay
+                    </span>
+                    <h1 class="display-4 fw-bold mt-4">
+                        Handcrafted wooden furniture,<br>
+                        refined to perfection.
+                    </h1>
+                    <p class="lead mt-3 mb-5">
+                        Discover heirloom-quality pieces designed with timeless shapes, natural materials, and meticulous craftsmanship—made to live with you for years.
+                    </p>
+                    <a href="#products" class="btn btn-dark btn-lg fs-6 fw-semibold px-4 me-3">Browse products</a>
+                    <span class="text-muted fs-6">Sustainably sourced. Built to last.</span>
+                </div>
+                <section class="hero-section">
+                    <div class="hero-slider container-fluid">
+                        <div class="slide active" data-name="Handcrafted Chair" data-price="₱12,999">
+                            <img src="assets/chair.png" alt="Chair 1" class="img-chair">
+                        </div>
+                        <div class="slide" data-name="Modern Sofa" data-price="₱24,500">
+                            <img src="assets/cabinet.png" alt="Sofa 1" class="img-cabinet">
+                        </div>
+                        <div class="slide" data-name="Wooden Table" data-price="₱16,800">
+                            <img src="assets/floor-lamp.png" alt="Table 1" class="img-lamp">
+                        </div>
                     </div>
-                    <div class="sort-group d-flex align-items-center">
-                        <span class="me-2 text-muted">Sort</span>
-                        <select class="form-select" id="sort-select">
+                    <div class="hero-indicators">
+                        <span class="indicator active"></span>
+                        <span class="indicator"></span>
+                        <span class="indicator"></span>
+                    </div>
+                </section>
+            </div>
+        </section>
+        <!-- products -->
+        <section class="featured-furniture" id="products">
+            <h2>Featured Furniture</h2>
+            <p>Handcrafted pieces in natural wood tones. Subtle 3D interactions, refined details.</p>
+            <!-- Filters -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="chairs">Chairs</button>
+                    <button class="filter-btn" data-filter="tables">Tables</button>
+                    <button class="filter-btn" data-filter="cabinets">Cabinets</button>
+                    <button class="filter-btn" data-filter="sofas">Sofas</button>
+                    <button class="filter-btn" data-filter="stools">Stools</button>
+                    <button class="filter-btn" data-filter="shelves">Shelves</button>
+                </div>
+                <div class="sort-group d-flex align-items-center">
+                    <i data-lucide="list-filter" class="lucide-small me-2"></i>
+                    <span class="me-2 text-muted">Sort</span>
+                    <select class="form-select rounded-3 fw-medium" id="sort-select">
                         <option value="popularity">Popularity</option>
                         <option value="price-low">Price: Low to High</option>
                         <option value="price-high">Price: High to Low</option>
                         <option value="newest">Newest</option>
-                        </select>
-                    </div>
+                    </select>
                 </div>
-                <!-- Product Grid -->
-                <div class="row g-4" id="product-grid">
-                    <!-- Products will be injected here -->
-                </div>
-                <!-- See More Button -->
-                <div class="text-center mt-4">
-                    <button class="btn" id="see-more-btn">See more</button>
-                </div>
+            </div>
+            <!-- Product Grid -->
+            <div class="row g-4" id="product-grid">
+                <!-- Products will be injected here -->
+            </div>
+            <!-- See More Button -->
+            <div class="text-center mt-5">
+                <button class="btn" id="see-more-btn">See more</button>
             </div>
         </section>
 
         <!-- about-->
-        <section class="about-container py-5">
+        <section class="about-container" id="about">
             <div class="about-section p-5 rounded-4">
                 <div class="row align-items-start">
                     <div class="col-lg-6 mb-4">
@@ -292,6 +325,135 @@
                 </div>
             </div>
         </section>
+        <!-- footer -->
+        <footer class="footer" id="contact">
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Column 1: Brand Info -->
+                    <div class="col">
+                        <h2 class="brand-name">David's Wood</h2>
+                        <p class="brand-desc">
+                            Handcrafteded furniture with timeless design. Natural materials, thoughtful details, built to last.
+                        </p>
+                        <div class="contact-info">
+                            <div class="info-item align-items-center">
+                                <i data-lucide="phone-call" class="icon"></i>
+                                <span>+1 (234) 555-1234</span>
+                            </div>
+                            <div class="info-item align-items-center">
+                                <i data-lucide="contact" class="icon"></i>
+                                <span>hello@davidswood.com</span>
+                            </div>
+                            <div class="info-item flex-column">
+                                <div class="d-flex align-items-center">
+                                    <i data-lucide="map-pin" class="icon"></i>
+                                    <span>
+                                        <strong>Showroom & Workshop</strong><br>
+                                    </span>
+                                </div>
+                                <span class="text-span">
+                                    245 Cedar Lane, Suite B<br>
+                                    Portland, OR 97205
+                                </span>
+                            </div>
+                            <div class="info-item flex-column">
+                                <div class="d-flex align-items-center">
+                                    <i data-lucide="clock" class="icon"></i>
+                                    <span>
+                                        <strong>Hours</strong><br>
+                                    </span>
+                                </div>
+                                <span class="text-span">
+                                    Mon-Fri: 9am - 6pm<br>
+                                    Sat: 10am - 4pm
+                                </span>
+                            </div>
+                        </div>
+                        <div class="social-links">
+                            <a href="#" aria-label="LinkedIn"><i data-lucide="linkedin" class="icon"></i></a>
+                            <a href="#" aria-label="Instagram"><i data-lucide="instagram" class="icon"></i></a>
+                            <a href="#" aria-label="Facebook"><i data-lucide="facebook" class="icon"></i></a>
+                            <a href="#" aria-label="Twitter"><i data-lucide="twitter" class="icon"></i></a>
+                        </div>
+                    </div>
+                    <!-- Column 2: Contact Form -->
+                    <div class="col">
+                        <h3>Contact us</h3>
+                        <p class="form-desc">We'll respond within 1–2 business days.</p>
+                        <form id="contact-form">
+                            <div class="form-row">
+                                <div class="col d-flex flex-column">
+                                    <label for="name">Name</label>
+                                    <input type="text" placeholder="Jane Doe" required>
+                                </div>
+                                <div class="col d-flex flex-column">
+                                    <label for="email">Email</label>
+                                    <input type="email" placeholder="jane@example.com" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Message</label>
+                                <textarea id="message" placeholder="Tell us about your project..." rows="4"></textarea>
+                            </div>
+                            <div class="form-footer">
+                                <span class="disclaimer">By sending, you agree to our policies below.</span>
+                                <button type="submit" class="btn-send">
+                                    <i data-lucide="send" class="icon me-2"></i> Send message
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- Column 3: Newsletter & Customer Care -->
+                    <div class="col">
+                        <h3>Newsletter</h3>
+                        <p class="form-desc">Be first to see new pieces, wood stories, and events.</p>
+                        <div class="newsletter-form">
+                            <input type="email" placeholder="you@example.com" required>
+                            <button type="submit" class="btn-subscribe">Subscribe</button>
+                        </div>
+                        <hr class="divider">
+                        <div class="customer-care">
+                            <h3>Customer care</h3>
+                            <ul>
+                                <li><a href="#">Shipping information</a></li>
+                                <li><a href="#">Returns & exchanges</a></li>
+                                <li><a href="#">Care & maintenance</a></li>
+                                <li><a href="#">Custom orders</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Column 4: Company & Policies -->
+                    <div class="col col-3 col-links">
+                        <h3>Company</h3>
+                        <ul>
+                            <li><a href="#">About David's Wood</a></li>
+                            <li><a href="#">Journal</a></li>
+                            <li><a href="#">Careers</a></li>
+                            <li><a href="#">Contact</a></li>
+                        </ul>
+                        <hr class="divider">
+                        <h3>Policies</h3>
+                        <ul>
+                            <li><a href="#">Privacy policy</a></li>
+                            <li><a href="#">Terms of service</a></li>
+                            <li><a href="#">Warranty</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Footer Bottom -->
+                <div class="footer-bottom">
+                    <p class="copyright">© 2025 David's Wood. All rights reserved.</p>
+                    <div class="bottom-links">
+                    <span class="sustainability">
+                        <i data-lucide="circle" class="icon green"></i>
+                        Crafted with sustainable materials
+                    </span>
+                    <a href="#" class="call-us">
+                        <i data-lucide="phone-call" class="icon"></i> Call us
+                    </a>
+                </div>
+            </div>
+        </footer>
 
         <!-- scripts -->
         <script src="script.js" type="module"></script>
