@@ -1,29 +1,17 @@
-<!doctype html>
-<html>
-    <head>
-        <title>Profile Dashboard - DAVID'S WOOD</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- css -->
-        <link rel="stylesheet" href="style.css">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-        <!-- javascript -->
-        <script src="https://unpkg.com/feather-icons"></script>
-        <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/lucide@0.259.0/dist/lucide.min.js"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-
-        <script src="https://cdn.tailwindcss.com"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
-        <script>
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -83,72 +71,24 @@
             font-weight: 600;
         }
     </style>
-    </head>
-    <body>
-        <!-- navbar -->
-        <nav class="navbar navbar-expand-lg fixed-top">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-semibold" href="#">DAVID'S WOOD</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav center-links">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="home.html">
-                                <button class="btn" type="button">Home</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href=".home.html#products">
-                                <button class="btn" type="button">Products</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="home.html#about">
-                                <button class="btn" type="button">About</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#contact">
-                                <button class="btn" type="button">Contact</button>
-                            </a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav right-icons align-items-center">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <button class="btn px-3" id="openSearchModal" type="button">Search</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <button class="btn px-3 border border-dark" type="button">Account</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <button class="btn px-2 mx-2" id="openOffcanvas" type="button">
-                                <i class="feather-small" data-feather="heart"></i>
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="btn px-2 ms-2" id="openCartOffcanvas" type="button">
-                                <i class="feather-small" data-feather="shopping-cart"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count"></span>
-                            </button>
-                        </li>
-                    </ul>
+</head>
+<body class="bg-beige-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-beige-800">MinimalShop</div>
+            <div class="flex items-center space-x-6">
+                <a href="#" class="text-beige-700 hover:text-beige-900 font-medium">Home</a>
+                <a href="#" class="text-beige-700 hover:text-beige-900 font-medium">Shop</a>
+                <a href="#" class="text-beige-700 hover:text-beige-900 font-medium">Contact</a>
+                <div class="relative">
+                    <i data-feather="user" class="text-beige-700 cursor-pointer"></i>
                 </div>
             </div>
-        </nav>
-        <!-- modal -->
-        <div id="modal-search-container"></div>
-        <div id="quick-view-container"></div>
-        <!-- offcanvas -->
-        <div id="offcanvas-container"></div>
-        <div id="offcanvas-cart-container"></div>
+        </div>
+    </nav>
 
-        <!-- Main Content -->
+    <!-- Main Content -->
     <div class="container mx-auto px-4 py-8">
         <div class="flex flex-col md:flex-row gap-8">
             <!-- Sidebar -->
@@ -343,7 +283,7 @@
                 </div>
 
                 <!-- My Orders -->
-                <div id="orders-section" class="bg-white rounded-xl shadow-sm p-6 mb-8 card content-section" data-aos="fade-up" data-target="orders-section">
+                <div id="orders-section" class="bg-white rounded-xl shadow-sm p-6 mb-8 card content-section" data-aos="fade-up">
                     <h2 class="text-2xl font-bold text-beige-900 mb-6">My Orders</h2>
                     <div class="space-y-6">
                         <div class="border border-beige-200 rounded-lg p-4">
@@ -398,7 +338,7 @@
                 </div>
 
                 <!-- Order Tracking -->
-                <div id="tracking-section" class="bg-white rounded-xl shadow-sm p-6 mb-8 card content-section" data-aos="fade-up" data-target="tracking-section">
+                <div id="tracking-section" class="bg-white rounded-xl shadow-sm p-6 mb-8 card content-section" data-aos="fade-up">
                     <h2 class="text-2xl font-bold text-beige-900 mb-6">Order Tracking</h2>
                     <div class="border border-beige-200 rounded-lg p-6">
                         <div class="flex justify-between mb-8">
@@ -450,7 +390,7 @@
                 </div>
 
                 <!-- Receipts -->
-                <div id="receipts-section" class="bg-white rounded-xl shadow-sm p-6 card content-section" data-aos="fade-up" data-target="receipts-section">
+                <div id="receipts-section" class="bg-white rounded-xl shadow-sm p-6 card content-section" data-aos="fade-up">
                   <h2 class="text-2xl font-bold text-beige-900 mb-6">Receipts</h2>
                     <div class="space-y-6">
                         <div class="receipt-item pl-4 border-beige-200">
@@ -616,6 +556,7 @@
             </div>
         </div>
     </div>
+    
 
     <script>
         AOS.init({
@@ -666,145 +607,12 @@
                     const targetSection = document.getElementById(targetId);
                     if (targetSection) {
                         targetSection.style.display = 'block';
+                        // --- ADD THIS LINE ---
+                        AOS.refreshHard(); // Force AOS to recalculate animations for newly visible elements
                     }
                 });
             });
         });
     </script>
-
-        <!-- footer -->
-        <footer class="footer" id="contact">
-            <div class="container-fluid">
-                <div class="row">
-                    <!-- Column 1: Brand Info -->
-                    <div class="col">
-                        <h2 class="brand-name">David's Wood</h2>
-                        <p class="brand-desc">
-                            Handcrafteded furniture with timeless design. Natural materials, thoughtful details, built to last.
-                        </p>
-                        <div class="contact-info">
-                            <div class="info-item align-items-center">
-                                <i data-lucide="phone-call" class="icon"></i>
-                                <span>+1 (234) 555-1234</span>
-                            </div>
-                            <div class="info-item align-items-center">
-                                <i data-lucide="contact" class="icon"></i>
-                                <span>hello@davidswood.com</span>
-                            </div>
-                            <div class="info-item flex-column">
-                                <div class="d-flex align-items-center">
-                                    <i data-lucide="map-pin" class="icon"></i>
-                                    <span>
-                                        <strong>Showroom & Workshop</strong><br>
-                                    </span>
-                                </div>
-                                <span class="text-span">
-                                    245 Cedar Lane, Suite B<br>
-                                    Portland, OR 97205
-                                </span>
-                            </div>
-                            <div class="info-item flex-column">
-                                <div class="d-flex align-items-center">
-                                    <i data-lucide="clock" class="icon"></i>
-                                    <span>
-                                        <strong>Hours</strong><br>
-                                    </span>
-                                </div>
-                                <span class="text-span">
-                                    Mon-Fri: 9am - 6pm<br>
-                                    Sat: 10am - 4pm
-                                </span>
-                            </div>
-                        </div>
-                        <div class="social-links">
-                            <a href="#" aria-label="LinkedIn"><i data-lucide="linkedin" class="icon"></i></a>
-                            <a href="#" aria-label="Instagram"><i data-lucide="instagram" class="icon"></i></a>
-                            <a href="#" aria-label="Facebook"><i data-lucide="facebook" class="icon"></i></a>
-                            <a href="#" aria-label="Twitter"><i data-lucide="twitter" class="icon"></i></a>
-                        </div>
-                    </div>
-                    <!-- Column 2: Contact Form -->
-                    <div class="col">
-                        <h3>Contact us</h3>
-                        <p class="form-desc">We'll respond within 1–2 business days.</p>
-                        <form id="contact-form">
-                            <div class="form-row">
-                                <div class="col d-flex flex-column">
-                                    <label for="name">Name</label>
-                                    <input type="text" placeholder="Jane Doe" required>
-                                </div>
-                                <div class="col d-flex flex-column">
-                                    <label for="email">Email</label>
-                                    <input type="email" placeholder="jane@example.com" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="message">Message</label>
-                                <textarea id="message" placeholder="Tell us about your project..." rows="4"></textarea>
-                            </div>
-                            <div class="form-footer">
-                                <span class="disclaimer">By sending, you agree to our policies below.</span>
-                                <button type="submit" class="btn-send">
-                                    <i data-lucide="send" class="icon me-2"></i> Send message
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    <!-- Column 3: Newsletter & Customer Care -->
-                    <div class="col">
-                        <h3>Newsletter</h3>
-                        <p class="form-desc">Be first to see new pieces, wood stories, and events.</p>
-                        <div class="newsletter-form">
-                            <input type="email" placeholder="you@example.com" required>
-                            <button type="submit" class="btn-subscribe">Subscribe</button>
-                        </div>
-                        <hr class="divider">
-                        <div class="customer-care">
-                            <h3>Customer care</h3>
-                            <ul>
-                                <li><a href="#">Shipping information</a></li>
-                                <li><a href="#">Returns & exchanges</a></li>
-                                <li><a href="#">Care & maintenance</a></li>
-                                <li><a href="#">Custom orders</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <!-- Column 4: Company & Policies -->
-                    <div class="col col-3 col-links">
-                        <h3>Company</h3>
-                        <ul>
-                            <li><a href="#">About David's Wood</a></li>
-                            <li><a href="#">Journal</a></li>
-                            <li><a href="#">Careers</a></li>
-                            <li><a href="#">Contact</a></li>
-                        </ul>
-                        <hr class="divider">
-                        <h3>Policies</h3>
-                        <ul>
-                            <li><a href="#">Privacy policy</a></li>
-                            <li><a href="#">Terms of service</a></li>
-                            <li><a href="#">Warranty</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <!-- Footer Bottom -->
-                <div class="footer-bottom">
-                    <p class="copyright">© 2025 David's Wood. All rights reserved.</p>
-                    <div class="bottom-links">
-                    <span class="sustainability">
-                        <i data-lucide="circle" class="icon green"></i>
-                        Crafted with sustainable materials
-                    </span>
-                    <a href="#" class="call-us">
-                        <i data-lucide="phone-call" class="icon"></i> Call us
-                    </a>
-                </div>
-            </div>
-        </footer>
-
-        <!-- scripts -->
-        <script src="script.js" type="module"></script>
-        <script src="https://unpkg.com/lucide@latest"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+</body>
 </html>

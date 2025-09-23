@@ -16,10 +16,11 @@
 <!doctype html>
 <html>
     <head>
-        <title>DAVID'S WOOD</title>
+        <title>David's Wood Furniture - Handcrafteded furniture with timeless design.</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <!-- css -->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.png">
         <link rel="stylesheet" href="style.css">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,61 +34,7 @@
     </head>
     <body>
         <!-- navbar -->
-        <nav class="navbar navbar-expand-lg fixed-top">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-semibold" href="#">DAVID'S WOOD</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav center-links">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#home">
-                                <button class="btn" type="button">Home</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#products">
-                                <button class="btn" type="button">Products</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#about">
-                                <button class="btn" type="button">About</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#contact">
-                                <button class="btn" type="button">Contact</button>
-                            </a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav right-icons align-items-center">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <button class="btn px-3" id="openSearchModal" type="button">Search</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <button class="btn px-3 border border-dark" type="button">Account</button>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <button class="btn px-2 mx-2" id="openOffcanvas" type="button">
-                                <i class="feather-small" data-feather="heart"></i>
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="btn px-2 ms-2" id="openCartOffcanvas" type="button">
-                                <i class="feather-small" data-feather="shopping-cart"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count"></span>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+        <div id="navbar-container"></div>
         <!-- modal -->
         <div id="modal-search-container"></div>
         <div id="quick-view-container"></div>
@@ -338,134 +285,8 @@
             </div>
         </section>
         <!-- footer -->
-        <footer class="footer" id="contact">
-            <div class="container-fluid">
-                <div class="row">
-                    <!-- Column 1: Brand Info -->
-                    <div class="col">
-                        <h2 class="brand-name">David's Wood</h2>
-                        <p class="brand-desc">
-                            Handcrafteded furniture with timeless design. Natural materials, thoughtful details, built to last.
-                        </p>
-                        <div class="contact-info">
-                            <div class="info-item align-items-center">
-                                <i data-lucide="phone-call" class="icon"></i>
-                                <span>+1 (234) 555-1234</span>
-                            </div>
-                            <div class="info-item align-items-center">
-                                <i data-lucide="contact" class="icon"></i>
-                                <span>hello@davidswood.com</span>
-                            </div>
-                            <div class="info-item flex-column">
-                                <div class="d-flex align-items-center">
-                                    <i data-lucide="map-pin" class="icon"></i>
-                                    <span>
-                                        <strong>Showroom & Workshop</strong><br>
-                                    </span>
-                                </div>
-                                <span class="text-span">
-                                    245 Cedar Lane, Suite B<br>
-                                    Portland, OR 97205
-                                </span>
-                            </div>
-                            <div class="info-item flex-column">
-                                <div class="d-flex align-items-center">
-                                    <i data-lucide="clock" class="icon"></i>
-                                    <span>
-                                        <strong>Hours</strong><br>
-                                    </span>
-                                </div>
-                                <span class="text-span">
-                                    Mon-Fri: 9am - 6pm<br>
-                                    Sat: 10am - 4pm
-                                </span>
-                            </div>
-                        </div>
-                        <div class="social-links">
-                            <a href="#" aria-label="LinkedIn"><i data-lucide="linkedin" class="icon"></i></a>
-                            <a href="#" aria-label="Instagram"><i data-lucide="instagram" class="icon"></i></a>
-                            <a href="#" aria-label="Facebook"><i data-lucide="facebook" class="icon"></i></a>
-                            <a href="#" aria-label="Twitter"><i data-lucide="twitter" class="icon"></i></a>
-                        </div>
-                    </div>
-                    <!-- Column 2: Contact Form -->
-                    <div class="col">
-                        <h3>Contact us</h3>
-                        <p class="form-desc">We'll respond within 1–2 business days.</p>
-                        <form id="contact-form">
-                            <div class="form-row">
-                                <div class="col d-flex flex-column">
-                                    <label for="name">Name</label>
-                                    <input type="text" placeholder="Jane Doe" required>
-                                </div>
-                                <div class="col d-flex flex-column">
-                                    <label for="email">Email</label>
-                                    <input type="email" placeholder="jane@example.com" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="message">Message</label>
-                                <textarea id="message" placeholder="Tell us about your project..." rows="4"></textarea>
-                            </div>
-                            <div class="form-footer">
-                                <span class="disclaimer">By sending, you agree to our policies below.</span>
-                                <button type="submit" class="btn-send">
-                                    <i data-lucide="send" class="icon me-2"></i> Send message
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    <!-- Column 3: Newsletter & Customer Care -->
-                    <div class="col">
-                        <h3>Newsletter</h3>
-                        <p class="form-desc">Be first to see new pieces, wood stories, and events.</p>
-                        <div class="newsletter-form">
-                            <input type="email" placeholder="you@example.com" required>
-                            <button type="submit" class="btn-subscribe">Subscribe</button>
-                        </div>
-                        <hr class="divider">
-                        <div class="customer-care">
-                            <h3>Customer care</h3>
-                            <ul>
-                                <li><a href="#">Shipping information</a></li>
-                                <li><a href="#">Returns & exchanges</a></li>
-                                <li><a href="#">Care & maintenance</a></li>
-                                <li><a href="#">Custom orders</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <!-- Column 4: Company & Policies -->
-                    <div class="col col-3 col-links">
-                        <h3>Company</h3>
-                        <ul>
-                            <li><a href="#">About David's Wood</a></li>
-                            <li><a href="#">Journal</a></li>
-                            <li><a href="#">Careers</a></li>
-                            <li><a href="#">Contact</a></li>
-                        </ul>
-                        <hr class="divider">
-                        <h3>Policies</h3>
-                        <ul>
-                            <li><a href="#">Privacy policy</a></li>
-                            <li><a href="#">Terms of service</a></li>
-                            <li><a href="#">Warranty</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <!-- Footer Bottom -->
-                <div class="footer-bottom">
-                    <p class="copyright">© 2025 David's Wood. All rights reserved.</p>
-                    <div class="bottom-links">
-                    <span class="sustainability">
-                        <i data-lucide="circle" class="icon green"></i>
-                        Crafted with sustainable materials
-                    </span>
-                    <a href="#" class="call-us">
-                        <i data-lucide="phone-call" class="icon"></i> Call us
-                    </a>
-                </div>
-            </div>
-        </footer>
+        <div id="footer-container"></div>
+        
 
         <!-- scripts -->
         <script src="script.js" type="module"></script>

@@ -271,25 +271,63 @@ function initHeroSlider() {
 // ── DOM Ready Handler ──
 document.addEventListener('DOMContentLoaded', function () {
 
+// ── 0. LOAD NAVBAR ──
+    loadComponent(
+        'components/block-navbar.html', 
+        'navbar-container',
+        () => {
+            // Re-init icons
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            if (typeof feather !== 'undefined') feather.replace();
+
+            // Attach navbar button listeners
+            const openSearchBtn = document.getElementById('openSearchModal');
+            if (openSearchBtn) {
+                openSearchBtn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const modalEl = document.getElementById('modal-search');
+                    if (modalEl) {
+                        const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        bsModal.show();
+                    }
+                });
+            }
+
+            const openWishlistBtn = document.getElementById('openOffcanvas');
+            if (openWishlistBtn) {
+                openWishlistBtn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const el = document.getElementById('offcanvas-wishlist');
+                    if (el) {
+                        const bs = bootstrap.Offcanvas.getInstance(el) || new bootstrap.Offcanvas(el);
+                        bs.show();
+                    }
+                });
+            }
+
+            const openCartBtn = document.getElementById('openCartOffcanvas');
+            if (openCartBtn) {
+                openCartBtn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const el = document.getElementById('offcanvas-cart');
+                    if (el) {
+                        const bs = bootstrap.Offcanvas.getInstance(el) || new bootstrap.Offcanvas(el);
+                        bs.show();
+                    }
+                });
+            }
+        }
+    );
+
     // ── 1. SEARCH MODAL ──
     loadComponent(
         'components/modal-search.html',
         'modal-search-container',
         () => initModal('modal-search')
     );
-
-    const openSearchBtn = document.getElementById('openSearchModal');
-    if (openSearchBtn) {
-        openSearchBtn.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            const modalEl = document.getElementById('modal-search');
-            if (modalEl) {
-                const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                bsModal.show();
-            }
-        });
-    }
 
     // ── 2. WISHLIST OFFCANVAS ──
     loadComponent(
@@ -298,38 +336,12 @@ document.addEventListener('DOMContentLoaded', function () {
         () => initOffcanvas('offcanvas-wishlist')
     );
 
-    const openWishlistBtn = document.getElementById('openOffcanvas');
-    if (openWishlistBtn) {
-        openWishlistBtn.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            const el = document.getElementById('offcanvas-wishlist');
-            if (el) {
-                const bs = bootstrap.Offcanvas.getInstance(el) || new bootstrap.Offcanvas(el);
-                bs.show();
-            }
-        });
-    }
-
     // ── 3. CART OFFCANVAS ──
     loadComponent(
         'components/offcanvas-cart.html',
         'offcanvas-cart-container',
         () => initOffcanvas('offcanvas-cart')
     );
-
-    const openCartBtn = document.getElementById('openCartOffcanvas');
-    if (openCartBtn) {
-        openCartBtn.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            const el = document.getElementById('offcanvas-cart');
-            if (el) {
-                const bs = bootstrap.Offcanvas.getInstance(el) || new bootstrap.Offcanvas(el);
-                bs.show();
-            }
-        });
-    }
 
     // ── 4. PRODUCTS SECTION ──
     if (document.getElementById('product-grid')) {
@@ -343,4 +355,34 @@ document.addEventListener('DOMContentLoaded', function () {
     if ($('.hero-slider').length) {
         initHeroSlider();
     }
+    
+    // ── 7. LOAD FOOTER ──
+    loadComponent(
+        'components/block-footer.html',
+        'footer-container',
+        () => {
+            // Re-init Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            // Optional: Add form submit handler
+            const contactForm = document.getElementById('contact-form');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    alert('Thank you for your message! We’ll respond soon.');
+                });
+            }
+
+            // Optional: Add newsletter form handler
+            const newsletterForm = document.querySelector('.newsletter-form');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    alert('Thank you for subscribing!');
+                });
+            }
+        }
+    );
 });
