@@ -124,7 +124,7 @@ function initProductsSection() {
                         </div>
                         <div class="col col-md-3 text-end">
                             <div class="text-muted">Price</div>
-                            <div class="price">₱${product.price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+                            <div class="price">₱${Math.floor(product.price).toLocaleString('en-US')}</div>
                         </div>
                     </div>
                     <div class="buttons">
@@ -172,7 +172,7 @@ function initQuickViewModals() {
             document.getElementById('quick-view-image').src = product.image;
             document.getElementById('quick-view-desc').textContent = product.desc;
             document.getElementById('quick-view-rating').textContent = product.rating;
-            document.getElementById('quick-view-price').textContent = `₱${product.price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+            document.getElementById('quick-view-price').textContent = `₱${Math.floor(product.price).toLocaleString('en-US')}`;
             document.getElementById('quick-view-material').textContent = product.material;
             document.getElementById('quick-view-dimensions').textContent = product.dimensions;
 
@@ -242,7 +242,7 @@ function initHeroSlider() {
 
     // Auto-slide
     function startAutoSlide() {
-        autoSlideInterval = setInterval(nextSlide, 1500);
+        autoSlideInterval = setInterval(nextSlide, 2000);
     }
 
     function stopAutoSlide() {
@@ -261,16 +261,6 @@ function initHeroSlider() {
     // Dot click
     $indicators.click(function() {
         currentIndex = $(this).index();
-        showSlide(currentIndex);
-    });
-
-    // Arrow click
-    $('.carousel-next').click(function() {
-        nextSlide();
-    });
-
-    $('.carousel-prev').click(function() {
-        currentIndex = (currentIndex - 1 + $slides.length) % $slides.length;
         showSlide(currentIndex);
     });
 
