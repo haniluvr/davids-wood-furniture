@@ -76,8 +76,20 @@ function initModal(id) {
     const closeBtn = document.getElementById('close-' + simpleName + '-modal');
 
     if (el) {
-        const show = function() { el.classList.remove('hidden'); };
-        const hide = function() { el.classList.add('hidden'); };
+        const show = function() { 
+            el.classList.remove('hidden');
+            // Trigger fade in animation
+            setTimeout(() => {
+                el.classList.add('show');
+            }, 10);
+        };
+        const hide = function() { 
+            el.classList.remove('show');
+            // Wait for animation to complete before hiding
+            setTimeout(() => {
+                el.classList.add('hidden');
+            }, 300);
+        };
 
         // Expose both aliases: showsearch and showmodalsearch
         window['show' + simpleName] = show;
@@ -350,6 +362,38 @@ function initNavbarButtons() {
             }
         });
     }
+
+    // Login and Signup Modal Buttons
+    const openLoginBtn = document.getElementById('open-login-modal');
+    const openSignupBtn = document.getElementById('open-signup-modal');
+    
+    if (openLoginBtn) {
+        openLoginBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof window.showmodallogin === 'function') {
+                window.showmodallogin();
+            }
+            // Close dropdown after opening modal
+            if (accountMenu) {
+                $(accountMenu).hide('blind', { direction: 'up' }, 300);
+            }
+        });
+    }
+    
+    if (openSignupBtn) {
+        openSignupBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof window.showmodalsignup === 'function') {
+                window.showmodalsignup();
+            }
+            // Close dropdown after opening modal
+            if (accountMenu) {
+                $(accountMenu).hide('blind', { direction: 'up' }, 300);
+            }
+        });
+    }
 }
 
 // ── Initialize Hero Slider (jQuery) ──
@@ -405,6 +449,237 @@ function initHeroSlider() {
     showSlide(currentIndex);
 }
 
+// ── Preline Strong Password Integration ──
+function initPrelineStrongPassword() {
+    // Wait for Preline to be available
+    const initPreline = () => {
+        if (typeof HSCore !== 'undefined' && HSCore.components && HSCore.components.HSStrongPassword) {
+            HSCore.components.HSStrongPassword.autoInit();
+            console.log('Preline Strong Password initialized');
+        } else {
+            // Retry after a short delay
+            setTimeout(initPreline, 100);
+        }
+    };
+    
+    initPreline();
+}
+
+// ── Password Strength Checker for Form Validation ──
+function checkPasswordStrength(password) {
+    const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /\d/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+    
+    const validCount = Object.values(requirements).filter(Boolean).length;
+    let strength = 'very-weak';
+    
+    if (validCount >= 5) {
+        strength = 'very-strong';
+    } else if (validCount >= 4) {
+        strength = 'strong';
+    } else if (validCount >= 3) {
+        strength = 'medium';
+    } else if (validCount >= 2) {
+        strength = 'weak';
+    }
+    
+    return { requirements, strength };
+}
+
+// ── Fallback Password Strength Indicator ──
+function updatePasswordStrengthFallback(password, strength) {
+    const indicator = document.getElementById('passwordStrengthIndicator');
+    const bar = document.getElementById('password-strength-bar');
+    const text = document.getElementById('password-strength-text');
+    
+    if (indicator && bar && text) {
+        // Show indicator when user starts typing
+        if (password.length > 0) {
+            indicator.classList.remove('hidden');
+            indicator.classList.add('opacity-100');
+        } else {
+            indicator.classList.add('hidden');
+            indicator.classList.remove('opacity-100');
+            return;
+        }
+        
+        // Update progress bar and text based on strength
+        let width = '0%';
+        let bgColor = 'bg-gray-400';
+        let textColor = 'text-gray-500';
+        let strengthText = 'Very weak';
+        
+        switch (strength.strength) {
+            case 'very-weak':
+                width = '20%';
+                bgColor = 'bg-red-500';
+                textColor = 'text-red-500';
+                strengthText = 'Very weak';
+                break;
+            case 'weak':
+                width = '40%';
+                bgColor = 'bg-orange-500';
+                textColor = 'text-orange-500';
+                strengthText = 'Weak';
+                break;
+            case 'medium':
+                width = '60%';
+                bgColor = 'bg-yellow-500';
+                textColor = 'text-yellow-500';
+                strengthText = 'Moderate';
+                break;
+            case 'strong':
+                width = '80%';
+                bgColor = 'bg-blue-500';
+                textColor = 'text-blue-500';
+                strengthText = 'Strong';
+                break;
+            case 'very-strong':
+                width = '100%';
+                bgColor = 'bg-green-500';
+                textColor = 'text-green-500';
+                strengthText = 'Very strong';
+                break;
+        }
+        
+        // Update the bar
+        bar.style.width = width;
+        bar.className = `h-2 rounded-full transition-all duration-300 ${bgColor}`;
+        
+        // Update the text
+        text.textContent = strengthText;
+        text.className = `text-sm ${textColor}`;
+    }
+}
+
+// ── Initialize Login and Signup Modals ──
+function initAuthModals() {
+    // Password toggle functionality
+    const togglePassword = (inputId, buttonId) => {
+        const input = document.getElementById(inputId);
+        const button = document.getElementById(buttonId);
+        if (input && button) {
+            button.addEventListener('click', function() {
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                const icon = button.querySelector('i');
+                icon.setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            });
+        }
+    };
+    
+    // Initialize password toggles
+    togglePassword('login-password', 'toggle-login-password');
+    togglePassword('signup-password', 'toggle-signup-password');
+    togglePassword('signup-confirm-password', 'toggle-confirm-password');
+    
+    // Password strength checker for form validation
+    const signupPassword = document.getElementById('signup-password');
+    const confirmPasswordGroup = document.getElementById('confirm-password-group');
+    const signupSubmit = document.getElementById('signup-submit');
+    
+    if (signupPassword) {
+        signupPassword.addEventListener('input', function() {
+            const password = this.value;
+            const strength = checkPasswordStrength(password);
+            
+            // Fallback password strength indicator if Preline doesn't work
+            updatePasswordStrengthFallback(password, strength);
+            
+            // Show confirm password field when user starts typing
+            if (password.length > 0) {
+                confirmPasswordGroup.classList.add('show');
+            } else {
+                confirmPasswordGroup.classList.remove('show');
+                signupSubmit.disabled = true;
+            }
+        });
+    }
+    
+    // Confirm password validation
+    const confirmPassword = document.getElementById('signup-confirm-password');
+    if (confirmPassword) {
+        confirmPassword.addEventListener('input', function() {
+            const password = signupPassword.value;
+            const confirm = this.value;
+            const errorElement = document.getElementById('password-match-error');
+            const strength = checkPasswordStrength(password);
+            
+            if (confirm && password !== confirm) {
+                this.classList.add('is-invalid');
+                errorElement.textContent = 'Passwords do not match';
+                signupSubmit.disabled = true;
+            } else if (confirm && password === confirm && strength.strength !== 'very-weak' && strength.strength !== 'weak') {
+                this.classList.remove('is-invalid');
+                errorElement.textContent = '';
+                signupSubmit.disabled = false;
+            } else if (confirm && password === confirm) {
+                this.classList.remove('is-invalid');
+                errorElement.textContent = '';
+                signupSubmit.disabled = true; // Still disabled if password is too weak
+            }
+        });
+    }
+    
+    // Modal switching
+    const switchToSignup = document.getElementById('switch-to-signup');
+    const switchToLogin = document.getElementById('switch-to-login');
+    
+    if (switchToSignup) {
+        switchToSignup.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof window.hidemodallogin === 'function') {
+                window.hidemodallogin();
+            }
+            setTimeout(() => {
+                if (typeof window.showmodalsignup === 'function') {
+                    window.showmodalsignup();
+                }
+            }, 300);
+        });
+    }
+    
+    if (switchToLogin) {
+        switchToLogin.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof window.hidemodalsignup === 'function') {
+                window.hidemodalsignup();
+            }
+            setTimeout(() => {
+                if (typeof window.showmodallogin === 'function') {
+                    window.showmodallogin();
+                }
+            }, 300);
+        });
+    }
+    
+    // Form submissions
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Login functionality would be implemented here!');
+        });
+    }
+    
+    if (signupForm) {
+        signupForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Account creation functionality would be implemented here!');
+        });
+    }
+}
+
 // ── DOM Ready Handler ──
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -448,12 +723,32 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── 5. QUICK VIEW MODAL ──
     loadQuickViewModal();
 
-    // ── 6. HERO SLIDER (jQuery) ──
+    // ── 6. LOGIN MODAL ──
+    loadComponent(
+        'components/modal-login.html',
+        'modal-login-container',
+        () => initModal('modal-login')
+    );
+
+    // ── 7. SIGNUP MODAL ──
+    loadComponent(
+        'components/modal-signup.html',
+        'modal-signup-container',
+        () => initModal('modal-signup')
+    );
+
+    // ── 8. HERO SLIDER (jQuery) ──
     if ($('.hero-slider').length) {
         initHeroSlider();
     }
 
-    // ── 7. LOAD FOOTER ──
+    // ── 9. AUTH MODALS ──
+    setTimeout(() => {
+        initAuthModals();
+        initPrelineStrongPassword();
+    }, 1000); // Delay to ensure modals are loaded
+
+    // ── 10. LOAD FOOTER ──
     loadComponent(
         'components/block-footer.html',
         'footer-container',

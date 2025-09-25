@@ -1014,6 +1014,408 @@ body {
   z-index: 1000;
 }
 
+/* Login and Signup Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal.show .modal-content {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.modal-dialog {
+  max-width: 500px;
+  width: 40rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.modal-dialog-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.modal-content {
+  background-color: #f5f3ed;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transform: scale(0.8);
+  opacity: 0;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.modal-header {
+  background-color: #f5f3ed;
+  padding: 1.5rem 1.5rem 0rem;
+  border-bottom: none;
+  border-radius: 15px 15px 0 0;
+}
+
+.modal-title {
+  font-size: 1.125rem;
+	font-weight: 600;
+	color: #1a1a1a;
+}
+
+.modal-body {
+  background-color: #f5f3ed;
+  padding: 1.5rem;
+  border-radius: 0 0 15px 15px;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close:hover {
+  color: #333;
+}
+
+/* Form Styles */
+.form-label {
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.form-control {
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  background-color: #fff;
+  transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 2px rgba(26, 26, 26, 0.1);
+  outline: none;
+}
+
+.input-group .btn {
+  border: 1px solid #d9d9d9;
+  border-left: none;
+  background-color: #fff;
+  color: #666;
+}
+
+.input-group .btn:hover {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.form-check-input {
+  margin-top: 0.25rem;
+}
+
+.form-check-label {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background-color: #1a1a1a;
+  border-color: #1a1a1a;
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #333;
+  border-color: #333;
+}
+
+.btn-primary:disabled {
+  background-color: #ccc;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Preline Strong Password Styles */
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.inset-y-0 {
+  top: 0;
+  bottom: 0;
+}
+
+.end-0 {
+  right: 0;
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.pe-3 {
+  padding-right: 0.75rem;
+}
+
+.gap-x-2 {
+  gap: 0.5rem;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
+}
+
+.bg-gray-200 {
+  background-color: rgb(229 231 235);
+}
+
+.rounded-full {
+  border-radius: 9999px;
+}
+
+.h-2 {
+  height: 0.5rem;
+}
+
+.bg-gray-400 {
+  background-color: rgb(156 163 175);
+}
+
+.bg-red-500 {
+  background-color: rgb(239 68 68);
+}
+
+.bg-orange-500 {
+  background-color: rgb(249 115 22);
+}
+
+.bg-yellow-500 {
+  background-color: rgb(234 179 8);
+}
+
+.bg-blue-500 {
+  background-color: rgb(59 130 246);
+}
+
+.bg-green-500 {
+  background-color: rgb(34 197 94);
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.text-gray-500 {
+  color: rgb(107 114 128);
+}
+
+.text-red-500 {
+  color: rgb(239 68 68);
+}
+
+.text-orange-500 {
+  color: rgb(249 115 22);
+}
+
+.text-yellow-500 {
+  color: rgb(234 179 8);
+}
+
+.text-blue-500 {
+  color: rgb(59 130 246);
+}
+
+.text-green-500 {
+  color: rgb(34 197 94);
+}
+
+.text-green-600 {
+  color: rgb(22 163 74);
+}
+
+.bg-white {
+  background-color: rgb(255 255 255);
+}
+
+.border {
+  border-width: 1px;
+}
+
+.border-gray-200 {
+  border-color: rgb(229 231 235);
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.text-gray-800 {
+  color: rgb(31 41 55);
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.space-y-1 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.25rem;
+}
+
+.text-gray-600 {
+  color: rgb(75 85 99);
+}
+
+.hidden {
+  display: none;
+}
+
+.block {
+  display: block;
+}
+
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.duration-300 {
+  transition-duration: 300ms;
+}
+
+.opacity-0 {
+  opacity: 0;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.invalid-feedback {
+  display: block;
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.text-primary {
+  color: #1a1a1a !important;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.text-primary:hover {
+  text-decoration: underline;
+}
+
+/* Confirm Password Fold Animation */
+#confirm-password-group {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: perspective(1000px) rotateX(-90deg);
+  transform-origin: top left;
+  transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+
+#confirm-password-group.show {
+  max-height: 200px;
+  opacity: 1;
+  transform: perspective(1000px) rotateX(0deg);
+}
+
+/* Form Layout Improvements */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group.row {
+  margin-bottom: 1rem;
+}
+
+.form-group.row .col-md-6 {
+  padding: 0 0.5rem;
+}
+
+.form-group.row .col-md-6:first-child {
+  padding-left: 0;
+}
+
+.form-group.row .col-md-6:last-child {
+  padding-right: 0;
+}
+
+/* Checkbox Styling */
+.form-check {
+  margin-bottom: 1rem;
+}
+
+.form-check-input {
+  margin-top: 0.1rem;
+}
+
+.form-check-label {
+  font-size: 0.85rem;
+  color: #666;
+}
+
 /* Focus states */
 .focus\:outline-none:focus {
   outline: 2px solid transparent;
@@ -1333,7 +1735,6 @@ button.btn-add-to-cart:hover {
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin: 0rem 9rem;
 }
 
 #modal-search .modal-header {
@@ -1344,7 +1745,6 @@ button.btn-add-to-cart:hover {
   font-size: 1.125rem;
 	font-weight: 600;
 	color: #1a1a1a;
-  padding-left: 0.7rem;
 }
 
 #modal-search .modal-body {
@@ -1358,7 +1758,6 @@ button.btn-add-to-cart:hover {
 
 #modal-search .form-control {
 	border: 1px solid #e0e0e0;
-	border-radius: 12px;
 	transition: all 0.2s ease;
   padding: 0.5rem 0.8rem;
   background: none;

@@ -1,26 +1,24 @@
 <!-- components/modal-search.html-->
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="modal-search">
-  <div class="bg-white rounded-2xl shadow-lg max-w-2xl w-full mx-4" style="background-color: #f5f3ed; border: 1px solid #e0e0e0;">
-    <div class="flex items-center justify-between p-6 border-b border-gray-200">
-      <span class="text-lg font-medium">
-        Search products
-      </span>
-      <button type="button" class="text-gray-400 hover:text-gray-600" id="close-search-modal" onclick="if(window.hidemodalsearch){window.hidemodalsearch()}">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
+<div class="modal fade hidden" id="modal-search" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header flex items-center justify-between">
+                <h5 class="modal-title" id="searchModalLabel">Search products</h5>
+                <button type="button" class="btn-close border-none" id="close-search-modal" aria-label="Close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-gray-500 text-sm mb-4">
+                    Find solid wood furniture and accessories from David's Wood.
+                </p>
+                <div class="mb-2">
+                    <input type="text" class="form-control w-full text-sm rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500" placeholder="Search by name..." autofocus>
+                </div>
+                <div class="search-results w-full rounded-lg shadow-sm">
+                    <p class="text-gray-500 text-sm mb-0">Start typing to see results.</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="p-6">
-      <p class="text-gray-500 text-sm mb-4">
-        Find solid wood furniture and accessories from David's Wood.
-      </p>
-      <div class="mb-4">
-        <input type="text" class="w-full px-4 py-3 text-lg rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500" placeholder="Search by name..." autofocus>
-      </div>
-      <div class="search-results bg-white rounded-lg shadow-sm p-4">
-        <p class="text-gray-500 text-sm mb-0">Start typing to see results.</p>
-      </div>
-    </div>
-  </div>
 </div>
