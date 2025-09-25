@@ -25,23 +25,74 @@ async function loadComponent(url, targetId, initCallback = null) {
     }
 }
 
-// ── Initialize Bootstrap Offcanvas ──
+// ── Initialize Tailwind Offcanvas ──
 function initOffcanvas(id) {
-    const el = document.getElementById(id);
-    if (el) {
-        new bootstrap.Offcanvas(el, {
-            backdrop: true,
-            scroll: true,
-            keyboard: true
+    const el = document.getElementById(id); // acts as backdrop container
+    const panel = document.getElementById(id + '-panel');
+    const simpleName = id.replace('offcanvas-', '').replace(/-/g, ''); // e.g. cart, wishlist
+    const idBasedName = id.replace(/-/g, ''); // e.g. offcanvascart
+    const closeBtn = document.getElementById('close-' + simpleName + '-offcanvas');
+
+    if (el && panel) {
+        const show = function() {
+            el.classList.remove('hidden');
+            // allow paint before sliding in
+            setTimeout(() => {
+                panel.classList.remove('translate-x-full');
+                panel.classList.add('translate-x-0');
+            }, 10);
+        };
+
+        const hide = function() {
+            panel.classList.remove('translate-x-0');
+            panel.classList.add('translate-x-full');
+            setTimeout(() => {
+                el.classList.add('hidden');
+            }, 300);
+        };
+
+        // Expose both aliases: showcart and showoffcanvascart
+        window['show' + simpleName] = show;
+        window['hide' + simpleName] = hide;
+        window['show' + idBasedName] = show;
+        window['hide' + idBasedName] = hide;
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', hide);
+        }
+
+        // Backdrop click (click outside the panel)
+        el.addEventListener('click', function (event) {
+            if (event.target === el) hide();
         });
     }
 }
 
-// ── Initialize Bootstrap Modal ──
+// ── Initialize Tailwind Modal ──
 function initModal(id) {
     const el = document.getElementById(id);
+    const simpleName = id.replace('modal-', '').replace(/-/g, ''); // e.g. search, quickview
+    const idBasedName = id.replace(/-/g, ''); // e.g. modalsearch, modalquickview
+    const closeBtn = document.getElementById('close-' + simpleName + '-modal');
+
     if (el) {
-        new bootstrap.Modal(el);
+        const show = function() { el.classList.remove('hidden'); };
+        const hide = function() { el.classList.add('hidden'); };
+
+        // Expose both aliases: showsearch and showmodalsearch
+        window['show' + simpleName] = show;
+        window['hide' + simpleName] = hide;
+        window['show' + idBasedName] = show;
+        window['hide' + idBasedName] = hide;
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', hide);
+        }
+
+        // Backdrop click to close
+        el.addEventListener('click', function(e) {
+            if (e.target === el) hide();
+        });
     }
 }
 
@@ -53,7 +104,7 @@ function initProductsSection() {
     let displayedProducts = [];
 
     // Initial render
-    renderProductsWithFilter(products.slice(0, 6));
+    renderProductsWithFilter(products.slice(0, 8));
 
     // Filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -63,7 +114,7 @@ function initProductsSection() {
 
             const filter = btn.getAttribute('data-filter');
             const filtered = products.filter(p => filter === 'all' || p.category === filter);
-            renderProductsWithFilter(filtered.slice(0, 6));
+            renderProductsWithFilter(filtered.slice(0, 8));
         });
     });
 
@@ -86,7 +137,7 @@ function initProductsSection() {
                 sorted.sort((a, b) => b.rating - a.rating);
         }
 
-        renderProductsWithFilter(sorted.slice(0, 6));
+        renderProductsWithFilter(sorted.slice(0, 8));
     });
 
     // Render function
@@ -96,52 +147,51 @@ function initProductsSection() {
 
         products.forEach(product => {
             const col = document.createElement('div');
-            col.className = 'col-lg-4 col-md-6';
+            col.className = 'w-full';
 
             col.innerHTML = `
-                <div class="card product-card h-100 rounded-4">
-                    <img src="${product.image}" class="card-img" alt="${product.name}">
-                    <div class="card-img-overlay d-flex">
-                        <div class="flex-fill">
-                            <div class="rounded-pill stock-badge ${product.stock === 'low' ? 'low' : 'in-stock'}">
+                <div class="card product-card flex flex-col h-full rounded-2xl border bg-white">
+                    <img src="${product.image}" class="w-full h-64 object-cover" alt="${product.name}">
+                    <div class="absolute inset-0 flex p-4 h-full">
+                        <div class="flex-1">
+                            <div class="rounded-full stock-badge ${product.stock === 'low' ? 'low' : 'in-stock'} px-3 py-1 text-xs font-medium">
                             ${product.stock === 'low' ? 'Low stock' : 'In stock'}
                         </div>
-                        <div class="text-end text-white">
-                            <span class="rating">
-                                <i data-lucide="star" class="lucide-small me-1"></i> ${product.rating}
+                        <div class="text-right text-white">
+                            <span class="rating flex items-center">
+                                <i data-lucide="star" class="lucide-small mr-1"></i> ${product.rating}
                             </span>
                         </div>
-                        <button class="heart" onclick="event.stopPropagation();">
-                            <i data-lucide="heart"></i>
-                        </button>
                     </div>
+                    <div class="flex justify-end items-center">
+                            <button class="heart" onclick="event.stopPropagation();">
+                                <i data-lucide="heart"></i>
+                            </button>
+                        </div>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col col-md-9">
-                            <h6 class="product-title fs-5 fw-semibold">${product.name}</h6>
-                            <p class="product-desc">${product.desc}</p>
+                <div class="p-4 flex flex-col flex-1">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <div class="md:col-span-2">
+                            <h6 class="product-title text-lg font-semibold">${product.name}</h6>
+                            <p class="product-desc text-sm text-gray-600">${product.desc}</p>
                         </div>
-                        <div class="col col-md-3 text-end">
-                            <div class="text-muted">Price</div>
-                            <div class="price">₱${Math.floor(product.price).toLocaleString('en-US')}</div>
-                        </div>
-                    </div>
-                    <div class="buttons">
-                        <div class="btn-quick-view-icon p-1 d-flex flex-row align-items-center">
-                            <button class="btn btn-quick-view" data-product-id="${product.id}">
-                                <i data-lucide="proportions" class="lucide-small"></i> 
-                                <span class="fw-medium ms-2">Quick view</span>
-                            </button>
-                        </div>
-                        <div class="btn-quick-view-icon p-1 d-flex flex-row align-items-center">
-                            <button class="btn btn-add-to-cart" data-product-id="${product.id}">
-                                <i data-lucide="shopping-cart" class="lucide-small"></i> 
-                                <span class="fw-medium ms-2">Add to cart</span>
-                            </button>
+                        <div class="text-right">
+                            <div class="text-gray-500 text-sm">Price</div>
+                            <div class="price text-xl font-bold">₱${Math.floor(product.price).toLocaleString('en-US')}</div>
                         </div>
                     </div>
                 </div>
+                <div class="mt-auto flex p-4 justify-between">
+                    <button class="btn btn-quick-view max-w-[45%] shrink flex items-center justify-center py-2 px-0" data-product-id="${product.id}">
+                        <i data-lucide="proportions" class="lucide-small"></i> 
+                        <span class="font-medium ml-2">Quick view</span>
+                    </button>
+                    <button class="btn btn-add-to-cart max-w-[45%] shrink flex items-center justify-center py-2 px-0" data-product-id="${product.id}">
+                        <i data-lucide="shopping-cart" class="lucide-small"></i> 
+                        <span class="font-medium ml-2">Add to cart</span>
+                    </button>
+                </div>
+            </div>
             `;
             grid.appendChild(col);
         });
@@ -177,13 +227,14 @@ function initQuickViewModals() {
             document.getElementById('quick-view-dimensions').textContent = product.dimensions;
 
             // Show modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('modal-quick-view'));
-            modal.show();
+            if (typeof window.showmodalquickview === 'function') {
+                window.showmodalquickview();
+            }
 
             // Re-init icons after modal opens
-            modal._element.addEventListener('shown.bs.modal', function () {
+            setTimeout(() => {
                 if (typeof lucide !== 'undefined') lucide.createIcons();
-            });
+            }, 100);
         });
     });
 }
@@ -199,10 +250,10 @@ async function loadQuickViewModal() {
 
         container.innerHTML = await response.text();
 
-        // Initialize Bootstrap Modal
+        // Initialize Tailwind Modal
         const modalEl = document.getElementById('modal-quick-view');
         if (modalEl) {
-            new bootstrap.Modal(modalEl);
+            initModal('modal-quick-view');
         }
 
         // Re-init Lucide
@@ -212,6 +263,92 @@ async function loadQuickViewModal() {
 
     } catch (error) {
         console.error('Error loading quick view modal:', error);
+    }
+}
+
+// ── Initialize Navbar Buttons (after all components are loaded) ──
+function initNavbarButtons() {
+    // Search Modal Button
+    const openSearchBtn = document.getElementById('openSearchModal');
+    if (openSearchBtn) {
+        openSearchBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof window.showmodalsearch === 'function') {
+                window.showmodalsearch();
+            }
+        });
+    }
+
+    // Mobile Search Modal Button
+    const openSearchBtnMobile = document.getElementById('openSearchModalMobile');
+    if (openSearchBtnMobile) {
+        openSearchBtnMobile.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof window.showmodalsearch === 'function') {
+                window.showmodalsearch();
+            }
+        });
+    }
+
+    // Wishlist Offcanvas Button
+    const openWishlistBtn = document.getElementById('openOffcanvas');
+    if (openWishlistBtn) {
+        openWishlistBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof window.showoffcanvaswishlist === 'function') {
+                window.showoffcanvaswishlist();
+            }
+        });
+    }
+
+    // Cart Offcanvas Button
+    const openCartBtn = document.getElementById('openCartOffcanvas');
+    if (openCartBtn) {
+        openCartBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof window.showoffcanvascart === 'function') {
+                window.showoffcanvascart();
+            }
+        });
+    }
+
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.toggle('hidden');
+        });
+    }
+
+    // Account dropdown toggle with jQuery UI blind effect
+    const accountDropdown = document.getElementById('account-dropdown');
+    const accountMenu = document.getElementById('account-menu');
+    if (accountDropdown && accountMenu) {
+        // Initialize jQuery UI blind effect
+        $(accountMenu).hide();
+        
+        accountDropdown.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            if ($(accountMenu).is(':visible')) {
+                $(accountMenu).hide('blind', { direction: 'up' }, 300);
+            } else {
+                $(accountMenu).show('blind', { direction: 'up' }, 300);
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!accountDropdown.contains(event.target) && !accountMenu.contains(event.target)) {
+                $(accountMenu).hide('blind', { direction: 'up' }, 300);
+            }
+        });
     }
 }
 
@@ -271,54 +408,14 @@ function initHeroSlider() {
 // ── DOM Ready Handler ──
 document.addEventListener('DOMContentLoaded', function () {
 
-// ── 0. LOAD NAVBAR ──
+    // ── 0. LOAD NAVBAR ──
     loadComponent(
-        'components/block-navbar.html', 
+        'components/block-navbar.html',
         'navbar-container',
         () => {
             // Re-init icons
             if (typeof lucide !== 'undefined') lucide.createIcons();
             if (typeof feather !== 'undefined') feather.replace();
-
-            // Attach navbar button listeners
-            const openSearchBtn = document.getElementById('openSearchModal');
-            if (openSearchBtn) {
-                openSearchBtn.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const modalEl = document.getElementById('modal-search');
-                    if (modalEl) {
-                        const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                        bsModal.show();
-                    }
-                });
-            }
-
-            const openWishlistBtn = document.getElementById('openOffcanvas');
-            if (openWishlistBtn) {
-                openWishlistBtn.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const el = document.getElementById('offcanvas-wishlist');
-                    if (el) {
-                        const bs = bootstrap.Offcanvas.getInstance(el) || new bootstrap.Offcanvas(el);
-                        bs.show();
-                    }
-                });
-            }
-
-            const openCartBtn = document.getElementById('openCartOffcanvas');
-            if (openCartBtn) {
-                openCartBtn.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const el = document.getElementById('offcanvas-cart');
-                    if (el) {
-                        const bs = bootstrap.Offcanvas.getInstance(el) || new bootstrap.Offcanvas(el);
-                        bs.show();
-                    }
-                });
-            }
         }
     );
 
@@ -355,18 +452,16 @@ document.addEventListener('DOMContentLoaded', function () {
     if ($('.hero-slider').length) {
         initHeroSlider();
     }
-    
+
     // ── 7. LOAD FOOTER ──
     loadComponent(
         'components/block-footer.html',
         'footer-container',
         () => {
-            // Re-init Lucide icons
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
 
-            // Optional: Add form submit handler
             const contactForm = document.getElementById('contact-form');
             if (contactForm) {
                 contactForm.addEventListener('submit', function(event) {
@@ -375,7 +470,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             }
 
-            // Optional: Add newsletter form handler
             const newsletterForm = document.querySelector('.newsletter-form');
             if (newsletterForm) {
                 newsletterForm.addEventListener('submit', function(event) {
@@ -385,4 +479,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     );
+
+    // ✅ Initialize Navbar Buttons (after all components are loaded)
+    setTimeout(initNavbarButtons, 500); // Small delay to ensure components are ready
 });
