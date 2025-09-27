@@ -240,7 +240,14 @@ async function initProductsSection() {
 
     // Render function
     function renderProductsWithFilter(products) {
+        console.log('🎨 Rendering products:', products.length);
         grid.innerHTML = '';
+
+        if (products.length === 0) {
+            console.log('⚠️ No products to render');
+            grid.innerHTML = '<div class="col-span-full text-center py-8"><p class="text-gray-500">No products found.</p></div>';
+            return;
+        }
 
         products.forEach(product => {
             const col = document.createElement('div');
@@ -252,9 +259,9 @@ async function initProductsSection() {
                 name: product.name,
                 description: product.short_description || product.description || product.desc,
                 price: product.price,
-                image: product.primary_image || product.images?.[0]?.url || product.image,
+                image: product.primary_image || product.images?.[0]?.url || product.image || 'https://via.placeholder.com/300x300?text=No+Image',
                 rating: product.rating || 4.5,
-                stock: product.stock_status || product.stock,
+                stock: product.stock_status || product.stock || 'in-stock',
                 material: product.material,
                 dimensions: product.dimensions,
                 slug: product.slug
@@ -308,6 +315,8 @@ async function initProductsSection() {
             `;
             grid.appendChild(col);
         });
+        
+        console.log('✅ Products rendered successfully. Grid now has', grid.children.length, 'products');
 
         // Re-init icons
         if (typeof lucide !== 'undefined') lucide.createIcons();
