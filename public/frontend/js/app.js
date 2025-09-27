@@ -175,11 +175,14 @@ async function initProductsSection() {
         const response = await window.api.getProducts({ per_page: 8 });
         console.log('📦 API Response:', response);
         
-        const apiProducts = response.data.data;
+        // Check the actual response structure - API returns data directly
+        const apiProducts = response.data || [];
         console.log('📦 API Products:', apiProducts);
+        console.log('📦 API Products length:', apiProducts.length);
 
         // Fallback to API products only
-        const productsToUse = apiProducts.length > 0 ? apiProducts : [];
+        const productsToUse = Array.isArray(apiProducts) && apiProducts.length > 0 ? apiProducts : [];
+        console.log('📦 Products to use:', productsToUse.length);
 
         // Initial render
         renderProductsWithFilter(productsToUse);
@@ -198,9 +201,13 @@ async function initProductsSection() {
                 const filter = btn.getAttribute('data-filter');
                 
                 try {
+                    // Get current sort setting
+                    const currentSort = sortSelect ? sortSelect.value : 'popularity';
+                    console.log('🎯 Current sort:', currentSort);
+                    
                     const filterParams = filter === 'all' ? {} : { category: filter };
-                    const response = await window.api.getProducts({ ...filterParams, per_page: 8 });
-                    const filteredProducts = response.data.data;
+                    const response = await window.api.getProducts({ ...filterParams, sort: currentSort, per_page: 8 });
+                    const filteredProducts = response.data || [];
                     renderProductsWithFilter(filteredProducts);
                 } catch (error) {
                     console.error('Filter error:', error);
@@ -219,9 +226,15 @@ async function initProductsSection() {
                 const sort = sortSelect.value;
                 console.log('🎯 Sort changed to:', sort);
             
+                // Get current active filter
+                const activeFilterBtn = document.querySelector('.filter-btn.active');
+                const currentFilter = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
+                console.log('🎯 Current filter:', currentFilter);
+            
                 try {
-                    const response = await window.api.getProducts({ sort, per_page: 8 });
-                    const sortedProducts = response.data.data;
+                    const filterParams = currentFilter === 'all' ? {} : { category: currentFilter };
+                    const response = await window.api.getProducts({ ...filterParams, sort, per_page: 8 });
+                    const sortedProducts = response.data || [];
                     renderProductsWithFilter(sortedProducts);
                 } catch (error) {
                     console.error('Sort error:', error);
@@ -241,17 +254,32 @@ async function initProductsSection() {
     // Render function
     function renderProductsWithFilter(products) {
         console.log('🎨 Rendering products:', products.length);
+        
+        // Clear grid with fade out effect
+        grid.style.transition = 'opacity 0.2s ease-in-out';
+        grid.style.opacity = '0.3';
         grid.innerHTML = '';
+        
+        // Small delay to allow fade out
+        setTimeout(() => {
+            grid.style.opacity = '1';
 
-        if (products.length === 0) {
-            console.log('⚠️ No products to render');
-            grid.innerHTML = '<div class="col-span-full text-center py-8"><p class="text-gray-500">No products found.</p></div>';
-            return;
-        }
+            if (products.length === 0) {
+                console.log('⚠️ No products to render');
+                grid.innerHTML = '<div class="col-span-full text-center py-8" data-aos="fade-up"><p class="text-gray-500">No products found.</p></div>';
+                // Refresh AOS for empty state
+                if (typeof AOS !== 'undefined') {
+                    AOS.refresh();
+                }
+                return;
+            }
 
-        products.forEach(product => {
-            const col = document.createElement('div');
-            col.className = 'w-full';
+            products.forEach((product, index) => {
+                const col = document.createElement('div');
+                col.className = 'w-full';
+                col.setAttribute('data-aos', 'fade-up');
+                col.setAttribute('data-aos-delay', (index * 100).toString()); // Stagger animations
+                col.setAttribute('data-aos-duration', '600');
 
             // Handle both API and local product formats
             const productData = {
@@ -313,19 +341,25 @@ async function initProductsSection() {
                 </div>
             </div>
             `;
-            grid.appendChild(col);
-        });
-        
-        console.log('✅ Products rendered successfully. Grid now has', grid.children.length, 'products');
+                grid.appendChild(col);
+            });
+            
+            console.log('✅ Products rendered successfully. Grid now has', grid.children.length, 'products');
 
-        // Re-init icons
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-        if (typeof feather !== 'undefined') feather.replace();
+            // Re-init icons
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            if (typeof feather !== 'undefined') feather.replace();
+            
+            // Refresh AOS animations for new content
+            if (typeof AOS !== 'undefined') {
+                AOS.refresh();
+            }
 
-        // Attach event handlers
-        initQuickViewModals();
-        initAddToCartButtons();
-        initWishlistButtons();
+            // Attach event handlers
+            initQuickViewModals();
+            initAddToCartButtons();
+            initWishlistButtons();
+        }, 150); // Small delay for smooth transition
     }
 }
 
