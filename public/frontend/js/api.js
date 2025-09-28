@@ -24,6 +24,12 @@ class DavidsWoodAPI {
             'Accept': 'application/json',
         };
 
+        // Add CSRF token for all requests
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+            headers['X-CSRF-TOKEN'] = csrfToken;
+        }
+
         if (this.token) {
             headers['Authorization'] = `Bearer ${this.token}`;
         }
@@ -36,6 +42,7 @@ class DavidsWoodAPI {
         const url = `${this.baseURL}${endpoint}`;
         const config = {
             headers: this.getHeaders(),
+            credentials: 'include', // Include cookies for session management
             ...options,
         };
 
@@ -83,13 +90,33 @@ class DavidsWoodAPI {
 
     async logout() {
         try {
-            await this.request('/auth/logout', {
+            // Use the web route for logout since it's defined there
+            const response = await fetch('/logout', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                credentials: 'include' // Include cookies for session management
             });
+            
+            if (!response.ok) {
+                throw new Error('Logout request failed');
+            }
+            
+            return await response.json();
         } catch (error) {
             console.error('Logout error:', error);
+            throw error;
         } finally {
             this.removeToken();
+            // Clear cart and wishlist from localStorage
+            localStorage.removeItem('cart_items');
+            localStorage.removeItem('wishlist_items');
+            // Clear cart state in UI
+            if (typeof clearCartState === 'function') {
+                clearCartState();
+            }
         }
     }
 
@@ -113,6 +140,10 @@ class DavidsWoodAPI {
 
     async getProduct(slug) {
         return await this.request(`/products/${slug}`);
+    }
+
+    async getProductById(id) {
+        return await this.request(`/product/${id}`);
     }
 
     // Cart methods
@@ -167,7 +198,14 @@ class DavidsWoodAPI {
     }
 
     async checkWishlist(productId) {
-        return await this.request(`/wishlist/check?product_id=${productId}`);
+        return await this.request(`/wishlist/check/${productId}`);
+    }
+
+    async migrateWishlist(guestWishlist) {
+        return await this.request('/wishlist/migrate', {
+            method: 'POST',
+            body: JSON.stringify({ guest_wishlist: guestWishlist }),
+        });
     }
 
     // Order methods
@@ -227,6 +265,10 @@ class AuthManager {
                 this.isAuthenticated = true;
                 this.user = response.data.user;
                 this.updateUI();
+                
+                // Migrate guest wishlist to user account
+                this.migrateGuestWishlist();
+                
                 return { success: true, message: 'Login successful' };
             }
         } catch (error) {
@@ -241,6 +283,10 @@ class AuthManager {
                 this.isAuthenticated = true;
                 this.user = response.data.user;
                 this.updateUI();
+                
+                // Migrate guest wishlist to user account
+                this.migrateGuestWishlist();
+                
                 return { success: true, message: 'Registration successful' };
             }
         } catch (error) {
@@ -252,6 +298,18 @@ class AuthManager {
         await window.api.logout();
         this.isAuthenticated = false;
         this.user = null;
+        
+        // Clear cart state on logout
+        if (typeof clearCartState === 'function') {
+            clearCartState();
+        }
+        
+        // Clear localStorage cart items
+        localStorage.removeItem('cart_items');
+        
+        // Clear guest wishlist from localStorage
+        localStorage.removeItem('wishlist_items');
+        
         this.updateUI();
     }
 
@@ -311,6 +369,22 @@ class AuthManager {
         // Re-initialize icons
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
+        }
+    }
+
+    /**
+     * Migrate guest wishlist to user account
+     * Note: With the new database structure, wishlist migration is handled automatically
+     * by the backend when users authenticate. No frontend action needed.
+     */
+    async migrateGuestWishlist() {
+        try {
+            // With the new session-based structure, wishlist migration is handled
+            // automatically by the backend. Just clear any localStorage wishlist items
+            localStorage.removeItem('wishlist_items');
+            console.log('Guest wishlist migration handled by backend');
+        } catch (error) {
+            console.error('Error in wishlist migration:', error);
         }
     }
 }

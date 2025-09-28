@@ -34,6 +34,19 @@ return [
 
     'lifetime' => (int) env('SESSION_LIFETIME', 120),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Session Regeneration
+    |--------------------------------------------------------------------------
+    |
+    | Set to false to prevent session ID regeneration on every request
+    | This helps maintain session consistency for API calls
+    |
+    */
+
+    'regenerate_on_login' => false,
+    'regenerate_on_request' => false,
+
     'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
 
     /*

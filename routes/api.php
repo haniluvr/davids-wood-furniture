@@ -3,6 +3,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -58,6 +59,35 @@ Route::get('/products', function (Request $request) {
         return response()->json([
             'success' => false,
             'message' => 'Error fetching products',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// Get single product by ID
+Route::get('/product/{id}', function ($id) {
+    try {
+        $product = \App\Models\Product::where('id', $id)
+            ->where('is_active', true)
+            ->with(['category'])
+            ->first();
+
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $product
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching product',
             'error' => $e->getMessage()
         ], 500);
     }
@@ -123,11 +153,65 @@ Route::get('/test-cart', function() {
     ]);
 });
 
-// Cart GET route - use controller
-Route::get('/cart', [CartController::class, 'index']);
+// Cart routes moved to web.php for proper authentication
 
-// Cart API routes
-Route::post('/cart/add', [CartController::class, 'addToCart']);
-Route::put('/cart/update', [CartController::class, 'updateCartItem']);
-Route::delete('/cart/remove', [CartController::class, 'removeFromCart']);
-Route::delete('/cart/clear', [CartController::class, 'clearCart']);
+// Cart migration endpoint for testing
+Route::post('/cart/migrate', function(Request $request) {
+    try {
+        $userId = auth()->id();
+        $sessionId = session()->getId();
+        
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User must be authenticated to migrate cart'
+            ], 401);
+        }
+        
+        $cartController = new \App\Http\Controllers\CartController();
+        $cartController->migrateCartToUser($userId, $sessionId);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Cart migration completed'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Cart migration failed: ' . $e->getMessage()
+        ], 500);
+    }
+})->middleware('auth');
+
+// Wishlist routes moved to web.php for proper authentication
+
+// Wishlist migration endpoint
+Route::post('/wishlist/migrate', [WishlistController::class, 'migrate'])->middleware('auth');
+
+// Cleanup old guest carts (for testing/debugging)
+Route::post('/cart/cleanup', function(Request $request) {
+    try {
+        // Clear all guest carts (carts with user_id = null)
+        $deletedCarts = \App\Models\Cart::whereNull('user_id')->delete();
+        
+        // Clear all cart items from deleted carts
+        $deletedItems = \App\Models\CartItem::whereNotExists(function($query) {
+            $query->select(\DB::raw(1))
+                  ->from('carts')
+                  ->whereRaw('carts.id = cart_items.cart_id');
+        })->delete();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Cleanup completed',
+            'deleted_carts' => $deletedCarts,
+            'deleted_items' => $deletedItems
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Cleanup failed',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});

@@ -66,7 +66,7 @@
         <script src="{{ asset('frontend/js/config.js') }}"></script>
         <script src="{{ asset('frontend/js/api.js') }}"></script>
         <script src="{{ asset('frontend/js/auth.js') }}"></script>
-        <script src="{{ asset('frontend/js/app.js') }}"></script>
+        <script src="{{ asset('frontend/js/app.js') }}?v={{ time() }}"></script>
         <script>
             // DEBUG: Confirm app.js is loading
             console.log('🔧 Layout loaded - app.js should be loading now');
@@ -1090,6 +1090,11 @@
             @if(session('google_signin_success'))
                 window.addEventListener('load', function() {
                     setTimeout(function() {
+                        // Migrate guest wishlist to user account after Google OAuth sign-in
+                        if (typeof migrateGuestWishlist === 'function') {
+                            migrateGuestWishlist();
+                        }
+                        
                         // Show custom alert modal
                         const modal = document.getElementById('custom-alert-modal');
                         const message = document.getElementById('alert-modal-message');

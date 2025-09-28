@@ -12,7 +12,29 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Create a custom middleware group for API routes that need sessions but not CSRF
+        $middleware->group('api.session', [
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        ]);
+        
+        // Exclude CSRF from specific routes
+        $middleware->validateCsrfTokens(except: [
+            'api/cart/*',
+            'api/wishlist/*',
+            'api/products/*'
+        ]);
+        
+        // Add CORS and session middleware to API routes
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+        ]);
+        
+        // Add CORS middleware to web routes for cart/wishlist API endpoints
+        $middleware->web(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

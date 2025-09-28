@@ -1,10 +1,10 @@
 <!-- components/modal-quick-view.html -->
  <!-- make preview a carousel-->
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="modal-quick-view">
-  <div class="bg-white rounded-2xl shadow-lg max-w-4xl w-full mx-4" style="background-color: #f8f9fa;">
+<div class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="modalQuickView">
+  <div class="modal-content bg-white rounded-2xl shadow-lg max-w-4xl w-full mx-4" style="background-color: #f8f9fa;">
     <div class="flex items-center justify-between p-6">
       <h5 class="text-xl font-semibold" id="quickViewLabel">Product Name</h5>
-      <button type="button" class="text-gray-400 hover:text-gray-600" id="close-quickview-modal">
+      <button type="button" class="text-gray-400 hover:text-gray-600" id="close-modalQuickView-modal">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
@@ -52,7 +52,7 @@
             <button class="bg-black text-white px-6 py-3 rounded-lg flex-1 flex items-center justify-center" id="modalAddToCart" data-product-id="" style="cursor: pointer !important;">
               <i data-lucide="shopping-cart" class="mr-1"></i> Add to cart
             </button>
-            <button class="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg flex-1" onclick="if(window.hidemodalquickview){window.hidemodalquickview()}">Close</button>
+            <button class="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg flex-1" onclick="if(window.hidemodalQuickView){window.hidemodalQuickView()}">Close</button>
           </div>
         </div>
       </div>

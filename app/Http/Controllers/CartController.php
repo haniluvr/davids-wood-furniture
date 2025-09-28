@@ -2,63 +2,75 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\GuestSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
-    private function getCart($userId = null, $sessionId = null)
+    /**
+     * Get or create guest session
+     */
+    private function getOrCreateGuestSession(string $sessionId): GuestSession
     {
-        try {
-            // Try to find existing cart based on user or session
-            $cart = Cart::where('user_id', $userId)
-                ->orWhere('session_id', $sessionId)
-                ->where('expires_at', '>', now())
-                ->first();
-
-            // If no cart found, create one
-            if (!$cart) {
-                $cart = Cart::create([
-                    'user_id' => $userId,
-                    'session_id' => $sessionId,
-                    'expires_at' => now()->addDays(7) // Cart expires in 7 days
-                ]);
-            }
-
-            return $cart;
-        } catch (\Exception $e) {
-            // Create a fallback cart even if something goes wrong
-            return Cart::create([
-                'user_id' => $userId,
-                'session_id' => $sessionId ?? 'temp',
-                'expires_at' => now()->addDays(7)
-            ]);
-        }
+        return GuestSession::findOrCreateSession($sessionId);
     }
 
+    /**
+     * Get cart items for current user or guest
+     */
     public function index(Request $request)
     {
         try {
-            $userId = Auth::id();
+            // Force session start
+            if (!session()->isStarted()) {
+                session()->start();
+            }
+            
             $sessionId = session()->getId();
             
-            $cart = $this->getCart($userId, $sessionId);
             
-            $cart->load(['cartItems.product']);
+            // Use Laravel's built-in authentication
+            $userId = null;
+            if (\Auth::check()) {
+                $userId = \Auth::id();
+            }
             
-            $subtotal = $cart->cartItems->sum('total_price');
+            if ($userId) {
+                // User is logged in - get their cart items
+                $cartItems = CartItem::forUser($userId)
+                    ->with('product')
+                    ->get();
+            } else {
+                // Guest user - get session cart items
+                $guestSession = $this->getOrCreateGuestSession($sessionId);
+                $cartItems = CartItem::forGuest($sessionId)
+                    ->with('product')
+                    ->get();
+                
+            }
+            
+            $subtotal = $cartItems->sum('total_price');
+            $totalItems = $cartItems->sum('quantity');
             
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'cart' => $cart,
-                    'cart_items' => $cart->cartItems,
+                    'cart_items' => $cartItems,
                     'subtotal' => $subtotal,
-                    'total_items' => $cart->cartItems->sum('quantity')
+                    'total_items' => $totalItems
+                ],
+                'session_id' => $sessionId,
+                'debug' => [
+                    'session_id' => $sessionId,
+                    'user_id' => $userId,
+                    'items_count' => $cartItems->count(),
+                    'request_cookies' => $request->cookies->all(),
+                    'session_cookie' => $request->cookie('laravel_session')
                 ]
             ]);
         } catch (\Exception $e) {
@@ -69,6 +81,9 @@ class CartController extends Controller
         }
     }
 
+    /**
+     * Add item to cart
+     */
     public function addToCart(Request $request)
     {
         try {
@@ -77,52 +92,101 @@ class CartController extends Controller
                 'quantity' => 'integer|min:1'
             ]);
 
-            $userId = Auth::id();
+            // Force session start
+            if (!session()->isStarted()) {
+                session()->start();
+            }
+            
             $sessionId = session()->getId();
             $productId = $request->product_id;
             $quantity = $request->quantity ?? 1;
+            
+            
+            // Use Laravel's built-in authentication
+            $userId = null;
+            if (\Auth::check()) {
+                $userId = \Auth::id();
+            }
 
             // Get the product
             $product = Product::findOrFail($productId);
             
-            // Get or create cart
-            $cart = $this->getCart($userId, $sessionId);
-            
-            // Check if item already exists in cart
-            $existingItem = CartItem::where('cart_id', $cart->id)
-                ->where('product_id', $productId)
-                ->first();
+            if ($userId) {
+                // User is logged in
+                $existingItem = CartItem::forUser($userId)
+                    ->where('product_id', $productId)
+                    ->first();
 
-            if ($existingItem) {
-                // Update existing quantity
-                $existingItem->quantity += $quantity;
-                $existingItem->total_price = $existingItem->quantity * $existingItem->unit_price;
-                $existingItem->save();
+                if ($existingItem) {
+                    // Update existing quantity
+                    $existingItem->quantity += $quantity;
+                    $existingItem->total_price = $existingItem->quantity * $existingItem->unit_price;
+                    $existingItem->save();
+                } else {
+                    // Create new item
+                    CartItem::create([
+                        'user_id' => $userId,
+                        'product_id' => $productId,
+                        'quantity' => $quantity,
+                        'unit_price' => $product->price,
+                        'total_price' => $product->price * $quantity,
+                        'product_name' => $product->name,
+                        'product_sku' => $product->sku,
+                        'product_data' => [
+                            'image' => is_array($product->images) && !empty($product->images) ? $product->images[0] : null,
+                            'slug' => $product->slug,
+                            'description' => $product->short_description
+                        ]
+                    ]);
+                }
             } else {
-                // Add new item
-                CartItem::create([
-                    'cart_id' => $cart->id,
-                    'product_id' => $productId,
-                    'quantity' => $quantity,
-                    'unit_price' => $product->price,
-                    'total_price' => $product->price * $quantity,
-                    'product_name' => $product->name,
-                    'product_sku' => $product->sku,
-                    'product_data' => [
-                        'image' => $product->images[0] ?? null,
-                        'slug' => $product->slug,
-                        'description' => $product->short_description
-                    ]
-                ]);
-            }
+                // Guest user
+                $this->getOrCreateGuestSession($sessionId);
+                
+                $existingItem = CartItem::forGuest($sessionId)
+                    ->where('product_id', $productId)
+                    ->first();
 
-            // Update cart expiry
-            $cart->expires_at = now()->addDays(7);
-            $cart->save();
+                if ($existingItem) {
+                    // Update existing quantity
+                    $existingItem->quantity += $quantity;
+                    $existingItem->total_price = $existingItem->quantity * $existingItem->unit_price;
+                    $existingItem->save();
+                } else {
+                    // Create new item
+                    CartItem::create([
+                        'session_id' => $sessionId,
+                        'product_id' => $productId,
+                        'quantity' => $quantity,
+                        'unit_price' => $product->price,
+                        'total_price' => $product->price * $quantity,
+                        'product_name' => $product->name,
+                        'product_sku' => $product->sku,
+                        'product_data' => [
+                            'image' => is_array($product->images) && !empty($product->images) ? $product->images[0] : null,
+                            'slug' => $product->slug,
+                            'description' => $product->short_description
+                        ]
+                    ]);
+                }
+                
+            }
+            
+            // Force session save to ensure cookie is set
+            session()->save();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Item added to cart successfully'
+                'message' => 'Item added to cart successfully',
+                'session_id' => $sessionId,
+                'debug' => [
+                    'session_id' => $sessionId,
+                    'user_id' => $userId,
+                    'product_id' => $productId,
+                    'quantity' => $quantity,
+                    'request_cookies' => $request->cookies->all(),
+                    'session_cookie' => $request->cookie('laravel_session')
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -132,6 +196,9 @@ class CartController extends Controller
         }
     }
 
+    /**
+     * Update cart item quantity
+     */
     public function updateCartItem(Request $request)
     {
         $request->validate([
@@ -142,11 +209,15 @@ class CartController extends Controller
         $userId = Auth::id();
         $sessionId = session()->getId();
         
-        $cart = $this->getCart($userId, $sessionId);
-        
-        $cartItem = CartItem::where('cart_id', $cart->id)
+        if ($userId) {
+            $cartItem = CartItem::forUser($userId)
+                ->where('product_id', $request->product_id)
+                ->first();
+        } else {
+            $cartItem = CartItem::forGuest($sessionId)
             ->where('product_id', $request->product_id)
             ->first();
+        }
 
         if ($cartItem) {
             $cartItem->quantity = $request->quantity;
@@ -160,6 +231,9 @@ class CartController extends Controller
         ]);
     }
 
+    /**
+     * Remove item from cart
+     */
     public function removeFromCart(Request $request)
     {
         $request->validate([
@@ -169,11 +243,15 @@ class CartController extends Controller
         $userId = Auth::id();
         $sessionId = session()->getId();
         
-        $cart = $this->getCart($userId, $sessionId);
-        
-        CartItem::where('cart_id', $cart->id)
+        if ($userId) {
+            CartItem::forUser($userId)
+                ->where('product_id', $request->product_id)
+                ->delete();
+        } else {
+            CartItem::forGuest($sessionId)
             ->where('product_id', $request->product_id)
             ->delete();
+        }
 
         return response()->json([
             'success' => true,
@@ -181,18 +259,85 @@ class CartController extends Controller
         ]);
     }
 
+    /**
+     * Clear cart
+     */
     public function clearCart(Request $request)
     {
         $userId = Auth::id();
         $sessionId = session()->getId();
         
-        $cart = $this->getCart($userId, $sessionId);
-        
-        CartItem::where('cart_id', $cart->id)->delete();
+        if ($userId) {
+            CartItem::forUser($userId)->delete();
+        } else {
+            CartItem::forGuest($sessionId)->delete();
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Cart cleared successfully'
         ]);
+    }
+
+    /**
+     * Migrate guest cart items to user account when they log in
+     */
+    public function migrateCartToUser($userId, $sessionId)
+    {
+        try {
+            DB::transaction(function () use ($userId, $sessionId) {
+                // Get all guest cart items
+                $guestCartItems = CartItem::forGuest($sessionId)->get();
+                
+                foreach ($guestCartItems as $guestItem) {
+                    // Check if user already has this product in their cart
+                    $existingUserItem = CartItem::forUser($userId)
+                        ->where('product_id', $guestItem->product_id)
+                        ->first();
+
+                    if ($existingUserItem) {
+                        // Merge quantities
+                        $existingUserItem->quantity += $guestItem->quantity;
+                        $existingUserItem->total_price = $existingUserItem->quantity * $existingUserItem->unit_price;
+                        $existingUserItem->save();
+                    } else {
+                        // Transfer item to user
+                        $guestItem->update([
+                            'user_id' => $userId,
+                            'session_id' => null,
+                        ]);
+                    }
+                }
+
+                // Delete any remaining guest items (duplicates that were merged)
+                CartItem::forGuest($sessionId)->delete();
+                
+                // Clean up guest session
+                GuestSession::where('session_id', $sessionId)->delete();
+            });
+
+
+        } catch (\Exception $e) {
+            \Log::error('Cart migration failed', [
+                'user_id' => $userId,
+                'session_id' => $sessionId,
+                'error' => $e->getMessage()
+        ]);
+    }
+}
+
+    /**
+     * Clear user cart (called when user logs out)
+     */
+    public function clearUserCart($userId)
+    {
+        try {
+            CartItem::forUser($userId)->delete();
+        } catch (\Exception $e) {
+            \Log::error('Failed to clear user cart', [
+                'user_id' => $userId,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

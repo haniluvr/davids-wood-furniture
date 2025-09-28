@@ -19,6 +19,27 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
+// Cart routes (using web middleware for proper session handling)
+Route::middleware(['web'])->group(function () {
+    Route::get('/api/cart', [App\Http\Controllers\CartController::class, 'index']);
+    Route::post('/api/cart/add', [App\Http\Controllers\CartController::class, 'addToCart']);
+    Route::put('/api/cart/update', [App\Http\Controllers\CartController::class, 'updateCartItem']);
+    Route::delete('/api/cart/remove', [App\Http\Controllers\CartController::class, 'removeFromCart']);
+    Route::delete('/api/cart/clear', [App\Http\Controllers\CartController::class, 'clearCart']);
+});
+
+// Wishlist routes (using web middleware for proper session handling)
+Route::middleware(['web'])->group(function () {
+    Route::get('/api/wishlist', [App\Http\Controllers\WishlistController::class, 'index']);
+    Route::post('/api/wishlist/add', [App\Http\Controllers\WishlistController::class, 'add']);
+    Route::delete('/api/wishlist/remove', [App\Http\Controllers\WishlistController::class, 'remove']);
+    Route::get('/api/wishlist/check/{productId}', [App\Http\Controllers\WishlistController::class, 'check']);
+});
+
+
+
+
+
 // API Integration routes for additional fetch
 Route::get('/api/weather', [ApiController::class, 'weather'])->name('api.weather');
 

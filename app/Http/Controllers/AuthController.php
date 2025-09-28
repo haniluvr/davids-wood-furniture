@@ -10,6 +10,8 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Laravel\Socialite\Facades\Socialite;
 use GuzzleHttp\Client;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\WishlistController;
 
 class AuthController extends Controller
 {
@@ -80,10 +82,27 @@ class AuthController extends Controller
 
         Auth::login($user);
 
+        // Migrate guest cart to user account
+        $cartController = new CartController();
+        $cartController->migrateCartToUser($user->id, session()->getId());
+        
+        // Migrate guest wishlist to user account
+        $wishlistController = new WishlistController();
+        $wishlistController->migrateWishlistToUser($user->id, session()->getId());
+
+        // Generate a remember token for API authentication
+        $user = Auth::user();
+        $token = \Illuminate\Support\Str::random(60);
+        $user->remember_token = $token;
+        $user->save();
+
         return response()->json([
             'success' => true,
             'message' => 'Registration successful',
-            'user' => Auth::user(),
+            'user' => $user,
+            'data' => [
+                'token' => $token
+            ],
             'redirect' => route('home')
         ]);
     }
@@ -103,16 +122,37 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Get session ID BEFORE authentication (for migration)
+        $guestSessionId = session()->getId();
+        
         // Try to find user by username or email for backward compatibility
         $user = User::where('username', $request->username)
                    ->orWhere('email', $request->username)
                    ->first();
 
         if ($user && Auth::attempt(['id' => $user->id, 'password' => $request->password])) {
+            
+            // Migrate guest cart to user account
+            $cartController = new CartController();
+            $cartController->migrateCartToUser($user->id, $guestSessionId);
+            
+            // Migrate guest wishlist to user account
+            $wishlistController = new WishlistController();
+            $wishlistController->migrateWishlistToUser($user->id, $guestSessionId);
+
+            // Generate a remember token for API authentication
+            $user = Auth::user();
+            $token = \Illuminate\Support\Str::random(60);
+            $user->remember_token = $token;
+            $user->save();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',
-                'user' => Auth::user(),
+                'user' => $user,
+                'data' => [
+                    'token' => $token
+                ],
                 'redirect' => route('home')
             ]);
         }
@@ -125,17 +165,32 @@ class AuthController extends Controller
 
     public function logout(): JsonResponse
     {
-        Auth::logout();
-        
-        // Clear session to ensure full logout
-        session()->invalidate();
-        session()->regenerateToken();
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Logged out successfully',
-            'redirect' => route('home')
-        ]);
+        try {
+            // Logout the user
+            Auth::logout();
+            
+            // Clear session data
+            session()->flush();
+            
+            // Regenerate session ID for security
+            session()->regenerate();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Logged out successfully',
+                'redirect' => route('home')
+            ]);
+        } catch (\Exception $e) {
+            // If logout fails, still try to clear session
+            session()->flush();
+            session()->regenerate();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Logged out successfully',
+                'redirect' => route('home')
+            ]);
+        }
     }
 
     // Google OAuth Methods
@@ -151,7 +206,6 @@ class AuthController extends Controller
     public function handleGoogleCallback()
     {
         try {
-            \Log::info('Google OAuth callback reached with state: ' . request()->input('state'));
             
             // Configure the Socialite driver to handle SSL issues in development
             $googleDriver = Socialite::driver('google');
@@ -169,20 +223,15 @@ class AuthController extends Controller
             
             $googleUser = $googleDriver->user();
             
-            // Debug: Log the Google user data
-            \Log::info('Google user data:', [
-                'id' => $googleUser->id,
-                'name' => $googleUser->name,
-                'email' => $googleUser->email,
-                'avatar' => $googleUser->avatar
-            ]);
             
             $existingUser = User::where('google_id', $googleUser->id)
                              ->orWhere('email', $googleUser->email)
                              ->first();
 
             if ($existingUser) {
-                \Log::info('Found existing user:', ['user_id' => $existingUser->id]);
+                
+                // Get session ID BEFORE authentication (for migration)
+                $guestSessionId = session()->getId();
                 
                 // Update existing user with Google ID if not already set
                 if (!$existingUser->google_id) {
@@ -195,19 +244,27 @@ class AuthController extends Controller
                     // Generate username if user doesn't have one
                     if (empty($existingUser->username)) {
                         $username = $this->generateUsername($googleUser->name);
-                        \Log::info('Generated username for existing user:', ['username' => $username]);
                         $updateData['username'] = $username;
                     }
                     
                     $existingUser->update($updateData);
                 }
                 Auth::login($existingUser);
+
+                // Migrate guest cart to user account
+                $cartController = new CartController();
+                $cartController->migrateCartToUser($existingUser->id, $guestSessionId);
+                
+                // Migrate guest wishlist to user account
+                $wishlistController = new WishlistController();
+                $wishlistController->migrateWishlistToUser($existingUser->id, $guestSessionId);
             } else {
-                \Log::info('Creating new user from Google data');
+                
+                // Get session ID BEFORE authentication (for migration)
+                $guestSessionId = session()->getId();
                 
                 // Generate username for Google user
                 $username = $this->generateUsername($googleUser->name);
-                \Log::info('Generated username:', ['username' => $username]);
                 
                 // Split Google name into first and last name
                 $nameParts = explode(' ', trim($googleUser->name));
@@ -225,8 +282,15 @@ class AuthController extends Controller
                     'avatar' => $googleUser->avatar,
                     'provider' => 'google',
                 ]);
-                \Log::info('Created new user:', ['user_id' => $newUser->id, 'username' => $username]);
                 Auth::login($newUser);
+
+                // Migrate guest cart to user account
+                $cartController = new CartController();
+                $cartController->migrateCartToUser($newUser->id, $guestSessionId);
+                
+                // Migrate guest wishlist to user account
+                $wishlistController = new WishlistController();
+                $wishlistController->migrateWishlistToUser($newUser->id, $guestSessionId);
             }
 
             return redirect()->route('home')->with('google_signin_success', 'Welcome! Please remember to add a password in your account settings for added security.');
@@ -235,4 +299,5 @@ class AuthController extends Controller
             return redirect()->route('home')->withErrors(['error' => 'Google authentication failed: ' . $e->getMessage()]);
         }
     }
+
 }

@@ -232,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const response = await fetch('/login', {
                     method: 'POST',
+                    credentials: 'include', // Include cookies for session management
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -279,6 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const response = await fetch('/register', {
                     method: 'POST',
+                    credentials: 'include', // Include cookies for session management
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -326,20 +328,46 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const response = await fetch('/logout', {
                     method: 'POST',
+                    credentials: 'include',
                     headers: {
+                        'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
                 });
                 
-                const result = await response.json();
-                
-                if (result.success) {
-                    location.reload();
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Clear UI state
+                        if (typeof clearGuestWishlist === 'function') {
+                            clearGuestWishlist();
+                        }
+                        
+                        if (typeof clearCartState === 'function') {
+                            clearCartState();
+                        }
+                        
+                        // Clear localStorage
+                        localStorage.removeItem('cart_items');
+                        localStorage.removeItem('wishlist_items');
+                        
+                        // Reload page
+                        location.reload();
+                    } else {
+                        console.error('Logout failed:', result.message);
+                        // Still try to clear state and reload
+                        location.reload();
+                    }
                 } else {
-                    alert('Logout failed');
+                    console.error('Logout request failed with status:', response.status);
+                    // Still try to clear state and reload
+                    location.reload();
                 }
             } catch (error) {
-                alert('An error occurred during logout');
+                console.error('Logout error:', error);
+                // Still try to clear state and reload
+                location.reload();
             }
         }
     });
@@ -348,7 +376,9 @@ document.addEventListener('DOMContentLoaded', function() {
 // Weather API Integration Example
 async function fetchWeatherData(city = 'London') {
     try {
-        const response = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
+        const response = await fetch(`/api/weather?city=${encodeURIComponent(city)}`, {
+            credentials: 'include' // Include cookies for session management
+        });
         const data = await response.json();
         
         if (data.success) {

@@ -3,16 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\Wishlist;
+use App\Models\WishlistItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AccountController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
+    // Middleware will be handled in routes
 
     public function index()
     {
@@ -23,7 +20,7 @@ class AccountController extends Controller
             ->limit(5)
             ->get();
 
-        $wishlistItems = Wishlist::where('user_id', $user->id)
+        $wishlistItems = WishlistItem::where('user_id', $user->id)
             ->with('product')
             ->limit(6)
             ->get();
@@ -39,22 +36,22 @@ class AccountController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('account.orders', compact('orders'));
+        return view('account', compact('orders'));
     }
 
     public function wishlist()
     {
         $user = Auth::user();
-        $wishlistItems = Wishlist::where('user_id', $user->id)
+        $wishlistItems = WishlistItem::where('user_id', $user->id)
             ->with('product')
             ->paginate(12);
 
-        return view('account.wishlist', compact('wishlistItems'));
+        return view('account', compact('wishlistItems'));
     }
 
     public function profile()
     {
         $user = Auth::user();
-        return view('account.profile', compact('user'));
+        return view('account', compact('user'));
     }
 }
