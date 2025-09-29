@@ -92,9 +92,10 @@
                             @endauth
                         </div>
                     </li>
-                    <li>
+                    <li class="relative">
                         <button class="btn py-3 px-2" id="openOffcanvas" type="button">
                             <i class="lucide-small" data-lucide="heart"></i>
+                            <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden" id="wishlist-count"></span>
                         </button>
                     </li>
                     <li class="relative">

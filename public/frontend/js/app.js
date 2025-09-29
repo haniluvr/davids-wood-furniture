@@ -281,6 +281,12 @@ async function initProductsSection() {
                 slug: product.slug
             };
 
+            // Validate product data before rendering
+            if (!productData.id) {
+                console.error('Product missing ID, skipping render:', product);
+                return;
+            }
+
             col.innerHTML = `
                 <div class="card product-card flex flex-col h-full rounded-2xl border bg-white">
                     <div class="relative">
@@ -292,10 +298,10 @@ async function initProductsSection() {
                             </div>
                         </div>
                         <div class="absolute top-4 right-4">
-                                <button class="wishlist-btn" data-product-id="${productData.id}" onclick="event.stopPropagation();">
-                                    <i id="heart-icon-${productData.id}" data-lucide="heart" class="heart-toggle-icon"></i>
-                                </button>
-                            </div>
+                            <button class="wishlist-btn" data-product-id="${productData.id || ''}" onclick="event.stopPropagation();">
+                                <i id="heart-icon-${productData.id || ''}" data-lucide="heart" class="heart-toggle-icon"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="p-4 flex flex-col flex-1">
@@ -515,7 +521,10 @@ async function handleAddToCart(productId, quantity = 1, clickedElement = null) {
 // ── Set Wishlist Button Visual State ──
 async function setWishlistButtonState(button) {
     const productId = button.getAttribute('data-product-id');
-    if (!productId) return;
+    if (!productId) {
+        console.warn('setWishlistButtonState: No product ID found on button', button);
+        return;
+    }
     
     let isInWishlist = false;
     
@@ -536,328 +545,266 @@ async function setWishlistButtonState(button) {
     // Set initial visual state based on wishlist status using ID selector
     const $icon = $(`#heart-icon-${productId}`);
     
-    console.log('Setting initial state for product:', productId, 'isInWishlist:', isInWishlist);
-    console.log('Icon element found:', $icon.length > 0);
-    
     if ($icon.length) {
         if (isInWishlist) {
             // Activate: filled
             $icon.addClass('active');
             $icon.attr('fill', 'currentColor');
             $icon.attr('stroke', 'none');
-            console.log('Set heart to ACTIVE state');
         } else {
             // Deactivate: stroke only
             $icon.removeClass('active');
             $icon.attr('fill', 'none');
             $icon.attr('stroke', 'currentColor');
-            console.log('Set heart to INACTIVE state');
         }
         
         // Re-initialize lucide icons
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-        
-        console.log('Final heart state. Active:', $icon.hasClass('active'));
     } else {
         console.warn('Icon element not found for product:', productId);
-            }
+    }
 }
 
 // ── Initialize Wishlist Buttons ──
 function initWishlistButtons() {
+    // Remove existing event listeners to prevent duplicates
+    document.querySelectorAll('.wishlist-btn').forEach(btn => {
+        // Clone the button to remove all event listeners
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
+
+    // Set initial state for all buttons
     const buttons = document.querySelectorAll('.wishlist-btn');
-    buttons.forEach(btn => {
-        // Skip if button already has event listener
-        if (btn.hasAttribute('data-wishlist-initialized')) {
-            return;
+    
+    // Batch update all wishlist button states simultaneously
+    if (buttons.length > 0) {
+        updateAllWishlistButtonStates(buttons);
+    }
+
+    // Add click listeners directly to each button
+    buttons.forEach((btn, index) => {
+        const productId = btn.getAttribute('data-product-id');
+        if (productId) {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const productId = parseInt(btn.getAttribute('data-product-id'));
+                if (!productId) {
+                    console.error('Invalid product ID:', btn.getAttribute('data-product-id'));
+                    return;
+                }
+
+                try {
+                    // Check if API is available
+                    if (!window.api) {
+                        console.error('window.api is not available!');
+                        showNotification('API not available', 'error');
+                        return;
+                    }
+
+                    // Toggle via API
+                    const response = await window.api.toggleWishlist(productId);
+
+                    // Update button state
+                    updateWishlistButtonState(productId);
+
+                    // Update offcanvas if open
+                    const offcanvas = document.getElementById('offcanvas-wishlist');
+                    if (offcanvas && getComputedStyle(offcanvas).visibility !== 'hidden') {
+                        await updateWishlistOffcanvas();
+                    }
+
+                    // Update wishlist count badge
+                    await updateWishlistCount();
+
+                } catch (error) {
+                    console.error('Wishlist toggle error:', error);
+                    showNotification('Failed to update wishlist', 'error');
+                }
+            });
         }
-        
-        // Mark button as initialized
-        btn.setAttribute('data-wishlist-initialized', 'true');
-        
-        // Icon is already in HTML template, no need to add it here
-        
-        // Set initial visual state based on current wishlist status
-        console.log('Setting initial state for button:', btn);
-        setWishlistButtonState(btn);
-        
-        // Don't re-initialize lucide icons here - let the main initialization handle it
-        
-        btn.addEventListener('click', async function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            const productId = parseInt(this.getAttribute('data-product-id'));
-            
-            console.log('Wishlist button clicked for product:', productId);
-            
-            // Additional safety check
-            if (!productId || isNaN(productId)) {
-                console.error('Invalid product ID:', this.getAttribute('data-product-id'));
-                return;
-            }
-
-            try {
-                let inWishlist = false;
-                
-                // Debug authentication status
-                console.log('Auth status:', {
-                    authManager: !!window.authManager,
-                    isAuthenticated: window.authManager?.isAuthenticated,
-                    hasToken: !!window.api?.token
-                });
-                
-                if (window.authManager && window.authManager.isAuthenticated) {
-                    // Authenticated user - check server
-                    console.log('Checking server wishlist for product:', productId);
-                    try {
-                const checkResponse = await window.api.checkWishlist(productId);
-                        inWishlist = checkResponse.data.in_wishlist;
-                    } catch (error) {
-                        console.warn('Server wishlist check failed, falling back to guest mode:', error);
-                        inWishlist = isInGuestWishlist(productId);
-                    }
-                } else {
-                    // Guest user - check local storage
-                    console.log('Checking guest wishlist for product:', productId);
-                    inWishlist = isInGuestWishlist(productId);
-                }
-
-                console.log('Current inWishlist status:', inWishlist);
-                console.log('Will perform action:', inWishlist ? 'REMOVE' : 'ADD');
-
-                if (inWishlist) {
-                    console.log('Removing from wishlist...');
-                    if (window.authManager && window.authManager.isAuthenticated) {
-                        try {
-                    await window.api.removeFromWishlist(productId);
-                        } catch (error) {
-                            console.warn('Server remove failed, using guest mode:', error);
-                            removeFromGuestWishlist(productId);
-                        }
-                    } else {
-                        console.log('Removing from guest wishlist...');
-                        removeFromGuestWishlist(productId);
-                    }
-                    showNotification('Removed from wishlist', 'info');
-                } else {
-                    console.log('Adding to wishlist...');
-                    if (window.authManager && window.authManager.isAuthenticated) {
-                        try {
-                    await window.api.addToWishlist(productId);
-                        } catch (error) {
-                            console.warn('Server add failed, using guest mode:', error);
-                            addToGuestWishlist(productId);
-                        }
-                    } else {
-                        console.log('Adding to guest wishlist...');
-                        addToGuestWishlist(productId);
-                    }
-                    showNotification('Added to wishlist!', 'success');
-                }
-
-                // Heart toggle logic using ID selector
-                const currentProductId = $(this).attr('data-product-id');
-                const $icon = $(`#heart-icon-${currentProductId}`);
-                
-                if ($icon.length) {
-                    const isActive = $icon.hasClass('active');
-                    
-                    if (isActive) {
-                        // Deactivate: stroke only
-                        $icon.removeClass('active');
-                        $icon.attr('fill', 'none');
-                        $icon.attr('stroke', 'currentColor');
-                        console.log('Heart deactivated - stroke only');
-                } else {
-                        // Activate: filled
-                        $icon.addClass('active');
-                        $icon.attr('fill', 'currentColor');
-                        $icon.attr('stroke', 'none');
-                        console.log('Heart activated - filled');
-                    }
-                    
-                    // Re-initialize lucide icons
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                    }
-                }
-                
-                // Update wishlist offcanvas if it's open
-                updateWishlistOffcanvas();
-            } catch (error) {
-                console.error('Wishlist error:', error);
-                showNotification(error.message, 'error');
-            }
-        });
     });
 }
 
-// ── Guest Wishlist Management ──
-function getGuestWishlist() {
-    const guestWishlist = localStorage.getItem('guest_wishlist');
-    return guestWishlist ? JSON.parse(guestWishlist) : [];
-}
+// ── Update All Wishlist Button States (Batch) ──
+async function updateAllWishlistButtonStates(buttons) {
+    try {
+        // Extract all product IDs
+        const productIds = Array.from(buttons)
+            .map(btn => btn.getAttribute('data-product-id'))
+            .filter(id => id);
 
-function setGuestWishlist(wishlist) {
-    localStorage.setItem('guest_wishlist', JSON.stringify(wishlist));
-}
+        if (productIds.length === 0) return;
 
-function addToGuestWishlist(productId) {
-    console.log('Adding to guest wishlist:', productId);
-    const guestWishlist = getGuestWishlist();
-    console.log('Current guest wishlist before add:', guestWishlist);
-    if (!guestWishlist.includes(productId)) {
-        guestWishlist.push(productId);
-        setGuestWishlist(guestWishlist);
-        console.log('Added to guest wishlist. New list:', guestWishlist);
-    } else {
-        console.log('Product already in guest wishlist');
+        // Batch check all wishlist states
+        const wishlistStates = await Promise.all(
+            productIds.map(async (productId) => {
+                if (!productId) {
+                    console.warn('updateWishlistButtonStates: Invalid product ID', productId);
+                    return {
+                        productId,
+                        isInWishlist: false
+                    };
+                }
+                try {
+                    const response = await window.api.checkWishlist(productId);
+                    return {
+                        productId,
+                        isInWishlist: response.in_wishlist
+                    };
+                } catch (error) {
+                    console.warn(`Failed to check wishlist for product ${productId}:`, error);
+                    return {
+                        productId,
+                        isInWishlist: false
+                    };
+                }
+            })
+        );
+
+        // Update all icons simultaneously
+        wishlistStates.forEach(({ productId, isInWishlist }) => {
+            const icon = document.getElementById(`heart-icon-${productId}`);
+            if (!icon) return;
+
+            if (isInWishlist) {
+                icon.classList.add('active');
+                icon.setAttribute('fill', 'currentColor');
+                icon.setAttribute('stroke', 'none');
+            } else {
+                icon.classList.remove('active');
+                icon.setAttribute('fill', 'none');
+                icon.setAttribute('stroke', 'currentColor');
+            }
+        });
+
+        // Re-initialize lucide icons once for all changes
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    } catch (error) {
+        console.warn('Failed to update wishlist button states:', error);
     }
 }
 
-function removeFromGuestWishlist(productId) {
-    const guestWishlist = getGuestWishlist();
-    const updatedWishlist = guestWishlist.filter(id => id !== productId);
-    setGuestWishlist(updatedWishlist);
-}
+// ── Update Wishlist Button State (Individual) ──
+async function updateWishlistButtonState(productId) {
+    if (!productId) {
+        console.warn('updateWishlistButtonState: Invalid product ID', productId);
+        return;
+    }
+    try {
+        const response = await window.api.checkWishlist(productId);
+        const isInWishlist = response.in_wishlist;
+        
+        const icon = document.getElementById(`heart-icon-${productId}`);
+        if (!icon) {
+            console.warn(`Heart icon not found for product ${productId}`);
+            return;
+        }
 
-function clearGuestWishlist() {
-    localStorage.removeItem('guest_wishlist');
-}
+        if (isInWishlist) {
+            icon.classList.add('active');
+            icon.setAttribute('fill', 'currentColor');
+            icon.setAttribute('stroke', 'none');
+        } else {
+            icon.classList.remove('active');
+            icon.setAttribute('fill', 'none');
+            icon.setAttribute('stroke', 'currentColor');
+        }
 
-// Make clearGuestWishlist globally accessible
-window.clearGuestWishlist = clearGuestWishlist;
-
-function isInGuestWishlist(productId) {
-    const guestWishlist = getGuestWishlist();
-    // Convert productId to number for consistent comparison
-    const numericProductId = parseInt(productId);
-    const isInList = guestWishlist.includes(numericProductId);
-    console.log('Checking if product', productId, '(numeric:', numericProductId, ') is in guest wishlist:', isInList, 'List:', guestWishlist);
-    return isInList;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch (error) {
+        console.warn('Failed to update wishlist button state:', error);
+    }
 }
 
 // ── Migrate Guest Wishlist to User Account ──
 async function migrateGuestWishlist() {
     if (!window.authManager.isAuthenticated) return;
     
-    const guestWishlist = getGuestWishlist();
-    if (guestWishlist.length === 0) return;
-    
     try {
-        await window.api.migrateWishlist(guestWishlist);
-        clearGuestWishlist();
-        console.log('Guest wishlist migrated successfully');
+        // Wait a moment for backend migration to complete
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Update all wishlist button states after migration
+        const buttons = document.querySelectorAll('.wishlist-btn');
+        if (buttons.length > 0) {
+            await updateAllWishlistButtonStates(buttons);
+        }
+        
+        // Update wishlist offcanvas if open
+        const offcanvas = document.getElementById('offcanvas-wishlist');
+        if (offcanvas && getComputedStyle(offcanvas).visibility !== 'hidden') {
+            await updateWishlistOffcanvas();
+        }
     } catch (error) {
-        console.error('Error migrating guest wishlist:', error);
+        console.error('Error updating wishlist after migration:', error);
     }
 }
 
 // Make migrateGuestWishlist globally accessible
 window.migrateGuestWishlist = migrateGuestWishlist;
 
+// ── Clear Guest Wishlist State (for logout) ──
+function clearGuestWishlist() {
+    try {
+        // Clear wishlist UI elements
+        const wishlistItems = document.querySelectorAll('.wishlist-item');
+        wishlistItems.forEach(item => item.remove());
+        
+        // Clear wishlist count
+        const wishlistCount = document.getElementById('wishlist-count');
+        if (wishlistCount) {
+            wishlistCount.textContent = '0';
+            wishlistCount.classList.add('hidden');
+        }
+        
+        // Clear localStorage
+        localStorage.removeItem('wishlist_items');
+        
+        console.log('Guest wishlist state cleared successfully');
+    } catch (error) {
+        console.error('Error clearing guest wishlist state:', error);
+    }
+}
+
+// Make clearGuestWishlist globally accessible
+window.clearGuestWishlist = clearGuestWishlist;
+
 // ── Update Wishlist Offcanvas ──
 let updateWishlistTimeout;
 async function updateWishlistOffcanvas() {
-    // Debounce rapid updates
-    if (updateWishlistTimeout) {
-        clearTimeout(updateWishlistTimeout);
-    }
-    
-    updateWishlistTimeout = setTimeout(async () => {
-        try {
-            let wishlistItems = [];
-            
-            console.log('Updating wishlist offcanvas. Auth status:', {
-                authManager: !!window.authManager,
-                isAuthenticated: window.authManager?.isAuthenticated
-            });
-        
-        if (window.authManager && window.authManager.isAuthenticated) {
-            // Authenticated user - get from server
-            console.log('Fetching wishlist from server...');
-            try {
-                const response = await window.api.getWishlist();
-                wishlistItems = response.data;
-                console.log('Server wishlist items:', wishlistItems);
-            } catch (error) {
-                console.warn('Server wishlist fetch failed, falling back to guest mode:', error);
-                // Fall back to guest mode
-                const guestWishlist = getGuestWishlist();
-                console.log('Guest wishlist IDs:', guestWishlist);
-                if (guestWishlist.length > 0) {
-                    // Get product details for guest wishlist items
-                    const productPromises = guestWishlist.map(async (productId) => {
-                        try {
-                            const response = await window.api.getProductById(productId);
-                            return {
-                                product: response.data
-                            };
-                        } catch (error) {
-                            console.error(`Error fetching product ${productId}:`, error);
-                            return null;
-                        }
-                    });
-                    
-                    const products = await Promise.all(productPromises);
-                    wishlistItems = products.filter(item => item !== null);
-                }
-            }
-        } else {
-            // Guest user - get from local storage
-            console.log('Fetching guest wishlist from localStorage...');
-            const guestWishlist = getGuestWishlist();
-            console.log('Guest wishlist IDs:', guestWishlist);
-            if (guestWishlist.length > 0) {
-                // Get product details for guest wishlist items
-                const productPromises = guestWishlist.map(async (productId) => {
-                    try {
-                        const response = await window.api.getProductById(productId);
-                        return {
-                            product: response.data
-                        };
-                    } catch (error) {
-                        console.error(`Error fetching product ${productId}:`, error);
-                        return null;
-                    }
-                });
-                
-                const products = await Promise.all(productPromises);
-                wishlistItems = products.filter(item => item !== null);
-            }
-        }
-        
-        const offcanvasBody = document.querySelector('#offcanvas-wishlist .offcanvas-body');
-        if (!offcanvasBody) {
-            console.warn('Wishlist offcanvas body not found');
-            return;
-        }
-        
-        console.log('Updating offcanvas with', wishlistItems.length, 'items');
-        
+    try {
+        const response = await window.api.getWishlist();
+        const wishlistItems = response; // array of items
+
+        const body = document.querySelector('#offcanvas-wishlist .offcanvas-body');
+        if (!body) return;
+
         if (wishlistItems.length === 0) {
-            offcanvasBody.innerHTML = '<p class="empty-state-text">No favorites yet.</p>';
-            console.log('Offcanvas updated with empty state');
+            body.innerHTML = '<p class="empty-state-text">No favorites yet.</p>';
             return;
         }
-        
+
         let html = '<div class="wishlist-items">';
         wishlistItems.forEach(item => {
-            const product = item.product;
+            const p = item.product;
             html += `
-                <div class="wishlist-item flex items-center p-4 border-b border-gray-200" data-product-id="${product.id}">
+                <div class="wishlist-item flex items-center py-4 border-b border-gray-200" data-product-id="${p.id}">
                     <div class="flex-shrink-0 w-16 h-16">
-                        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover rounded">
+                        <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover rounded">
                     </div>
                     <div class="flex-1 ml-4">
-                        <h6 class="text-sm font-medium text-gray-900">${product.name}</h6>
-                        <p class="text-sm text-gray-500">₱${Math.floor(product.price).toLocaleString('en-US')}</p>
+                        <h6 class="text-sm font-medium text-gray-900">${p.name}</h6>
+                        <p class="text-sm text-gray-500">₱${Math.floor(p.price).toLocaleString()}</p>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <button class="btn-remove-wishlist text-red-500 hover:text-red-700" data-product-id="${product.id}">
+                    <div class="flex-shrink-0">
+                        <button class="btn-remove-wishlist text-red-500 hover:text-red-700" data-product-id="${p.id}">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -865,50 +812,55 @@ async function updateWishlistOffcanvas() {
             `;
         });
         html += '</div>';
-        
-        offcanvasBody.innerHTML = html;
-        console.log('Offcanvas HTML updated with', wishlistItems.length, 'items');
-        
-        // Re-initialize lucide icons
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-        
-        // Attach remove button event listeners
-        const removeButtons = offcanvasBody.querySelectorAll('.btn-remove-wishlist');
-        removeButtons.forEach(btn => {
-            btn.addEventListener('click', async function(e) {
+        body.innerHTML = html;
+
+        // Re-init icons & attach remove handlers
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        body.querySelectorAll('.btn-remove-wishlist').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = btn.getAttribute('data-product-id');
+                await window.api.removeFromWishlist(id);
+                updateWishlistOffcanvas();
+                updateWishlistButtonState(id);
+                await updateWishlistCount();
+            });
+        });
+
+        // Attach clear wishlist button handler
+        const clearWishlistBtn = document.getElementById('clear-wishlist-btn');
+        if (clearWishlistBtn) {
+            // Remove existing event listeners to prevent duplicates
+            const newBtn = clearWishlistBtn.cloneNode(true);
+            clearWishlistBtn.parentNode.replaceChild(newBtn, clearWishlistBtn);
+            
+            newBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                const productId = parseInt(this.getAttribute('data-product-id'));
-                try {
-                    if (window.authManager.isAuthenticated) {
-                        await window.api.removeFromWishlist(productId);
-                    } else {
-                        removeFromGuestWishlist(productId);
+                if (confirm('Are you sure you want to clear all favorites? This action cannot be undone.')) {
+                    try {
+                        await window.api.clearWishlist();
+                        await updateWishlistOffcanvas();
+                        await updateWishlistCount();
+                        
+                        // Update all wishlist button states
+                        document.querySelectorAll('.wishlist-btn').forEach(btn => {
+                            const productId = btn.getAttribute('data-product-id');
+                            if (productId) {
+                                updateWishlistButtonState(productId);
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Failed to clear wishlist:', error);
+                        showNotification('Failed to clear favorites. Please try again.', 'error');
                     }
-                    showNotification('Removed from wishlist', 'info');
-                    
-                    // Update the heart button state to outline using ID selector
-                    const $icon = $(`#heart-icon-${productId}`);
-                    if ($icon.length) {
-                        // Deactivate: stroke only
-                        $icon.removeClass('active');
-                        $icon.attr('fill', 'none');
-                        $icon.attr('stroke', 'currentColor');
-                        console.log('Heart button updated to outline state');
-                    }
-                    
-                    updateWishlistOffcanvas(); // Refresh the offcanvas
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        });
-    });
-        
-        } catch (error) {
-            console.error('Error updating wishlist offcanvas:', error);
+                }
+            });
         }
-    }, 100); // Small delay to debounce rapid updates
+    } catch (error) {
+        console.error('Failed to load wishlist:', error);
+    }
 }
 
 // ── Initialize Quick View Modals ──
@@ -999,6 +951,172 @@ async function loadModalQuickView() {
     }
 }
 
+// ── Initialize Search Modal ──
+function initSearchModal() {
+    const modal = document.getElementById('modal-search');
+    if (!modal) return;
+
+    const searchInput = document.getElementById('search-input');
+    const searchPlaceholder = document.getElementById('search-placeholder');
+    const searchLoading = document.getElementById('search-loading');
+    const searchResultsList = document.getElementById('search-results-list');
+    const searchNoResults = document.getElementById('search-no-results');
+    
+    let searchTimeout;
+
+    // Search input event listener with debouncing
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+
+            if (query.length === 0) {
+                // Show placeholder when input is empty
+                showSearchPlaceholder();
+            } else if (query.length >= 2) {
+                // Debounce search requests
+                searchTimeout = setTimeout(() => {
+                    performSearch(query);
+                }, 300);
+            }
+        });
+
+        // Focus input when modal opens
+        searchInput.addEventListener('focus', function() {
+            if (searchInput.value.trim().length >= 2) {
+                performSearch(searchInput.value.trim());
+            }
+        });
+    }
+
+    function showSearchPlaceholder() {
+        searchPlaceholder?.classList.remove('hidden');
+        searchLoading?.classList.add('hidden');
+        searchResultsList?.classList.add('hidden');
+        searchNoResults?.classList.add('hidden');
+    }
+
+    function showSearchLoading() {
+        searchPlaceholder?.classList.add('hidden');
+        searchLoading?.classList.remove('hidden');
+        searchResultsList?.classList.add('hidden');
+        searchNoResults?.classList.add('hidden');
+    }
+
+    function showSearchResults(results) {
+        searchPlaceholder?.classList.add('hidden');
+        searchLoading?.classList.add('hidden');
+        searchResultsList?.classList.remove('hidden');
+        searchNoResults?.classList.add('hidden');
+
+        if (!searchResultsList) return;
+
+        let html = '';
+        results.forEach((product, index) => {
+            const productData = {
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                image: product.images?.[0]?.url || product.image || 'https://via.placeholder.com/300x300?text=No+Image',
+                slug: product.slug
+            };
+
+            html += `
+                <div class="search-result-item p-4 border-b border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors ${index === results.length - 1 ? 'border-b-0' : ''}" 
+                     data-product-id="${productData.id}" 
+                     data-product-slug="${productData.slug}">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 flex-shrink-0">
+                                <img src="${productData.image}" alt="${productData.name}" 
+                                     class="w-full h-full object-cover rounded-lg">
+                            </div>
+                            <div>
+                                <h6 class="text-sm font-medium text-gray-900">${productData.name}</h6>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-semibold text-gray-900">₱${Math.floor(productData.price).toLocaleString('en-US')}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        searchResultsList.innerHTML = html;
+
+        // Add click handlers to search results
+        searchResultsList.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                const productSlug = this.getAttribute('data-product-slug');
+                
+                // Close search modal
+                if (typeof window.hidemodalsearch === 'function') {
+                    window.hidemodalsearch();
+                }
+                
+                // Navigate to product or open quick view
+                if (productSlug) {
+                    // Try to open quick view modal
+                    const quickViewBtn = document.querySelector(`[data-product-id="${productId}"][data-product-slug="${productSlug}"]`);
+                    if (quickViewBtn) {
+                        quickViewBtn.click();
+                    } else {
+                        // Navigate to product page
+                        window.location.href = `/products/${productSlug}`;
+                    }
+                }
+            });
+        });
+    }
+
+    function showNoResults() {
+        searchPlaceholder?.classList.add('hidden');
+        searchLoading?.classList.add('hidden');
+        searchResultsList?.classList.add('hidden');
+        searchNoResults?.classList.remove('hidden');
+    }
+
+    async function performSearch(query) {
+        if (!window.api) {
+            console.error('API not available for search');
+            showNoResults();
+            return;
+        }
+
+        showSearchLoading();
+
+        try {
+            const response = await window.api.searchProducts(query);
+            
+            if (response.success && response.data && response.data.length > 0) {
+                showSearchResults(response.data);
+            } else {
+                showNoResults();
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            showNoResults();
+        }
+    }
+
+    // Clear search when modal is closed
+    modal.addEventListener('hidden.bs.modal', function() {
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        showSearchPlaceholder();
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+    });
+}
+
 // ── Initialize Navbar Buttons ──
 function initNavbarButtons() {
     
@@ -1008,6 +1126,29 @@ function initNavbarButtons() {
         openSearchBtn.addEventListener('click', function (event) {
             event.preventDefault();
             event.stopPropagation();
+            
+            // Initialize search modal if not already done
+            if (!document.getElementById('search-input')) {
+                // Modal not ready yet, try again
+                setTimeout(() => {
+                    if (typeof window.showmodalsearch === 'function') {
+                        window.showmodalsearch();
+                    }
+                }, 100);
+                return;
+            }
+            
+            if (typeof window.showmodalsearch === 'function') {
+                window.showmodalsearch();
+            }
+            
+            // Focus search input after modal opens
+            setTimeout(() => {
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            }, 300);
         });
     } 
 
@@ -1032,6 +1173,9 @@ function initNavbarButtons() {
             
             // Load wishlist items when offcanvas is opened
             await updateWishlistOffcanvas();
+            
+            // Update wishlist count
+            await updateWishlistCount();
             
             // Show wishlist offcanvas
             if (typeof window.showoffcanvaswishlist === 'function') {
@@ -1485,6 +1629,52 @@ async function updateCartCount() {
     }
 }
 
+async function updateWishlistCount() {
+    try {
+        const response = await window.api.getWishlist();
+        const wishlistItems = response || [];
+        const count = wishlistItems.length || 0;
+        
+        const wishlistCountElement = document.getElementById('wishlist-count');
+        if (wishlistCountElement) {
+            if (count > 0) {
+                // Show "9+" if count is greater than 9, otherwise show actual count
+                wishlistCountElement.textContent = count > 9 ? '9+' : count.toString();
+                wishlistCountElement.classList.remove('hidden');
+            } else {
+                wishlistCountElement.classList.add('hidden');
+            }
+        }
+    } catch (error) {
+        // Keep the wishlist count element hidden on error
+        const wishlistCountElement = document.getElementById('wishlist-count');
+        if (wishlistCountElement) {
+            wishlistCountElement.classList.add('hidden');
+        }
+    }
+}
+
+// ── Update Both Badge Counts Simultaneously ──
+async function updateBothBadgeCounts() {
+    try {
+        // Run both badge updates in parallel
+        const [cartResult, wishlistResult] = await Promise.allSettled([
+            updateCartCount(),
+            updateWishlistCount()
+        ]);
+
+        // Handle any errors from individual badge updates
+        if (cartResult.status === 'rejected') {
+            console.warn('Cart count update failed:', cartResult.reason);
+        }
+        if (wishlistResult.status === 'rejected') {
+            console.warn('Wishlist count update failed:', wishlistResult.reason);
+        }
+    } catch (error) {
+        console.warn('Failed to update badge counts:', error);
+    }
+}
+
 // ── Load Cart Items (with debouncing) ──
 let loadCartItemsTimeout;
 async function loadCartItems() {
@@ -1501,6 +1691,8 @@ async function loadCartItems() {
 
 // ── Clear Cart State (for logout) ──
 function clearCartState() {
+    console.log('🟣 CLEAR CART STATE: Starting cart state clearing');
+    
     try {
         // Clear cart UI elements
         const cartItems = document.getElementById('cart-items');
@@ -1509,22 +1701,46 @@ function clearCartState() {
         const cartSubtotal = document.getElementById('cart-subtotal');
         const cartCount = document.getElementById('cart-count');
         
+        console.log('🟣 CLEAR CART STATE: Found elements', {
+            cartItems: !!cartItems,
+            cartEmptyState: !!cartEmptyState,
+            cartFooter: !!cartFooter,
+            cartSubtotal: !!cartSubtotal,
+            cartCount: !!cartCount
+        });
+        
         // Show empty state
-        if (cartEmptyState) cartEmptyState.style.display = 'block';
+        if (cartEmptyState) {
+            cartEmptyState.style.display = 'block';
+            console.log('🟣 CLEAR CART STATE: Empty state shown');
+        }
         if (cartItems) {
             cartItems.style.display = 'none';
             cartItems.innerHTML = '';
+            console.log('🟣 CLEAR CART STATE: Cart items cleared');
         }
-        if (cartFooter) cartFooter.classList.add('hidden');
-        if (cartSubtotal) cartSubtotal.textContent = '₱0';
-        if (cartCount) cartCount.textContent = '0';
+        if (cartFooter) {
+            cartFooter.classList.add('hidden');
+            console.log('🟣 CLEAR CART STATE: Cart footer hidden');
+        }
+        if (cartSubtotal) {
+            cartSubtotal.textContent = '₱0';
+            console.log('🟣 CLEAR CART STATE: Subtotal reset');
+        }
+        if (cartCount) {
+            cartCount.textContent = '0';
+            cartCount.classList.add('hidden');
+            console.log('🟣 CLEAR CART STATE: Cart count reset and hidden');
+        }
         
         // Clear localStorage
         localStorage.removeItem('cart_items');
+        localStorage.removeItem('wishlist_items');
+        console.log('🟣 CLEAR CART STATE: LocalStorage cleared');
         
-        console.log('Cart state cleared successfully');
+        console.log('🟣 CLEAR CART STATE: Cart state cleared successfully');
     } catch (error) {
-        console.error('Error clearing cart state:', error);
+        console.error('🟣 CLEAR CART STATE: Error clearing cart state:', error);
     }
 }
 
@@ -1634,7 +1850,7 @@ async function performLoadCartItems() {
                     const image = productData.image || '/frontend/assets/chair.png';
                     
                     cartItemsHTML += `
-                        <div class="cart-item-new border-b py-3 px-3" data-product-id="${item.product_id}">
+                        <div class="cart-item-new border-b py-3" data-product-id="${item.product_id}">
                             <div class="flex items-center justify-between">
                                 <!-- Left Section: Item Details -->
                                 <div class="flex items-center space-x-4 flex-grow">
@@ -1899,15 +2115,18 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Initialize auth modals
     initAuthModals();
 
+    // Initialize search modal
+    initSearchModal();
+
     // Initialize products from database with filtering and sorting
     const productGrid = document.getElementById('product-grid');
     if (productGrid) {
         initProductsSection();
     }
 
-    // Load cart count on page load
+    // Load both cart and wishlist counts simultaneously
     try {
-        await updateCartCount();
+        await updateBothBadgeCounts();
     } catch (error) {
     }
 

@@ -144,6 +144,43 @@ Route::get('/categories', function () {
     }
 });
 
+// Search products API route
+Route::get('/search', function (Request $request) {
+    try {
+        $query = \App\Models\Product::where('is_active', true)
+            ->with(['category']);
+
+        // Search functionality
+        if ($request->has('q') && !empty(trim($request->get('q')))) {
+            $searchTerm = trim($request->get('q'));
+            
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('description', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('short_description', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('material', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('sku', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        // Limit results for search modal (show max 10 results)
+        $products = $query->orderBy('name', 'asc')->limit(10)->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $products,
+            'total' => $products->count()
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error searching products',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
 // Debug route to test API connectivity 
 Route::get('/test-cart', function() {
     return response()->json([

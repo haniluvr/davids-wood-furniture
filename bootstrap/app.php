@@ -15,14 +15,17 @@ return Application::configure(basePath: dirname(__DIR__))
         // Create a custom middleware group for API routes that need sessions but not CSRF
         $middleware->group('api.session', [
             \Illuminate\Session\Middleware\StartSession::class,
+            \App\Http\Middleware\CaptureGuestSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \App\Http\Middleware\SyncWishlistSession::class,
         ]);
         
         // Exclude CSRF from specific routes
         $middleware->validateCsrfTokens(except: [
             'api/cart/*',
             'api/wishlist/*',
-            'api/products/*'
+            'api/products/*',
+            'logout'
         ]);
         
         // Add CORS and session middleware to API routes

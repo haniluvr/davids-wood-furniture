@@ -55,6 +55,14 @@ class AuthController extends Controller
     }
     public function register(Request $request): JsonResponse
     {
+        // Capture session ID IMMEDIATELY at the start of the method
+        $originalSessionId = session()->getId();
+        
+        \Log::info('AuthController: Register method started - IMMEDIATE session capture', [
+            'immediate_session_id' => $originalSessionId,
+            'authenticated' => \Auth::check()
+        ]);
+        
         $validator = Validator::make($request->all(), [
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
@@ -80,15 +88,36 @@ class AuthController extends Controller
             'provider' => 'local',
         ]);
 
-        Auth::login($user);
-
-        // Migrate guest cart to user account
-        $cartController = new CartController();
-        $cartController->migrateCartToUser($user->id, session()->getId());
+        // Use the immediately captured session ID for migration
+        $guestSessionId = $originalSessionId;
         
-        // Migrate guest wishlist to user account
-        $wishlistController = new WishlistController();
-        $wishlistController->migrateWishlistToUser($user->id, session()->getId());
+        \Log::info('User registration - Guest data migration', [
+            'user_id' => $user->id,
+            'guest_session_id' => $guestSessionId,
+            'has_guest_cart' => \App\Models\CartItem::where('session_id', $guestSessionId)->exists(),
+            'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists()
+        ]);
+        
+                // Preserve guest data before authentication
+                $sessionWishlistService = new \App\Services\SessionWishlistService();
+                $preservedWishlistData = $sessionWishlistService->preserveGuestWishlistData($guestSessionId);
+                
+                // Migrate guest data BEFORE authentication to prevent session loss
+                $cartController = new CartController();
+                $cartController->migrateCartToUser($user->id, $guestSessionId);
+                
+                $sessionWishlistService->migrateGuestToUser($user->id, $guestSessionId);
+                
+                // If migration failed, restore from preserved data
+                if (count($preservedWishlistData) > 0) {
+                    $userWishlistCount = \App\Models\WishlistItem::where('user_id', $user->id)->count();
+                    if ($userWishlistCount === 0) {
+                        \Log::info('Migration may have failed, restoring from preserved data');
+                        $sessionWishlistService->restoreGuestWishlistData($user->id, $preservedWishlistData);
+                    }
+                }
+                
+                Auth::login($user);
 
         // Generate a remember token for API authentication
         $user = Auth::user();
@@ -109,6 +138,15 @@ class AuthController extends Controller
 
     public function login(Request $request): JsonResponse
     {
+        // Capture session ID IMMEDIATELY at the start of the method
+        // This ensures we get the original session ID before any processing
+        $originalSessionId = session()->getId();
+        
+        \Log::info('AuthController: Login method started - IMMEDIATE session capture', [
+            'immediate_session_id' => $originalSessionId,
+            'authenticated' => \Auth::check()
+        ]);
+        
         $validator = Validator::make($request->all(), [
             'username' => 'required|string',
             'password' => 'required|string',
@@ -122,8 +160,21 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Get session ID BEFORE authentication (for migration)
-        $guestSessionId = session()->getId();
+        // Use the immediately captured session ID for migration
+        $guestSessionId = $originalSessionId;
+        
+        \Log::info('AuthController: Login method started', [
+            'current_session_id' => session()->getId(),
+            'original_session_id' => $request->get('original_session_id'),
+            'guest_session_id_used' => $guestSessionId,
+            'authenticated' => \Auth::check()
+        ]);
+        
+        \Log::info('User login - Guest data migration', [
+            'guest_session_id' => $guestSessionId,
+            'has_guest_cart' => \App\Models\CartItem::where('session_id', $guestSessionId)->exists(),
+            'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists()
+        ]);
         
         // Try to find user by username or email for backward compatibility
         $user = User::where('username', $request->username)
@@ -132,13 +183,18 @@ class AuthController extends Controller
 
         if ($user && Auth::attempt(['id' => $user->id, 'password' => $request->password])) {
             
-            // Migrate guest cart to user account
+            \Log::info('User login successful - Migrating guest data', [
+                'user_id' => $user->id,
+                'guest_session_id' => $guestSessionId
+            ]);
+            
+            // Migrate guest data BEFORE authentication to prevent session loss
             $cartController = new CartController();
             $cartController->migrateCartToUser($user->id, $guestSessionId);
             
-            // Migrate guest wishlist to user account
-            $wishlistController = new WishlistController();
-            $wishlistController->migrateWishlistToUser($user->id, $guestSessionId);
+            $sessionWishlistService = new \App\Services\SessionWishlistService();
+            $sessionWishlistService->migrateGuestToUser($user->id, $guestSessionId);
+            
 
             // Generate a remember token for API authentication
             $user = Auth::user();
@@ -163,33 +219,87 @@ class AuthController extends Controller
         ], 401);
     }
 
-    public function logout(): JsonResponse
+    public function logout()
     {
+        \Log::info('LOGOUT: Starting logout process');
+        
         try {
-            // Logout the user
+            // Get user info before logout for Google OAuth handling
+            $user = Auth::user();
+            $isGoogleUser = $user && $user->provider === 'google';
+            
+            \Log::info('LOGOUT: User info', [
+                'user_id' => $user ? $user->id : null,
+                'provider' => $user ? $user->provider : null,
+                'is_google_user' => $isGoogleUser,
+                'has_remember_token' => $user && $user->remember_token ? true : false
+            ]);
+            
+            // Clear authentication
             Auth::logout();
+            \Log::info('LOGOUT: Auth::logout() completed');
             
             // Clear session data
             session()->flush();
+            \Log::info('LOGOUT: Session flushed');
             
-            // Regenerate session ID for security
             session()->regenerate();
+            \Log::info('LOGOUT: Session regenerated');
             
-            return response()->json([
-                'success' => true,
-                'message' => 'Logged out successfully',
-                'redirect' => route('home')
-            ]);
+            // Clear remember token for Google OAuth users
+            if ($user && $user->remember_token) {
+                $user->remember_token = null;
+                $user->save();
+                \Log::info('LOGOUT: Remember token cleared for user', ['user_id' => $user->id]);
+            }
+            
+            \Log::info('LOGOUT: Logout process completed successfully');
+            
+            // Return JSON response for AJAX requests
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Logged out successfully',
+                    'debug' => [
+                        'was_google_user' => $isGoogleUser,
+                        'user_id' => $user ? $user->id : null
+                    ]
+                ]);
+            }
+            
+            // Redirect to home for regular requests
+            return redirect()->route('home')->with('success', 'Logged out successfully');
+            
         } catch (\Exception $e) {
-            // If logout fails, still try to clear session
-            session()->flush();
-            session()->regenerate();
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Logged out successfully',
-                'redirect' => route('home')
+            \Log::error('LOGOUT: Error during logout', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            // Even if there's an error, try to clear session
+            try {
+                Auth::logout();
+                session()->flush();
+                session()->regenerate();
+                \Log::info('LOGOUT: Emergency cleanup completed');
+            } catch (\Exception $cleanupError) {
+                \Log::error('LOGOUT: Emergency cleanup failed', [
+                    'error' => $cleanupError->getMessage()
+                ]);
+            }
+            
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Logged out successfully',
+                    'debug' => [
+                        'error_occurred' => true,
+                        'error_message' => $e->getMessage()
+                    ]
+                ]);
+            }
+            
+            return redirect()->route('home');
         }
     }
 
@@ -203,8 +313,16 @@ class AuthController extends Controller
         }
     }
 
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(Request $request)
     {
+        // Capture session ID IMMEDIATELY at the start of the method
+        $originalSessionId = session()->getId();
+        
+        \Log::info('AuthController: Google OAuth callback started - IMMEDIATE session capture', [
+            'immediate_session_id' => $originalSessionId,
+            'authenticated' => \Auth::check()
+        ]);
+        
         try {
             
             // Configure the Socialite driver to handle SSL issues in development
@@ -230,8 +348,15 @@ class AuthController extends Controller
 
             if ($existingUser) {
                 
-                // Get session ID BEFORE authentication (for migration)
-                $guestSessionId = session()->getId();
+                // Use the immediately captured session ID for migration
+                $guestSessionId = $originalSessionId;
+                
+                \Log::info('Google OAuth - Existing user login', [
+                    'user_id' => $existingUser->id,
+                    'guest_session_id' => $guestSessionId,
+                    'has_guest_cart' => \App\Models\CartItem::where('session_id', $guestSessionId)->exists(),
+                    'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists()
+                ]);
                 
                 // Update existing user with Google ID if not already set
                 if (!$existingUser->google_id) {
@@ -249,19 +374,31 @@ class AuthController extends Controller
                     
                     $existingUser->update($updateData);
                 }
-                Auth::login($existingUser);
-
-                // Migrate guest cart to user account
+                
+                // Migrate guest data BEFORE authentication to prevent session loss
                 $cartController = new CartController();
                 $cartController->migrateCartToUser($existingUser->id, $guestSessionId);
                 
-                // Migrate guest wishlist to user account
-                $wishlistController = new WishlistController();
-                $wishlistController->migrateWishlistToUser($existingUser->id, $guestSessionId);
+                $sessionWishlistService = new \App\Services\SessionWishlistService();
+                \Log::info('AuthController: Calling migrateGuestToUser (login existing user)', [
+                'user_id' => $existingUser->id,
+                'guest_session_id_passed' => $guestSessionId
+            ]);
+            $sessionWishlistService->migrateGuestToUser($existingUser->id, $guestSessionId);
+                
+                Auth::login($existingUser);
+                
+                
             } else {
                 
-                // Get session ID BEFORE authentication (for migration)
-                $guestSessionId = session()->getId();
+                // Use the immediately captured session ID for migration
+                $guestSessionId = $originalSessionId;
+                
+                \Log::info('Google OAuth - New user creation', [
+                    'guest_session_id' => $guestSessionId,
+                    'has_guest_cart' => \App\Models\CartItem::where('session_id', $guestSessionId)->exists(),
+                    'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists()
+                ]);
                 
                 // Generate username for Google user
                 $username = $this->generateUsername($googleUser->name);
@@ -282,15 +419,17 @@ class AuthController extends Controller
                     'avatar' => $googleUser->avatar,
                     'provider' => 'google',
                 ]);
-                Auth::login($newUser);
-
-                // Migrate guest cart to user account
+                
+                // Migrate guest data BEFORE authentication to prevent session loss
                 $cartController = new CartController();
                 $cartController->migrateCartToUser($newUser->id, $guestSessionId);
                 
-                // Migrate guest wishlist to user account
-                $wishlistController = new WishlistController();
-                $wishlistController->migrateWishlistToUser($newUser->id, $guestSessionId);
+                $sessionWishlistService = new \App\Services\SessionWishlistService();
+                $sessionWishlistService->migrateGuestToUser($newUser->id, $guestSessionId);
+                
+                Auth::login($newUser);
+                
+                
             }
 
             return redirect()->route('home')->with('google_signin_success', 'Welcome! Please remember to add a password in your account settings for added security.');

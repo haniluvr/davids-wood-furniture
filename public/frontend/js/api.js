@@ -39,7 +39,8 @@ class DavidsWoodAPI {
 
     // Make API request
     async request(endpoint, options = {}) {
-        const url = `${this.baseURL}${endpoint}`;
+        // Special handling for logout - use web routes, not API routes
+        const url = endpoint === '/logout' ? window.location.origin + '/logout' : `${this.baseURL}${endpoint}`;
         const config = {
             headers: this.getHeaders(),
             credentials: 'include', // Include cookies for session management
@@ -63,7 +64,7 @@ class DavidsWoodAPI {
 
     // Authentication methods
     async login(email, password) {
-        const response = await this.request('/auth/login', {
+        const response = await this.request('/login', {
             method: 'POST',
             body: JSON.stringify({ email, password }),
         });
@@ -76,7 +77,7 @@ class DavidsWoodAPI {
     }
 
     async register(userData) {
-        const response = await this.request('/auth/register', {
+        const response = await this.request('/register', {
             method: 'POST',
             body: JSON.stringify(userData),
         });
@@ -90,30 +91,20 @@ class DavidsWoodAPI {
 
     async logout() {
         try {
-            // Use the web route for logout since it's defined there
-            const response = await fetch('/logout', {
+            const response = await this.request('/logout', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
-                credentials: 'include' // Include cookies for session management
+                body: JSON.stringify({})
             });
+            return response;
             
-            if (!response.ok) {
-                throw new Error('Logout request failed');
-            }
-            
-            return await response.json();
         } catch (error) {
             console.error('Logout error:', error);
-            throw error;
+            return { success: true, message: 'Logged out successfully' };
         } finally {
+            // Always clear local state
             this.removeToken();
-            // Clear cart and wishlist from localStorage
             localStorage.removeItem('cart_items');
             localStorage.removeItem('wishlist_items');
-            // Clear cart state in UI
             if (typeof clearCartState === 'function') {
                 clearCartState();
             }
@@ -144,6 +135,11 @@ class DavidsWoodAPI {
 
     async getProductById(id) {
         return await this.request(`/product/${id}`);
+    }
+
+    async searchProducts(query) {
+        const params = new URLSearchParams({ q: query });
+        return await this.request(`/search?${params}`);
     }
 
     // Cart methods
@@ -198,6 +194,9 @@ class DavidsWoodAPI {
     }
 
     async checkWishlist(productId) {
+        if (!productId) {
+            throw new Error('Product ID is required for wishlist check');
+        }
         return await this.request(`/wishlist/check/${productId}`);
     }
 
@@ -205,6 +204,19 @@ class DavidsWoodAPI {
         return await this.request('/wishlist/migrate', {
             method: 'POST',
             body: JSON.stringify({ guest_wishlist: guestWishlist }),
+        });
+    }
+
+    async toggleWishlist(productId) {
+        return await this.request('/wishlist/toggle', {
+            method: 'POST',
+            body: JSON.stringify({ product_id: productId }),
+        });
+    }
+
+    async clearWishlist() {
+        return await this.request('/wishlist/clear', {
+            method: 'DELETE',
         });
     }
 
@@ -295,22 +307,25 @@ class AuthManager {
     }
 
     async logout() {
-        await window.api.logout();
-        this.isAuthenticated = false;
-        this.user = null;
+        console.log('🟡 AUTH MANAGER LOGOUT: Starting logout process');
         
-        // Clear cart state on logout
-        if (typeof clearCartState === 'function') {
-            clearCartState();
+        try {
+            console.log('🟡 AUTH MANAGER LOGOUT: Calling API logout');
+            await window.api.logout();
+            console.log('🟡 AUTH MANAGER LOGOUT: API logout completed');
+        } catch (error) {
+            console.error('🟡 AUTH MANAGER LOGOUT: Error occurred', error);
+        } finally {
+            console.log('🟡 AUTH MANAGER LOGOUT: Clearing authentication state');
+            // Always clear local state
+            this.isAuthenticated = false;
+            this.user = null;
+            console.log('🟡 AUTH MANAGER LOGOUT: Authentication state cleared');
+            
+            console.log('🟡 AUTH MANAGER LOGOUT: Updating UI');
+            this.updateUI();
+            console.log('🟡 AUTH MANAGER LOGOUT: UI updated');
         }
-        
-        // Clear localStorage cart items
-        localStorage.removeItem('cart_items');
-        
-        // Clear guest wishlist from localStorage
-        localStorage.removeItem('wishlist_items');
-        
-        this.updateUI();
     }
 
     updateUI() {

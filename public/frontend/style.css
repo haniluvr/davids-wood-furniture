@@ -44,6 +44,70 @@ body {
   align-items: center;
 }
 
+/* Search Modal Styles */
+#modal-search .modal-content {
+  border: none;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+#modal-search .modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+#modal-search .modal-body {
+  padding-top: 0;
+}
+
+#search-input {
+  transition: all 0.2s ease-in-out;
+  padding: 0.5rem 0.8rem;
+}
+
+#search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+#search-placeholder {
+  margin: 0.5rem 0.8rem;
+}
+
+#search-results {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f9fafb;
+}
+
+#search-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+#search-results::-webkit-scrollbar-track {
+  background: #f9fafb;
+  border-radius: 3px;
+}
+
+#search-results::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+#search-results::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.search-result-item {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.search-result-item:hover {
+  background-color: #f9fafb;
+}
+
+.search-result-item:last-child {
+  border-bottom: none !important;
+}
+
 /* Custom styles for Tailwind compatibility */
 .featured-furniture {
   background-color: rgba(243, 239, 231);
@@ -1900,62 +1964,7 @@ button.btn-add-to-cart:hover {
   height: 17px;
 }
 
-/** search modal **/
-#modal-search .modal-content {
-  background-color: #f5f3ed;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
 
-#modal-search .modal-header {
-  border-bottom: none;
-}
-
-#modal-search .modal-title {
-  font-size: 1.125rem;
-	font-weight: 600;
-	color: #1a1a1a;
-}
-
-#modal-search .modal-body {
-  margin-top: -5%;
-}
-
-#modal-search .input-group {
-  position: relative;
-  margin-bottom: 1rem;
-}
-
-#modal-search .form-control {
-	border: 1px solid #e0e0e0;
-	transition: all 0.2s ease;
-  padding: 0.5rem 0.8rem;
-  background: none;
-}
-
-#modal-search .form-control:focus {
- 	border: 1px solid #10b981;
-	box-shadow: 0 0 5px rgba(16, 185, 129, 1);
-}
-
-#modal-search .input-group-text {
-	position: absolute;
-	top: 50%;
-	right: 1rem;
-	transform: translateY(-50%, -50%);
-	width: 20px;
-	height: 20px;
-	color: #666666;
-}
-
-.search-results {
-	background-color: white;
-	border: 1px solid #e0e0e0;
-	border-radius: 12px;
-	padding: 0.5rem 0.8rem;
-	margin-top: 0.5rem;
-}
 
 /** offcanvas **/
 .offcanvas {

@@ -67,9 +67,26 @@ class GuestSession extends Model
         $session = self::find($sessionId);
         
         if (!$session) {
-            $session = self::create([
+            try {
+                $session = self::create([
+                    'session_id' => $sessionId,
+                    'expires_at' => Carbon::now()->addDays(30),
+                ]);
+                \Log::info('Guest session created successfully', [
+                    'session_id' => $sessionId,
+                    'created_at' => $session->created_at
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to create guest session', [
+                    'session_id' => $sessionId,
+                    'error' => $e->getMessage()
+                ]);
+                throw $e;
+            }
+        } else {
+            \Log::info('Guest session found', [
                 'session_id' => $sessionId,
-                'expires_at' => Carbon::now()->addDays(30),
+                'created_at' => $session->created_at
             ]);
         }
         

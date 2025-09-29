@@ -243,6 +243,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
                 
                 if (result.success) {
+                    // Migrate wishlist before reloading
+                    try {
+                        await fetch('/api/wishlist/migrate', {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                            }
+                        });
+                    } catch (migrationError) {
+                        console.log('Wishlist migration failed:', migrationError);
+                        // Continue with login even if migration fails
+                    }
+                    
                     // Hide modals and reload page
                     document.getElementById('modal-login')?.classList.add('hidden');
                     location.reload();
@@ -291,6 +306,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
                 
                 if (result.success) {
+                    // Migrate wishlist before reloading
+                    try {
+                        await fetch('/api/wishlist/migrate', {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                            }
+                        });
+                    } catch (migrationError) {
+                        console.log('Wishlist migration failed:', migrationError);
+                        // Continue with registration even if migration fails
+                    }
+                    
                     // Hide modals and reload page
                     document.getElementById('modal-signup')?.classList.add('hidden');
                     location.reload();
@@ -320,53 +350,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handle Logout
+    // Handle Logout - Simplified
     document.addEventListener('click', async function(e) {
         if (e.target && e.target.id === 'logout-btn') {
+            console.log('🟢 LOGOUT BUTTON: Logout button clicked');
+            
             e.preventDefault();
+            e.stopPropagation();
+            
+            // Disable button to prevent multiple clicks
+            const logoutBtn = e.target;
+            logoutBtn.disabled = true;
+            console.log('🟢 LOGOUT BUTTON: Button disabled');
             
             try {
-                const response = await fetch('/logout', {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
+                console.log('🟢 LOGOUT BUTTON: Checking if authManager exists', !!window.authManager);
                 
-                if (response.ok) {
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        // Clear UI state
-                        if (typeof clearGuestWishlist === 'function') {
-                            clearGuestWishlist();
-                        }
-                        
-                        if (typeof clearCartState === 'function') {
-                            clearCartState();
-                        }
-                        
-                        // Clear localStorage
-                        localStorage.removeItem('cart_items');
-                        localStorage.removeItem('wishlist_items');
-                        
-                        // Reload page
-                        location.reload();
-                    } else {
-                        console.error('Logout failed:', result.message);
-                        // Still try to clear state and reload
-                        location.reload();
-                    }
+                // Use the centralized logout from AuthManager
+                if (window.authManager) {
+                    console.log('🟢 LOGOUT BUTTON: Calling authManager.logout()');
+                    await window.authManager.logout();
+                    console.log('🟢 LOGOUT BUTTON: authManager.logout() completed');
                 } else {
-                    console.error('Logout request failed with status:', response.status);
-                    // Still try to clear state and reload
-                    location.reload();
+                    console.error('🟢 LOGOUT BUTTON: authManager not found!');
                 }
+                
+                console.log('🟢 LOGOUT BUTTON: Reloading page to ensure clean state');
+                // Reload page to ensure clean state
+                location.reload();
             } catch (error) {
-                console.error('Logout error:', error);
-                // Still try to clear state and reload
+                console.error('🟢 LOGOUT BUTTON: Error occurred', error);
+                // Still reload to ensure logout completes
                 location.reload();
             }
         }

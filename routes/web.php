@@ -12,12 +12,15 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/products', [ProductController::class, 'index'])->name('products');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-// Authentication routes
-Route::post('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
-Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+// Authentication routes (using api.session middleware for guest session capture)
+Route::middleware(['api.session'])->group(function () {
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
+    Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
+    Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+});
 
 // Cart routes (using web middleware for proper session handling)
 Route::middleware(['web'])->group(function () {
@@ -28,13 +31,17 @@ Route::middleware(['web'])->group(function () {
     Route::delete('/api/cart/clear', [App\Http\Controllers\CartController::class, 'clearCart']);
 });
 
-// Wishlist routes (using web middleware for proper session handling)
-Route::middleware(['web'])->group(function () {
+// Wishlist routes (using api.session middleware for proper session handling and guest session capture)
+Route::middleware(['api.session'])->group(function () {
     Route::get('/api/wishlist', [App\Http\Controllers\WishlistController::class, 'index']);
     Route::post('/api/wishlist/add', [App\Http\Controllers\WishlistController::class, 'add']);
     Route::delete('/api/wishlist/remove', [App\Http\Controllers\WishlistController::class, 'remove']);
     Route::get('/api/wishlist/check/{productId}', [App\Http\Controllers\WishlistController::class, 'check']);
+    Route::post('/api/wishlist/toggle', [App\Http\Controllers\WishlistController::class, 'toggle']);
+    Route::delete('/api/wishlist/clear', [App\Http\Controllers\WishlistController::class, 'clear']);
+    Route::post('/api/wishlist/migrate', [App\Http\Controllers\WishlistController::class, 'migrate']);
 });
+
 
 
 
@@ -103,4 +110,88 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
     Route::get('/account/wishlist', [AccountController::class, 'wishlist'])->name('account.wishlist');
     Route::get('/account/profile', [AccountController::class, 'profile'])->name('account.profile');
+});
+
+// Debug routes for testing
+Route::get('/debug-wishlist', function () {
+    $sessionId = 'hEfLeGvKEGL6kyywstnX7ndrlRuGMIfBMPigi4gz';
+    $items = \App\Models\WishlistItem::where('session_id', $sessionId)->get();
+    return response()->json([
+        'session_id' => $sessionId,
+        'count' => $items->count(),
+        'items' => $items->toArray()
+    ]);
+});
+
+Route::get('/debug-all-wishlist', function () {
+    $allItems = \App\Models\WishlistItem::all();
+    return response()->json([
+        'total_count' => $allItems->count(),
+        'items' => $allItems->toArray()
+    ]);
+});
+
+Route::get('/debug-wishlist-session/{sessionId}', function ($sessionId) {
+    $items = \App\Models\WishlistItem::where('session_id', $sessionId)->get();
+    return response()->json([
+        'session_id' => $sessionId,
+        'count' => $items->count(),
+        'items' => $items->toArray()
+    ]);
+});
+
+Route::get('/debug-guest-session/{sessionId}', function ($sessionId) {
+    $guestSession = \App\Models\GuestSession::find($sessionId);
+    return response()->json([
+        'session_id' => $sessionId,
+        'guest_session_exists' => $guestSession ? true : false,
+        'guest_session' => $guestSession ? $guestSession->toArray() : null
+    ]);
+});
+
+Route::get('/debug-wishlist-migration/{userId}/{sessionId}', function ($userId, $sessionId) {
+    $wishlistController = new \App\Http\Controllers\WishlistController();
+    try {
+        $wishlistController->migrateWishlistToUser($userId, $sessionId);
+        return response()->json([
+            'success' => true,
+            'message' => 'Migration completed',
+            'user_id' => $userId,
+            'session_id' => $sessionId
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Migration failed',
+            'error' => $e->getMessage()
+        ]);
+    }
+});
+
+Route::get('/debug-preserve-wishlist/{sessionId}', function ($sessionId) {
+    $wishlistController = new \App\Http\Controllers\WishlistController();
+    try {
+        $preservedData = $wishlistController->preserveGuestWishlistData($sessionId);
+        return response()->json([
+            'success' => true,
+            'message' => 'Data preserved',
+            'session_id' => $sessionId,
+            'preserved_count' => count($preservedData),
+            'preserved_data' => $preservedData
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Preservation failed',
+            'error' => $e->getMessage()
+        ]);
+    }
+});
+
+Route::get('/test-logout', function () {
+    return response()->json([
+        'message' => 'Test logout route works',
+        'user_authenticated' => \Auth::check(),
+        'user_id' => \Auth::id()
+    ]);
 });
