@@ -47,46 +47,29 @@ function initOffcanvas(id) {
 
     // Create global functions for show/hide
     const show = function() {
-        el.style.display = 'block';
+        // Show the offcanvas backdrop
         el.classList.remove('hidden');
+        el.style.display = 'block';
         
-        // Use AOS animation for backdrop fade-in
-        el.setAttribute('data-aos', 'fade');
-        el.setAttribute('data-aos-duration', '300');
-        el.setAttribute('data-aos-easing', 'ease-in-out');
+        // Force a reflow to ensure the element is visible before animation
+        el.offsetHeight;
         
-        // Trigger AOS animation
-        AOS.refresh();
-        
+        // Start panel slide animation with a small delay for smooth transition
         requestAnimationFrame(() => {
-            // Start panel slide animation
             panel.classList.remove('translate-x-full');
-            panel.classList.add('translate-x-0');
         });
     };
 
-    const hide = function() {        
-        // Use AOS animation for backdrop fade-out
-        el.setAttribute('data-aos', 'fade');
-        el.setAttribute('data-aos-duration', '300');
-        el.setAttribute('data-aos-easing', 'ease-in-out');
-        el.setAttribute('data-aos-anchor-placement', 'top-bottom');
-        
-        // Trigger AOS animation
-        AOS.refresh();
-        
+    const hide = function() {
         // Start panel slide-out animation
-        panel.classList.remove('translate-x-0');
         panel.classList.add('translate-x-full');
         
         // Hide the element entirely after slide animation completes
         setTimeout(() => {
-            el.style.display = 'none';
             el.classList.add('hidden');
-            // Reset for next opening
+            el.style.display = 'none';
+            // Reset panel position for next opening
             panel.classList.remove('translate-x-full');
-            // Clear transition for next opening
-            el.style.transition = '';
         }, 300);
     };
 
@@ -1216,7 +1199,16 @@ function initNavbarButtons() {
         const panel = document.getElementById('offcanvas-wishlist-panel');
         if (offcanvas && panel) {
             offcanvas.classList.remove('hidden');
-            panel.classList.remove('translate-x-full');
+            offcanvas.style.display = 'block';
+            
+            // Force a reflow to ensure the element is visible before animation
+            offcanvas.offsetHeight;
+            
+            // Start panel slide animation with a small delay for smooth transition
+            requestAnimationFrame(() => {
+                panel.classList.remove('translate-x-full');
+            });
+            
             document.body.style.overflow = 'hidden';
         }
     };
@@ -1228,6 +1220,9 @@ function initNavbarButtons() {
             panel.classList.add('translate-x-full');
             setTimeout(() => {
                 offcanvas.classList.add('hidden');
+                offcanvas.style.display = 'none';
+                // Reset panel position for next opening
+                panel.classList.remove('translate-x-full');
                 document.body.style.overflow = '';
             }, 300);
         }
@@ -1239,7 +1234,16 @@ function initNavbarButtons() {
         const panel = document.getElementById('offcanvas-cart-panel');
         if (offcanvas && panel) {
             offcanvas.classList.remove('hidden');
-            panel.classList.remove('translate-x-full');
+            offcanvas.style.display = 'block';
+            
+            // Force a reflow to ensure the element is visible before animation
+            offcanvas.offsetHeight;
+            
+            // Start panel slide animation with a small delay for smooth transition
+            requestAnimationFrame(() => {
+                panel.classList.remove('translate-x-full');
+            });
+            
             document.body.style.overflow = 'hidden';
         }
     };
@@ -1251,6 +1255,9 @@ function initNavbarButtons() {
             panel.classList.add('translate-x-full');
             setTimeout(() => {
                 offcanvas.classList.add('hidden');
+                offcanvas.style.display = 'none';
+                // Reset panel position for next opening
+                panel.classList.remove('translate-x-full');
                 document.body.style.overflow = '';
             }, 300);
         }

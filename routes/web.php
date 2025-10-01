@@ -110,9 +110,36 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
     Route::get('/account/wishlist', [AccountController::class, 'wishlist'])->name('account.wishlist');
     Route::get('/account/profile', [AccountController::class, 'profile'])->name('account.profile');
+    
+    // Account API routes
+    Route::post('/api/account/profile/update', [AccountController::class, 'updateProfile']);
+    Route::post('/api/account/password/change', [AccountController::class, 'changePassword']);
+    Route::get('/api/account/login-activity', [AccountController::class, 'getLoginActivity']);
+    Route::get('/api/account/payment-methods', [AccountController::class, 'getPaymentMethods']);
+    Route::delete('/api/account/payment-methods/{id}', [AccountController::class, 'removePaymentMethod']);
+    Route::post('/api/account/newsletter/update', [AccountController::class, 'updateNewsletterPreferences']);
+    Route::post('/api/account/address/add', [AccountController::class, 'addAddress']);
+    Route::post('/api/account/address/update', [AccountController::class, 'updateAddress']);
+    Route::post('/api/account/logout', [AccountController::class, 'logout']);
 });
 
 // Debug routes for testing
+Route::get('/debug-profile-update', function () {
+    $user = \App\Models\User::first();
+    if (!$user) {
+        return response()->json(['error' => 'No users found']);
+    }
+    
+    return response()->json([
+        'user_id' => $user->id,
+        'current_name' => $user->first_name . ' ' . $user->last_name,
+        'current_email' => $user->email,
+        'current_street' => $user->street,
+        'current_city' => $user->city,
+        'database_connected' => true
+    ]);
+});
+
 Route::get('/debug-wishlist', function () {
     $sessionId = 'hEfLeGvKEGL6kyywstnX7ndrlRuGMIfBMPigi4gz';
     $items = \App\Models\WishlistItem::where('session_id', $sessionId)->get();

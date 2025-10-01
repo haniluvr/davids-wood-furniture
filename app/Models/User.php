@@ -32,6 +32,8 @@ class User extends Authenticatable
         'city',
         'province',
         'zip_code',
+        'newsletter_product_updates',
+        'newsletter_special_offers',
     ];
 
     /**
@@ -81,5 +83,13 @@ class User extends Authenticatable
     public function wishlistItems(): HasMany
     {
         return $this->hasMany(WishlistItem::class);
+    }
+
+    /**
+     * Get the user's orders.
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 }

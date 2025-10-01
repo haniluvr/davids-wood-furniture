@@ -1973,8 +1973,14 @@ button.btn-add-to-cart:hover {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Backdrop fade transition */
+#offcanvas-wishlist, #offcanvas-cart {
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
 #offcanvas-cart-panel, #offcanvas-wishlist-panel {
   will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Let Tailwind handle the transition animations for efficiency */

@@ -13,7 +13,7 @@
             <div class="modal-body p-6">
                 <p class="text-sm text-gray-600 mb-5">Find solid wood furniture and accessories from David's Wood.</p>
                 <!-- Search Input -->
-                <div class="mb-4">
+                <div class="mb-3">
                     <input 
                         type="text" 
                         class="w-full border-2 border-green-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-600 bg-white text-gray-900 placeholder-gray-500 text-sm" 
@@ -23,7 +23,6 @@
                         autocomplete="off"
                     >
                 </div>
-                
                 <!-- Search Results Container -->
                 <div id="search-results" class="bg-white rounded-xl border border-gray-200 max-h-[300px] overflow-y-auto search-results">
                     <div id="search-placeholder" class="text-gray-500 text-sm">
