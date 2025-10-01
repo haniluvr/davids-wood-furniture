@@ -57,7 +57,7 @@ class SessionWishlistService
             
             $wishlistItem = WishlistItem::create([
                 'user_id' => $userId,
-                'session_id' => $sessionId,
+                'session_id' => $userId ? null : $sessionId, // For authenticated users, session_id should be null
                 'product_id' => $productId
             ]);
             
@@ -100,9 +100,9 @@ class SessionWishlistService
             $query = WishlistItem::where('product_id', $productId);
             
             if ($userId) {
-                $query->where('user_id', $userId);
+                $query->where('user_id', $userId)->whereNull('session_id');
             } else {
-                $query->where('session_id', $sessionId);
+                $query->where('session_id', $sessionId)->whereNull('user_id');
             }
             
             $deleted = $query->delete();
@@ -140,9 +140,9 @@ class SessionWishlistService
             $query = WishlistItem::with('product');
             
             if ($userId) {
-                $query->where('user_id', $userId);
+                $query->where('user_id', $userId)->whereNull('session_id');
             } else {
-                $query->where('session_id', $sessionId);
+                $query->where('session_id', $sessionId)->whereNull('user_id');
             }
             
             $items = $query->get();
@@ -173,9 +173,9 @@ class SessionWishlistService
             $query = WishlistItem::where('product_id', $productId);
             
             if ($userId) {
-                $query->where('user_id', $userId);
+                $query->where('user_id', $userId)->whereNull('session_id');
             } else {
-                $query->where('session_id', $sessionId);
+                $query->where('session_id', $sessionId)->whereNull('user_id');
             }
             
             return $query->exists();
@@ -298,9 +298,9 @@ class SessionWishlistService
             $query = WishlistItem::query();
             
             if ($userId) {
-                $query->where('user_id', $userId);
+                $query->where('user_id', $userId)->whereNull('session_id');
             } else {
-                $query->where('session_id', $sessionId);
+                $query->where('session_id', $sessionId)->whereNull('user_id');
             }
             
             $deletedCount = $query->delete();

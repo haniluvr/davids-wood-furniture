@@ -6,7 +6,7 @@
 <style>
     body {
         font-family: 'Inter', sans-serif;
-        background-color: #F8F8F8;
+        background-color: #f3efe7;
     }
     .account-card {
         background: white;
@@ -123,7 +123,7 @@
 @section('content')
 <!-- Main Content -->
 <div class="container mx-auto px-4 py-8">
-    <div class="flex flex-col md:flex-row gap-8 mt-5 pt-5">
+    <div class="flex flex-col md:flex-row gap-8 mt-5 pt-16">
         <!-- Sidebar -->
         <div class="w-full md:w-1/4 sticky top-8 self-start">
             <div class="bg-white rounded-xl shadow-sm p-6 mb-6 account-card">
@@ -179,78 +179,67 @@
                 
                 <!-- Personal Information Section -->
                 <div class="border-b border-gray-200 pb-8 mb-8">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-3">Personal Information</h3>
-                            <p class="text-gray-600 mb-6">Assertively utilize adaptive customer service for future-proof platforms. Completely drive optimal markets.</p>
-                    </div>
-                        <div class="space-y-4">
-                    <div>
-                                <label class="form-label block">FIRST NAME</label>
-                                <input type="text" name="first_name" value="{{ $user->first_name }}" class="w-full form-input">
-                    </div>
-                            <div>
-                                <label class="form-label block">SECOND NAME</label>
-                                <input type="text" name="last_name" value="{{ $user->last_name }}" class="w-full form-input">
-                </div>
-                            <div>
-                                <label class="form-label block">BIRTH DATE</label>
-                                <div class="relative">
-                                    <input type="text" placeholder="dd/mm/yy" class="w-full form-input">
-                                    <i data-lucide="calendar" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
-            </div>
-                        </div>
+                    <form id="personal-info-form" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div>
-                                <label class="form-label block">PHONE NUMBER</label>
-                                <input type="tel" name="phone" value="{{ $user->phone ?? '123456789' }}" class="w-full form-input">
-                                <p class="text-sm text-gray-500 mt-1">Keep 9-digit format with no spaces and dashes.</p>
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">Personal Information</h3>
+                            <p class="text-gray-600 mb-6">Update your personal details and contact information.</p>
                         </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="form-label block">FIRST NAME</label>
+                                <input type="text" name="first_name" value="{{ $user->first_name }}" class="w-full form-input" required>
+                            </div>
+                            <div>
+                                <label class="form-label block">LAST NAME</label>
+                                <input type="text" name="last_name" value="{{ $user->last_name }}" class="w-full form-input" required>
+                            </div>
+                            <div>
+                                <label class="form-label block">PHONE NUMBER</label>
+                                <input type="tel" name="phone" value="{{ $user->phone ?? '' }}" class="w-full form-input">
+                                <p class="text-sm text-gray-500 mt-1">Keep 9-digit format with no spaces and dashes.</p>
+                            </div>
                             <button type="submit" class="save-button">
                                 SAVE
                             </button>
-                    </div>
                         </div>
-            </div>
+                    </form>
+                </div>
 
                 <!-- E-mail Address Section -->
                 <div class="border-b border-gray-200 pb-8 mb-8">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <form id="email-form" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div>
                             <h3 class="text-xl font-bold text-gray-900 mb-3">E-mail address</h3>
-                            <p class="text-gray-600 mb-6">Assertively utilize adaptive customer service for future-proof platforms. Completely drive optimal markets.</p>
-                </div>
-                <div class="space-y-4">
+                            <p class="text-gray-600 mb-6">Update your email address and manage your account settings.</p>
+                        </div>
+                        <div class="space-y-4">
                             <div>
                                 <label class="form-label block">E-MAIL ADDRESS</label>
-                                <input type="email" name="email" value="{{ $user->email }}" class="w-full form-input">
-                        </div>
-                            <div>
-                                <label class="form-label block">PASSWORD</label>
-                                <input type="password" value="************" class="w-full form-input">
-                        </div>
+                                <input type="email" name="email" value="{{ $user->email }}" class="w-full form-input" required>
+                            </div>
                             <button type="submit" class="save-button">
                                 SAVE
                             </button>
-                    </div>
-                    </div>
-            </div>
+                        </div>
+                    </form>
+                </div>
 
                 <!-- Password Section -->
-                            <div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <form id="password-form" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div>
                             <h3 class="text-xl font-bold text-gray-900 mb-3">Password</h3>
-                            <p class="text-gray-600 mb-6">Assertively utilize adaptive customer service for future-proof platforms. Completely drive optimal markets.</p>
-                            </div>
+                            <p class="text-gray-600 mb-6">Change your account password for better security.</p>
+                        </div>
                         <div class="space-y-4">
                             <div>
                                 <label class="form-label block">CURRENT PASSWORD</label>
-                                <input type="text" value="{{ $user->email }}" class="w-full form-input">
+                                <input type="password" name="current_password" class="w-full form-input" required>
                             </div>
                             <div>
                                 <label class="form-label block">NEW PASSWORD</label>
                                 <div class="relative">
-                                    <input type="password" value="************" class="w-full form-input">
+                                    <input type="password" name="new_password" class="w-full form-input" required>
                                     <i data-lucide="eye" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 cursor-pointer"></i>
                                 </div>
                                 <p class="text-sm text-gray-500 mt-1">Make sure your password is 8 characters long and contains letters and numbers.</p>
@@ -258,7 +247,7 @@
                             <div>
                                 <label class="form-label block">CONFIRM PASSWORD</label>
                                 <div class="relative">
-                                    <input type="password" value="************" class="w-full form-input">
+                                    <input type="password" name="new_password_confirmation" class="w-full form-input" required>
                                     <i data-lucide="eye" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 cursor-pointer"></i>
                                 </div>
                             </div>
@@ -266,8 +255,8 @@
                                 SAVE
                             </button>
                         </div>
-                            </div>
-                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- Address Book Section -->
@@ -368,7 +357,7 @@
             <div id="my-wishlist-section" class="bg-white rounded-xl shadow-sm p-6 mb-8 account-card content-section" style="display: none;">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">My Wishlist</h2>
                 @if($wishlistItems->count() > 0)
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                         @foreach($wishlistItems as $item)
                         <div class="border border-gray-200 rounded-lg p-4">
                             <div class="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
@@ -510,35 +499,100 @@
             });
         });
 
-        // Handle form submissions
-        const myDetailsForm = document.getElementById('my-details-form');
-        if (myDetailsForm) {
-            myDetailsForm.addEventListener('submit', async function(e) {
+        // Handle personal information form submission
+        const personalInfoForm = document.getElementById('personal-info-form');
+        if (personalInfoForm) {
+            personalInfoForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const formData = new FormData(this);
                 const data = Object.fromEntries(formData);
                 
                 try {
-                const response = await fetch('/api/account/profile/update', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showNotification('Profile updated successfully!', 'success');
-                } else {
-                    showNotification(result.message || 'Failed to update profile', 'error');
+                    const response = await fetch('/api/account/profile/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('Personal information updated successfully!', 'success');
+                    } else {
+                        showNotification(result.message || 'Failed to update personal information', 'error');
+                    }
+                } catch (error) {
+                    showNotification('An error occurred while updating personal information', 'error');
                 }
-            } catch (error) {
-                showNotification('An error occurred while updating profile', 'error');
-            }
+            });
+        }
+
+        // Handle email form submission
+        const emailForm = document.getElementById('email-form');
+        if (emailForm) {
+            emailForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData);
+                
+                try {
+                    const response = await fetch('/api/account/profile/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('Email updated successfully!', 'success');
+                    } else {
+                        showNotification(result.message || 'Failed to update email', 'error');
+                    }
+                } catch (error) {
+                    showNotification('An error occurred while updating email', 'error');
+                }
+            });
+        }
+
+        // Handle password form submission
+        const passwordForm = document.getElementById('password-form');
+        if (passwordForm) {
+            passwordForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData);
+                
+                try {
+                    const response = await fetch('/api/account/password/change', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showNotification('Password changed successfully!', 'success');
+                        passwordForm.reset();
+                    } else {
+                        showNotification(result.message || 'Failed to change password', 'error');
+                    }
+                } catch (error) {
+                    showNotification('An error occurred while changing password', 'error');
+                }
             });
         }
 

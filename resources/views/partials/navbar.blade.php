@@ -19,12 +19,12 @@
             <div class="hidden md:flex items-center justify-center flex-1">
                 <ul class="flex items-center space-x-8">
                     <li>
-                        <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" aria-current="page" href="{{ route('home') }}#home">
+                        <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" aria-current="page" href="{{ route('home') }}">
                             <button class="btn" type="button">Home</button>
                         </a>
                     </li>
                     <li>
-                        <a class="nav-link {{ request()->routeIs('products') ? 'active' : '' }}" href="{{ route('products') }}#products">
+                        <a class="nav-link {{ request()->routeIs('products') ? 'active' : '' }}" href="{{ route('products') }}">
                             <button class="btn" type="button">Products</button>
                         </a>
                     </li>

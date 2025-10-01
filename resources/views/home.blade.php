@@ -3,6 +3,362 @@
 @section('title', 'David\'s Wood Furniture - Handcrafteded furniture with timeless design.')
 
 @section('content')
+<style>
+/* Home page specific styles */
+
+/* Hero Section */
+.hero-container {
+  background-image: url({{ asset('frontend/assets/hero-bg.jpg') }});
+  background-size: cover;
+  background-position: bottom;
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-content {
+  transform: translateY(23%);
+}
+
+.badge-text {
+  background-color: rgba(243, 239, 231, 0.9);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  width: max-content;
+  display: inline-flex;
+  align-items: center;
+}
+
+.hero-container .hero-text {
+  transform: translateY(-50%);
+}
+
+.btn-browse:hover {
+  background-color: #0c0c0c;
+}
+
+/* Hero Carousel */
+.hero-section {
+  position: absolute;
+  width: 100%;
+  height: 80vh;
+  overflow: hidden;
+  transform: translateY(-67%);
+  z-index: -100;
+}
+
+.hero-slider {
+  position: relative;
+  height: 100%;
+}
+
+.slide {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  display: flex;
+  transform: translateX(100%);
+  transition: transform 0.6s ease-out, opacity 0.6s ease-out;
+}
+
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.img-chair {
+  width: 32rem;
+  height: max-content;
+  translate: -50% 0%;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+.img-cabinet {
+  width: max-content;
+  height: 35rem;
+  translate: 50% 0%;
+  position: absolute;
+  bottom: 0;
+  filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+.img-lamp {
+  width: max-content;
+  height: 40rem;
+  translate: -10% -10%;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+/* Hero Indicators */
+.hero-indicators {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.indicator {
+  width: 12px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.indicator.active {
+  background-color: white;
+}
+
+/* Featured Furniture Section */
+.featured-furniture {
+  background-color: rgba(243, 239, 231);
+  padding: 5rem 13rem;
+}
+
+@media (max-width: 1200px) {
+  .featured-furniture {
+    padding: 3rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .featured-furniture {
+    padding: 2rem 1rem;
+  }
+}
+
+.featured-furniture h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.featured-furniture p {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+/* Filters */
+.filter-group {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 1rem;
+  background: none;
+  border-radius: 25px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.05);
+}
+
+.filter-btn {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #555555;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.filter-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #1a1a1a;
+}
+
+.filter-btn.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  color: #1a1a1a;
+}
+
+.sort-group span {
+  font-size: 0.9rem;
+}
+
+.sort-group select {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: none;
+  box-shadow: 0 0 3px rgba(221, 221, 221, 0.5);
+}
+
+.sort-group .form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  padding-right: 2.5rem; 
+}
+
+/* See More Button */
+#see-more-btn {
+  background-color: #1a1a1a;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+#see-more-btn:hover {
+  background-color: rgba(43, 58, 42, 0.75);
+}
+
+/* About Section */
+.about-container {
+  background-color: rgba(243, 239, 231);
+  padding: 5rem 13rem;
+}
+
+@media (max-width: 1200px) {
+  .about-container {
+    padding: 3rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .about-container {
+    padding: 2rem 1rem;
+  }
+}
+
+.about-section {
+  background-color: #fefefe;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.about-section .card, .container-craft {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.about-section .card-body {
+  padding: 1.5rem;
+}
+
+.about-section h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.about-section h5 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.about-section .icon {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  background-color: #f2ede5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+  font-size: 30px;
+  color: #1a1a1a;
+}
+
+.icon-line {
+  display: inline-block;
+  width: 4px;
+  height: 1.5rem;
+  background-color: rgba(240, 178, 122, 0.7);
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  border-radius: 10px;
+}
+
+.image-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.image-card img {
+  transition: transform 0.3s ease;
+}
+
+.image-card:hover img {
+  transform: scale(1.02);
+}
+
+.caption {
+  background-image: linear-gradient(to top, rgba(69, 69, 69, 0.7), rgba(255, 255, 255, 0));
+  padding: 0.5rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 0.875rem;
+  color: #fff;
+}
+
+.step-number {
+  height: 2rem;
+  width: 2rem;
+  font-size: 1rem;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.card-title strong {
+  font-size: 1.05rem;
+}
+
+.badge {
+  background-color: rgba(243, 239, 231);
+  font-size: 0.8rem;
+  font-weight: 500;
+  width: max-content;
+  border: 0.5px solid #e0e0e0;
+  padding: 0 0.5rem;
+}
+
+.badge .icon {
+  background: none;
+  height: 16px;
+  width: 16px;
+  color: #ffc107;
+}
+
+/* Utility classes for home page */
+.feather-small {
+  width: 17px;
+  height: 17px;
+}
+
+.lucide-small {
+  height: 18px;
+  width: 18px;
+}
+</style>
 <!-- hero -->
 <section class="hero-container" id="home">
     <div class="w-full hero-content">
@@ -18,19 +374,19 @@
             <p class="text-lg md:text-xl mt-3 mb-5">
                 Discover heirloom-quality pieces designed with timeless shapes, natural materials,<br>and meticulous craftsmanship—made to live with you for years.
             </p>
-            <a href="#products" class="bg-black text-white px-6 py-3 text-lg font-semibold rounded-xl mr-3 inline-block">Browse products</a>
+            <a href="#products" class="btn-browse bg-black text-white px-6 py-3 text-lg font-semibold rounded-xl mr-3 inline-block">Browse products</a>
             <span class="text-gray-700 text-lg">Sustainably sourced. Built to last.</span>
         </div>
         <section class="hero-section">
             <div class="hero-slider w-full">
                 <div class="slide active" data-name="Handcrafted Chair" data-price="₱12,999">
-                    <img data-src="{{ asset('frontend/assets/chair.png') }}" alt="Chair 1" class="img-chair lazy-load" draggable="false">
+                    <img src="{{ asset('frontend/assets/chair.png') }}" alt="Chair 1" class="img-chair" draggable="false">
                 </div>
                 <div class="slide" data-name="Modern Sofa" data-price="₱24,500">
-                    <img data-src="{{ asset('frontend/assets/cabinet.png') }}" alt="Sofa 1" class="img-cabinet lazy-load" draggable="false">
+                    <img src="{{ asset('frontend/assets/cabinet.png') }}" alt="Sofa 1" class="img-cabinet" draggable="false">
                 </div>
                 <div class="slide" data-name="Wooden Table" data-price="₱16,800">
-                    <img data-src="{{ asset('frontend/assets/floor-lamp.png') }}" alt="Table 1" class="img-lamp lazy-load" draggable="false">
+                    <img src="{{ asset('frontend/assets/floor-lamp.png') }}" alt="Table 1" class="img-lamp" draggable="false">
                 </div>
             </div>
             <div class="hero-indicators">
@@ -80,6 +436,7 @@
     </div>
 </section>
 
+<!-- about-->
 <!-- about-->
 <section class="about-container" id="about">
     <div class="about-section p-8 rounded-2xl flex flex-col gap-5">
@@ -147,20 +504,20 @@
             <div class="flex flex-col flex-1 gap-4 min-h-0"">
                 <div class="flex flex-1 gap-4 min-h-0">
                     <div class="flex-1 min-h-0 overflow-hidden rounded-lg image-card">
-                        <img data-src="{{ asset('frontend/assets/about-1.jpg') }}" alt="Hand tools before machines" class="w-full h-full object-cover lazy-load">
+                        <img src="{{ asset('frontend/assets/about-1.jpg') }}" alt="Hand tools before machines" class="w-full h-full object-cover">
                         <div class="caption text-sm p-3">
                             Hand tools before machines—feel the surface, read the grain.
                         </div>
                     </div>
                     <div class="flex-1 min-h-0 overflow-hidden rounded-lg image-card">
-                        <img data-src="{{ asset('frontend/assets/about-2.jpg') }}" alt="Natural oil-wax finishes" class="w-full h-full object-cover lazy-load">
+                        <img src="{{ asset('frontend/assets/about-2.jpg') }}" alt="Natural oil-wax finishes" class="w-full h-full object-cover">
                         <div class="caption text-sm p-3">
                             Natural oil-wax finishes enhance, never mask, the wood.
                         </div>
                     </div>
                 </div>
                 <div class="flex-1 min-h-0 overflow-hidden rounded-lg image-card">
-                    <img data-src="{{ asset('frontend/assets/about-3.jpg') }}" alt="Sunlit workshop" class="w-full h-full object-cover lazy-load">
+                    <img src="{{ asset('frontend/assets/about-3.jpg') }}" alt="Sunlit workshop" class="w-full h-full object-cover">
                     <div class="caption text-sm p-3">
                         Sunlit workshop where ideas meet the bench.
                     </div>

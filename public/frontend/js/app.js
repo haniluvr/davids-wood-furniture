@@ -785,6 +785,9 @@ async function updateWishlistOffcanvas() {
                     <div class="flex-1 ml-4">
                         <h6 class="text-sm font-medium text-gray-900">${p.name}</h6>
                         <p class="text-sm text-gray-500">₱${Math.floor(p.price).toLocaleString()}</p>
+                        <button class="btn-add-to-cart mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors" data-product-id="${p.id}">
+                            Add to Cart
+                        </button>
                     </div>
                     <div class="flex-shrink-0">
                         <button class="btn-remove-wishlist text-red-500 hover:text-red-700" data-product-id="${p.id}">
@@ -807,6 +810,47 @@ async function updateWishlistOffcanvas() {
                 updateWishlistOffcanvas();
                 updateWishlistButtonState(id);
                 await updateWishlistCount();
+            });
+        });
+
+        // Attach add to cart handlers
+        body.querySelectorAll('.btn-add-to-cart').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const productId = parseInt(btn.getAttribute('data-product-id'));
+                
+                try {
+                    // Add to cart
+                    const cartResponse = await window.api.addToCart(productId, 1);
+                    
+                    if (cartResponse.success) {
+                        // Remove from wishlist
+                        await window.api.removeFromWishlist(productId);
+                        
+                        // Update wishlist offcanvas
+                        await updateWishlistOffcanvas();
+                        
+                        // Update wishlist count
+                        await updateWishlistCount();
+                        
+                        // Update cart count if cart offcanvas is open
+                        const cartOffcanvas = document.getElementById('offcanvas-cart');
+                        if (cartOffcanvas && getComputedStyle(cartOffcanvas).visibility !== 'hidden') {
+                            await performLoadCartItems();
+                        }
+                        
+                        // Update cart count in navbar
+                        await updateCartCount();
+                        
+                        // Show success notification
+                        showNotification('Item moved to cart successfully!', 'success');
+                    } else {
+                        showNotification('Failed to add item to cart', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error moving item to cart:', error);
+                    showNotification('Failed to move item to cart', 'error');
+                }
             });
         });
 
