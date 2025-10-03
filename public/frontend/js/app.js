@@ -785,7 +785,7 @@ async function updateWishlistOffcanvas() {
                     <div class="flex-1 ml-4">
                         <h6 class="text-sm font-medium text-gray-900">${p.name}</h6>
                         <p class="text-sm text-gray-500">₱${Math.floor(p.price).toLocaleString()}</p>
-                        <button class="btn-add-to-cart mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors" data-product-id="${p.id}">
+                        <button class="btn-add-to-cart mt-1 px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors" data-product-id="${p.id}">
                             Add to Cart
                         </button>
                     </div>

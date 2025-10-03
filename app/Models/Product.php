@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -145,5 +146,73 @@ class Product extends Model
         }
 
         return Category::where('parent_id', $this->category_id)->get();
+    }
+
+    // Inventory relationships
+    public function inventoryMovements(): HasMany
+    {
+        return $this->hasMany(InventoryMovement::class);
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    // Inventory helper methods
+    public function isLowStock($threshold = 10): bool
+    {
+        return $this->stock_quantity <= $threshold && $this->stock_quantity > 0;
+    }
+
+    public function isOutOfStock(): bool
+    {
+        return $this->stock_quantity <= 0;
+    }
+
+    public function getStockStatusAttribute(): string
+    {
+        if ($this->isOutOfStock()) {
+            return 'out_of_stock';
+        } elseif ($this->isLowStock()) {
+            return 'low_stock';
+        }
+        return 'in_stock';
+    }
+
+    public function getStockStatusColorAttribute(): string
+    {
+        return match($this->stock_status) {
+            'out_of_stock' => 'text-red-600',
+            'low_stock' => 'text-yellow-600',
+            'in_stock' => 'text-green-600',
+            default => 'text-gray-600',
+        };
+    }
+
+    public function getStockStatusBadgeColorAttribute(): string
+    {
+        return match($this->stock_status) {
+            'out_of_stock' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+            'low_stock' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+            'in_stock' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+            default => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
+        };
+    }
+
+    // Scopes for inventory management
+    public function scopeLowStock($query, $threshold = 10)
+    {
+        return $query->where('stock_quantity', '<=', $threshold)->where('stock_quantity', '>', 0);
+    }
+
+    public function scopeOutOfStock($query)
+    {
+        return $query->where('stock_quantity', '<=', 0);
+    }
+
+    public function scopeInStock($query)
+    {
+        return $query->where('stock_quantity', '>', 0);
     }
 }

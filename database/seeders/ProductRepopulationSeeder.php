@@ -86,11 +86,6 @@ class ProductRepopulationSeeder extends Seeder
                 
                 // Generate pricing in Philippine Peso
                 $price = $this->generatePrice($spec['subcategory_id'], $i);
-                $salePrice = $this->generateSalePrice($price, $i);
-                
-                // Generate dimensions and weight
-                $dimensions = $this->generateDimensions($spec['subcategory_id']);
-                $weight = $this->generateWeight($spec['subcategory_id']);
                 
                 // Generate material
                 $material = $this->generateMaterial($spec['subcategory_id']);
@@ -108,13 +103,10 @@ class ProductRepopulationSeeder extends Seeder
                     'description' => $this->generateDescription($productName, $subcategory->name, $material),
                     'short_description' => $this->generateShortDescription($productName, $subcategory->name),
                     'price' => $price,
-                    'sale_price' => $salePrice,
                     'sku' => $this->generateSKU($spec['category_id'], $spec['subcategory_id'], $i),
                     'stock_quantity' => rand(5, 50),
                     'manage_stock' => true,
                     'in_stock' => true,
-                    'weight' => $weight,
-                    'dimensions' => $dimensions,
                     'material' => $material,
                     'images' => $images,
                     'gallery' => $gallery,
@@ -197,83 +189,7 @@ class ProductRepopulationSeeder extends Seeder
         return $basePrice + $variation;
     }
 
-    private function generateSalePrice($price, $index)
-    {
-        // 30% chance of having a sale price
-        if (rand(1, 10) <= 3) {
-            $discount = rand(10, 30);
-            return round($price * (1 - $discount / 100));
-        }
-        return null;
-    }
 
-    private function generateDimensions($subcategoryId)
-    {
-        $dimensions = [
-            // Beds
-            7 => ['200x200x45', '180x200x45', '160x200x45'],
-            8 => ['90x200x45', '120x200x45'],
-            9 => ['200x200x45', '180x200x45'],
-            10 => ['90x200x45', '120x200x45'],
-            11 => ['200x200x45', '180x200x45'],
-            12 => ['90x200x45', '120x200x45'],
-            13 => ['70x140x45', '80x160x45'],
-            // Cabinets
-            14 => ['80x40x60', '100x50x70'],
-            15 => ['200x60x200', '180x60x200'],
-            16 => ['120x50x80', '100x50x80'],
-            17 => ['150x40x80', '180x40x80'],
-            18 => ['120x40x200', '100x40x200'],
-            // Chairs
-            19 => ['70x70x90', '80x80x95'],
-            20 => ['45x45x85', '50x50x90'],
-            21 => ['35x35x45', '40x40x50'],
-            22 => ['70x70x90', '80x80x95'],
-            23 => ['200x80x40', '180x80x40'],
-            // Tables
-            24 => ['120x60x75', '100x50x75'],
-            25 => ['100x40x80', '120x40x80'],
-            26 => ['180x90x75', '200x100x75'],
-            27 => ['120x60x45', '100x50x45'],
-            28 => ['50x40x60', '60x40x60'],
-            29 => ['60x60x45', '70x70x45'],
-            30 => ['120x60x75', '140x70x75'],
-            31 => ['90x60x105', '100x60x105'],
-            32 => ['120x60x75', '100x50x75'],
-            // Shelves
-            33 => ['80x25x200', '100x25x200'],
-            34 => ['80x30x200', '100x30x200'],
-            // Sofas
-            35 => ['200x90x80', '180x90x80'],
-            36 => ['200x90x80', '180x90x80'],
-        ];
-
-        $options = $dimensions[$subcategoryId] ?? ['100x50x80'];
-        return $options[array_rand($options)];
-    }
-
-    private function generateWeight($subcategoryId)
-    {
-        $weights = [
-            // Beds
-            7 => ['45-65 kg'], 8 => ['25-40 kg'], 9 => ['35-55 kg'], 10 => ['30-45 kg'],
-            11 => ['50-70 kg'], 12 => ['20-35 kg'], 13 => ['15-25 kg'],
-            // Cabinets
-            14 => ['15-30 kg'], 15 => ['40-80 kg'], 16 => ['25-50 kg'], 17 => ['30-60 kg'], 18 => ['35-70 kg'],
-            // Chairs
-            19 => ['8-15 kg'], 20 => ['3-8 kg'], 21 => ['2-5 kg'], 22 => ['8-15 kg'], 23 => ['25-45 kg'],
-            // Tables
-            24 => ['20-40 kg'], 25 => ['15-30 kg'], 26 => ['30-60 kg'], 27 => ['10-25 kg'],
-            28 => ['5-15 kg'], 29 => ['8-20 kg'], 30 => ['25-50 kg'], 31 => ['15-35 kg'], 32 => ['20-40 kg'],
-            // Shelves
-            33 => ['5-15 kg'], 34 => ['15-35 kg'],
-            // Sofas
-            35 => ['60-100 kg'], 36 => ['50-90 kg'],
-        ];
-
-        $weightOptions = $weights[$subcategoryId] ?? ['10-20 kg'];
-        return $weightOptions[array_rand($weightOptions)];
-    }
 
     private function generateMaterial($subcategoryId)
     {

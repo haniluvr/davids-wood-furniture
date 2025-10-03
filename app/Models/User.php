@@ -27,13 +27,22 @@ class User extends Authenticatable
         'google_id',
         'avatar',
         'provider',
+        'phone',
+        'date_of_birth',
+        'address_line_1',
+        'address_line_2',
         'street',
         'barangay',
         'city',
         'province',
+        'state',
+        'postal_code',
         'zip_code',
+        'country',
+        'newsletter_subscribed',
         'newsletter_product_updates',
         'newsletter_special_offers',
+        'marketing_emails',
     ];
 
     /**
@@ -56,6 +65,11 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'date_of_birth' => 'date',
+            'newsletter_subscribed' => 'boolean',
+            'newsletter_product_updates' => 'boolean',
+            'newsletter_special_offers' => 'boolean',
+            'marketing_emails' => 'boolean',
         ];
     }
 
@@ -91,5 +105,13 @@ class User extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Get the user's wishlists.
+     */
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
     }
 }

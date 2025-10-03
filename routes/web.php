@@ -7,10 +7,77 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ApiController;
 use Illuminate\Support\Facades\Route;
 
+// Admin subdomain routes (MUST BE FIRST!)
+Route::domain('admin.davidswood.test')->name('admin.')->group(function () {
+    // Guest routes (login, forgot password, etc.)
+    Route::middleware('guest:admin')->group(function () {
+        Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login']);
+        Route::get('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
+        Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink']);
+    });
+    
+    // Protected admin routes
+    Route::middleware('admin')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+        Route::post('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
+        
+        // Product Management
+        Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
+        
+        // Order Management
+        Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
+        Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
+        Route::post('orders/{order}/refund', [App\Http\Controllers\Admin\OrderController::class, 'processRefund'])->name('orders.process-refund');
+        Route::get('orders/{order}/invoice', [App\Http\Controllers\Admin\OrderController::class, 'downloadInvoice'])->name('orders.download-invoice');
+        Route::get('orders/{order}/packing-slip', [App\Http\Controllers\Admin\OrderController::class, 'downloadPackingSlip'])->name('orders.download-packing-slip');
+        
+        // User Management
+        Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+        Route::post('users/{user}/suspend', [App\Http\Controllers\Admin\UserController::class, 'suspend'])->name('users.suspend');
+        Route::post('users/{user}/unsuspend', [App\Http\Controllers\Admin\UserController::class, 'unsuspend'])->name('users.unsuspend');
+        Route::post('users/{user}/verify-email', [App\Http\Controllers\Admin\UserController::class, 'verifyEmail'])->name('users.verify-email');
+        Route::post('users/{user}/unverify-email', [App\Http\Controllers\Admin\UserController::class, 'unverifyEmail'])->name('users.unverify-email');
+        Route::post('users/{user}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
+        Route::get('users-export', [App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
+        
+        // Admin User Management
+        Route::get('admins', [App\Http\Controllers\Admin\UserController::class, 'admins'])->name('users.admins');
+        Route::get('admins/create', [App\Http\Controllers\Admin\UserController::class, 'createAdmin'])->name('users.create-admin');
+        Route::post('admins', [App\Http\Controllers\Admin\UserController::class, 'storeAdmin'])->name('users.store-admin');
+        Route::delete('admins/{admin}', [App\Http\Controllers\Admin\UserController::class, 'destroyAdmin'])->name('users.destroy-admin');
+        
+        // Inventory Management
+        Route::get('inventory', [App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');
+        Route::get('inventory/low-stock', [App\Http\Controllers\Admin\InventoryController::class, 'lowStockAlerts'])->name('inventory.low-stock');
+        Route::get('inventory/movements', [App\Http\Controllers\Admin\InventoryController::class, 'movements'])->name('inventory.movements');
+        Route::get('inventory/export', [App\Http\Controllers\Admin\InventoryController::class, 'export'])->name('inventory.export');
+        Route::get('inventory/{product}', [App\Http\Controllers\Admin\InventoryController::class, 'show'])->name('inventory.show');
+        Route::get('inventory/{product}/adjust', [App\Http\Controllers\Admin\InventoryController::class, 'adjust'])->name('inventory.adjust');
+        Route::post('inventory/{product}/adjust', [App\Http\Controllers\Admin\InventoryController::class, 'processAdjustment'])->name('inventory.process-adjustment');
+        Route::post('products/{product}/add-stock', [App\Http\Controllers\Admin\InventoryController::class, 'addStock'])->name('inventory.add-stock');
+        Route::post('products/{product}/remove-stock', [App\Http\Controllers\Admin\InventoryController::class, 'removeStock'])->name('inventory.remove-stock');
+        Route::post('inventory/bulk-update', [App\Http\Controllers\Admin\InventoryController::class, 'bulkUpdate'])->name('inventory.bulk-update');
+        
+        // Settings
+        Route::resource('settings', App\Http\Controllers\Admin\SettingController::class)->only(['index', 'update']);
+        
+        // Analytics
+        Route::get('/analytics', function () {
+            return view('admin.analytics.index');
+        })->name('analytics');
+    });
+});
+
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/products', [ProductController::class, 'index'])->name('products');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+
+// Login page route (for admin redirects)
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login.form');
 
 // Authentication routes (using api.session middleware for guest session capture)
 Route::middleware(['api.session'])->group(function () {
@@ -41,11 +108,6 @@ Route::middleware(['api.session'])->group(function () {
     Route::delete('/api/wishlist/clear', [App\Http\Controllers\WishlistController::class, 'clear']);
     Route::post('/api/wishlist/migrate', [App\Http\Controllers\WishlistController::class, 'migrate']);
 });
-
-
-
-
-
 
 // API Integration routes for additional fetch
 Route::get('/api/weather', [ApiController::class, 'weather'])->name('api.weather');

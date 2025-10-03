@@ -20,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SyncWishlistSession::class,
         ]);
         
+        // Register admin middleware
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminAuth::class,
+        ]);
+        
         // Exclude CSRF from specific routes
         $middleware->validateCsrfTokens(except: [
             'api/cart/*',
