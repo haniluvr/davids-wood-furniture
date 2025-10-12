@@ -1,7 +1,7 @@
 // Frontend Configuration
 window.APP_CONFIG = {
     // API Configuration
-    API_BASE_URL: 'http://davidswood.test/api',
+    API_BASE_URL: window.location.origin + '/api',
     
     // App Settings
     APP_NAME: "David's Wood",
@@ -33,13 +33,5 @@ window.APP_CONFIG = {
 };
 
 // Environment-specific configurations
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    // Development environment
-    window.APP_CONFIG.API_BASE_URL = 'http://localhost:8000/api';
-} else if (window.location.hostname === 'davidswood.test') {
-    // Local development with custom domain
-    window.APP_CONFIG.API_BASE_URL = 'http://davidswood.test/api';
-} else {
-    // Production environment
-    window.APP_CONFIG.API_BASE_URL = 'https://your-domain.com/api';
-}
+// Always use the current domain origin for API calls
+window.APP_CONFIG.API_BASE_URL = window.location.origin + '/api';

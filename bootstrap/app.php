@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register admin middleware
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminAuth::class,
+            'force.https' => \App\Http\Middleware\ForceHttps::class,
         ]);
         
         // Exclude CSRF from specific routes
@@ -42,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Add CORS middleware to web routes for cart/wishlist API endpoints
         $middleware->web(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
+            // \App\Http\Middleware\ForceHttps::class, // Temporarily disabled for testing
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

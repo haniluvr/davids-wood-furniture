@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminMiddleware
+class ForceHttps
 {
     /**
      * Handle an incoming request.
@@ -15,9 +15,9 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Check if admin is authenticated using the admin guard
-        if (!auth()->guard('admin')->check()) {
-            return redirect()->route('admin.login');
+        // Force HTTPS in production or when APP_FORCE_HTTPS is true
+        if (config('app.force_https', false) && !$request->secure()) {
+            return redirect()->secure($request->getRequestUri(), 301);
         }
 
         return $next($request);

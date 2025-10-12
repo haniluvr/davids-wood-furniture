@@ -1,7 +1,7 @@
 // API Configuration and Helper Functions
 class DavidsWoodAPI {
     constructor() {
-        this.baseURL = window.APP_CONFIG?.API_BASE_URL || 'http://localhost:8000/api';
+        this.baseURL = window.APP_CONFIG?.API_BASE_URL || window.location.origin + '/api';
         this.token = localStorage.getItem(window.APP_CONFIG?.STORAGE_KEYS?.AUTH_TOKEN || 'auth_token');
     }
 
