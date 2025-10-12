@@ -31,8 +31,153 @@ if (typeof window.addEventListener === 'function') {
     }, 100); // Every 100ms
 }
 
+// Username availability check
+let usernameCheckTimeout = null;
+let isUsernameAvailable = false;
+
+async function checkUsernameAvailability(username) {
+    // Clear any existing timeout
+    if (usernameCheckTimeout) {
+        clearTimeout(usernameCheckTimeout);
+    }
+    
+    const usernameInput = document.getElementById('signup-username');
+    const validationHint = document.getElementById('username-validation-hint');
+    
+    if (!usernameInput || !validationHint) return;
+    
+    // Reset if username is too short
+    if (!username || username.length < 3) {
+        usernameInput.classList.remove('border-green-500', 'border-red-500');
+        usernameInput.classList.add('border-gray-300');
+        validationHint.style.display = 'none';
+        validationHint.textContent = '';
+        isUsernameAvailable = false;
+        return;
+    }
+    
+    // Check if username contains only valid characters
+    const validUsernamePattern = /^[a-zA-Z0-9_]+$/;
+    if (!validUsernamePattern.test(username)) {
+        usernameInput.classList.remove('border-green-500', 'border-gray-300');
+        usernameInput.classList.add('border-red-500');
+        validationHint.style.display = 'flex';
+        validationHint.classList.remove('text-green-600', 'text-gray-600');
+        validationHint.classList.add('text-red-600');
+        validationHint.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4 mr-1"></i> Username can only contain letters, numbers, and underscores';
+        isUsernameAvailable = false;
+        
+        // Re-initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        return;
+    }
+    
+    // Show checking state
+    validationHint.style.display = 'flex';
+    validationHint.classList.remove('text-green-600', 'text-red-600');
+    validationHint.classList.add('text-gray-600');
+    validationHint.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-1 animate-spin"></i> Checking availability...';
+    
+    // Re-initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    // Debounce the API call
+    usernameCheckTimeout = setTimeout(async () => {
+        try {
+            const response = await fetch(`/api/check-username/${encodeURIComponent(username)}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
+                validationHint.style.display = 'flex';
+                validationHint.classList.remove('text-green-600', 'text-gray-600');
+                validationHint.classList.add('text-red-600');
+                validationHint.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4 mr-1"></i> Error checking username availability';
+                isUsernameAvailable = false;
+                
+                // Re-initialize Lucide icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+                return;
+            }
+            
+            const result = await response.json();
+            
+            if (result.available) {
+                // Username is available
+                usernameInput.classList.remove('border-gray-300', 'border-red-500');
+                usernameInput.classList.add('border-green-500');
+                validationHint.style.display = 'flex';
+                validationHint.classList.remove('text-red-600', 'text-gray-600');
+                validationHint.classList.add('text-green-600');
+                validationHint.innerHTML = '<i data-lucide="check" class="w-4 h-4 mr-1"></i> Username is available';
+                isUsernameAvailable = true;
+                
+                // Re-initialize Lucide icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            } else {
+                // Username is taken
+                usernameInput.classList.remove('border-gray-300', 'border-green-500');
+                usernameInput.classList.add('border-red-500');
+                validationHint.style.display = 'flex';
+                validationHint.classList.remove('text-green-600', 'text-gray-600');
+                validationHint.classList.add('text-red-600');
+                validationHint.innerHTML = '<i data-lucide="x" class="w-4 h-4 mr-1"></i> Username is already taken';
+                isUsernameAvailable = false;
+                
+                // Re-initialize Lucide icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        } catch (error) {
+            console.error('Error checking username:', error);
+            validationHint.style.display = 'flex';
+            validationHint.classList.remove('text-green-600', 'text-gray-600');
+            validationHint.classList.add('text-red-600');
+            validationHint.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4 mr-1"></i> Error checking username availability';
+            isUsernameAvailable = false;
+            
+            // Re-initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+    }, 500); // Wait 500ms after user stops typing
+}
+
 // Authentication and Login Handler
 document.addEventListener('DOMContentLoaded', function() {
+    // Username availability check
+    const usernameInput = document.getElementById('signup-username');
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            const username = this.value.trim();
+            checkUsernameAvailability(username);
+        });
+        
+        usernameInput.addEventListener('blur', function() {
+            const username = this.value.trim();
+            if (username.length >= 3) {
+                checkUsernameAvailability(username);
+            }
+        });
+    }
+    
     // Enable/disable signup button based on form validation
     const signupButton = document.getElementById('signup-submit');
     const signupForm = document.getElementById('signup-form');
@@ -71,8 +216,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const emailValid = emailVal.includes('@') && emailVal.includes('.');
             const validPasswordLength = passwordVal.length >= 8;
             const confirmPasswordNotEmpty = confirmPasswordVal.length > 0;
+            const usernameValid = usernameVal.length >= 3 && isUsernameAvailable;
             
-            const shouldEnable = allFieldsFilled && passwordsMatch && emailValid && validPasswordLength && confirmPasswordNotEmpty;
+            const shouldEnable = allFieldsFilled && passwordsMatch && emailValid && validPasswordLength && confirmPasswordNotEmpty && usernameValid;
             
             // Force enable if validation is true and manually remove disable attribute
             if (shouldEnable) {
@@ -197,8 +343,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const passwordsMatch = passwordVal === confirmPasswordVal && passwordVal.length > 0 && confirmPasswordVal.length > 0;
             const emailValid = emailVal.includes('@') && emailVal.includes('.');
             const validPasswordLength = passwordVal.length >= 8;
+            const usernameValid = usernameVal.length >= 3 && isUsernameAvailable;
             
-            if (allFieldsFilled && passwordsMatch && emailValid && validPasswordLength) {
+            if (allFieldsFilled && passwordsMatch && emailValid && validPasswordLength && usernameValid) {
                 const theButton = document.getElementById('signup-submit');
                 if (theButton) {
                     theButton.disabled = false;
@@ -219,10 +366,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Handle Login Form Submission
+    let isSubmittingLogin = false; // Prevent duplicate submissions
     const loginForm = document.getElementById('login-form');
-    if (loginForm) {
+    
+    if (loginForm && !loginForm.dataset.listenerAttached) {
+        // Mark that we've attached the listener to prevent duplicates
+        loginForm.dataset.listenerAttached = 'true';
+        
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation(); // Stop event from bubbling
+            
+            // Prevent duplicate submissions
+            if (isSubmittingLogin) {
+                return;
+            }
+            
+            isSubmittingLogin = true;
+            
             const formData = new FormData(this);
             const data = {
                 username: formData.get('username'),
@@ -262,25 +423,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('modal-login')?.classList.add('hidden');
                     location.reload();
                 } else {
-                    alert(result.message || 'Login failed');
+                    console.error('Login failed:', result.message || 'Unknown error');
+                    isSubmittingLogin = false;
                 }
             } catch (error) {
-                alert('An error occurred during login');
+                console.error('Login error:', error);
+                isSubmittingLogin = false;
             }
-        });
+        }, { once: false }); // Don't use once:true as it would allow re-attaching
     }
 
     // Handle Registration Form Submission
     // signupForm already declared above, so reuse it
-    if (signupForm) {
+    let isSubmittingRegistration = false; // Prevent duplicate submissions
+    
+    if (signupForm && !signupForm.dataset.listenerAttached) {
+        // Mark that we've attached the listener to prevent duplicates
+        signupForm.dataset.listenerAttached = 'true';
+        
         signupForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation(); // Stop event from bubbling
             
-            // Ensure button doesn't get stuck disabled
+            // Prevent duplicate submissions
+            if (isSubmittingRegistration) {
+                return;
+            }
+            
+            isSubmittingRegistration = true;
+            
+            // Disable button during submission
             const signupButton = document.getElementById('signup-submit');
             if (signupButton) {
-                signupButton.disabled = false; // Enable it right before processing
-                signupButton.disabled = true; // Then properly disable during submission
+                signupButton.disabled = true;
             }
             
             const formData = new FormData(this);
@@ -303,6 +478,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify(data)
                 });
                 
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response from registration:', text);
+                    // Silent failure - no alert popup
+                    if (signupButton) {
+                        signupButton.disabled = false;
+                    }
+                    isSubmittingRegistration = false;
+                    return;
+                }
+                
                 const result = await response.json();
                 
                 if (result.success) {
@@ -323,31 +510,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Hide modals and reload page
                     document.getElementById('modal-signup')?.classList.add('hidden');
-                    location.reload();
+                    
+                    // Add a small delay to ensure session is saved
+                    setTimeout(() => {
+                        location.reload();
+                    }, 300);
                 } else {
+                    // Log validation errors to console only
                     if (result.errors) {
-                        let errorMessage = '';
-                        Object.keys(result.errors).forEach(key => {
-                            errorMessage += `${key}: ${result.errors[key].join(', ')}\n`;
-                        });
-                        alert(errorMessage);
-                    } else {
-                        alert(result.message || 'Registration failed');
+                        console.error('Registration validation errors:', result.errors);
+                    } else if (result.message) {
+                        console.error('Registration failed:', result.message);
                     }
                     
                     // Re-enable button on error
                     if (signupButton) {
                         signupButton.disabled = false;
                     }
+                    isSubmittingRegistration = false;
                 }
             } catch (error) {
-                alert('An error occurred during registration: ' + error.message);
+                console.error('Registration error:', error);
                 // Re-enable button on error
                 if (signupButton) {
                     signupButton.disabled = false;
                 }
+                isSubmittingRegistration = false;
             }
-        });
+        }, { once: false }); // Don't use once:true as it would allow re-attaching
     }
 
     // Handle Logout - Simplified

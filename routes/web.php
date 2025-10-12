@@ -87,6 +87,7 @@ Route::middleware(['api.session'])->group(function () {
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
     Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+    Route::get('/api/check-username/{username}', [AuthController::class, 'checkUsername'])->name('check.username');
 });
 
 // Cart routes (using web middleware for proper session handling)
@@ -183,6 +184,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/account/address/add', [AccountController::class, 'addAddress']);
     Route::post('/api/account/address/update', [AccountController::class, 'updateAddress']);
     Route::post('/api/account/logout', [AccountController::class, 'logout']);
+});
+
+// Test username availability endpoint
+Route::get('/test-username-check/{username}', function ($username) {
+    $exists = \App\Models\User::where('username', $username)->exists();
+    return response()->json([
+        'username' => $username,
+        'exists' => $exists,
+        'available' => !$exists,
+        'message' => $exists ? 'Username is already taken' : 'Username is available'
+    ]);
+});
+
+// Test registration endpoint
+Route::get('/test-register-form', function () {
+    return view('test-register');
 });
 
 // Debug routes for testing

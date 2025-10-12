@@ -53,25 +53,55 @@ class AuthController extends Controller
         
         return $username;
     }
+    
+    /**
+     * Check if username is available
+     */
+    public function checkUsername($username): JsonResponse
+    {
+        \Log::info('Checking username availability', ['username' => $username]);
+        
+        $exists = User::where('username', $username)->exists();
+        
+        \Log::info('Username check result', [
+            'username' => $username,
+            'exists' => $exists,
+            'available' => !$exists
+        ]);
+        
+        return response()->json([
+            'available' => !$exists,
+            'message' => $exists ? 'Username is already taken' : 'Username is available'
+        ], 200, ['Content-Type' => 'application/json']);
+    }
+    
     public function register(Request $request): JsonResponse
     {
         // Capture session ID IMMEDIATELY at the start of the method
         $originalSessionId = session()->getId();
         
-        \Log::info('AuthController: Register method started - IMMEDIATE session capture', [
+        \Log::info('AuthController: Register method started', [
             'immediate_session_id' => $originalSessionId,
-            'authenticated' => \Auth::check()
+            'authenticated' => \Auth::check(),
+            'request_data' => $request->all(),
+            'request_method' => $request->method(),
+            'content_type' => $request->header('Content-Type')
         ]);
         
         $validator = Validator::make($request->all(), [
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'username' => 'required|string|unique:users',
+            'username' => 'required|string|min:3|max:20|unique:users|regex:/^[a-zA-Z0-9_]+$/',
             'password' => 'required|string|min:8',
         ]);
 
         if ($validator->fails()) {
+            \Log::error('Registration validation failed', [
+                'errors' => $validator->errors()->toArray(),
+                'input' => $request->all()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -98,40 +128,59 @@ class AuthController extends Controller
             'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists()
         ]);
         
-                // Preserve guest data before authentication
-                $sessionWishlistService = new \App\Services\SessionWishlistService();
-                $preservedWishlistData = $sessionWishlistService->preserveGuestWishlistData($guestSessionId);
-                
-                // Migrate guest data BEFORE authentication to prevent session loss
-                $cartController = new CartController();
-                $cartController->migrateCartToUser($user->id, $guestSessionId);
-                
-                $sessionWishlistService->migrateGuestToUser($user->id, $guestSessionId);
-                
-                // If migration failed, restore from preserved data
-                if (count($preservedWishlistData) > 0) {
-                    $userWishlistCount = \App\Models\WishlistItem::where('user_id', $user->id)->count();
-                    if ($userWishlistCount === 0) {
-                        \Log::info('Migration may have failed, restoring from preserved data');
-                        $sessionWishlistService->restoreGuestWishlistData($user->id, $preservedWishlistData);
-                    }
-                }
-                
-                Auth::login($user);
+        // Migrate guest data BEFORE authentication to prevent session loss
+        try {
+            $cartController = new CartController();
+            $cartController->migrateCartToUser($user->id, $guestSessionId);
+            
+            $sessionWishlistService = new \App\Services\SessionWishlistService();
+            $sessionWishlistService->migrateGuestToUser($user->id, $guestSessionId);
+            
+            \Log::info('Guest data migration completed successfully');
+        } catch (\Exception $e) {
+            \Log::error('Guest data migration failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            // Continue with registration even if migration fails
+        }
+        
+        Auth::login($user);
+        
+        // Regenerate session to prevent session fixation
+        $request->session()->regenerate();
+        
+        // Ensure session is saved
+        $request->session()->save();
 
         // Generate a remember token for API authentication
         $user = Auth::user();
         $token = \Illuminate\Support\Str::random(60);
         $user->remember_token = $token;
         $user->save();
+        
+        \Log::info('User registered and logged in', [
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'authenticated' => Auth::check(),
+            'session_id' => session()->getId()
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Registration successful',
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+            ],
             'data' => [
                 'token' => $token
             ],
+            'authenticated' => Auth::check(),
             'redirect' => route('home')
         ]);
     }

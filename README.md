@@ -121,7 +121,7 @@ Before you begin, ensure you have the following installed:
 
 #### Clone the Repository
 ```bash
-git clone https://github.com/yourusername/davids-wood-furniture.git
+git clone https://github.com/haniluvr/davids-wood-furniture.git
 cd davids-wood-furniture
 ```
 
@@ -878,22 +878,23 @@ SOFTWARE.
 ## 📞 Contact
 
 ### Project Links
-- **Repository**: [https://github.com/yourusername/davids-wood-furniture](https://github.com/yourusername/davids-wood-furniture)
-- **Issue Tracker**: [https://github.com/yourusername/davids-wood-furniture/issues](https://github.com/yourusername/davids-wood-furniture/issues)
-- **Documentation**: [https://github.com/yourusername/davids-wood-furniture/wiki](https://github.com/yourusername/davids-wood-furniture/wiki)
+- **Repository**: [https://github.com/haniluvr/davids-wood-furniture](https://github.com/haniluvr/davids-wood-furniture)
+- **Issue Tracker**: [https://github.com/haniluvr/davids-wood-furniture/issues](https://github.com/haniluvr/davids-wood-furniture/issues)
+- **Documentation**: [https://github.com/haniluvr/davids-wood-furniture/wiki](https://github.com/haniluvr/davids-wood-furniture/wiki)
 
 ### Get In Touch
-- **Email**: support@davidswood.com
-- **Website**: https://davidswood.test
-- **Twitter**: [@davidswoodfurn](https://twitter.com/davidswoodfurn)
-- **Discord**: [Join our community](https://discord.gg/davidswoodfurniture)
+- **Email**: hvniluvr@gmail.com
+- **Website**: https://hvniluvr.carrd.co/
+- **Twitter**: [@hvniluvr](https://twitter.com/hvniluvr)
+- **Discord**: [@haniluvr](https://discord.com/users/914445892180906005)
+- **Instagram**: [@hvniluvr](https://www.instagram.com/hvniluvr)
 
 ### Support
 For support, please:
 1. Check the [Troubleshooting](#-troubleshooting) section
-2. Search [existing issues](https://github.com/yourusername/davids-wood-furniture/issues)
-3. Create a [new issue](https://github.com/yourusername/davids-wood-furniture/issues/new) if needed
-4. Join our [Discord community](https://discord.gg/davidswoodfurniture) for real-time help
+2. Search [existing issues](https://github.com/haniluvr/davids-wood-furniture/issues)
+3. Create a [new issue](https://github.com/haniluvr/davids-wood-furniture/issues/new) if needed
+4. Message me on [Discord](https://discord.com/users/914445892180906005) for real-time help
 
 ---
 
@@ -940,7 +941,7 @@ For support, please:
 - [ ] Marketing automation
 
 ### Feature Requests
-Have an idea? [Submit a feature request](https://github.com/yourusername/davids-wood-furniture/issues/new?labels=enhancement)
+Have an idea? [Submit a feature request](https://github.com/haniluvr/davids-wood-furniture/issues/new?labels=enhancement)
 
 ---
 
@@ -1105,8 +1106,8 @@ If you still have issues:
    php artisan route:list
    php artisan config:show
    ```
-4. **Search Issues**: [GitHub Issues](https://github.com/yourusername/davids-wood-furniture/issues)
-5. **Ask for Help**: [Create an issue](https://github.com/yourusername/davids-wood-furniture/issues/new)
+4. **Search Issues**: [GitHub Issues](https://github.com/haniluvr/davids-wood-furniture/issues)
+5. **Ask for Help**: [Create an issue](https://github.com/haniluvr/davids-wood-furniture/issues/new)
 
 ### Useful Commands
 
@@ -1210,7 +1211,7 @@ Renamed:
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/yourusername/davids-wood-furniture.git
+git clone https://github.com/haniluvr/davids-wood-furniture.git
 cd davids-wood-furniture
 composer install
 npm install

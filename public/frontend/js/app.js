@@ -1536,57 +1536,8 @@ function initAuthModals() {
     togglePassword('signup-password', 'toggle-signup-password');
     togglePassword('signup-confirm-password', 'toggle-confirm-password');
     
-    // Form submissions
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('login-username').value; // Using email field
-            const password = document.getElementById('login-password').value;
-            
-            const result = await window.authManager.login(email, password);
-            
-            if (result.success) {
-                showNotification('Login successful!', 'success');
-                if (typeof window.hidemodallogin === 'function') {
-                    window.hidemodallogin();
-                }
-                // Migrate guest wishlist to user account
-                await migrateGuestWishlist();
-            } else {
-                showNotification(result.message, 'error');
-            }
-        });
-    }
-    
-    if (signupForm) {
-        signupForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const userData = {
-                name: document.getElementById('signup-firstname').value + ' ' + document.getElementById('signup-lastname').value,
-                email: document.getElementById('signup-email').value,
-                password: document.getElementById('signup-password').value,
-                password_confirmation: document.getElementById('signup-confirm-password').value,
-            };
-            
-            const result = await window.authManager.register(userData);
-            
-            if (result.success) {
-                showNotification('Registration successful!', 'success');
-                if (typeof window.hidemodalsignup === 'function') {
-                    window.hidemodalsignup();
-                }
-                // Migrate guest wishlist to user account
-                await migrateGuestWishlist();
-            } else {
-                showNotification(result.message, 'error');
-            }
-        });
-    }
+    // Login and signup form submissions are now handled in auth.js
+    // No need for duplicate listeners here
     
     // Modal switching
     const switchToSignup = document.getElementById('switch-to-signup');

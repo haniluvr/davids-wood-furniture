@@ -378,54 +378,8 @@
                     });
                 }
                 
-                // ADD THE FORM SUBMISSION HANDLER HERE!
-                const signupForm = modalElement.querySelector('#signup-form');
-                if (signupForm) {
-                    signupForm.addEventListener('submit', async function(e) {
-                        e.preventDefault();
-                        
-                        const userData = {
-                            firstName: modalElement.querySelector('#signup-firstname').value,
-                            lastName: modalElement.querySelector('#signup-lastname').value,
-                            email: modalElement.querySelector('#signup-email').value,
-                            username: modalElement.querySelector('#signup-username').value,
-                            password: modalElement.querySelector('#signup-password').value,
-                            confirmPassword: modalElement.querySelector('#signup-confirm-password').value
-                        };
-                        
-                        try {
-                            // Use relative path that will work from current URL
-                            const registerUrl = '/davids-wood-furniture/public/register';
-                            const response = await fetch(registerUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                },
-                                body: JSON.stringify(userData)
-                            });
-                            
-                            const result = await response.json();
-                            
-                            if (result.success) {
-                                // Close modal
-                                if (typeof window.hidemodalsignup === 'function') {
-                                    window.hidemodalsignup();
-                                }
-                                // Reload page to update navbar
-                                window.location.reload();
-                            } else {
-                                if (result.errors) {
-                                    console.error('Validation errors:', result.errors);
-                                }
-                                alert('Registration failed: ' + result.message);
-                            }
-                        } catch (error) {
-                            console.error('💥 Registration error:', error);
-                            alert('Registration failed: ' + error.message);
-                        }
-                    });
-                }
+                // Registration form submission is now handled in auth.js
+                // No duplicate listener needed here
                 
                 // Re-initialize Lucide icons after modal opens
                 setTimeout(() => {
@@ -746,6 +700,7 @@
                 // Login and Signup Modal Buttons
                 const openLoginBtn = document.getElementById('open-login-modal');
                 const openSignupBtn = document.getElementById('open-signup-modal');
+                const accountMenu = document.getElementById('account-menu');
                 
                 if (openLoginBtn) {
                     openLoginBtn.addEventListener('click', function(event) {
@@ -815,81 +770,11 @@
                     });
                 }
                 
-                // Logout Button Handler  
-                const logoutBtn = document.getElementById('logout-btn');
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', async function(e) {
-                        e.preventDefault();
-                        
-                        try {
-                            const response = await fetch('/davids-wood-furniture/public/logout', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                }
-                            });
-                            
-                            const result = await response.json();
-                            
-                            if (result.success) {
-                                // Reload the page to update navbar state  
-                                window.location.reload();
-                            } else {
-                                console.error('❌ Logout failed:', result.message);
-                                alert('Logout failed: ' + result.message);
-                            }
-                        } catch (error) {
-                            console.error('💥 Logout error:', error);
-                            // Even if there's an error, try to reload the page to reset the UI
-                            window.location.reload();
-                        }
-                    });
-                }
+                // Logout button is now handled in auth.js
+                // No duplicate listener needed here
 
-                // Login Form Submission Handler  
-                const loginForm = document.getElementById('login-form');
-                if (loginForm) {
-                    loginForm.addEventListener('submit', async function(e) {
-                        e.preventDefault();
-                        
-                        const username = document.getElementById('login-username').value;
-                        const password = document.getElementById('login-password').value;
-                        
-                        const loginData = {
-                            username: username,
-                            password: password
-                        };
-                        
-                        try {
-                            const response = await fetch('/davids-wood-furniture/public/login', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                },
-                                body: JSON.stringify(loginData)
-                            });
-                            
-                            const result = await response.json();
-                            
-                            if (result.success) {
-                                // Close modal
-                                if (typeof window.hidemodallogin === 'function') {
-                                    window.hidemodallogin();
-                                }
-                                // Reload page to update navbar
-                                window.location.reload();
-                            } else {
-                                console.error('❌ Login failed:', result.message);
-                                alert('Login failed: ' + result.message);
-                            }
-                        } catch (error) {
-                            console.error('💥 Login error:', error);
-                            alert('Login failed: ' + error.message);
-                        }
-                    });
-                }
+                // Login form submission is now handled in auth.js
+                // No duplicate listener needed here
 
                 // Mobile menu toggle
                 const mobileMenuBtn = document.getElementById('mobile-menu-button');

@@ -9,7 +9,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="login-form">
+                <form id="login-form" onsubmit="return false;" action="javascript:void(0);" method="post">
                     <!-- Username -->
                     <div class="mb-5">
                       <label for="login-username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>

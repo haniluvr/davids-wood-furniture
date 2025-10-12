@@ -39,8 +39,11 @@ class DavidsWoodAPI {
 
     // Make API request
     async request(endpoint, options = {}) {
-        // Special handling for logout - use web routes, not API routes
-        const url = endpoint === '/logout' ? window.location.origin + '/logout' : `${this.baseURL}${endpoint}`;
+        // Special handling for auth routes - use web routes, not API routes
+        const authRoutes = ['/logout', '/login', '/register'];
+        const url = authRoutes.includes(endpoint) 
+            ? window.location.origin + endpoint 
+            : `${this.baseURL}${endpoint}`;
         const config = {
             headers: this.getHeaders(),
             credentials: 'include', // Include cookies for session management

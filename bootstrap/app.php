@@ -31,7 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/cart/*',
             'api/wishlist/*',
             'api/products/*',
-            'logout'
+            'api/check-username/*',
+            'logout',
+            'register',
+            'login'
         ]);
         
         // Add CORS and session middleware to API routes
