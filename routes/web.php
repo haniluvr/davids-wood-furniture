@@ -74,9 +74,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/products', [ProductController::class, 'index'])->name('products');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-// Login page route (for admin redirects)
+// Login page route (for admin redirects) - redirect to home with login modal
 Route::get('/login', function () {
-    return view('auth.login');
+    return redirect()->route('home')->with('show_login_modal', true);
 })->name('login.form');
 
 // Authentication routes (using api.session middleware for guest session capture)
@@ -183,7 +183,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/account/newsletter/update', [AccountController::class, 'updateNewsletterPreferences']);
     Route::post('/api/account/address/add', [AccountController::class, 'addAddress']);
     Route::post('/api/account/address/update', [AccountController::class, 'updateAddress']);
+    Route::delete('/api/account/archive', [AccountController::class, 'archiveAccount']);
     Route::post('/api/account/logout', [AccountController::class, 'logout']);
+    Route::get('/api/account/orders', [AccountController::class, 'getOrders']);
 });
 
 // Test username availability endpoint

@@ -28,6 +28,7 @@ class User extends Authenticatable
         'avatar',
         'provider',
         'phone',
+        'region',
         'date_of_birth',
         'address_line_1',
         'address_line_2',

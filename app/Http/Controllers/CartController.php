@@ -55,7 +55,7 @@ class CartController extends Controller
             }
             
             $subtotal = $cartItems->sum('total_price');
-            $totalItems = $cartItems->sum('quantity');
+            $totalItems = $cartItems->count(); // Count number of items, not quantity
             
             return response()->json([
                 'success' => true,

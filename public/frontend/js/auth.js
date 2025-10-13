@@ -565,13 +565,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('🟢 LOGOUT BUTTON: authManager not found!');
                 }
                 
-                console.log('🟢 LOGOUT BUTTON: Reloading page to ensure clean state');
-                // Reload page to ensure clean state
-                location.reload();
+                console.log('🟢 LOGOUT BUTTON: Redirecting to homepage');
+                // Redirect to homepage after logout
+                window.location.href = '/';
             } catch (error) {
                 console.error('🟢 LOGOUT BUTTON: Error occurred', error);
-                // Still reload to ensure logout completes
-                location.reload();
+                // Still redirect to homepage to ensure logout completes
+                window.location.href = '/';
             }
         }
     });

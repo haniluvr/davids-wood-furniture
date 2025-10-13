@@ -617,3 +617,21 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+    // Check if we should show login modal (from /login redirect)
+    @if(session('show_login_modal'))
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a moment for the page to fully load
+            setTimeout(function() {
+                const loginModal = document.getElementById('login-modal');
+                if (loginModal) {
+                    loginModal.classList.remove('hidden');
+                    loginModal.classList.add('flex');
+                }
+            }, 500);
+        });
+    @endif
+</script>
+@endpush
