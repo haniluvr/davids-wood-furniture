@@ -40,13 +40,13 @@ class TestOrdersSeeder extends Seeder
 
             $order = Order::create([
                 'user_id' => 1,
-                'order_number' => 'ORD-2024-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT),
+                'order_number' => Order::generateOrderNumber(),
                 'status' => $status,
                 'subtotal' => 0, // Will calculate after adding items
                 'tax_amount' => 0,
                 'shipping_amount' => 15.00,
                 'total_amount' => 0, // Will calculate after adding items
-                'currency' => 'USD',
+                'currency' => 'PHP',
                 'billing_address' => [
                     'name' => 'John Doe',
                     'street' => '123 Main Street',

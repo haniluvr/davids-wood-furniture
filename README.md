@@ -12,67 +12,70 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [Features](#-features)
-- [Demo](#-demo)
-- [Prerequisites](#-prerequisites)
-- [Installation](#-installation)
+- [Features](#features)
+- [Demo](#demo)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
   - [Basic Setup](#1-basic-setup)
   - [Subdomain Configuration](#2-subdomain-configuration)
   - [SSL/HTTPS Setup](#3-sslhttps-setup)
   - [Database Setup](#4-database-setup)
   - [Final Configuration](#5-final-configuration)
-- [Usage](#-usage)
-- [Project Structure](#-project-structure)
-- [Technologies Used](#-technologies-used)
-- [Contributing](#-contributing)
-- [Testing](#-testing)
-- [License](#-license)
-- [Authors & Acknowledgements](#-authors--acknowledgements)
-- [Contact](#-contact)
-- [Roadmap](#-roadmap)
-- [Troubleshooting](#-troubleshooting)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Technologies Used](#technologies-used)
+- [Contributing](#contributing)
+- [Testing](#testing)
+- [License](#license)
+- [Authors & Acknowledgements](#authors--acknowledgements)
+- [Contact](#contact)
+- [Roadmap](#roadmap)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-## ✨ Features
+## Features
 
 ### Customer Portal
-- 🛍️ **Product Catalog** - Browse furniture by categories, rooms, and subcategories
-- 🔍 **Advanced Search** - Filter products by price, category, availability
-- 🛒 **Shopping Cart** - Add/remove items, update quantities, real-time total calculation
-- ❤️ **Wishlist** - Save favorite items (Redis/Database/Session storage options)
-- 👤 **User Authentication** - Register, login, profile management
-- 📦 **Order Management** - Place orders, track status, view order history
-- 📱 **Responsive Design** - Mobile-first, optimized for all devices
-- 💳 **Secure Checkout** - Protected payment processing
-- 📄 **CMS Pages** - Dynamic content pages (About, Contact, Privacy, etc.)
+- **Product Catalog** - Browse furniture by categories, rooms, and subcategories
+- **Advanced Search** - Filter products by price, category, availability
+- **Shopping Cart** - Add/remove items, update quantities, real-time total calculation
+- **Wishlist** - Save favorite items (Redis/Database/Session storage options)
+- **User Authentication** - Register, login, profile management
+- **Order Management** - Place orders, track status, view order history with receipt generation
+- **Order Receipts** - Print and download professional receipts for completed orders
+- **Product Reviews & Ratings** - Submit reviews for purchased products with 5-star rating system
+- **Verified Purchase Reviews** - Only customers who purchased products can leave reviews
+- **Responsive Design** - Mobile-first, optimized for all devices
+- **Secure Checkout** - Protected payment processing
+- **CMS Pages** - Dynamic content pages (About, Contact, Privacy, etc.)
 
 ### Admin Dashboard (Subdomain)
-- 📊 **Real-time Dashboard** - Statistics, charts, recent activity
-- 📦 **Product Management** - Full CRUD operations with image uploads
-- 🏷️ **Category Management** - Hierarchical category structure
-- 📈 **Inventory Tracking** - Stock levels, low stock alerts, movement history
-- 👥 **Customer Management** - View and manage customer accounts
-- 🛍️ **Order Management** - Process orders, update status, generate reports
-- 📊 **Analytics** - Sales trends, revenue reports, customer insights
-- 🔔 **Notifications** - Admin alerts and activity monitoring
-- 📝 **Audit Logs** - Complete activity tracking for security
-- 👨‍💼 **Employee Management** - Role-based access control
-- ⚙️ **Settings** - Configure site settings, appearance, and behavior
+- **Real-time Dashboard** - Statistics, charts, recent activity
+- **Product Management** - Full CRUD operations with image uploads
+- **Category Management** - Hierarchical category structure
+- **Inventory Tracking** - Stock levels, low stock alerts, movement history
+- **Customer Management** - View and manage customer accounts
+- **Order Management** - Process orders, update status, generate reports, track shipments
+- **Analytics** - Sales trends, revenue reports, customer insights
+- **Notifications** - Admin alerts and activity monitoring
+- **Audit Logs** - Complete activity tracking for security
+- **Employee Management** - Role-based access control
+- **Settings** - Configure site settings, appearance, and behavior
 
 ### Security Features
-- 🔐 **Role-based Access Control** - Admin middleware protection
-- 🛡️ **HTTPS/SSL Support** - Secure data transmission
-- 🔑 **Password Encryption** - Bcrypt hashing
-- 🚫 **CSRF Protection** - Built-in Laravel security
-- 📋 **Audit Trail** - Complete action logging
-- 🌐 **Subdomain Isolation** - Admin panel separated from public site
+- **Role-based Access Control** - Admin middleware protection
+- **HTTPS/SSL Support** - Secure data transmission
+- **Password Encryption** - Bcrypt hashing
+- **CSRF Protection** - Built-in Laravel security
+- **Audit Trail** - Complete action logging
+- **Subdomain Isolation** - Admin panel separated from public site
 
 ---
 
-## 🎥 Demo
+## Demo
 
 **Public Site**: `https://davidswood.test:8443`  
 **Admin Panel**: `https://admin.davidswood.test:8443`
@@ -96,7 +99,7 @@ Password: password123
 
 ---
 
-## 🔧 Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
@@ -115,7 +118,7 @@ Before you begin, ensure you have the following installed:
 
 ---
 
-## 📥 Installation
+## Installation
 
 ### 1. Basic Setup
 
@@ -418,7 +421,7 @@ certutil -store "ROOT" | findstr -i "davidswood"
 **Trust Certificate in Browser**
 1. Close all browser windows completely
 2. Open browser and visit `https://davidswood.test:8443`
-3. You should see the green lock 🔒
+3. You should see the green lock icon
 4. If still showing "Not secure":
    - Press `Ctrl+Shift+Delete` → Clear cached images and cookies
    - Restart browser
@@ -574,7 +577,7 @@ php artisan about
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ### Starting the Development Server
 
@@ -637,13 +640,57 @@ php artisan tinker
 >>> $order->save();
 ```
 
+### Using the Review System
+
+**For Customers:**
+1. Log in and navigate to **My Orders** in your account
+2. Find a **delivered** order and click **View Details**
+3. Click **Write Review** on any item you've received
+4. Rate the product (1-5 stars) and write your review
+5. Submit - your review will be pending admin approval
+
+**For Developers:**
+```bash
+# Run review migration
+php artisan migrate
+
+# Seed sample reviews
+php artisan db:seed --class=ProductReviewSeeder
+
+# View reviews via API
+GET /api/reviews/{productId}
+
+# Submit review via API (requires authentication)
+POST /api/reviews/submit
+{
+  "product_id": 1,
+  "order_id": 5,
+  "rating": 5,
+  "title": "Excellent quality!",
+  "review": "This furniture exceeded my expectations..."
+}
+```
+
+**Review Validation:**
+- User must be authenticated
+- User must have purchased the product
+- One review per product per order
+- Rating: 1-5 stars (required)
+- Review text: 10-1000 characters (required)
+- Title: max 255 characters (optional)
+
+For complete documentation, see `REVIEW_SYSTEM_DOCUMENTATION.md` and `REVIEW_SYSTEM_QUICK_START.md`.
+
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 davids-wood-furniture/
 ├── app/
+│   ├── Console/
+│   │   └── Commands/
+│   │       └── GenerateTrackingNumbers.php
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Admin/              # Admin panel controllers
@@ -652,12 +699,14 @@ davids-wood-furniture/
 │   │   │   │   └── ProductController.php
 │   │   │   ├── CartController.php
 │   │   │   ├── OrderController.php
-│   │   │   └── ProductController.php
+│   │   │   ├── ProductController.php
+│   │   │   └── ProductReviewController.php  # Review system
 │   │   └── Middleware/
 │   │       ├── AdminMiddleware.php  # Admin authentication
 │   │       └── ForceHttps.php       # HTTPS enforcement
 │   ├── Models/
 │   │   ├── Product.php
+│   │   ├── ProductReview.php        # Review model
 │   │   ├── Category.php
 │   │   ├── Order.php
 │   │   ├── Cart.php
@@ -698,12 +747,16 @@ davids-wood-furniture/
 ├── .env                             # Environment configuration
 ├── composer.json                    # PHP dependencies
 ├── package.json                     # Node dependencies
-└── README.md
+├── README.md
+├── CHANGELOG.md
+├── REVIEW_SYSTEM_DOCUMENTATION.md   # Review system technical docs
+├── REVIEW_SYSTEM_QUICK_START.md     # Review system user guide
+└── REVIEW_SYSTEM_SUMMARY.md         # Review system overview
 ```
 
 ---
 
-## 🛠 Technologies Used
+## Technologies Used
 
 ### Backend
 - **Laravel 12** - PHP Framework
@@ -736,7 +789,7 @@ davids-wood-furniture/
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions from the community! Here's how you can help:
 
@@ -783,7 +836,7 @@ We welcome contributions from the community! Here's how you can help:
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Run Tests
 
@@ -820,7 +873,7 @@ public function test_user_can_view_products()
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
@@ -850,7 +903,7 @@ SOFTWARE.
 
 ---
 
-## 👥 Authors & Acknowledgements
+## Authors & Acknowledgements
 
 ### Authors
 - **Primary Developer** - Initial work and ongoing development
@@ -875,7 +928,7 @@ SOFTWARE.
 
 ---
 
-## 📞 Contact
+## Contact
 
 ### Project Links
 - **Repository**: [https://github.com/haniluvr/davids-wood-furniture](https://github.com/haniluvr/davids-wood-furniture)
@@ -891,36 +944,41 @@ SOFTWARE.
 
 ### Support
 For support, please:
-1. Check the [Troubleshooting](#-troubleshooting) section
+1. Check the [Troubleshooting](#troubleshooting) section
 2. Search [existing issues](https://github.com/haniluvr/davids-wood-furniture/issues)
 3. Create a [new issue](https://github.com/haniluvr/davids-wood-furniture/issues/new) if needed
 4. Message me on [Discord](https://discord.com/users/914445892180906005) for real-time help
 
 ---
 
-## 🗺 Roadmap
+## Roadmap
 
-### Version 1.0 (Current) ✅
+### Version 1.0 (Current) - Completed
 - [x] Core e-commerce functionality
 - [x] Product catalog with categories
 - [x] Shopping cart and wishlist
 - [x] User authentication
 - [x] Admin dashboard with subdomain
-- [x] Order management
+- [x] Order management with tracking
+- [x] Order receipt generation and printing
+- [x] Product reviews and ratings system
+- [x] Verified purchase reviews
 - [x] Inventory tracking
 - [x] SSL/HTTPS support
 
-### Version 1.1 (In Progress) 🚧
+### Version 1.1 (In Progress)
+- [ ] Display reviews on product pages
+- [ ] Admin review moderation dashboard
 - [ ] Payment gateway integration (Stripe, PayPal)
-- [ ] Email notifications for orders
-- [ ] Product reviews and ratings
+- [ ] Email notifications for orders and reviews
 - [ ] Advanced search with filters
 - [ ] Product comparison feature
-- [ ] Customer order tracking portal
+- [ ] Automated tracking number generation
 - [ ] Export orders to CSV/PDF
 - [ ] Bulk product import/export
+- [ ] Review helpful votes feature
 
-### Version 1.2 (Planned) 📋
+### Version 1.2 (Planned)
 - [ ] Multi-currency support
 - [ ] Multi-language support (i18n)
 - [ ] Advanced analytics dashboard
@@ -930,7 +988,7 @@ For support, please:
 - [ ] Live chat support
 - [ ] Product recommendations engine
 
-### Version 2.0 (Future) 🔮
+### Version 2.0 (Future)
 - [ ] Mobile app (iOS/Android)
 - [ ] Progressive Web App (PWA)
 - [ ] Real-time inventory sync
@@ -945,7 +1003,7 @@ Have an idea? [Submit a feature request](https://github.com/haniluvr/davids-wood
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -1137,46 +1195,127 @@ php artisan tinker
 
 ---
 
-## 📝 Recent Updates & Changes
+## Recent Updates & Changes
+
+### Version 1.0.3 (October 2025)
+
+#### Product Review & Rating System
+- **Complete Review System**: Comprehensive product review and rating functionality
+  - 5-star interactive rating system with visual feedback
+  - Text reviews with optional title field (10-1000 characters)
+  - Only verified purchasers can leave reviews
+  - One review per product per order (duplicate prevention)
+  - Beautiful, responsive modal UI with brand colors
+  - AJAX-powered submission without page reload
+  - Created `app/Models/ProductReview.php`
+  - Created `app/Http/Controllers/ProductReviewController.php`
+  
+- **Review Management Features**:
+  - Admin moderation system with approval workflow
+  - Review status tracking (pending/approved)
+  - Linked to specific orders for verification
+  - Helpful count tracking for future enhancements
+  - Created migration `2025_10_13_164551_create_product_reviews_table.php`
+
+- **User Interface Enhancements**:
+  - "Write Review" button on delivered order items
+  - "Reviewed" badge for items already reviewed
+  - Review modal with gradient header and interactive elements
+  - Real-time form validation with character limits
+  - Success/error notifications
+  - Updated `resources/views/partials/orders-list.blade.php`
+  - Updated `resources/views/account.blade.php`
+
+- **Backend API**:
+  - RESTful endpoints for review submission and retrieval
+  - `POST /api/reviews/submit` - Submit review (protected)
+  - `GET /api/reviews/{productId}` - Get product reviews (public)
+  - Purchase verification before accepting reviews
+  - Comprehensive validation rules
+  - Updated `routes/web.php`
+
+- **Product Model Extensions**:
+  - Added review relationships (`reviews()`, `approvedReviews()`)
+  - Added calculated attributes (`average_rating`, `reviews_count`)
+  - Updated `app/Models/Product.php`
+
+- **Sample Data & Documentation**:
+  - Created `database/seeders/ProductReviewSeeder.php`
+  - Created comprehensive documentation:
+    - `REVIEW_SYSTEM_DOCUMENTATION.md` - Technical docs
+    - `REVIEW_SYSTEM_QUICK_START.md` - User guide
+    - `REVIEW_SYSTEM_SUMMARY.md` - Implementation overview
+
+### Version 1.0.2 (October 2025)
+
+#### Order Management Enhancements
+- **Order Receipts**: Added professional receipt generation for completed orders
+  - Print/download functionality with clean, branded layout
+  - Includes order details, customer information, and itemized products
+  - Print-optimized styling for A4 paper format
+  - Created `resources/views/receipt.blade.php`
+  
+- **Order Tracking**: Enhanced order tracking features in customer account
+  - Visual progress indicators for order status (pending → processing → shipped → delivered)
+  - Display of tracking numbers when available
+  - Improved order details view with expandable sections
+  - Updated `resources/views/partials/orders-list.blade.php`
+
+- **Database Schema Updates**: Extended orders table with tracking capabilities
+  - Added `tracking_number` field for shipment tracking
+  - Added `shipped_at` and `delivered_at` timestamps
+  - Added `admin_notes` for internal order notes
+  - Updated `database/migrations/2025_09_25_212128_create_orders_table.php`
+
+- **Order Model**: Enhanced Order model with additional fields
+  - Added tracking number support
+  - Added shipment timestamps
+  - Updated fillable fields and casts
+  - Modified `app/Models/Order.php`
+
+#### Backend Infrastructure
+- **Console Commands**: Created placeholder for tracking number generation
+  - Added `app/Console/Commands/GenerateTrackingNumbers.php`
+  - Prepared for automated tracking number assignment
 
 ### Version 1.0.1 (October 2025)
 
 #### Domain & Routing Updates
-- ✅ **Migrated to custom domain**: Changed from localhost to `davidswood.test`
-- ✅ **Subdomain implementation**: Admin panel now accessible at `admin.davidswood.test`
-- ✅ **Dynamic URL configuration**: Updated all frontend JavaScript files to use dynamic API endpoints
-- ✅ **Route fixes**: Corrected admin navigation routes (`admin.products.index`, `admin.users.index`, `admin.orders.index`)
+- **Migrated to custom domain**: Changed from localhost to `davidswood.test`
+- **Subdomain implementation**: Admin panel now accessible at `admin.davidswood.test`
+- **Dynamic URL configuration**: Updated all frontend JavaScript files to use dynamic API endpoints
+- **Route fixes**: Corrected admin navigation routes (`admin.products.index`, `admin.users.index`, `admin.orders.index`)
 
 #### Security Enhancements
-- ✅ **HTTPS/SSL implementation**: Full SSL certificate setup with proper Subject Alternative Names (SAN)
-- ✅ **Custom port configuration**: Running on port 8080 (HTTP) and 8443 (HTTPS) to avoid conflicts
-- ✅ **HTTP to HTTPS redirects**: Automatic redirection from HTTP to HTTPS
-- ✅ **ForceHttps middleware**: Created middleware for HTTPS enforcement (configurable via `.env`)
-- ✅ **Admin authentication fix**: Updated AdminMiddleware to use correct guard (`admin`)
-- ✅ **Modern SSL protocols**: Disabled SSLv3, TLSv1, TLSv1.1; using TLSv1.2+ only
+- **HTTPS/SSL implementation**: Full SSL certificate setup with proper Subject Alternative Names (SAN)
+- **Custom port configuration**: Running on port 8080 (HTTP) and 8443 (HTTPS) to avoid conflicts
+- **HTTP to HTTPS redirects**: Automatic redirection from HTTP to HTTPS
+- **ForceHttps middleware**: Created middleware for HTTPS enforcement (configurable via `.env`)
+- **Admin authentication fix**: Updated AdminMiddleware to use correct guard (`admin`)
+- **Modern SSL protocols**: Disabled SSLv3, TLSv1, TLSv1.1; using TLSv1.2+ only
 
 #### Database Changes
-- ✅ **Migrated to MySQL**: Switched from SQLite to MySQL for better performance
-- ✅ **Database name**: Using `davids_wood` database
-- ✅ **Migration fixes**: Resolved migration order issues with subcategory columns
-- ✅ **Session table**: Configured database-driven sessions
+- **Migrated to MySQL**: Switched from SQLite to MySQL for better performance
+- **Database name**: Using `davids_wood` database
+- **Migration fixes**: Resolved migration order issues with subcategory columns
+- **Session table**: Configured database-driven sessions
 
 #### Configuration Files Updated
-- ✅ **Apache virtual hosts**: Created custom configurations for HTTP and HTTPS
-- ✅ **SSL certificates**: Generated proper certificates with SAN extensions for modern browsers
-- ✅ **Environment variables**: Updated `.env` with correct URLs, database settings, and security options
-- ✅ **Middleware registration**: Registered ForceHttps middleware in `bootstrap/app.php`
+- **Apache virtual hosts**: Created custom configurations for HTTP and HTTPS
+- **SSL certificates**: Generated proper certificates with SAN extensions for modern browsers
+- **Environment variables**: Updated `.env` with correct URLs, database settings, and security options
+- **Middleware registration**: Registered ForceHttps middleware in `bootstrap/app.php`
 
 #### JavaScript & Frontend
-- ✅ **Dynamic API URLs**: Updated `config.js` and `api.js` to use `window.location.origin`
-- ✅ **Removed hardcoded URLs**: Eliminated all hardcoded localhost references
-- ✅ **Cross-domain support**: API calls now work seamlessly across subdomains
+- **Dynamic API URLs**: Updated `config.js` and `api.js` to use `window.location.origin`
+- **Removed hardcoded URLs**: Eliminated all hardcoded localhost references
+- **Cross-domain support**: API calls now work seamlessly across subdomains
 
 #### Documentation
-- ✅ **SSL Setup Guide**: Created `SSL_SETUP_INSTRUCTIONS.md`
-- ✅ **HTTPS Port Guide**: Created `HTTPS_PORT_8443_SETUP.md`
-- ✅ **Certificate Trust Guide**: Created `TRUST_CERTIFICATE_GUIDE.md`
-- ✅ **Updated README**: Comprehensive documentation of all changes
+- **SSL Setup Guide**: Created `SSL_SETUP_INSTRUCTIONS.md`
+- **HTTPS Port Guide**: Created `HTTPS_PORT_8443_SETUP.md`
+- **Certificate Trust Guide**: Created `TRUST_CERTIFICATE_GUIDE.md`
+- **Updated README**: Comprehensive documentation of all changes
 
 #### Files Modified
 ```
@@ -1207,7 +1346,7 @@ Renamed:
 
 ---
 
-## 🎉 Quick Start Summary
+## Quick Start Summary
 
 ```bash
 # 1. Clone and install
@@ -1257,5 +1396,5 @@ npm run build
 
 ---
 
-<p align="center">Made with ❤️ by David's Wood Furniture Team</p>
+<p align="center">Made with care by David's Wood Furniture Team</p>
 <p align="center">© 2025 David's Wood Furniture. All rights reserved.</p>

@@ -8,6 +8,7 @@
         productsOpen: false,
         inventoryOpen: false,
         customersOpen: false,
+        contactOpen: false,
         shippingOpen: false,
         salesOpen: false,
         contentOpen: false,
@@ -132,6 +133,32 @@
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white">Customer Groups</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white">Wishlist Tracking</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white">Service Requests</a></li>
+                    </ul>
+                </li>
+
+                <!-- Contact Messages Accordion -->
+                <li>
+                    <button
+                        @click="contactOpen = !contactOpen"
+                        class="group relative flex w-full items-center justify-between gap-2.5 rounded-sm px-4 py-2 font-medium text-gray-700 duration-300 ease-in-out hover:bg-gray-100 dark:text-bodydark1 dark:hover:bg-graydark {{ request()->routeIs('admin.contact-messages.*') ? 'bg-gray-100 text-primary dark:bg-graydark dark:text-white' : '' }}"
+                    >
+                        <div class="flex items-center gap-2.5">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
+                            Contact Messages
+                            @php
+                                $newMessagesCount = \App\Models\ContactMessage::where('status', 'new')->count();
+                            @endphp
+                            @if($newMessagesCount > 0)
+                                <span class="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">{{ $newMessagesCount }}</span>
+                            @endif
+                        </div>
+                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="contactOpen ? 'rotate-180' : ''"></i>
+                    </button>
+                    <ul x-show="contactOpen" x-transition class="mt-2 ml-6 space-y-1">
+                        <li><a href="{{ route('admin.contact-messages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white {{ request()->routeIs('admin.contact-messages.index') && !request('status') ? 'text-primary dark:text-white' : '' }}">All Messages</a></li>
+                        <li><a href="{{ route('admin.contact-messages.index', ['status' => 'new']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white {{ request('status') == 'new' ? 'text-primary dark:text-white' : '' }}">New Messages</a></li>
+                        <li><a href="{{ route('admin.contact-messages.index', ['status' => 'read']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white {{ request('status') == 'read' ? 'text-primary dark:text-white' : '' }}">Read</a></li>
+                        <li><a href="{{ route('admin.contact-messages.index', ['status' => 'responded']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white {{ request('status') == 'responded' ? 'text-primary dark:text-white' : '' }}">Responded</a></li>
                     </ul>
                 </li>
 

@@ -132,11 +132,20 @@
                     </div>
                 </div>
                             <div class="text-right">
-                                <p class="font-bold text-lg text-gray-900">₱{{ number_format($order->total_amount, 2) }}</p>
-                                <button onclick="toggleOrderDetails('order-{{ $order->id }}')" class="text-[#8b7355] hover:text-[#6b5b47] font-medium text-sm transition-colors">
-                                    <span class="view-details-text">View Details</span>
-                                    <i data-lucide="chevron-down" class="w-4 h-4 inline-block ml-1 transition-transform duration-200 chevron-icon"></i>
-                                </button>
+                                <p class="font-bold text-lg text-gray-900 mb-2">₱{{ number_format($order->total_amount, 2) }}</p>
+                                <div class="flex gap-2 justify-end items-center">
+                                    @if($order->payment_status === 'paid')
+                                        <button onclick="viewReceipt('{{ $order->order_number }}')" class="text-[#8b7355] hover:text-[#6b5b47] font-medium text-sm transition-colors flex items-center gap-1">
+                                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                                            <span>Receipt</span>
+                                        </button>
+                                        <span class="text-gray-300">|</span>
+                                    @endif
+                                    <button onclick="toggleOrderDetails('order-{{ $order->id }}')" class="text-[#8b7355] hover:text-[#6b5b47] font-medium text-sm transition-colors flex items-center gap-1">
+                                        <span class="view-details-text">View Details</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 chevron-icon"></i>
+                                    </button>
+                                </div>
                             </div>
             </div>
             
@@ -180,37 +189,46 @@
                     </div>
                 @endif
 
-                <!-- Tracking Information -->
+                <!-- Delivery Information -->
                 @if(in_array($order->status, ['shipped', 'delivered']))
                     <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-                        <h4 class="font-semibold text-gray-900 mb-2">Tracking Information</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <span class="text-gray-600">Tracking Number:</span>
-                                <span class="font-medium ml-2">{{ $order->tracking_number ?? 'SH-' . $order->order_number . '-' . rand(1000, 9999) }}</span>
-                            </div>
-                            <div>
-                                <span class="text-gray-600">Carrier:</span>
-                                <span class="font-medium ml-2">{{ $order->shipping_method ?? 'FedEx Express' }}</span>
-                            </div>
+                        <h4 class="font-semibold text-gray-900 mb-4">Delivery Information</h4>
+                        
+                        <div class="mb-3">
+                            <span class="text-sm text-gray-600">Tracking Number:</span>
+                            <span class="text-sm font-medium ml-2">{{ $order->tracking_number ?? $order->generateTrackingNumber() }}</span>
                         </div>
                         
-                        <div class="mt-4">
-                            <h5 class="font-medium text-gray-900 mb-2">Delivery Information</h5>
+                        <div class="mb-3">
+                            <span class="text-sm text-gray-600">Delivery Address:</span>
                             @php
-                                $shippingAddress = is_array($order->shipping_address) ? $order->shipping_address : json_decode($order->shipping_address, true);
+                                // Use the user's default address
+                                $user = $order->user;
+                                $deliveryAddress = '';
+                                
+                                if ($user) {
+                                    $addressParts = array_filter([
+                                        $user->street,
+                                        $user->barangay,
+                                        $user->city,
+                                        $user->province,
+                                        $user->zip_code
+                                    ]);
+                                    $deliveryAddress = implode(', ', $addressParts);
+                                }
                             @endphp
-                            <p class="text-sm text-gray-600">
-                                {{ $shippingAddress['street'] ?? '' }}, {{ $shippingAddress['city'] ?? '' }}, {{ $shippingAddress['province'] ?? '' }} {{ $shippingAddress['zip_code'] ?? '' }}
-                            </p>
-                            <p class="text-sm text-gray-600 mt-1">
-                                Estimated Delivery: 
+                            <p class="text-sm font-medium mt-1">{{ $deliveryAddress ?: 'Address not available' }}</p>
+                        </div>
+                        
+                        <div>
+                            <span class="text-sm text-gray-600">Estimated Delivery:</span>
+                            <p class="text-sm font-medium mt-1">
                                 @if($order->status === 'delivered' && $order->delivered_at)
-                                    <span class="text-green-600 font-medium">Delivered on {{ $order->delivered_at->format('M j, Y') }}</span>
+                                    <span class="text-green-600">Delivered on {{ $order->delivered_at->format('M j, Y') }}</span>
                                 @elseif($order->shipped_at)
-                                    <span class="font-medium">{{ $order->shipped_at->addDays(3)->format('M j, Y') }} by 5:00 PM</span>
+                                    {{ $order->shipped_at->addDays(3)->format('M j, Y') }} by 5:00 PM
                                 @else
-                                    <span class="font-medium">{{ now()->addDays(5)->format('M j, Y') }} by 5:00 PM</span>
+                                    {{ now()->addDays(5)->format('M j, Y') }} by 5:00 PM
                                 @endif
                             </p>
                         </div>
@@ -223,7 +241,7 @@
                     <div class="space-y-3">
                         @foreach($order->orderItems as $item)
                             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div class="flex items-center">
+                                <div class="flex items-center flex-1">
                                     <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center mr-3">
                                         @if($item->product && $item->product->image)
                                             <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product_name }}" class="w-10 h-10 object-cover rounded">
@@ -231,15 +249,36 @@
                                             <i data-lucide="package" class="w-6 h-6 text-gray-400"></i>
                                         @endif
                                     </div>
-                                    <div>
+                                    <div class="flex-1">
                                         <p class="font-medium text-gray-900">{{ $item->product_name }}</p>
                                         <p class="text-sm text-gray-600">SKU: {{ $item->product_sku }}</p>
                                         <p class="text-sm text-gray-600">Qty: {{ $item->quantity }}</p>
                                     </div>
                                 </div>
-                                <div class="text-right">
-                                    <p class="font-medium text-gray-900">₱{{ number_format($item->total_price, 2) }}</p>
-                                    <p class="text-sm text-gray-600">₱{{ number_format($item->unit_price, 2) }} each</p>
+                                <div class="text-right flex flex-col items-end gap-2">
+                                    <div>
+                                        <p class="font-medium text-gray-900">₱{{ number_format($item->total_price, 2) }}</p>
+                                        <p class="text-sm text-gray-600">₱{{ number_format($item->unit_price, 2) }} each</p>
+                                    </div>
+                                    @if($order->status === 'delivered' && $item->product_id)
+                                        @php
+                                            $hasReview = \App\Models\ProductReview::where('user_id', $order->user_id)
+                                                ->where('product_id', $item->product_id)
+                                                ->where('order_id', $order->id)
+                                                ->exists();
+                                        @endphp
+                                        @if($hasReview)
+                                            <span class="text-xs text-green-600 flex items-center gap-1">
+                                                <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                                Reviewed
+                                            </span>
+                                        @else
+                                            <button onclick="openReviewModal({{ $item->product_id }}, {{ $order->id }}, '{{ addslashes($item->product_name) }}')" class="text-xs text-[#8b7355] hover:text-[#6b5b47] font-medium flex items-center gap-1 transition-colors">
+                                                <i data-lucide="star" class="w-3 h-3"></i>
+                                                Write Review
+                                            </button>
+                                        @endif
+                                    @endif
                                 </div>
                             </div>
                         @endforeach

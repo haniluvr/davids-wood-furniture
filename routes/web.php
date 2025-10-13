@@ -66,6 +66,12 @@ Route::domain('admin.davidswood.test')->name('admin.')->group(function () {
         Route::get('/analytics', function () {
             return view('admin.analytics.index');
         })->name('analytics');
+        
+        // Contact Messages
+        Route::get('contact-messages', [App\Http\Controllers\ContactController::class, 'index'])->name('contact-messages.index');
+        Route::get('contact-messages/{contactMessage}', [App\Http\Controllers\ContactController::class, 'show'])->name('contact-messages.show');
+        Route::patch('contact-messages/{contactMessage}', [App\Http\Controllers\ContactController::class, 'update'])->name('contact-messages.update');
+        Route::delete('contact-messages/{contactMessage}', [App\Http\Controllers\ContactController::class, 'destroy'])->name('contact-messages.destroy');
     });
 });
 
@@ -73,6 +79,9 @@ Route::domain('admin.davidswood.test')->name('admin.')->group(function () {
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/products', [ProductController::class, 'index'])->name('products');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+
+// Contact form routes
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
 
 // Login page route (for admin redirects) - redirect to home with login modal
 Route::get('/login', function () {
@@ -186,7 +195,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/api/account/archive', [AccountController::class, 'archiveAccount']);
     Route::post('/api/account/logout', [AccountController::class, 'logout']);
     Route::get('/api/account/orders', [AccountController::class, 'getOrders']);
+    Route::get('/account/receipt/{orderNumber}', [AccountController::class, 'viewReceipt'])->name('account.receipt');
+    
+    // Product Reviews
+    Route::post('/api/reviews/submit', [App\Http\Controllers\ProductReviewController::class, 'store'])->name('reviews.store');
 });
+
+// Public review routes
+Route::get('/api/reviews/{productId}', [App\Http\Controllers\ProductReviewController::class, 'index'])->name('reviews.index');
 
 // Test username availability endpoint
 Route::get('/test-username-check/{username}', function ($username) {

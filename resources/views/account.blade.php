@@ -131,6 +131,21 @@
         background-color: #6b5b47;
     }
     
+    /* Order Filter Tabs */
+    .order-filter-tab {
+        color: #6b7280;
+        border-bottom-color: transparent;
+    }
+    .order-filter-tab:hover {
+        color: #374151;
+        border-bottom-color: #e5e7eb;
+    }
+    .order-filter-tab.active {
+        color: #8b7355;
+        border-bottom-color: #8b7355;
+        font-weight: 600;
+    }
+    
     /* Custom Toggle Switch - Override any conflicts */
     .custom-toggle {
         position: relative;
@@ -464,14 +479,39 @@
                 
                 <!-- My Orders -->
                 <div class="border-gray-200">
-                <h3 class="border-b text-xl font-bold text-gray-900 mb-8 pb-3">My Orders</h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-6">My Orders</h3>
+                    
+                    <!-- Order Status Filter Tabs -->
+                    <div class="mb-6 border-b border-gray-200">
+                        <nav class="flex gap-6 overflow-x-auto" id="order-filter-tabs">
+                            <button onclick="filterOrders('all')" class="order-filter-tab active pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap" data-status="all">
+                                All Orders
+                            </button>
+                            <button onclick="filterOrders('pending')" class="order-filter-tab pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap" data-status="pending">
+                                Pending
+                            </button>
+                            <button onclick="filterOrders('processing')" class="order-filter-tab pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap" data-status="processing">
+                                Processing
+                            </button>
+                            <button onclick="filterOrders('shipped')" class="order-filter-tab pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap" data-status="shipped">
+                                Shipped
+                            </button>
+                            <button onclick="filterOrders('delivered')" class="order-filter-tab pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap" data-status="delivered">
+                                Delivered
+                            </button>
+                            <button onclick="filterOrders('cancelled')" class="order-filter-tab pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap" data-status="cancelled">
+                                Cancelled
+                            </button>
+                        </nav>
+                    </div>
+                    
                     <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
                         <div class="lg:col-span-2" id="orders-container">
                             @include('partials.orders-list', ['orders' => $orders])
                         </div>
                     </div>
                 </div>
-                    </div>
+            </div>
 
             <!-- My Wishlist Section -->
             <div id="my-wishlist-section" class="bg-white rounded-xl shadow-sm p-6 mb-8 account-card content-section" style="display: none;">
@@ -688,8 +728,103 @@
                 </button>
             </div>
         </form>
-                            </div>
-                            </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 overflow-hidden">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-[#8b7355] to-[#6b5b47] px-6 py-4 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-white">Write a Review</h3>
+            <button onclick="closeReviewModal()" class="text-white hover:text-gray-200 transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        
+        <!-- Modal Body -->
+        <div class="p-6">
+            <div class="mb-4">
+                <p class="text-sm text-gray-600">Product:</p>
+                <p id="reviewProductName" class="text-lg font-semibold text-gray-900"></p>
+            </div>
+            
+            <form id="reviewForm" onsubmit="submitReview(event)">
+                <input type="hidden" id="reviewProductId" name="product_id">
+                <input type="hidden" id="reviewOrderId" name="order_id">
+                <input type="hidden" id="reviewRatingValue" name="rating" value="0">
+                
+                <!-- Star Rating -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Rating *</label>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="setRating(1)" class="hover:scale-110 transition-transform">
+                            <i id="star-1" data-lucide="star" class="w-8 h-8 text-gray-300 fill-current"></i>
+                        </button>
+                        <button type="button" onclick="setRating(2)" class="hover:scale-110 transition-transform">
+                            <i id="star-2" data-lucide="star" class="w-8 h-8 text-gray-300 fill-current"></i>
+                        </button>
+                        <button type="button" onclick="setRating(3)" class="hover:scale-110 transition-transform">
+                            <i id="star-3" data-lucide="star" class="w-8 h-8 text-gray-300 fill-current"></i>
+                        </button>
+                        <button type="button" onclick="setRating(4)" class="hover:scale-110 transition-transform">
+                            <i id="star-4" data-lucide="star" class="w-8 h-8 text-gray-300 fill-current"></i>
+                        </button>
+                        <button type="button" onclick="setRating(5)" class="hover:scale-110 transition-transform">
+                            <i id="star-5" data-lucide="star" class="w-8 h-8 text-gray-300 fill-current"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Review Title -->
+                <div class="mb-6">
+                    <label for="reviewTitle" class="block text-sm font-medium text-gray-700 mb-2">Review Title (Optional)</label>
+                    <input 
+                        type="text" 
+                        id="reviewTitle" 
+                        name="title" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8b7355] focus:border-transparent"
+                        placeholder="e.g., Great quality furniture!"
+                        maxlength="255"
+                    >
+                </div>
+                
+                <!-- Review Text -->
+                <div class="mb-6">
+                    <label for="reviewText" class="block text-sm font-medium text-gray-700 mb-2">Your Review *</label>
+                    <textarea 
+                        id="reviewText" 
+                        name="review" 
+                        rows="5" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8b7355] focus:border-transparent"
+                        placeholder="Share your thoughts about this product... (minimum 10 characters)"
+                        required
+                        minlength="10"
+                        maxlength="1000"
+                    ></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Minimum 10 characters, maximum 1000 characters</p>
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="flex gap-3">
+                    <button 
+                        type="button" 
+                        onclick="closeReviewModal()" 
+                        class="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="flex-1 bg-[#8b7355] text-white px-6 py-3 rounded-lg hover:bg-[#6b5b47] transition-colors font-semibold"
+                    >
+                        Submit Review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -1881,14 +2016,21 @@
         }
     }
 
-    // Toggle Order Details Accordion
+    // Toggle Order Details Accordion (only one open at a time)
     function toggleOrderDetails(orderId) {
         const detailsElement = document.getElementById(orderId + '-details');
         const button = document.querySelector(`[onclick="toggleOrderDetails('${orderId}')"]`);
         const chevronIcon = button.querySelector('.chevron-icon');
         const viewDetailsText = button.querySelector('.view-details-text');
         
-        if (detailsElement.classList.contains('hidden')) {
+        // Check if this accordion is currently open
+        const isCurrentlyOpen = !detailsElement.classList.contains('hidden');
+        
+        // Close all other open accordions first
+        closeAllOrderDetails();
+        
+        // If this accordion wasn't open, open it
+        if (!isCurrentlyOpen) {
             // Show details
             detailsElement.classList.remove('hidden');
             detailsElement.classList.add('block');
@@ -1899,18 +2041,175 @@
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
-        } else {
-            // Hide details
-            detailsElement.classList.add('hidden');
-            detailsElement.classList.remove('block');
-            chevronIcon.style.transform = 'rotate(0deg)';
-            viewDetailsText.textContent = 'View Details';
         }
     }
 
-    // AJAX Pagination for Orders
-    async function loadOrdersPage(page) {
+    // Close all order details accordions
+    function closeAllOrderDetails() {
+        // Find all order details elements
+        const allDetailsElements = document.querySelectorAll('[id$="-details"]');
+        
+        allDetailsElements.forEach(detailsElement => {
+            if (!detailsElement.classList.contains('hidden')) {
+                // Get the order ID from the details element ID
+                const orderId = detailsElement.id.replace('-details', '');
+                const button = document.querySelector(`[onclick="toggleOrderDetails('${orderId}')"]`);
+                
+                if (button) {
+                    const chevronIcon = button.querySelector('.chevron-icon');
+                    const viewDetailsText = button.querySelector('.view-details-text');
+                    
+                    // Hide details
+                    detailsElement.classList.add('hidden');
+                    detailsElement.classList.remove('block');
+                    
+                    if (chevronIcon) {
+                        chevronIcon.style.transform = 'rotate(0deg)';
+                    }
+                    if (viewDetailsText) {
+                        viewDetailsText.textContent = 'View Details';
+                    }
+                }
+            }
+        });
+    }
+
+    // View Receipt function
+    function viewReceipt(orderNumber) {
+        window.open(`/account/receipt/${orderNumber}`, '_blank');
+    }
+
+    // Open Review Modal
+    function openReviewModal(productId, orderId, productName) {
+        const modal = document.getElementById('reviewModal');
+        const modalProductName = document.getElementById('reviewProductName');
+        const reviewForm = document.getElementById('reviewForm');
+        
+        // Set product name
+        modalProductName.textContent = productName;
+        
+        // Set hidden form values
+        document.getElementById('reviewProductId').value = productId;
+        document.getElementById('reviewOrderId').value = orderId;
+        
+        // Reset form
+        reviewForm.reset();
+        setRating(0);
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Close Review Modal
+    function closeReviewModal() {
+        const modal = document.getElementById('reviewModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Set Rating
+    let selectedRating = 0;
+    function setRating(rating) {
+        selectedRating = rating;
+        document.getElementById('reviewRatingValue').value = rating;
+        
+        // Update star display
+        for (let i = 1; i <= 5; i++) {
+            const star = document.getElementById(`star-${i}`);
+            if (i <= rating) {
+                star.classList.add('text-yellow-400');
+                star.classList.remove('text-gray-300');
+            } else {
+                star.classList.add('text-gray-300');
+                star.classList.remove('text-yellow-400');
+            }
+        }
+        
+        // Reinitialize Lucide icons to apply color changes
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    // Submit Review
+    async function submitReview(event) {
+        event.preventDefault();
+        
+        const form = event.target;
+        const formData = new FormData(form);
+        
+        // Validate rating
+        if (selectedRating === 0) {
+            showNotification('Please select a rating', 'error');
+            return;
+        }
+        
+        // Validate review text
+        const reviewText = formData.get('review');
+        if (!reviewText || reviewText.trim().length < 10) {
+            showNotification('Review must be at least 10 characters', 'error');
+            return;
+        }
+        
         try {
+            const response = await fetch('/api/reviews/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    product_id: formData.get('product_id'),
+                    order_id: formData.get('order_id'),
+                    rating: formData.get('rating'),
+                    title: formData.get('title'),
+                    review: reviewText
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showNotification(result.message, 'success');
+                closeReviewModal();
+                
+                // Reload orders to update the "Write Review" button (preserving current filter)
+                loadOrdersPage(1, currentOrderStatus);
+            } else {
+                showNotification(result.message || 'Failed to submit review', 'error');
+            }
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            showNotification('An error occurred while submitting your review', 'error');
+        }
+    }
+
+    // Order Filtering
+    let currentOrderStatus = 'all';
+    
+    async function filterOrders(status) {
+        currentOrderStatus = status;
+        
+        // Update active tab
+        document.querySelectorAll('.order-filter-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector(`[data-status="${status}"]`).classList.add('active');
+        
+        // Load filtered orders
+        await loadOrdersPage(1, status);
+    }
+
+    // AJAX Pagination for Orders
+    async function loadOrdersPage(page, status = null) {
+        try {
+            // Use current status if not provided
+            if (status === null) {
+                status = currentOrderStatus;
+            }
+            
             // Show loading state
             const ordersContainer = document.getElementById('orders-container');
             if (ordersContainer) {
@@ -1918,7 +2217,13 @@
                 ordersContainer.style.pointerEvents = 'none';
             }
 
-            const response = await fetch(`/api/account/orders?page=${page}`, {
+            // Build URL with status filter
+            let url = `/api/account/orders?page=${page}`;
+            if (status && status !== 'all') {
+                url += `&status=${status}`;
+            }
+
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

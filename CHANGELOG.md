@@ -2,6 +2,183 @@
 
 All notable changes to David's Wood Furniture e-commerce platform.
 
+## [1.0.3] - October 13, 2025
+
+### Added
+- **Product Review & Rating System**: Complete review functionality for customers
+  - 5-star rating system with interactive UI
+  - Review submission modal with brand-colored gradient header
+  - Only verified purchasers can submit reviews
+  - One review per product per order constraint
+  - Optional review title (max 255 characters)
+  - Required review text (10-1000 characters)
+  - Admin moderation with `is_approved` flag
+  - Helpful count tracking for future features
+  
+- **New Database Table**: `product_reviews`
+  - Fields: id, product_id, user_id, order_id, rating, title, review, is_verified_purchase, is_approved, helpful_count, timestamps
+  - Unique constraint on (user_id, product_id, order_id)
+  - Foreign keys with cascade delete
+  - Migration: `database/migrations/2025_10_13_164551_create_product_reviews_table.php`
+
+- **New Model**: `app/Models/ProductReview.php`
+  - Relationships to Product, User, and Order models
+  - Type casting for rating, booleans, and counts
+  - Fillable fields for mass assignment
+
+- **New Controller**: `app/Http/Controllers/ProductReviewController.php`
+  - `store()` - Submit review with validation and verification
+  - `index()` - Get paginated reviews for a product
+  - Purchase verification logic
+  - Duplicate review prevention
+
+- **API Routes**: Review submission and retrieval
+  - `POST /api/reviews/submit` - Submit review (authenticated users only)
+  - `GET /api/reviews/{productId}` - Get product reviews (public)
+  - Routes added to `routes/web.php`
+
+- **User Interface Components**:
+  - Review submission modal in account page
+  - "Write Review" button for delivered order items
+  - "Reviewed" badge for already-reviewed items
+  - Interactive star rating selector with hover effects
+  - Real-time character count validation
+  - AJAX form submission without page reload
+  - Success/error notification messages
+
+- **JavaScript Functions**: Review handling
+  - `openReviewModal(productId, productName, orderId)` - Opens modal with product info
+  - `closeReviewModal()` - Closes modal and resets form
+  - `setRating(rating)` - Interactive star selection
+  - `submitReview()` - AJAX submission with validation
+
+- **Sample Data Seeder**: `database/seeders/ProductReviewSeeder.php`
+  - Creates 2 sample reviews for testing
+  - Various ratings (3-5 stars) and review content
+  - Auto-approved for demo purposes
+
+- **Comprehensive Documentation**:
+  - `REVIEW_SYSTEM_DOCUMENTATION.md` - Full technical documentation
+  - `REVIEW_SYSTEM_QUICK_START.md` - User guide with visual flow
+  - `REVIEW_SYSTEM_SUMMARY.md` - Implementation overview
+
+### Changed
+- **Product Model**: Extended with review relationships
+  - Added `reviews()` relationship - All reviews
+  - Added `approvedReviews()` relationship - Only approved reviews
+  - Added `average_rating` accessor - Calculated average rating
+  - Added `reviews_count` accessor - Total approved reviews count
+  - Modified `app/Models/Product.php`
+
+- **Account Page**: Enhanced with review functionality
+  - Added review modal HTML and styling
+  - Added JavaScript for review submission
+  - Modified `resources/views/account.blade.php`
+
+- **Orders List Partial**: Added review buttons
+  - "Write Review" button for eligible items
+  - "Reviewed" badge for completed reviews
+  - Only shows for delivered orders
+  - Smart logic to check existing reviews
+  - Modified `resources/views/partials/orders-list.blade.php`
+
+### Security
+- **Review Validation**: Multi-layer validation
+  - Backend validation of all fields
+  - User authentication requirement
+  - Purchase verification (user must have bought the product)
+  - Order ownership verification
+  - Duplicate review prevention
+  - SQL injection prevention via Eloquent ORM
+  - XSS protection via Laravel's escaping
+  - CSRF token validation
+
+### Files Modified
+```
+Modified:
+- app/Models/Product.php
+- routes/web.php
+- resources/views/account.blade.php
+- resources/views/partials/orders-list.blade.php
+
+Created:
+- database/migrations/2025_10_13_164551_create_product_reviews_table.php
+- app/Models/ProductReview.php
+- app/Http/Controllers/ProductReviewController.php
+- database/seeders/ProductReviewSeeder.php
+- REVIEW_SYSTEM_DOCUMENTATION.md
+- REVIEW_SYSTEM_QUICK_START.md
+- REVIEW_SYSTEM_SUMMARY.md
+```
+
+---
+
+## [1.0.2] - October 13, 2025
+
+### Added
+- **Order Receipt Generation**: Professional receipt view for customer orders
+  - File: `resources/views/receipt.blade.php`
+  - Print/download functionality with branded design
+  - A4 print-optimized layout
+  - Displays order details, customer information, and itemized products
+  - Includes payment information and tracking numbers
+
+- **Order Tracking Enhancements**: Improved order tracking in customer account
+  - Visual progress indicators with step-by-step status
+  - Status steps: pending → processing → shipped → delivered
+  - Expandable order details sections
+  - Display of tracking numbers when available
+  - Updated `resources/views/partials/orders-list.blade.php`
+
+- **Database Schema Updates**: Extended orders table
+  - Added `tracking_number` VARCHAR field for shipment tracking
+  - Added `shipped_at` TIMESTAMP for shipment date
+  - Added `delivered_at` TIMESTAMP for delivery date
+  - Added `admin_notes` TEXT field for internal notes
+  - Updated migration: `database/migrations/2025_09_25_212128_create_orders_table.php`
+
+- **Console Command**: Tracking number generation placeholder
+  - Created `app/Console/Commands/GenerateTrackingNumbers.php`
+  - Prepared for automated tracking number assignment
+
+### Changed
+- **Order Model**: Enhanced with additional tracking fields
+  - Added `tracking_number`, `shipped_at`, `delivered_at`, `admin_notes` to fillable array
+  - Updated casts for datetime fields
+  - Modified `app/Models/Order.php`
+
+- **Account Controller**: Added receipt viewing functionality
+  - Support for displaying order receipts
+  - Modified `app/Http/Controllers/AccountController.php`
+
+- **Order Seeders**: Updated test data with tracking information
+  - Added tracking numbers to sample orders
+  - Modified `database/seeders/TestOrdersSeeder.php`
+  - Modified `database/seeders/MoreTestOrdersSeeder.php`
+
+### Fixed
+- Improved order status display consistency
+- Enhanced mobile responsiveness for order details
+
+### Files Modified
+```
+Modified:
+- app/Http/Controllers/AccountController.php
+- app/Models/Order.php
+- database/migrations/2025_09_25_212128_create_orders_table.php
+- database/seeders/TestOrdersSeeder.php
+- database/seeders/MoreTestOrdersSeeder.php
+- resources/views/account.blade.php
+- resources/views/partials/orders-list.blade.php
+- routes/web.php
+
+Created:
+- resources/views/receipt.blade.php
+- app/Console/Commands/GenerateTrackingNumbers.php
+```
+
+---
+
 ## [1.0.1] - October 12, 2025
 
 ### Added

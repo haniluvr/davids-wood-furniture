@@ -65,21 +65,23 @@
             <div class="w-full">
                 <h3 class="text-lg font-semibold mb-2">Contact us</h3>
                 <p class="form-desc">We'll respond within 1–2 business days.</p>
-                <form id="contact-form">
+                <form id="contact-form" action="{{ route('contact.store') }}" method="POST">
+                    @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="w-full flex flex-col">
-                            <label for="name">Name</label>
-                            <input type="text" placeholder="Jane Doe" required>
+                            <label for="contact-name">Name</label>
+                            <input type="text" id="contact-name" name="name" placeholder="Jane Doe" required value="{{ old('name', Auth::check() ? Auth::user()->name : '') }}">
                         </div>
                         <div class="w-full flex flex-col">
-                            <label for="email">Email</label>
-                            <input type="email" placeholder="jane@example.com" required>
+                            <label for="contact-email">Email</label>
+                            <input type="email" id="contact-email" name="email" placeholder="jane@example.com" required value="{{ old('email', Auth::check() ? Auth::user()->email : '') }}">
                         </div>
                     </div>
                     <div class="form-group mt-2">
-                        <label for="message">Message</label>
-                        <textarea id="message" placeholder="Tell us about your project..." rows="4"></textarea>
+                        <label for="contact-message">Message</label>
+                        <textarea id="contact-message" name="message" placeholder="Tell us about your project..." rows="4" required>{{ old('message') }}</textarea>
                     </div>
+                    <div id="contact-form-message" class="mt-2 text-sm" style="display: none;"></div>
                     <div class="form-footer">
                         <span class="disclaimer">By sending, you agree to our policies below.</span>
                         <button type="submit" class="btn-send flex items-center">
@@ -140,3 +142,77 @@
         </div>
     </div>
 </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contact-form');
+    
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const messageDiv = document.getElementById('contact-form-message');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            // Disable submit button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i data-lucide="loader" class="icon mr-2 animate-spin"></i> <span class="text-sm">Sending...</span>';
+            
+            // Reinitialize icons for spinner
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            
+            // Send AJAX request
+            fetch('{{ route('contact.store') }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    messageDiv.textContent = data.message;
+                    messageDiv.className = 'mt-2 text-sm text-green-600';
+                    messageDiv.style.display = 'block';
+                    
+                    // Reset form
+                    contactForm.reset();
+                    
+                    // Hide message after 5 seconds
+                    setTimeout(() => {
+                        messageDiv.style.display = 'none';
+                    }, 5000);
+                } else {
+                    // Show error message
+                    messageDiv.textContent = data.message || 'An error occurred. Please try again.';
+                    messageDiv.className = 'mt-2 text-sm text-red-600';
+                    messageDiv.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                messageDiv.textContent = 'An error occurred. Please try again later.';
+                messageDiv.className = 'mt-2 text-sm text-red-600';
+                messageDiv.style.display = 'block';
+            })
+            .finally(() => {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                
+                // Reinitialize icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            });
+        });
+    }
+});
+</script>
