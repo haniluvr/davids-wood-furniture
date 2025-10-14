@@ -23,16 +23,15 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
   - [SSL/HTTPS Setup](#3-sslhttps-setup)
   - [Database Setup](#4-database-setup)
   - [Final Configuration](#5-final-configuration)
-  - [Optional: Google OAuth Setup](#optional-setup-google-oauth)
+  - [Google OAuth Setup](#optional-google-oauth-setup)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Technologies Used](#technologies-used)
+- [Recent Updates](#recent-updates)
 - [Contributing](#contributing)
 - [Testing](#testing)
 - [License](#license)
-- [Authors & Acknowledgements](#authors--acknowledgements)
 - [Contact](#contact)
-- [Roadmap](#roadmap)
 - [Troubleshooting](#troubleshooting)
 
 ---
@@ -51,6 +50,7 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
 - **Order Receipts** - Print and download professional receipts for completed orders
 - **Product Reviews & Ratings** - Submit reviews for purchased products with 5-star rating system
 - **Verified Purchase Reviews** - Only customers who purchased products can leave reviews
+- **Contact Form** - Integrated contact form with admin management panel
 - **Responsive Design** - Mobile-first, optimized for all devices
 - **Secure Checkout** - Protected payment processing
 - **CMS Pages** - Dynamic content pages (About, Contact, Privacy, etc.)
@@ -62,6 +62,8 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
 - **Inventory Tracking** - Stock levels, low stock alerts, movement history
 - **Customer Management** - View and manage customer accounts
 - **Order Management** - Process orders, update status, generate reports, track shipments
+- **Review Moderation** - Approve/reject customer reviews
+- **Contact Management** - View and respond to customer inquiries
 - **Analytics** - Sales trends, revenue reports, customer insights
 - **Notifications** - Admin alerts and activity monitoring
 - **Audit Logs** - Complete activity tracking for security
@@ -131,13 +133,12 @@ git clone https://github.com/haniluvr/davids-wood-furniture.git
 cd davids-wood-furniture
 ```
 
-#### Install PHP Dependencies
+#### Install Dependencies
 ```bash
+# Install PHP dependencies
 composer install
-```
 
-#### Install Node Dependencies
-```bash
+# Install Node dependencies
 npm install
 ```
 
@@ -220,30 +221,6 @@ LoadModule vhost_alias_module modules/mod_vhost_alias.so
 - Stop Apache
 - Start Apache
 
-#### macOS/Linux (Laravel Valet)
-```bash
-cd davids-wood-furniture
-valet link davidswood
-
-# Admin panel will be available at:
-# http://admin.davidswood.test
-```
-
-#### Laravel Homestead
-```yaml
-# Edit Homestead.yaml
-sites:
-    - map: davidswood.test
-      to: /home/vagrant/code/davids-wood-furniture/public
-
-# Edit hosts file
-192.168.56.56    davidswood.test
-192.168.56.56    admin.davidswood.test
-
-# Provision
-vagrant reload --provision
-```
-
 ---
 
 ### 3. SSL/HTTPS Setup
@@ -300,8 +277,6 @@ cd C:\xampp\apache\bin
   -config C:\xampp\apache\conf\ssl.crt\davidswood\req-v2.conf `
   -extensions v3_req
 ```
-
-> **Important**: Modern browsers (Chrome, Edge) require Subject Alternative Names (SAN) in SSL certificates. The configuration above includes proper SAN extensions for both main domain and subdomain.
 
 #### Configure Apache for HTTPS on Port 8443
 
@@ -367,23 +342,6 @@ Create `C:\xampp\apache\conf\extra\httpd-davidswood-ssl.conf`:
 </VirtualHost>
 ```
 
-**Create HTTP to HTTPS Redirects**
-
-Create `C:\xampp\apache\conf\extra\httpd-davidswood.conf`:
-```apache
-# HTTP Virtual Host for davidswood.test (Port 8080)
-<VirtualHost davidswood.test:80>
-    ServerName davidswood.test
-    Redirect permanent / https://davidswood.test:8443/
-</VirtualHost>
-
-# HTTP Virtual Host for admin.davidswood.test (Port 8080)
-<VirtualHost admin.davidswood.test:80>
-    ServerName admin.davidswood.test
-    Redirect permanent / https://admin.davidswood.test:8443/
-</VirtualHost>
-```
-
 **Update Apache Main Configuration**
 
 Edit `C:\xampp\apache\conf\httpd.conf`:
@@ -393,21 +351,6 @@ Listen 8443
 
 # Include SSL configuration at the end of the file
 Include conf/extra/httpd-davidswood-ssl.conf
-Include conf/extra/httpd-davidswood.conf
-```
-
-**Verify Apache Configuration**
-```powershell
-# Test configuration syntax
-C:\xampp\apache\bin\httpd.exe -t
-
-# Should output: Syntax OK
-```
-
-**Update .env for HTTPS**
-```env
-APP_URL=https://davidswood.test:8443
-FORCE_HTTPS=false  # Set to true in production
 ```
 
 **Install Certificate to Trust Store (Windows)**
@@ -420,17 +363,6 @@ certutil -addstore -f "ROOT" "C:\xampp\apache\conf\ssl.crt\davidswood\davidswood
 # Verify installation
 certutil -store "ROOT" | findstr -i "davidswood"
 ```
-
-**Trust Certificate in Browser**
-1. Close all browser windows completely
-2. Open browser and visit `https://davidswood.test:8443`
-3. You should see the green lock icon
-4. If still showing "Not secure":
-   - Press `Ctrl+Shift+Delete` → Clear cached images and cookies
-   - Restart browser
-   - Visit the site again
-
-> **Note**: For detailed certificate trust instructions, see `TRUST_CERTIFICATE_GUIDE.md`
 
 **Restart Apache**
 1. Open XAMPP Control Panel
@@ -460,16 +392,6 @@ DB_PASSWORD=
 Open phpMyAdmin (http://localhost/phpmyadmin) or MySQL CLI:
 ```sql
 CREATE DATABASE davids_wood CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-Or using MySQL CLI:
-```bash
-# Windows (XAMPP)
-C:\xampp\mysql\bin\mysql.exe -u root -p
-
-# Then run:
-CREATE DATABASE davids_wood CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-EXIT;
 ```
 
 **Alternative: SQLite (Simple Setup)**
@@ -512,8 +434,6 @@ php artisan db:seed --class=CategorySeeder
 php artisan db:seed --class=ProductSeeder
 php artisan db:seed --class=WoodProductsSeeder
 ```
-
-> **Note**: If you encounter "Table already exists" errors during migration, you may need to manually mark migrations as completed in the `migrations` table or drop and recreate the database.
 
 ---
 
@@ -577,7 +497,9 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 GOOGLE_REDIRECT_URL=https://localhost:8443/auth/google/callback
 ```
 
-#### Optional: Setup Google OAuth
+---
+
+### Optional: Google OAuth Setup
 
 If you want to enable Google social login:
 
@@ -615,18 +537,8 @@ If you want to enable Google social login:
 > **Important Notes**:
 > - Google OAuth **does not support** `.test` domains - you must use `localhost` or a registered domain
 > - For local development, use `http://localhost:8080` or `https://localhost:8443`
-> - For HTTPS setup with localhost, see `GOOGLE_OAUTH_FIX.md` for detailed instructions
 > - Main site: `https://localhost:8443`
 > - Admin area: `https://admin.localhost:8443`
-
-#### Verify Installation
-```bash
-# List all routes
-php artisan route:list
-
-# Check for any issues
-php artisan about
-```
 
 ---
 
@@ -656,42 +568,10 @@ Access the application:
    - **Products**: Manage product catalog
    - **Orders**: Process and track orders
    - **Customers**: Manage customer accounts
+   - **Reviews**: Moderate customer reviews
+   - **Contact Messages**: Respond to customer inquiries
    - **Analytics**: View reports and insights
    - **Settings**: Configure application settings
-
-### Managing Products
-
-```php
-// Create a new product via Admin Panel
-1. Go to Products → Add New Product
-2. Fill in product details:
-   - Name, Description, Price
-   - Category, Subcategory
-   - SKU, Stock Quantity
-   - Images
-3. Set product status (Active/Inactive)
-4. Save
-
-// Or via Artisan Console
-php artisan tinker
->>> $product = new App\Models\Product();
->>> $product->name = "Oak Dining Table";
->>> $product->price = 599.99;
->>> $product->save();
-```
-
-### Managing Orders
-
-```bash
-# View orders
-php artisan tinker
->>> App\Models\Order::with('items', 'user')->get();
-
-# Update order status
->>> $order = App\Models\Order::find(1);
->>> $order->status = 'shipped';
->>> $order->save();
-```
 
 ### Using the Review System
 
@@ -702,37 +582,25 @@ php artisan tinker
 4. Rate the product (1-5 stars) and write your review
 5. Submit - your review will be pending admin approval
 
-**For Developers:**
-```bash
-# Run review migration
-php artisan migrate
+**For Admins:**
+1. Access admin panel → **Reviews** section
+2. View pending reviews and approve/reject them
+3. Approved reviews will appear on product pages
 
-# Seed sample reviews
-php artisan db:seed --class=ProductReviewSeeder
+### Using the Contact Form
 
-# View reviews via API
-GET /api/reviews/{productId}
+**For Customers:**
+1. Scroll to footer on any page
+2. Fill out the contact form (Name, Email, Message)
+3. Click "Send message"
+4. Receive confirmation message
 
-# Submit review via API (requires authentication)
-POST /api/reviews/submit
-{
-  "product_id": 1,
-  "order_id": 5,
-  "rating": 5,
-  "title": "Excellent quality!",
-  "review": "This furniture exceeded my expectations..."
-}
-```
-
-**Review Validation:**
-- User must be authenticated
-- User must have purchased the product
-- One review per product per order
-- Rating: 1-5 stars (required)
-- Review text: 10-1000 characters (required)
-- Title: max 255 characters (optional)
-
-For complete documentation, see `REVIEW_SYSTEM_DOCUMENTATION.md` and `REVIEW_SYSTEM_QUICK_START.md`.
+**For Admins:**
+1. Access admin panel → **Contact Messages**
+2. View new message count badge in sidebar
+3. Click on messages to view details
+4. Add admin notes and update status
+5. Click "Reply via Email" to respond
 
 ---
 
@@ -741,25 +609,22 @@ For complete documentation, see `REVIEW_SYSTEM_DOCUMENTATION.md` and `REVIEW_SYS
 ```
 davids-wood-furniture/
 ├── app/
-│   ├── Console/
-│   │   └── Commands/
-│   │       └── GenerateTrackingNumbers.php
+│   ├── Console/Commands/
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Admin/              # Admin panel controllers
-│   │   │   │   ├── AuthController.php
-│   │   │   │   ├── DashboardController.php
-│   │   │   │   └── ProductController.php
 │   │   │   ├── CartController.php
 │   │   │   ├── OrderController.php
 │   │   │   ├── ProductController.php
-│   │   │   └── ProductReviewController.php  # Review system
+│   │   │   ├── ProductReviewController.php  # Review system
+│   │   │   └── ContactController.php        # Contact form
 │   │   └── Middleware/
 │   │       ├── AdminMiddleware.php  # Admin authentication
 │   │       └── ForceHttps.php       # HTTPS enforcement
 │   ├── Models/
 │   │   ├── Product.php
 │   │   ├── ProductReview.php        # Review model
+│   │   ├── ContactMessage.php       # Contact form model
 │   │   ├── Category.php
 │   │   ├── Order.php
 │   │   ├── Cart.php
@@ -774,23 +639,13 @@ davids-wood-furniture/
 │   └── seeders/                     # Sample data
 ├── public/
 │   ├── admin/                       # Admin panel assets
-│   │   ├── css/
-│   │   ├── js/
-│   │   └── images/
 │   └── frontend/                    # Public site assets
-│       ├── js/
-│       ├── style.css
-│       └── assets/
 ├── resources/
 │   ├── views/
 │   │   ├── admin/                   # Admin panel views
-│   │   │   ├── dashboard/
-│   │   │   ├── products/
-│   │   │   ├── orders/
-│   │   │   └── layouts/
 │   │   ├── layouts/                 # Public site layouts
 │   │   ├── partials/                # Reusable components
-│   │   └── welcome.blade.php
+│   │   └── checkout/                # Checkout pages
 │   ├── css/
 │   └── js/
 ├── routes/
@@ -800,12 +655,7 @@ davids-wood-furniture/
 ├── .env                             # Environment configuration
 ├── composer.json                    # PHP dependencies
 ├── package.json                     # Node dependencies
-├── README.md
-├── CHANGELOG.md
-├── REVIEW_SYSTEM_DOCUMENTATION.md   # Review system technical docs
-├── REVIEW_SYSTEM_QUICK_START.md     # Review system user guide
-├── REVIEW_SYSTEM_SUMMARY.md         # Review system overview
-└── GOOGLE_OAUTH_FIX.md              # Google OAuth setup guide
+└── README.md                        # This file
 ```
 
 ---
@@ -840,6 +690,81 @@ davids-wood-furniture/
 - **OpenSSL** - SSL certificates
 - **Redis** (optional) - Caching and sessions
 - **Git** - Version control
+
+---
+
+## Recent Updates
+
+### Version 1.0.4 (October 2025)
+
+#### Google OAuth Integration & Pagination Improvements
+- **Google OAuth Authentication**: Added social login with Google
+  - Integrated Google OAuth 2.0 for user authentication
+  - Dynamic redirect URLs based on environment (localhost vs .test domain)
+  - Supports both HTTP localhost and HTTPS configurations
+  - Environment variable configuration for client ID and secret
+  - Updated `env.example.port8080` with OAuth configuration
+  
+- **Product Pagination Enhancement**: Improved product browsing experience
+  - Different product limits per page (8 on home, 28 on products page)
+  - Server-side pagination with URL parameters
+  - Client-side pagination controls and state management
+  - Maintains filter and sort state across pagination
+  - Automatic pagination rendering on products page
+
+### Version 1.0.3 (October 2025)
+
+#### Product Review & Rating System
+- **Complete Review System**: Comprehensive product review and rating functionality
+  - 5-star interactive rating system with visual feedback
+  - Text reviews with optional title field (10-1000 characters)
+  - Only verified purchasers can leave reviews
+  - One review per product per order (duplicate prevention)
+  - Beautiful, responsive modal UI with brand colors
+  - AJAX-powered submission without page reload
+  - Admin moderation system with approval workflow
+
+#### Contact Form Integration
+- **Database Storage**: All contact form submissions stored in `contact_messages` table
+- **Admin Management**: Complete admin panel for managing customer inquiries
+- **Status Tracking**: New, Read, Responded, Archived status system
+- **Auto-fill**: Name and email auto-filled for logged-in users
+- **AJAX Submission**: Smooth form submission with loading states
+
+### Version 1.0.2 (October 2025)
+
+#### Order Management Enhancements
+- **Order Receipts**: Added professional receipt generation for completed orders
+  - Print/download functionality with clean, branded layout
+  - Includes order details, customer information, and itemized products
+  - Print-optimized styling for A4 paper format
+  
+- **Order Tracking**: Enhanced order tracking features in customer account
+  - Visual progress indicators for order status (pending → processing → shipped → delivered)
+  - Display of tracking numbers when available
+  - Improved order details view with expandable sections
+
+### Version 1.0.1 (October 2025)
+
+#### Domain & Routing Updates
+- **Migrated to custom domain**: Changed from localhost to `davidswood.test`
+- **Subdomain implementation**: Admin panel now accessible at `admin.davidswood.test`
+- **Dynamic URL configuration**: Updated all frontend JavaScript files to use dynamic API endpoints
+- **Route fixes**: Corrected admin navigation routes
+
+#### Security Enhancements
+- **HTTPS/SSL implementation**: Full SSL certificate setup with proper Subject Alternative Names (SAN)
+- **Custom port configuration**: Running on port 8080 (HTTP) and 8443 (HTTPS) to avoid conflicts
+- **HTTP to HTTPS redirects**: Automatic redirection from HTTP to HTTPS
+- **ForceHttps middleware**: Created middleware for HTTPS enforcement (configurable via `.env`)
+- **Admin authentication fix**: Updated AdminMiddleware to use correct guard (`admin`)
+- **Modern SSL protocols**: Disabled SSLv3, TLSv1, TLSv1.1; using TLSv1.2+ only
+
+#### Database Changes
+- **Migrated to MySQL**: Switched from SQLite to MySQL for better performance
+- **Database name**: Using `davids_wood` database
+- **Migration fixes**: Resolved migration order issues with subcategory columns
+- **Session table**: Configured database-driven sessions
 
 ---
 
@@ -957,31 +882,6 @@ SOFTWARE.
 
 ---
 
-## Authors & Acknowledgements
-
-### Authors
-- **Primary Developer** - Initial work and ongoing development
-- **Contributors** - See [CONTRIBUTORS.md](CONTRIBUTORS.md) for a list of contributors
-
-### Acknowledgements
-- **Laravel Team** - For the amazing framework
-- **Taylor Otwell** - Creator of Laravel
-- **Tailwind CSS Team** - For the utility-first CSS framework
-- **Alpine.js Team** - For the lightweight JavaScript framework
-- **Open Source Community** - For countless packages and inspiration
-
-### Special Thanks
-- Stack Overflow community for troubleshooting help
-- Laravel documentation and community
-- All contributors who have helped improve this project
-
-### Resources & Inspiration
-- [Laravel Documentation](https://laravel.com/docs)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [Alpine.js Documentation](https://alpinejs.dev)
-
----
-
 ## Contact
 
 ### Project Links
@@ -1002,61 +902,6 @@ For support, please:
 2. Search [existing issues](https://github.com/haniluvr/davids-wood-furniture/issues)
 3. Create a [new issue](https://github.com/haniluvr/davids-wood-furniture/issues/new) if needed
 4. Message me on [Discord](https://discord.com/users/914445892180906005) for real-time help
-
----
-
-## Roadmap
-
-### Version 1.0 (Current) - Completed
-- [x] Core e-commerce functionality
-- [x] Product catalog with categories
-- [x] Product pagination (8 on home, 28 on products page)
-- [x] Shopping cart and wishlist
-- [x] User authentication
-- [x] Google OAuth social login
-- [x] Admin dashboard with subdomain
-- [x] Order management with tracking
-- [x] Order receipt generation and printing
-- [x] Product reviews and ratings system
-- [x] Verified purchase reviews
-- [x] Inventory tracking
-- [x] SSL/HTTPS support
-
-### Version 1.1 (In Progress)
-- [ ] Display reviews on product pages
-- [ ] Admin review moderation dashboard
-- [ ] Social login with Facebook, GitHub
-- [ ] Payment gateway integration (Stripe, PayPal)
-- [ ] Email notifications for orders and reviews
-- [ ] Advanced search with filters
-- [ ] Product comparison feature
-- [ ] Automated tracking number generation
-- [ ] Export orders to CSV/PDF
-- [ ] Bulk product import/export
-- [ ] Review helpful votes feature
-
-### Version 1.2 (Planned)
-- [ ] Multi-currency support
-- [ ] Multi-language support (i18n)
-- [ ] Advanced analytics dashboard
-- [ ] Promotional codes and discounts
-- [ ] Gift cards functionality
-- [ ] Customer loyalty program
-- [ ] Live chat support
-- [ ] Product recommendations engine
-
-### Version 2.0 (Future)
-- [ ] Mobile app (iOS/Android)
-- [ ] Progressive Web App (PWA)
-- [ ] Real-time inventory sync
-- [ ] Marketplace integration (Amazon, eBay)
-- [ ] Social media integration
-- [ ] Advanced SEO tools
-- [ ] A/B testing framework
-- [ ] Marketing automation
-
-### Feature Requests
-Have an idea? [Submit a feature request](https://github.com/haniluvr/davids-wood-furniture/issues/new?labels=enhancement)
 
 ---
 
@@ -1200,8 +1045,6 @@ SSLCertificateKeyFile "conf/ssl.crt/davidswood/davidswood-v2.key"
 **Step 5: Restart Apache**
 - XAMPP Control Panel → Stop Apache → Start Apache
 
-> **Note**: See `TRUST_CERTIFICATE_GUIDE.md` for detailed step-by-step instructions with screenshots.
-
 #### Issue: Admin subdomain not working
 **Solution:**
 1. Verify hosts file includes `admin.davidswood.test`
@@ -1226,7 +1069,7 @@ SSLCertificateKeyFile "conf/ssl.crt/davidswood/davidswood-v2.key"
 3. Clear cache: `php artisan config:clear`
 
 **Better Solution - Use HTTPS with mkcert:**
-1. Install mkcert (see `GOOGLE_OAUTH_FIX.md` for instructions)
+1. Install mkcert (see Google OAuth setup section for instructions)
 2. Generate trusted certificates:
    ```powershell
    mkcert -install
@@ -1241,8 +1084,6 @@ SSLCertificateKeyFile "conf/ssl.crt/davidswood/davidswood-v2.key"
 5. Update Google Cloud Console redirect URI accordingly
 
 **Important**: Google OAuth **does not support** `.test` domains. Always use `localhost` or a registered domain for OAuth.
-
-For detailed instructions, see `GOOGLE_OAUTH_FIX.md`.
 
 ### Getting Help
 
@@ -1287,191 +1128,6 @@ php artisan tinker
 
 ---
 
-## Recent Updates & Changes
-
-### Version 1.0.4 (October 2025)
-
-#### Google OAuth Integration & Pagination Improvements
-- **Google OAuth Authentication**: Added social login with Google
-  - Integrated Google OAuth 2.0 for user authentication
-  - Dynamic redirect URLs based on environment (localhost vs .test domain)
-  - Supports both HTTP localhost and HTTPS configurations
-  - Environment variable configuration for client ID and secret
-  - Added comprehensive setup guide in `GOOGLE_OAUTH_FIX.md`
-  - Updated `env.example.port8080` with OAuth configuration
-  
-- **Product Pagination Enhancement**: Improved product browsing experience
-  - Different product limits per page (8 on home, 28 on products page)
-  - Server-side pagination with URL parameters
-  - Client-side pagination controls and state management
-  - Maintains filter and sort state across pagination
-  - Automatic pagination rendering on products page
-  - Updated `public/frontend/js/app.js` with pagination logic
-  - Updated `resources/views/home.blade.php` with page type attribute
-  - Updated `resources/views/products.blade.php` with pagination support
-  
-- **Configuration Updates**:
-  - Added OAuth environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URL)
-  - Added documentation for localhost vs .test domain usage
-  - OAuth redirect URIs automatically adapt to APP_URL setting
-  - Updated route configuration for dynamic subdomain handling
-
-- **Documentation**:
-  - Created `GOOGLE_OAUTH_FIX.md` - Complete OAuth setup guide
-    - HTTP with localhost (quick fix)
-    - HTTPS with mkcert (production-like setup)
-    - Troubleshooting steps for common OAuth issues
-    - URL mapping for different environments
-
-### Version 1.0.3 (October 2025)
-
-#### Product Review & Rating System
-- **Complete Review System**: Comprehensive product review and rating functionality
-  - 5-star interactive rating system with visual feedback
-  - Text reviews with optional title field (10-1000 characters)
-  - Only verified purchasers can leave reviews
-  - One review per product per order (duplicate prevention)
-  - Beautiful, responsive modal UI with brand colors
-  - AJAX-powered submission without page reload
-  - Created `app/Models/ProductReview.php`
-  - Created `app/Http/Controllers/ProductReviewController.php`
-  
-- **Review Management Features**:
-  - Admin moderation system with approval workflow
-  - Review status tracking (pending/approved)
-  - Linked to specific orders for verification
-  - Helpful count tracking for future enhancements
-  - Created migration `2025_10_13_164551_create_product_reviews_table.php`
-
-- **User Interface Enhancements**:
-  - "Write Review" button on delivered order items
-  - "Reviewed" badge for items already reviewed
-  - Review modal with gradient header and interactive elements
-  - Real-time form validation with character limits
-  - Success/error notifications
-  - Updated `resources/views/partials/orders-list.blade.php`
-  - Updated `resources/views/account.blade.php`
-
-- **Backend API**:
-  - RESTful endpoints for review submission and retrieval
-  - `POST /api/reviews/submit` - Submit review (protected)
-  - `GET /api/reviews/{productId}` - Get product reviews (public)
-  - Purchase verification before accepting reviews
-  - Comprehensive validation rules
-  - Updated `routes/web.php`
-
-- **Product Model Extensions**:
-  - Added review relationships (`reviews()`, `approvedReviews()`)
-  - Added calculated attributes (`average_rating`, `reviews_count`)
-  - Updated `app/Models/Product.php`
-
-- **Sample Data & Documentation**:
-  - Created `database/seeders/ProductReviewSeeder.php`
-  - Created comprehensive documentation:
-    - `REVIEW_SYSTEM_DOCUMENTATION.md` - Technical docs
-    - `REVIEW_SYSTEM_QUICK_START.md` - User guide
-    - `REVIEW_SYSTEM_SUMMARY.md` - Implementation overview
-
-### Version 1.0.2 (October 2025)
-
-#### Order Management Enhancements
-- **Order Receipts**: Added professional receipt generation for completed orders
-  - Print/download functionality with clean, branded layout
-  - Includes order details, customer information, and itemized products
-  - Print-optimized styling for A4 paper format
-  - Created `resources/views/receipt.blade.php`
-  
-- **Order Tracking**: Enhanced order tracking features in customer account
-  - Visual progress indicators for order status (pending → processing → shipped → delivered)
-  - Display of tracking numbers when available
-  - Improved order details view with expandable sections
-  - Updated `resources/views/partials/orders-list.blade.php`
-
-- **Database Schema Updates**: Extended orders table with tracking capabilities
-  - Added `tracking_number` field for shipment tracking
-  - Added `shipped_at` and `delivered_at` timestamps
-  - Added `admin_notes` for internal order notes
-  - Updated `database/migrations/2025_09_25_212128_create_orders_table.php`
-
-- **Order Model**: Enhanced Order model with additional fields
-  - Added tracking number support
-  - Added shipment timestamps
-  - Updated fillable fields and casts
-  - Modified `app/Models/Order.php`
-
-#### Backend Infrastructure
-- **Console Commands**: Created placeholder for tracking number generation
-  - Added `app/Console/Commands/GenerateTrackingNumbers.php`
-  - Prepared for automated tracking number assignment
-
-### Version 1.0.1 (October 2025)
-
-#### Domain & Routing Updates
-- **Migrated to custom domain**: Changed from localhost to `davidswood.test`
-- **Subdomain implementation**: Admin panel now accessible at `admin.davidswood.test`
-- **Dynamic URL configuration**: Updated all frontend JavaScript files to use dynamic API endpoints
-- **Route fixes**: Corrected admin navigation routes (`admin.products.index`, `admin.users.index`, `admin.orders.index`)
-
-#### Security Enhancements
-- **HTTPS/SSL implementation**: Full SSL certificate setup with proper Subject Alternative Names (SAN)
-- **Custom port configuration**: Running on port 8080 (HTTP) and 8443 (HTTPS) to avoid conflicts
-- **HTTP to HTTPS redirects**: Automatic redirection from HTTP to HTTPS
-- **ForceHttps middleware**: Created middleware for HTTPS enforcement (configurable via `.env`)
-- **Admin authentication fix**: Updated AdminMiddleware to use correct guard (`admin`)
-- **Modern SSL protocols**: Disabled SSLv3, TLSv1, TLSv1.1; using TLSv1.2+ only
-
-#### Database Changes
-- **Migrated to MySQL**: Switched from SQLite to MySQL for better performance
-- **Database name**: Using `davids_wood` database
-- **Migration fixes**: Resolved migration order issues with subcategory columns
-- **Session table**: Configured database-driven sessions
-
-#### Configuration Files Updated
-- **Apache virtual hosts**: Created custom configurations for HTTP and HTTPS
-- **SSL certificates**: Generated proper certificates with SAN extensions for modern browsers
-- **Environment variables**: Updated `.env` with correct URLs, database settings, and security options
-- **Middleware registration**: Registered ForceHttps middleware in `bootstrap/app.php`
-
-#### JavaScript & Frontend
-- **Dynamic API URLs**: Updated `config.js` and `api.js` to use `window.location.origin`
-- **Removed hardcoded URLs**: Eliminated all hardcoded localhost references
-- **Cross-domain support**: API calls now work seamlessly across subdomains
-
-#### Documentation
-- **SSL Setup Guide**: Created `SSL_SETUP_INSTRUCTIONS.md`
-- **HTTPS Port Guide**: Created `HTTPS_PORT_8443_SETUP.md`
-- **Certificate Trust Guide**: Created `TRUST_CERTIFICATE_GUIDE.md`
-- **Updated README**: Comprehensive documentation of all changes
-
-#### Files Modified
-```
-Modified:
-- .env (APP_URL, DB_*, FORCE_HTTPS)
-- routes/web.php (subdomain routing)
-- app/Http/Middleware/AdminAuth.php (guard fix)
-- public/frontend/js/config.js (dynamic URLs)
-- public/frontend/js/api.js (dynamic URLs)
-- resources/views/admin/partials/tailadmin-sidebar.blade.php (route names)
-- bootstrap/app.php (middleware registration)
-- config/app.php (force_https config)
-
-Created:
-- app/Http/Middleware/ForceHttps.php
-- C:\xampp\apache\conf\extra\httpd-davidswood-ssl.conf
-- C:\xampp\apache\conf\extra\httpd-davidswood.conf
-- C:\xampp\apache\conf\ssl.crt\davidswood\req-v2.conf
-- C:\xampp\apache\conf\ssl.crt\davidswood\davidswood-v2.crt
-- C:\xampp\apache\conf\ssl.crt\davidswood\davidswood-v2.key
-- SSL_SETUP_INSTRUCTIONS.md
-- HTTPS_PORT_8443_SETUP.md
-- TRUST_CERTIFICATE_GUIDE.md
-
-Renamed:
-- database/migrations/2025_01_27_* → 2025_09_25_* (migration order fix)
-```
-
----
-
 ## Quick Start Summary
 
 ```bash
@@ -1511,7 +1167,7 @@ php artisan db:seed
 # - Install certificate to trust store
 
 # 7. (Optional) Setup Google OAuth
-# See "Optional: Setup Google OAuth" section above
+# See "Optional: Google OAuth Setup" section above
 # Update .env with:
 # GOOGLE_CLIENT_ID=your-client-id
 # GOOGLE_CLIENT_SECRET=your-client-secret

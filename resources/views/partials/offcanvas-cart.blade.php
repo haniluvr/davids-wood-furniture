@@ -23,7 +23,7 @@
         <span>Subtotal</span>
         <span id="cart-subtotal">₱0.00</span>
       </div>
-      <button class="checkout-btn">Checkout</button>
+      <button class="checkout-btn" onclick="window.open('/checkout', '_blank')">Checkout</button>
       <div class="small-text">Taxes and shipping calculated at checkout.</div>
     </div>
     <script>

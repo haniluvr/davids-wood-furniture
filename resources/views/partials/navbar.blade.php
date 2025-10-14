@@ -62,7 +62,7 @@
                             <!-- Authenticated user menu -->
                             <ul class="dropdown-menu absolute top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg text-center hidden" id="account-menu" style="display: none;">
                                 <li class="px-4 py-2">
-                                    <a class="block text-gray-700 hover:bg-gray-100 flex items-center" href="{{ url('/account') }}">
+                                    <a class="block text-gray-700 hover:bg-gray-100 flex items-center" href="{{ url('/account') }}" target="_blank" rel="noopener noreferrer">
                                         <i data-lucide="user" class="mr-2 w-4 h-4"></i>
                                         My Account
                                     </a>

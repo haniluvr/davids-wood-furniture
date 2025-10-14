@@ -294,12 +294,12 @@ async function initProductsSection() {
                 return;
             }
 
-            products.forEach((product, index) => {
-                const col = document.createElement('div');
-                col.className = 'w-full';
-                col.setAttribute('data-aos', 'fade-up');
-                col.setAttribute('data-aos-delay', (index * 100).toString()); // Stagger animations
-                col.setAttribute('data-aos-duration', '600');
+        products.forEach((product, index) => {
+            const col = document.createElement('div');
+            col.className = 'w-full';
+            col.setAttribute('data-aos', 'fade-up');
+            col.setAttribute('data-aos-delay', (index * 50).toString()); // Smooth sequential delay
+            col.setAttribute('data-aos-duration', '450');
 
             // Handle both API and local product formats
             const productData = {
@@ -341,7 +341,7 @@ async function initProductsSection() {
                 <div class="p-4 flex flex-col flex-1">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div class="md:col-span-2">
-                            <h6 class="product-title text-lg font-semibold">${productData.name}</h6>
+                            <h6 class="product-title text-lg font-semibold cursor-pointer hover:text-blue-600 transition-colors" onclick="window.open('/products/${productData.slug || productData.id}', '_blank')">${productData.name}</h6>
                             <p class="product-desc text-sm text-gray-600">${productData.description}</p>
                         </div>
                         <div class="text-right">
@@ -373,9 +373,10 @@ async function initProductsSection() {
             if (typeof lucide !== 'undefined') lucide.createIcons();
             if (typeof feather !== 'undefined') feather.replace();
             
-            // Refresh AOS animations for new content
+            // Refresh AOS animations for new content with immediate trigger
             if (typeof AOS !== 'undefined') {
-                AOS.refresh();
+                // Force refresh AOS to detect new elements
+                AOS.refreshHard();
             }
 
             // Attach event handlers

@@ -9,7 +9,7 @@
     <title>@yield('title', 'eCommerce Dashboard') | TailAdmin - Tailwind CSS Admin Dashboard Template</title>
     
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('admin/images/favicon.ico') }}">
+    <link rel="icon" href="{{ asset('frontend/assets/favicon.png') }}">
     
     <!-- TailAdmin CSS -->
     <link href="{{ asset('admin/css/compiled.css') }}" rel="stylesheet">

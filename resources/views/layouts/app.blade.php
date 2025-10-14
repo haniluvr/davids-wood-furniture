@@ -86,16 +86,22 @@
                     
                     if (typeof AOS !== 'undefined') {
                         AOS.init({
-                            duration: 600,
+                            duration: 450,
                             once: true,
-                            offset: 50
+                            offset: 20,
+                            delay: 0,
+                            easing: 'ease-in-out',
+                            anchorPlacement: 'top-center',
+                            startEvent: 'DOMContentLoaded',
+                            disableMutationObserver: false,
+                            mirror: false
                         });
                     }
                     
                     if (typeof HSCore !== 'undefined' && HSCore.components) {
                         HSCore.components();
                     }
-                }, 500);
+                }, 200);
 
                 // Delay modal initialization to ensure all components are loaded
                 setTimeout(() => {
@@ -513,7 +519,7 @@
                             }
                             
                             el.focus();
-                        }, 100);
+                        }, 200);
                     }
                 };
 

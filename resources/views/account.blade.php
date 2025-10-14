@@ -243,6 +243,11 @@
                         </a>
                     </li>
                     <li>
+                        <a href="#" class="flex items-center text-gray-700 hover:text-[#8b7355] font-medium sidebar-link" data-target="payment-methods-section">
+                            <i data-lucide="credit-card" class="mr-3 w-5 h-5"></i> Payment Methods
+                        </a>
+                    </li>
+                    <li>
                         <a href="#" class="flex items-center text-gray-700 hover:text-[#8b7355] font-medium sidebar-link" data-target="newsletter-section">
                             <i data-lucide="mail" class="mr-3 w-5 h-5"></i> Newsletter Preferences
                         </a>
@@ -594,7 +599,7 @@
                                 <button onclick="window.location.href='{{ route('products') }}'" class="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
                                     Continue Shopping
                                 </button>
-                                <button onclick="window.location.href='/checkout'" class="flex-1 bg-[#8b7355] text-white px-6 py-3 rounded-lg hover:bg-[#6b5b47] transition-colors font-semibold">
+                                <button onclick="window.open('{{ route('checkout.index') }}', '_blank')" class="flex-1 bg-[#8b7355] text-white px-6 py-3 rounded-lg hover:bg-[#6b5b47] transition-colors font-semibold">
                                     Proceed to Checkout
                                 </button>
                             </div>
@@ -612,6 +617,167 @@
                         </a>
                     </div>
                 @endif
+            </div>
+
+            <!-- Payment Methods Section -->
+            <div id="payment-methods-section" class="bg-white rounded-xl shadow-sm p-8 mb-8 account-card content-section" style="display: none;">
+                <h3 class="border-b text-xl font-bold text-gray-900 mb-8 pb-3">Payment Methods</h3>
+                
+                <div class="space-y-6">
+                <!-- Add New Payment Method Button -->
+                <div class="flex justify-end">
+                    <button id="add-payment-method-btn" class="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-gray-600 hover:border-[#8b7355] hover:text-[#8b7355] transition-colors" onclick="showAddPaymentMethodForm()">
+                        + Add New Payment Method
+                    </button>
+                </div>
+                    
+                    <!-- Payment Methods List -->
+                    <div id="payment-methods-list" class="space-y-4">
+                        <!-- Payment methods will be loaded here -->
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="payment-methods-empty" class="text-center py-8 hidden">
+                        <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="credit-card" class="text-gray-400 w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No payment methods</h3>
+                        <p class="text-gray-600 mb-4">Add a payment method to make checkout faster</p>
+                    </div>
+                </div>
+                
+                <!-- Add/Edit Payment Method Form (Hidden by default) -->
+                <div id="add-payment-method-form" class="border-gray-200 pb-8 mb-8" style="display: none;">
+                    <h3 class="border-b text-xl font-bold text-gray-900 mb-8 pb-3">Add Payment Method</h3>
+                    <form id="payment-method-form" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div>
+                            <p class="text-gray-600 mb-6">Add a new payment method for faster checkout.</p>
+                        </div>
+                        <div class="lg:col-span-2 space-y-6">
+                            <!-- Payment Type Selection -->
+                            <div>
+                                <label class="form-label block mb-3">PAYMENT TYPE</label>
+                                <div class="flex space-x-8">
+                                    <label class="flex items-center">
+                                        <input type="radio" name="payment_type" value="card" class="mr-3" checked>
+                                        <span>Credit/Debit Card</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="payment_type" value="gcash" class="mr-3">
+                                        <span>GCash</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Card Fields -->
+                            <div id="card-fields" class="space-y-6">
+                                <div>
+                                    <label class="form-label block mb-2">CARD NUMBER</label>
+                                    <input type="text" name="card_number" id="card-number" class="w-full form-input" placeholder="1234 5678 9012 3456" maxlength="19">
+                                </div>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="form-label block mb-2">EXPIRY DATE</label>
+                                        <input type="text" name="card_expiry" id="card-expiry" class="w-full form-input" placeholder="MM/YY" maxlength="5">
+                                    </div>
+                                    <div>
+                                        <label class="form-label block mb-2">CVV</label>
+                                        <input type="text" name="card_cvv" id="card-cvv" class="w-full form-input" placeholder="123" maxlength="4">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label block mb-2">CARDHOLDER NAME</label>
+                                    <input type="text" name="card_holder_name" class="w-full form-input" placeholder="John Doe">
+                                </div>
+                            </div>
+                            
+                            <!-- GCash Fields -->
+                            <div id="gcash-fields" class="space-y-6" style="display: none;">
+                                <div>
+                                    <label class="form-label block mb-2">GCASH MOBILE NUMBER</label>
+                                    <input type="text" name="gcash_number" id="gcash-number" class="w-full form-input" placeholder="09123456789" maxlength="11">
+                                </div>
+                                <div>
+                                    <label class="form-label block mb-2">ACCOUNT NAME</label>
+                                    <input type="text" name="gcash_name" class="w-full form-input" placeholder="John Doe">
+                                </div>
+                            </div>
+                            
+                            <!-- Billing Address -->
+                            <div class="space-y-4">
+                                <label class="form-label block mb-2">BILLING ADDRESS</label>
+                                
+                                <!-- Address Line 1 -->
+                                <div>
+                                    <label class="form-label block mb-2">Address Line 1 *</label>
+                                    <input type="text" name="billing_address_line_1" class="w-full form-input" placeholder="Street address, P.O. box, company name, c/o">
+                                </div>
+                                
+                                <!-- Address Line 2 -->
+                                <div>
+                                    <label class="form-label block mb-2">Address Line 2</label>
+                                    <input type="text" name="billing_address_line_2" class="w-full form-input" placeholder="Apartment, suite, unit, building, floor, etc.">
+                                </div>
+                                
+                                <!-- Region -->
+                                <div>
+                                    <label class="form-label block mb-2">Region *</label>
+                                    <select name="billing_region" id="billing-region" class="w-full form-input" required>
+                                        <option value="">Select Region</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Province -->
+                                <div>
+                                    <label class="form-label block mb-2">Province *</label>
+                                    <select name="billing_province" id="billing-province" class="w-full form-input" required disabled>
+                                        <option value="">Select Province</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- City -->
+                                <div>
+                                    <label class="form-label block mb-2">City/Municipality *</label>
+                                    <select name="billing_city" id="billing-city" class="w-full form-input" required disabled>
+                                        <option value="">Select City/Municipality</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Barangay -->
+                                <div>
+                                    <label class="form-label block mb-2">Barangay</label>
+                                    <select name="billing_barangay" id="billing-barangay" class="w-full form-input" disabled>
+                                        <option value="">Select Barangay</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- ZIP Code -->
+                                <div>
+                                    <label class="form-label block mb-2">ZIP Code *</label>
+                                    <input type="text" name="billing_zip_code" class="w-full form-input" placeholder="ZIP Code">
+                                </div>
+                            </div>
+                            
+                            <!-- Set as Default -->
+                            <div>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="is_default" class="mr-3">
+                                    <span>Set as default payment method</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Form Actions -->
+                            <div class="flex space-x-4 pt-6">
+                                <button type="submit" class="bg-[#8b7355] text-white px-8 py-3 rounded-lg hover:bg-[#6b5b47] transition-colors font-semibold">
+                                    Add Payment Method
+                                </button>
+                                <button type="button" onclick="hideAddPaymentMethodForm()" class="bg-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- Newsletter Section -->
@@ -826,6 +992,10 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('frontend/js/payment-methods.js') }}"></script>
+@endpush
 
 @push('scripts')
 <script>
@@ -1353,6 +1523,9 @@
     let regionsData = [];
     let currentRegionCode = '';
     let currentProvinceCode = '';
+    let billingRegionsData = [];
+    let billingCurrentRegionCode = '';
+    let billingCurrentProvinceCode = '';
     
     // Load all regions
     async function loadRegions() {
@@ -1602,6 +1775,184 @@
         }
     }
     
+    // Billing Address PSGC Functions
+    async function loadBillingRegions() {
+        try {
+            const response = await fetch(`${PSGC_API}/regions`);
+            const data = await response.json();
+            billingRegionsData = data.data || data;
+            
+            const regionSelect = document.getElementById('billing-region');
+            if (regionSelect) {
+                regionSelect.innerHTML = '<option value="">Select Region</option>';
+                
+                if (Array.isArray(billingRegionsData)) {
+                    billingRegionsData.forEach(region => {
+                        const option = document.createElement('option');
+                        option.value = region.name;
+                        option.setAttribute('data-code', region.code);
+                        option.textContent = region.name;
+                        regionSelect.appendChild(option);
+                    });
+                }
+            }
+            
+            console.log('✅ Billing Regions loaded:', billingRegionsData.length);
+        } catch (error) {
+            console.error('❌ Error loading billing regions:', error);
+        }
+    }
+    
+    async function loadBillingProvinces(regionCodeOrName) {
+        try {
+            billingCurrentRegionCode = regionCodeOrName;
+            const url = `${PSGC_API}/regions/${encodeURIComponent(regionCodeOrName)}/provinces`;
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const provinces = data.data || data;
+            
+            // Special case: Some regions (like NCR) have no provinces, go directly to cities
+            if (!Array.isArray(provinces) || provinces.length === 0) {
+                const provinceSelect = document.getElementById('billing-province');
+                if (provinceSelect) {
+                    provinceSelect.innerHTML = '<option value="">No provinces (loading cities...)</option>';
+                    provinceSelect.disabled = true;
+                }
+                
+                // Load cities directly for this region
+                await loadBillingCitiesDirectly(regionCodeOrName);
+                return;
+            }
+            
+            const provinceSelect = document.getElementById('billing-province');
+            if (provinceSelect) {
+                provinceSelect.innerHTML = '<option value="">Select Province</option>';
+                provinceSelect.disabled = false;
+                
+                if (Array.isArray(provinces)) {
+                    provinces.forEach(province => {
+                        const option = document.createElement('option');
+                        option.value = province.name;
+                        option.setAttribute('data-code', province.code);
+                        option.textContent = province.name;
+                        provinceSelect.appendChild(option);
+                    });
+                }
+            }
+            
+            console.log('✅ Billing Provinces loaded:', provinces.length);
+        } catch (error) {
+            console.error('❌ Error loading billing provinces:', error);
+        }
+    }
+    
+    async function loadBillingCitiesDirectly(regionCodeOrName) {
+        try {
+            const url = `${PSGC_API}/regions/${encodeURIComponent(regionCodeOrName)}/cities-municipalities`;
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const cities = data.data || data;
+            
+            const citySelect = document.getElementById('billing-city');
+            if (citySelect) {
+                citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                citySelect.disabled = false;
+                
+                if (Array.isArray(cities)) {
+                    cities.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.name;
+                        option.setAttribute('data-code', city.code);
+                        option.textContent = `${city.name} (${city.type})`;
+                        citySelect.appendChild(option);
+                    });
+                }
+            }
+            
+            console.log('✅ Billing Cities/Municipalities loaded:', cities.length);
+        } catch (error) {
+            console.error('❌ Error loading billing cities:', error);
+        }
+    }
+    
+    async function loadBillingCities(provinceCodeOrName) {
+        try {
+            billingCurrentProvinceCode = provinceCodeOrName;
+            const url = `${PSGC_API}/regions/${encodeURIComponent(billingCurrentRegionCode)}/provinces/${encodeURIComponent(provinceCodeOrName)}/cities-municipalities`;
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const cities = data.data || data;
+            
+            const citySelect = document.getElementById('billing-city');
+            if (citySelect) {
+                citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                citySelect.disabled = false;
+                
+                if (Array.isArray(cities)) {
+                    cities.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.name;
+                        option.setAttribute('data-code', city.code);
+                        option.textContent = `${city.name} (${city.type})`;
+                        citySelect.appendChild(option);
+                    });
+                }
+            }
+            
+            console.log('✅ Billing Cities/Municipalities loaded:', cities.length);
+        } catch (error) {
+            console.error('❌ Error loading billing cities:', error);
+        }
+    }
+    
+    async function loadBillingBarangays(cityCodeOrName) {
+        try {
+            const url = `${PSGC_API}/cities-municipalities/${encodeURIComponent(cityCodeOrName)}/barangays`;
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const barangays = data.data || data;
+            
+            const barangaySelect = document.getElementById('billing-barangay');
+            if (barangaySelect) {
+                barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+                barangaySelect.disabled = false;
+                
+                if (Array.isArray(barangays)) {
+                    barangays.forEach(barangay => {
+                        const option = document.createElement('option');
+                        option.value = barangay.name;
+                        option.textContent = barangay.name;
+                        barangaySelect.appendChild(option);
+                    });
+                }
+            }
+            
+            console.log('✅ Billing Barangays loaded:', barangays.length);
+        } catch (error) {
+            console.error('❌ Error loading billing barangays:', error);
+        }
+    }
+    
     // Set up cascading dropdowns
     const regionSelect = document.getElementById('region-select');
     const provinceSelect = document.getElementById('province-select');
@@ -1691,6 +2042,87 @@
             
             if (cityName) {
                 loadBarangays(cityName);
+            }
+        });
+    }
+
+    // Set up billing address cascading dropdowns
+    const billingRegionSelect = document.getElementById('billing-region');
+    const billingProvinceSelect = document.getElementById('billing-province');
+    const billingCitySelect = document.getElementById('billing-city');
+    const billingBarangaySelect = document.getElementById('billing-barangay');
+    
+    if (billingRegionSelect) {
+        billingRegionSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const regionName = selectedOption.value;
+            const regionCode = selectedOption.getAttribute('data-code');
+            
+            console.log('🌏 Billing Region selected:', { name: regionName, code: regionCode });
+            
+            // Reset province code (important for regions without provinces)
+            billingCurrentProvinceCode = '';
+            
+            // Reset province, city and barangay
+            if (billingProvinceSelect) {
+                billingProvinceSelect.innerHTML = '<option value="">Select Province</option>';
+                billingProvinceSelect.disabled = true;
+            }
+            if (billingCitySelect) {
+                billingCitySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                billingCitySelect.disabled = true;
+            }
+            if (billingBarangaySelect) {
+                billingBarangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+                billingBarangaySelect.disabled = true;
+            }
+            
+            if (regionName) {
+                loadBillingProvinces(regionName);
+            }
+        });
+    }
+    
+    if (billingProvinceSelect) {
+        billingProvinceSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const provinceName = selectedOption.value;
+            const provinceCode = selectedOption.getAttribute('data-code');
+            
+            console.log('🏛️ Billing Province selected:', { name: provinceName, code: provinceCode });
+            
+            // Reset city and barangay
+            if (billingCitySelect) {
+                billingCitySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                billingCitySelect.disabled = true;
+            }
+            if (billingBarangaySelect) {
+                billingBarangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+                billingBarangaySelect.disabled = true;
+            }
+            
+            if (provinceName) {
+                loadBillingCities(provinceName);
+            }
+        });
+    }
+    
+    if (billingCitySelect) {
+        billingCitySelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const cityName = selectedOption.value;
+            const cityCode = selectedOption.getAttribute('data-code');
+            
+            console.log('🏙️ Billing City selected:', { name: cityName, code: cityCode });
+            
+            // Reset barangay
+            if (billingBarangaySelect) {
+                billingBarangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+                billingBarangaySelect.disabled = true;
+            }
+            
+            if (cityName) {
+                loadBillingBarangays(cityName);
             }
         });
     }

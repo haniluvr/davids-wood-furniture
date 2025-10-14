@@ -60,6 +60,21 @@ class ProductController extends Controller
             ->limit(4)
             ->get();
 
-        return view('product.show', compact('product', 'relatedProducts'));
+        // Load approved reviews with user information
+        $reviews = $product->approvedReviews()
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(5);
+
+        // Calculate rating distribution
+        $ratingDistribution = [
+            5 => $product->approvedReviews()->where('rating', 5)->count(),
+            4 => $product->approvedReviews()->where('rating', 4)->count(),
+            3 => $product->approvedReviews()->where('rating', 3)->count(),
+            2 => $product->approvedReviews()->where('rating', 2)->count(),
+            1 => $product->approvedReviews()->where('rating', 1)->count(),
+        ];
+
+        return view('product.show', compact('product', 'relatedProducts', 'reviews', 'ratingDistribution'));
     }
 }

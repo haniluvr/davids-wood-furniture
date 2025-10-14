@@ -9,7 +9,7 @@
     <title>@yield('title', 'Admin Dashboard') | NeoCommerce - Admin Panel</title>
     
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('admin/images/favicon.ico') }}">
+    <link rel="icon" href="{{ asset('frontend/assets/favicon.png') }}">
     
     <!-- TailAdmin CSS -->
     <link href="{{ asset('admin/css/style.css') }}" rel="stylesheet">

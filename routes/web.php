@@ -8,7 +8,8 @@ use App\Http\Controllers\ApiController;
 use Illuminate\Support\Facades\Route;
 
 // Admin subdomain routes (MUST BE FIRST!)
-Route::domain('admin.davidswood.test')->name('admin.')->group(function () {
+// Define admin routes function to avoid duplication
+$adminRoutes = function () {
     // Guest routes (login, forgot password, etc.)
     Route::middleware('guest:admin')->group(function () {
         Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
@@ -17,9 +18,17 @@ Route::domain('admin.davidswood.test')->name('admin.')->group(function () {
         Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink']);
     });
     
+    // Root admin route - redirect to login if not authenticated, dashboard if authenticated
+    Route::get('/', function () {
+        if (auth()->guard('admin')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('admin.login');
+    })->name('index');
+    
     // Protected admin routes
     Route::middleware('admin')->group(function () {
-        Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::post('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
         
         // Product Management
@@ -73,10 +82,27 @@ Route::domain('admin.davidswood.test')->name('admin.')->group(function () {
         Route::patch('contact-messages/{contactMessage}', [App\Http\Controllers\ContactController::class, 'update'])->name('contact-messages.update');
         Route::delete('contact-messages/{contactMessage}', [App\Http\Controllers\ContactController::class, 'destroy'])->name('contact-messages.destroy');
     });
-});
+};
 
-// Public routes
-Route::get('/', [HomeController::class, 'index'])->name('home');
+// Register admin routes for both domains
+Route::domain('admin.davidswood.test')->name('admin.')->group($adminRoutes);
+Route::domain('admin.localhost')->name('admin.')->group($adminRoutes);
+
+// Public routes - but check for admin subdomain first
+Route::get('/', function () {
+    $host = request()->getHost();
+    
+    // If this is an admin subdomain, redirect to admin login
+    if ($host === 'admin.localhost' || $host === 'admin.davidswood.test') {
+        if (auth()->guard('admin')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('admin.login');
+    }
+    
+    // Otherwise, show the normal homepage
+    return app(HomeController::class)->index();
+})->name('home');
 Route::get('/products', [ProductController::class, 'index'])->name('products');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
@@ -199,10 +225,34 @@ Route::middleware('auth')->group(function () {
     
     // Product Reviews
     Route::post('/api/reviews/submit', [App\Http\Controllers\ProductReviewController::class, 'store'])->name('reviews.store');
+    
+    // Checkout routes
+    Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout/validate-shipping', [App\Http\Controllers\CheckoutController::class, 'validateShipping'])->name('checkout.validate-shipping');
+    Route::get('/checkout/payment', [App\Http\Controllers\CheckoutController::class, 'showPayment'])->name('checkout.payment');
+    Route::post('/checkout/validate-payment', [App\Http\Controllers\CheckoutController::class, 'validatePayment'])->name('checkout.validate-payment');
+    Route::get('/checkout/review', [App\Http\Controllers\CheckoutController::class, 'showReview'])->name('checkout.review');
+    Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processOrder'])->name('checkout.process');
+    Route::get('/checkout/confirmation/{order}', [App\Http\Controllers\CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
+    
+    // Payment Methods API routes
+    Route::get('/api/payment-methods', [App\Http\Controllers\PaymentMethodController::class, 'index'])->name('payment-methods.index');
+    Route::post('/api/payment-methods', [App\Http\Controllers\PaymentMethodController::class, 'store'])->name('payment-methods.store');
+    Route::put('/api/payment-methods/{id}', [App\Http\Controllers\PaymentMethodController::class, 'update'])->name('payment-methods.update');
+    Route::delete('/api/payment-methods/{id}', [App\Http\Controllers\PaymentMethodController::class, 'destroy'])->name('payment-methods.destroy');
+    Route::post('/api/payment-methods/{id}/set-default', [App\Http\Controllers\PaymentMethodController::class, 'setDefault'])->name('payment-methods.set-default');
 });
 
 // Public review routes
 Route::get('/api/reviews/{productId}', [App\Http\Controllers\ProductReviewController::class, 'index'])->name('reviews.index');
+
+// Public API routes
+Route::get('/api/user/check', function () {
+    return response()->json([
+        'authenticated' => Auth::check(),
+        'user_id' => Auth::id()
+    ]);
+});
 
 // Test username availability endpoint
 Route::get('/test-username-check/{username}', function ($username) {
