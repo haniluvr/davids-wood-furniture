@@ -23,6 +23,7 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
   - [SSL/HTTPS Setup](#3-sslhttps-setup)
   - [Database Setup](#4-database-setup)
   - [Final Configuration](#5-final-configuration)
+  - [Optional: Google OAuth Setup](#optional-setup-google-oauth)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Technologies Used](#technologies-used)
@@ -41,9 +42,11 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
 ### Customer Portal
 - **Product Catalog** - Browse furniture by categories, rooms, and subcategories
 - **Advanced Search** - Filter products by price, category, availability
+- **Product Pagination** - Efficient browsing with 8 products on home, 28 on products page
 - **Shopping Cart** - Add/remove items, update quantities, real-time total calculation
 - **Wishlist** - Save favorite items (Redis/Database/Session storage options)
 - **User Authentication** - Register, login, profile management
+- **Google OAuth** - Social login with Google account for quick access
 - **Order Management** - Place orders, track status, view order history with receipt generation
 - **Order Receipts** - Print and download professional receipts for completed orders
 - **Product Reviews & Ratings** - Submit reviews for purchased products with 5-star rating system
@@ -564,7 +567,57 @@ MAIL_PASSWORD=null
 MAIL_ENCRYPTION=null
 MAIL_FROM_ADDRESS="noreply@davidswood.test"
 MAIL_FROM_NAME="${APP_NAME}"
+
+# Google OAuth (optional)
+# NOTE: Google OAuth does NOT support .test domains
+# For OAuth, use localhost or a registered domain
+# Get credentials from: https://console.cloud.google.com/
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URL=https://localhost:8443/auth/google/callback
 ```
+
+#### Optional: Setup Google OAuth
+
+If you want to enable Google social login:
+
+1. **Go to Google Cloud Console**: https://console.cloud.google.com/
+2. **Create a new project** or select an existing one
+3. **Enable Google+ API**:
+   - Go to **APIs & Services** → **Library**
+   - Search for "Google+ API"
+   - Click **Enable**
+
+4. **Create OAuth 2.0 Credentials**:
+   - Go to **APIs & Services** → **Credentials**
+   - Click **Create Credentials** → **OAuth 2.0 Client ID**
+   - Select **Web application**
+   - Add **Authorized redirect URIs**:
+     ```
+     http://localhost:8080/auth/google/callback
+     https://localhost:8443/auth/google/callback
+     ```
+   - Click **Create**
+   - Copy your **Client ID** and **Client Secret**
+
+5. **Update `.env` file**:
+   ```env
+   GOOGLE_CLIENT_ID=your-actual-client-id
+   GOOGLE_CLIENT_SECRET=your-actual-client-secret
+   GOOGLE_REDIRECT_URL=https://localhost:8443/auth/google/callback
+   ```
+
+6. **Clear cache**:
+   ```bash
+   php artisan config:clear
+   ```
+
+> **Important Notes**:
+> - Google OAuth **does not support** `.test` domains - you must use `localhost` or a registered domain
+> - For local development, use `http://localhost:8080` or `https://localhost:8443`
+> - For HTTPS setup with localhost, see `GOOGLE_OAUTH_FIX.md` for detailed instructions
+> - Main site: `https://localhost:8443`
+> - Admin area: `https://admin.localhost:8443`
 
 #### Verify Installation
 ```bash
@@ -751,7 +804,8 @@ davids-wood-furniture/
 ├── CHANGELOG.md
 ├── REVIEW_SYSTEM_DOCUMENTATION.md   # Review system technical docs
 ├── REVIEW_SYSTEM_QUICK_START.md     # Review system user guide
-└── REVIEW_SYSTEM_SUMMARY.md         # Review system overview
+├── REVIEW_SYSTEM_SUMMARY.md         # Review system overview
+└── GOOGLE_OAUTH_FIX.md              # Google OAuth setup guide
 ```
 
 ---
@@ -764,7 +818,7 @@ davids-wood-furniture/
 - **MySQL** - Primary database (SQLite alternative available)
 - **Eloquent ORM** - Database abstraction
 - **Laravel Sanctum** - API authentication (optional)
-- **Laravel Socialite** - Social authentication
+- **Laravel Socialite** - Social authentication (Google OAuth)
 - **Subdomain Routing** - Admin panel isolation
 
 ### Frontend
@@ -956,8 +1010,10 @@ For support, please:
 ### Version 1.0 (Current) - Completed
 - [x] Core e-commerce functionality
 - [x] Product catalog with categories
+- [x] Product pagination (8 on home, 28 on products page)
 - [x] Shopping cart and wishlist
 - [x] User authentication
+- [x] Google OAuth social login
 - [x] Admin dashboard with subdomain
 - [x] Order management with tracking
 - [x] Order receipt generation and printing
@@ -969,6 +1025,7 @@ For support, please:
 ### Version 1.1 (In Progress)
 - [ ] Display reviews on product pages
 - [ ] Admin review moderation dashboard
+- [ ] Social login with Facebook, GitHub
 - [ ] Payment gateway integration (Stripe, PayPal)
 - [ ] Email notifications for orders and reviews
 - [ ] Advanced search with filters
@@ -1152,6 +1209,41 @@ SSLCertificateKeyFile "conf/ssl.crt/davidswood/davidswood-v2.key"
 3. Ensure subdomain routes are defined in `routes/web.php`
 4. Clear route cache: `php artisan route:clear`
 
+#### Issue: Google OAuth errors (ERR_SSL_PROTOCOL_ERROR or redirect issues)
+**Solution:**
+
+**Quick Fix - Use HTTP with localhost:**
+1. Update `.env`:
+   ```env
+   APP_URL=http://localhost:8080
+   GOOGLE_REDIRECT_URL=http://localhost:8080/auth/google/callback
+   FORCE_HTTPS=false
+   ```
+2. In Google Cloud Console, add authorized redirect URI:
+   ```
+   http://localhost:8080/auth/google/callback
+   ```
+3. Clear cache: `php artisan config:clear`
+
+**Better Solution - Use HTTPS with mkcert:**
+1. Install mkcert (see `GOOGLE_OAUTH_FIX.md` for instructions)
+2. Generate trusted certificates:
+   ```powershell
+   mkcert -install
+   mkcert -key-file public\ssl\localhost-key.pem -cert-file public\ssl\localhost-cert.pem localhost admin.localhost 127.0.0.1 ::1
+   ```
+3. Configure Apache to use the certificates
+4. Update `.env`:
+   ```env
+   APP_URL=https://localhost:8443
+   GOOGLE_REDIRECT_URL=https://localhost:8443/auth/google/callback
+   ```
+5. Update Google Cloud Console redirect URI accordingly
+
+**Important**: Google OAuth **does not support** `.test` domains. Always use `localhost` or a registered domain for OAuth.
+
+For detailed instructions, see `GOOGLE_OAUTH_FIX.md`.
+
 ### Getting Help
 
 If you still have issues:
@@ -1196,6 +1288,40 @@ php artisan tinker
 ---
 
 ## Recent Updates & Changes
+
+### Version 1.0.4 (October 2025)
+
+#### Google OAuth Integration & Pagination Improvements
+- **Google OAuth Authentication**: Added social login with Google
+  - Integrated Google OAuth 2.0 for user authentication
+  - Dynamic redirect URLs based on environment (localhost vs .test domain)
+  - Supports both HTTP localhost and HTTPS configurations
+  - Environment variable configuration for client ID and secret
+  - Added comprehensive setup guide in `GOOGLE_OAUTH_FIX.md`
+  - Updated `env.example.port8080` with OAuth configuration
+  
+- **Product Pagination Enhancement**: Improved product browsing experience
+  - Different product limits per page (8 on home, 28 on products page)
+  - Server-side pagination with URL parameters
+  - Client-side pagination controls and state management
+  - Maintains filter and sort state across pagination
+  - Automatic pagination rendering on products page
+  - Updated `public/frontend/js/app.js` with pagination logic
+  - Updated `resources/views/home.blade.php` with page type attribute
+  - Updated `resources/views/products.blade.php` with pagination support
+  
+- **Configuration Updates**:
+  - Added OAuth environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URL)
+  - Added documentation for localhost vs .test domain usage
+  - OAuth redirect URIs automatically adapt to APP_URL setting
+  - Updated route configuration for dynamic subdomain handling
+
+- **Documentation**:
+  - Created `GOOGLE_OAUTH_FIX.md` - Complete OAuth setup guide
+    - HTTP with localhost (quick fix)
+    - HTTPS with mkcert (production-like setup)
+    - Troubleshooting steps for common OAuth issues
+    - URL mapping for different environments
 
 ### Version 1.0.3 (October 2025)
 
@@ -1384,14 +1510,23 @@ php artisan db:seed
 # - Generate SSL certificates with SAN
 # - Install certificate to trust store
 
-# 7. Build assets
+# 7. (Optional) Setup Google OAuth
+# See "Optional: Setup Google OAuth" section above
+# Update .env with:
+# GOOGLE_CLIENT_ID=your-client-id
+# GOOGLE_CLIENT_SECRET=your-client-secret
+# GOOGLE_REDIRECT_URL=https://localhost:8443/auth/google/callback
+# Note: Use localhost (not .test) for OAuth
+
+# 8. Build assets
 npm run build
 
-# 8. Start Apache via XAMPP Control Panel
+# 9. Start Apache via XAMPP Control Panel
 
-# 9. Access the application
+# 10. Access the application
 # Public: https://davidswood.test:8443
 # Admin: https://admin.davidswood.test:8443
+# For OAuth: https://localhost:8443
 ```
 
 ---

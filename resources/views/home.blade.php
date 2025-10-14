@@ -425,7 +425,7 @@
         </div>
     </div>
     <!-- Product Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="product-grid">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="product-grid" data-page="home">
         <!-- Products will be injected here -->
     </div>
     <!-- See More Button -->

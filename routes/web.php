@@ -273,6 +273,25 @@ Route::get('/debug-guest-session/{sessionId}', function ($sessionId) {
     ]);
 });
 
+// Debug products count and pagination
+Route::get('/debug-products-count', function () {
+    $totalProducts = \App\Models\Product::where('is_active', true)->count();
+    $productsPage1 = \App\Models\Product::where('is_active', true)->paginate(28);
+    
+    return response()->json([
+        'total_active_products' => $totalProducts,
+        'per_page' => 28,
+        'total_pages' => ceil($totalProducts / 28),
+        'meta' => [
+            'current_page' => $productsPage1->currentPage(),
+            'total' => $productsPage1->total(),
+            'per_page' => $productsPage1->perPage(),
+            'last_page' => $productsPage1->lastPage(),
+        ],
+        'message' => $totalProducts > 28 ? 'Pagination should work' : 'Not enough products for pagination (need more than 28)'
+    ]);
+});
+
 Route::get('/debug-wishlist-migration/{userId}/{sessionId}', function ($userId, $sessionId) {
     $wishlistController = new \App\Http\Controllers\WishlistController();
     try {

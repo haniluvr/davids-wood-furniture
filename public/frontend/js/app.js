@@ -151,6 +151,21 @@ async function initProductsSection() {
         return;
     }
 
+    // Determine how many products to show based on which page we're on
+    const pageType = grid.getAttribute('data-page');
+    const perPage = pageType === 'home' ? 8 : 28; // Show 8 on home, 28 on products page
+    
+    // Get page from URL parameter (for server-side pagination)
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = parseInt(urlParams.get('page')) || 1;
+    
+    // Store current pagination state
+    window.currentProductsPage = currentPage;
+    window.currentProductsFilter = 'all';
+    window.currentProductsSort = 'popularity';
+    window.productsPerPage = perPage;
+    window.isProductsPage = pageType === 'products';
+
     try {
         // Check if API is available
         if (!window.api) {
@@ -158,8 +173,8 @@ async function initProductsSection() {
             return;
         }
 
-        // Load products from API
-        const response = await window.api.getProducts({ per_page: 8 });
+        // Load products from API with current page
+        const response = await window.api.getProducts({ per_page: perPage, page: currentPage });
         
         // Check the actual response structure - API returns data directly
         const apiProducts = response.data || [];
@@ -169,6 +184,11 @@ async function initProductsSection() {
 
         // Initial render
         renderProductsWithFilter(productsToUse);
+        
+        // Render pagination if on products page
+        if (window.isProductsPage && response.meta) {
+            renderPagination(response.meta);
+        }
 
         // Filter buttons
         const filterButtons = document.querySelectorAll('.filter-btn');
@@ -179,18 +199,33 @@ async function initProductsSection() {
                 btn.classList.add('active');
 
                 const filter = btn.getAttribute('data-filter');
+                window.currentProductsFilter = filter;
+                window.currentProductsPage = 1; // Reset to page 1 on filter change
                 
                 try {
                     // Get current sort setting
                     const currentSort = sortSelect ? sortSelect.value : 'popularity';
                     
                     const filterParams = filter === 'all' ? {} : { category: filter };
-                    const response = await window.api.getProducts({ ...filterParams, sort: currentSort, per_page: 8 });
+                    const response = await window.api.getProducts({ 
+                        ...filterParams, 
+                        sort: currentSort, 
+                        per_page: window.productsPerPage,
+                        page: 1
+                    });
                     const filteredProducts = response.data || [];
                     renderProductsWithFilter(filteredProducts);
+                    
+                    // Update pagination
+                    if (window.isProductsPage && response.meta) {
+                        renderPagination(response.meta);
+                    }
                 } catch (error) {
                     // Filter error, show empty results
                     renderProductsWithFilter([]);
+                    if (window.isProductsPage) {
+                        document.getElementById('pagination-container').innerHTML = '';
+                    }
                 }
             });
         });
@@ -201,6 +236,8 @@ async function initProductsSection() {
         if (sortSelect) {
             sortSelect.addEventListener('change', async () => {
                 const sort = sortSelect.value;
+                window.currentProductsSort = sort;
+                window.currentProductsPage = 1; // Reset to page 1 on sort change
             
                 // Get current active filter
                 const activeFilterBtn = document.querySelector('.filter-btn.active');
@@ -208,9 +245,19 @@ async function initProductsSection() {
             
                 try {
                     const filterParams = currentFilter === 'all' ? {} : { category: currentFilter };
-                    const response = await window.api.getProducts({ ...filterParams, sort, per_page: 8 });
+                    const response = await window.api.getProducts({ 
+                        ...filterParams, 
+                        sort, 
+                        per_page: window.productsPerPage,
+                        page: 1
+                    });
                     const sortedProducts = response.data || [];
                     renderProductsWithFilter(sortedProducts);
+                    
+                    // Update pagination
+                    if (window.isProductsPage && response.meta) {
+                        renderPagination(response.meta);
+                    }
                 } catch (error) {
                     // Show error message instead of fallback
                     showNotification('Unable to sort products. Please try again.', 'error');
@@ -222,9 +269,13 @@ async function initProductsSection() {
         // Fallback to the original database products function
         initDatabaseProducts();
     }
+    }
 
-    // Render function
+// ── Render Products with Filter (Global) ──
     function renderProductsWithFilter(products) {
+    const grid = document.getElementById('product-grid');
+    if (!grid) return;
+    
         // Clear grid with fade out effect
         grid.style.transition = 'opacity 0.2s ease-in-out';
         grid.style.opacity = '0.3';
@@ -338,6 +389,108 @@ async function initProductsSection() {
             });
         }, 150); // Small delay for smooth transition
     }
+
+// ── Render Pagination Controls (Server-side navigation) ──
+function renderPagination(meta) {
+    const paginationContainer = document.getElementById('pagination-container');
+    if (!paginationContainer) {
+        return;
+    }
+    
+    const { current_page, last_page, total } = meta;
+    
+    // Hide pagination if only one page
+    if (last_page <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+    
+    // Get current URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Helper function to build URL with page parameter
+    function buildPageUrl(page) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', page);
+        return window.location.pathname + '?' + params.toString();
+    }
+    
+    let html = '';
+    
+    // Previous button
+    if (current_page > 1) {
+        html += `
+            <a href="${buildPageUrl(current_page - 1)}" class="pagination-btn">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </a>
+        `;
+    } else {
+        html += `
+            <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed; pointer-events: none;">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </span>
+        `;
+    }
+    
+    // Page numbers
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, current_page - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(last_page, startPage + maxVisiblePages - 1);
+    
+    // Adjust start if we're near the end
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // First page
+    if (startPage > 1) {
+        html += `<a href="${buildPageUrl(1)}" class="pagination-btn">1</a>`;
+        if (startPage > 2) {
+            html += `<span class="pagination-info">...</span>`;
+        }
+    }
+    
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+        if (i === current_page) {
+            html += `<span class="pagination-btn active">${i}</span>`;
+        } else {
+            html += `<a href="${buildPageUrl(i)}" class="pagination-btn">${i}</a>`;
+        }
+    }
+    
+    // Last page
+    if (endPage < last_page) {
+        if (endPage < last_page - 1) {
+            html += `<span class="pagination-info">...</span>`;
+        }
+        html += `<a href="${buildPageUrl(last_page)}" class="pagination-btn">${last_page}</a>`;
+    }
+    
+    // Next button
+    if (current_page < last_page) {
+        html += `
+            <a href="${buildPageUrl(current_page + 1)}" class="pagination-btn">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </a>
+        `;
+    } else {
+        html += `
+            <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed; pointer-events: none;">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
+        `;
+    }
+    
+    // Add info text
+    const startItem = (current_page - 1) * window.productsPerPage + 1;
+    const endItem = Math.min(current_page * window.productsPerPage, total);
+    html += `<span class="pagination-info">Showing ${startItem}-${endItem} of ${total}</span>`;
+    
+    paginationContainer.innerHTML = html;
+    
+    // Re-init icons
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // ── Initialize Add to Cart Buttons ──
