@@ -15,6 +15,23 @@ class AdminSubdomainMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Only log session ID if session is available
+        $sessionIdBefore = null;
+        try {
+            $sessionIdBefore = session()->getId();
+        } catch (\Exception $e) {
+            // Session not available yet, that's okay
+        }
+        
+        \Log::info('AdminSubdomainMiddleware: Middleware called', [
+            'middleware' => 'AdminSubdomainMiddleware',
+            'session_id_before' => $sessionIdBefore,
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'host' => $request->getHost(),
+            'port' => $request->getPort()
+        ]);
+        
         // Check if this is an admin subdomain request
         $host = $request->getHost();
         $port = $request->getPort();
@@ -30,6 +47,24 @@ class AdminSubdomainMiddleware
             }
         }
         
-        return $next($request);
+        $response = $next($request);
+        
+        // Only log session ID if session is available
+        $sessionIdAfter = null;
+        try {
+            $sessionIdAfter = session()->getId();
+        } catch (\Exception $e) {
+            // Session not available, that's okay
+        }
+        
+        \Log::info('AdminSubdomainMiddleware: Middleware completed', [
+            'middleware' => 'AdminSubdomainMiddleware',
+            'session_id_before' => $sessionIdBefore,
+            'session_id_after' => $sessionIdAfter,
+            'session_changed' => $sessionIdBefore !== $sessionIdAfter,
+            'url' => $request->url()
+        ]);
+        
+        return $response;
     }
 }

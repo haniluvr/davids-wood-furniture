@@ -404,6 +404,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.value === 'card') {
                 cardForm.classList.remove('hidden');
                 gcashForm.classList.add('hidden');
+                // Initialize billing address PSGC when card form is shown
+                if (billingRegionsData.length === 0) {
+                    loadBillingRegions().catch(error => {
+                        console.error('Failed to load billing regions:', error);
+                    });
+                }
             } else if (this.value === 'gcash') {
                 cardForm.classList.add('hidden');
                 gcashForm.classList.remove('hidden');
@@ -447,6 +453,97 @@ document.addEventListener('DOMContentLoaded', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
     }
+    
+    // Set up billing address PSGC event listeners
+    function setupBillingAddressEventListeners() {
+        // Billing region select event listener
+        const billingRegionSelect = document.getElementById('billing_region');
+        if (billingRegionSelect) {
+            billingRegionSelect.removeEventListener('change', handleBillingRegionChange);
+            billingRegionSelect.addEventListener('change', handleBillingRegionChange);
+        }
+
+        // Billing province select event listener
+        const billingProvinceSelect = document.getElementById('billing_province');
+        if (billingProvinceSelect) {
+            billingProvinceSelect.removeEventListener('change', handleBillingProvinceChange);
+            billingProvinceSelect.addEventListener('change', handleBillingProvinceChange);
+        }
+
+        // Billing city select event listener
+        const billingCitySelect = document.getElementById('billing_city');
+        if (billingCitySelect) {
+            billingCitySelect.removeEventListener('change', handleBillingCityChange);
+            billingCitySelect.addEventListener('change', handleBillingCityChange);
+        }
+    }
+
+    // Event handlers for billing address form
+    async function handleBillingRegionChange(event) {
+        const selectedRegion = event.target.value;
+        if (selectedRegion) {
+            // Reset dependent selects
+            const billingProvinceSelect = document.getElementById('billing_province');
+            const billingCitySelect = document.getElementById('billing_city');
+            const billingBarangaySelect = document.getElementById('billing_barangay');
+            
+            if (billingProvinceSelect) {
+                billingProvinceSelect.innerHTML = '<option value="">Select Province</option>';
+                billingProvinceSelect.disabled = true;
+            }
+            if (billingCitySelect) {
+                billingCitySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                billingCitySelect.disabled = true;
+            }
+            if (billingBarangaySelect) {
+                billingBarangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+                billingBarangaySelect.disabled = true;
+            }
+            
+            // Load provinces for selected region
+            await loadBillingProvinces(selectedRegion);
+        }
+    }
+
+    async function handleBillingProvinceChange(event) {
+        const selectedProvince = event.target.value;
+        if (selectedProvince) {
+            // Reset dependent selects
+            const billingCitySelect = document.getElementById('billing_city');
+            const billingBarangaySelect = document.getElementById('billing_barangay');
+            
+            if (billingCitySelect) {
+                billingCitySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                billingCitySelect.disabled = true;
+            }
+            if (billingBarangaySelect) {
+                billingBarangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+                billingBarangaySelect.disabled = true;
+            }
+            
+            // Load cities for selected province
+            await loadBillingCities(selectedProvince);
+        }
+    }
+
+    async function handleBillingCityChange(event) {
+        const selectedCity = event.target.value;
+        if (selectedCity) {
+            // Reset dependent selects
+            const billingBarangaySelect = document.getElementById('billing_barangay');
+            
+            if (billingBarangaySelect) {
+                billingBarangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+                billingBarangaySelect.disabled = true;
+            }
+            
+            // Load barangays for selected city
+            await loadBillingBarangays(selectedCity);
+        }
+    }
+    
+    // Initialize billing address event listeners when page loads
+    setupBillingAddressEventListeners();
 });
 </script>
 @endpush

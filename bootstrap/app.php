@@ -32,23 +32,23 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/cart/*',
             'api/wishlist/*',
             'api/products/*',
-            'api/check-username/*',
-            'logout',
-            'register',
-            'login'
+            'api/check-username/*'
         ]);
         
-        // Add CORS and session middleware to API routes
+        // Add CORS middleware to API routes
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
-            \Illuminate\Session\Middleware\StartSession::class,
         ]);
         
         // Add CORS middleware to web routes for cart/wishlist API endpoints
         $middleware->web(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
-            \App\Http\Middleware\AdminSubdomainMiddleware::class,
             // \App\Http\Middleware\ForceHttps::class, // Temporarily disabled for testing
+        ]);
+        
+        // Add AdminSubdomainMiddleware after session is started
+        $middleware->web(append: [
+            \App\Http\Middleware\AdminSubdomainMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

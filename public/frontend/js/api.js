@@ -66,16 +66,13 @@ class DavidsWoodAPI {
     }
 
     // Authentication methods
-    async login(email, password) {
+    async login(username, password, remember = false) {
         const response = await this.request('/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ username, password, remember }),
         });
 
-        if (response.success && response.data.token) {
-            this.setToken(response.data.token);
-        }
-
+        // No need to set token for session-based auth
         return response;
     }
 
@@ -85,10 +82,7 @@ class DavidsWoodAPI {
             body: JSON.stringify(userData),
         });
 
-        if (response.success && response.data.token) {
-            this.setToken(response.data.token);
-        }
-
+        // No need to set token for session-based auth
         return response;
     }
 
@@ -105,7 +99,6 @@ class DavidsWoodAPI {
             return { success: true, message: 'Logged out successfully' };
         } finally {
             // Always clear local state
-            this.removeToken();
             localStorage.removeItem('cart_items');
             localStorage.removeItem('wishlist_items');
             if (typeof clearCartState === 'function') {
@@ -252,33 +245,56 @@ window.api = new DavidsWoodAPI();
 // Authentication state management
 class AuthManager {
     constructor() {
-        this.isAuthenticated = !!window.api.token;
+        this.isAuthenticated = false; // Will be set by checkAuth()
         this.user = null;
     }
 
     async checkAuth() {
-        if (this.isAuthenticated && window.api.token) {
-            try {
-                const response = await window.api.getCurrentUser();
-                if (response.success) {
-                    this.user = response.data.user;
+        try {
+            // Always check with server to verify session is still valid
+            const response = await fetch('/api/user/check', {
+                method: 'GET',
+                credentials: 'include', // Include cookies for session management
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('Auth check response status:', response.status);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Auth check response data:', data);
+                
+                if (data.authenticated && data.user) {
+                    this.isAuthenticated = true;
+                    this.user = data.user;
                     this.updateUI();
                     return true;
                 }
-            } catch (error) {
-                console.error('Auth check failed:', error);
-                this.logout();
+            } else if (response.status === 419) {
+                console.log('Session expired (419) - clearing auth state');
+            } else {
+                console.log('Auth check failed with status:', response.status);
             }
+        } catch (error) {
+            console.error('Auth check failed:', error);
         }
+        
+        // If we get here, user is not authenticated
+        this.isAuthenticated = false;
+        this.user = null;
+        this.updateUI();
         return false;
     }
 
-    async login(email, password) {
+    async login(username, password, remember = false) {
         try {
-            const response = await window.api.login(email, password);
+            const response = await window.api.login(username, password, remember);
             if (response.success) {
                 this.isAuthenticated = true;
-                this.user = response.data.user;
+                this.user = response.user;
                 this.updateUI();
                 
                 // Migrate guest wishlist to user account
@@ -296,7 +312,7 @@ class AuthManager {
             const response = await window.api.register(userData);
             if (response.success) {
                 this.isAuthenticated = true;
-                this.user = response.data.user;
+                this.user = response.user;
                 this.updateUI();
                 
                 // Migrate guest wishlist to user account
@@ -332,62 +348,21 @@ class AuthManager {
     }
 
     updateUI() {
-        // Update navbar based on authentication state
-        const accountDropdown = document.getElementById('account-dropdown');
-        const accountMenu = document.getElementById('account-menu');
+        // Don't modify the navbar HTML, but ensure auth state is properly managed
+        // This prevents the "appearing logged out" issue after page navigation
         
-        if (this.isAuthenticated && this.user) {
-            // Show user name and logout option
-            if (accountDropdown) {
-                accountDropdown.innerHTML = `
-                    <span class="text-sm font-medium text-gray-700">${this.user.name}</span>
-                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                `;
-            }
-            
-            if (accountMenu) {
-                accountMenu.innerHTML = `
-                    <div class="py-1">
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Account</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Wishlist</a>
-                        <hr class="my-1">
-                        <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
-                    </div>
-                `;
-                
-                // Add logout event listener
-                const logoutBtn = document.getElementById('logout-btn');
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        this.logout();
-                    });
-                }
-            }
-        } else {
-            // Show login/signup options
-            if (accountDropdown) {
-                accountDropdown.innerHTML = `
-                    <span class="text-sm font-medium text-gray-700">Account</span>
-                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                `;
-            }
-            
-            if (accountMenu) {
-                accountMenu.innerHTML = `
-                    <div class="py-1">
-                        <a href="#" id="open-login-modal" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign In</a>
-                        <a href="#" id="open-signup-modal" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Create Account</a>
-                    </div>
-                `;
-            }
-        }
+        // The navbar template handles the UI display based on @auth/@guest directives
+        // We just need to ensure the frontend auth state is consistent
+        // No UI modifications needed - Laravel handles this server-side
         
-        // Re-initialize icons
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
+        // Log auth state for debugging
+        console.log('🔄 AuthManager updateUI called', {
+            isAuthenticated: this.isAuthenticated,
+            hasUser: !!this.user,
+            userId: this.user?.id
+        });
+        
+        return;
     }
 
     /**

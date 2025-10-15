@@ -18,20 +18,33 @@
     margin-bottom: 2rem;
     font-size: 0.875rem;
     color: #666;
+    padding-top: 4rem;
+    background: transparent;
+    border-bottom: 1px solid #f0f0f0;
 }
 
 .breadcrumb a {
     color: #666;
     text-decoration: none;
     transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 .breadcrumb a:hover {
     color: #1a1a1a;
+    text-decoration: underline;
 }
 
 .breadcrumb .separator {
     color: #ccc;
+    margin: 0 0.25rem;
+}
+
+.breadcrumb span:last-child {
+    color: #1a1a1a;
+    font-weight: 500;
 }
 
 .product-grid-layout {
@@ -518,6 +531,40 @@
     height: 8px;
     border-radius: 50%;
     background: currentColor;
+}
+
+/* Button hover state class for animation */
+.btn-add-to-cart-hover {
+    background-color: rgba(26, 26, 26, 0.8) !important;
+    color: #fff !important;
+}
+
+/* Sparkle animation */
+@keyframes sparkleAnimation {
+    0% {
+        opacity: 0;
+        transform: scale(0) rotate(0deg);
+    }
+    20% {
+        opacity: 1;
+        transform: scale(1) rotate(72deg);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1.2) rotate(144deg);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1) rotate(216deg);
+    }
+    80% {
+        opacity: 0.8;
+        transform: scale(0.8) rotate(288deg);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0) rotate(360deg);
+    }
 }
 </style>
 
@@ -1115,7 +1162,8 @@ function initAddToCartButton() {
             const data = await response.json();
             
             if (data.success) {
-                this.querySelector('span').textContent = 'Added!';
+                // Use the same animation as product cards
+                await animateButtonSuccess(this);
                 
                 // Update cart count in navbar if available
                 const cartCount = document.querySelector('.cart-count');
@@ -1124,11 +1172,8 @@ function initAddToCartButton() {
                     cartCount.textContent = currentCount + quantity;
                 }
                 
-                // Reset button after 2 seconds
-                setTimeout(() => {
-                    this.querySelector('span').textContent = originalText;
-                    this.disabled = false;
-                }, 2000);
+                // Re-enable button after animation
+                this.disabled = false;
             } else {
                 this.querySelector('span').textContent = 'Error!';
                 setTimeout(() => {
@@ -1145,6 +1190,60 @@ function initAddToCartButton() {
             }, 2000);
         }
     });
+}
+
+// ── Button Success Animation ──
+async function animateButtonSuccess(clickedElement) {
+    // Find the actual button element
+    const button = clickedElement.closest('.btn-add-to-cart') || clickedElement.closest('#addToCartBtn') || clickedElement;
+    if (!button) return;
+    
+    // Store original state
+    const originalText = button.innerHTML;
+    const originalClasses = button.className;
+    
+    // Change button text to "Added"
+    const textSpan = button.querySelector('span');
+    if (textSpan) {
+        textSpan.textContent = 'Added';
+    }
+    
+    // Add hover state class (assuming it's a CSS class that gives the hover appearance)
+    button.classList.add('btn-add-to-cart-hover');
+    
+    // Create sparkle badge
+    const sparkleBadge = document.createElement('div');
+    sparkleBadge.className = 'sparkle-badge';
+    sparkleBadge.innerHTML = '<i data-lucide="sparkles" class="w-4 h-4 text-yellow-500"></i>';
+    sparkleBadge.style.cssText = `
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        z-index: 10;
+        animation: sparkleAnimation 1.5s ease-out;
+        pointer-events: none;
+    `;
+    
+    // Make button position relative to contain the sparkle
+    button.style.position = 'relative';
+    
+    // Add sparkle badge to button
+    button.appendChild(sparkleBadge);
+    
+    // Re-initialize lucide icons for the sparkle
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    // Wait for 1.5 seconds
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Restore original state
+    if (textSpan) {
+        textSpan.textContent = 'Add to Cart';
+    }
+    button.className = originalClasses;
+    button.removeChild(sparkleBadge);
 }
 
 // Initialize Related Products Buttons

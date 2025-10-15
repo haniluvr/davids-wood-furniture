@@ -54,6 +54,19 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        $sessionIdAtStart = session()->getId();
+        
+        \Log::info('Product show method called', [
+            'product_id' => $product->id,
+            'product_slug' => $product->slug,
+            'session_id_at_start' => $sessionIdAtStart,
+            'auth_check' => \Auth::check(),
+            'user_id' => \Auth::id(),
+            'url' => request()->url(),
+            'referer' => request()->header('referer'),
+            'route_parameters' => request()->route()->parameters()
+        ]);
+        
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)
@@ -74,6 +87,17 @@ class ProductController extends Controller
             2 => $product->approvedReviews()->where('rating', 2)->count(),
             1 => $product->approvedReviews()->where('rating', 1)->count(),
         ];
+
+        $sessionIdAtEnd = session()->getId();
+        
+        \Log::info('Product show method completed', [
+            'product_id' => $product->id,
+            'session_id_at_start' => $sessionIdAtStart,
+            'session_id_at_end' => $sessionIdAtEnd,
+            'session_changed' => $sessionIdAtStart !== $sessionIdAtEnd,
+            'auth_check' => \Auth::check(),
+            'user_id' => \Auth::id()
+        ]);
 
         return view('product.show', compact('product', 'relatedProducts', 'reviews', 'ratingDistribution'));
     }

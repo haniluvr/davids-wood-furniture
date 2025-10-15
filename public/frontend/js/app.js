@@ -308,7 +308,7 @@ async function initProductsSection() {
                 description: product.short_description || product.description || product.desc,
                 price: product.price,
                 image: product.primary_image || product.images?.[0]?.url || product.image || 'https://via.placeholder.com/300x300?text=No+Image',
-                rating: product.rating || 4.5,
+                rating: product.rating || product.average_rating || product.review_rating || 0,
                 stock: product.stock_status || product.stock || 'in-stock',
                 material: product.material,
                 dimensions: product.dimensions,
@@ -348,7 +348,8 @@ async function initProductsSection() {
                             <div class="text-gray-500 text-sm">Price</div>
                             <div class="price text-xl font-bold">₱${Math.floor(productData.price).toLocaleString('en-US')}</div>
                             <span class="rating flex items-center justify-end mt-1">
-                                <i data-lucide="star" class="lucide-small mr-1"></i> ${productData.rating}
+                                <i data-lucide="star" class="lucide-small mr-1"></i> 
+                                ${productData.rating > 0 ? productData.rating.toFixed(1) : 'No rating'}
                             </span>
                         </div>
                     </div>
@@ -1067,41 +1068,17 @@ function initModalQuickView() {
                     const response = await window.api.getProduct(productSlug);
                     product = response.data;
                 } else {
-                    product = products.find(p => p.id === productId);
+                    // Fallback: try to find product in current products list
+                    product = window.currentProducts?.find(p => p.id === productId);
                 }
 
                 if (!product) {
+                    console.error('Product not found for quick view');
                     return;
                 }
 
-                // Cache modal elements for faster updates
-                const modalElements = {
-                    label: document.getElementById('quickViewLabel'),
-                    image: document.getElementById('quick-view-image'),
-                    desc: document.getElementById('quick-view-desc'),
-                    rating: document.getElementById('quick-view-rating'),
-                    price: document.getElementById('quick-view-price'),
-                    material: document.getElementById('quick-view-material'),
-                    dimensions: document.getElementById('quick-view-dimensions')
-                };
-
-                // Fill modal with cached elements
-                if (modalElements.label) modalElements.label.textContent = product.name;
-                if (modalElements.image) modalElements.image.src = product.primary_image || product.image;
-                if (modalElements.desc) modalElements.desc.textContent = product.description || product.desc;
-                if (modalElements.rating) modalElements.rating.textContent = product.rating;
-                if (modalElements.price) modalElements.price.textContent = `₱${Math.floor(product.price).toLocaleString('en-US')}`;
-                if (modalElements.material) modalElements.material.textContent = product.material;
-                if (modalElements.dimensions) modalElements.dimensions.textContent = product.dimensions;
-                
-                // Set product ID for add to cart button
-                const addToCartBtn = document.getElementById('modalAddToCart');
-                if (addToCartBtn) {
-                    addToCartBtn.setAttribute('data-product-id', product.id);
-                }
-                
-                // Store current product for global access
-                window.currentQuickViewProduct = product;
+                // Fill modal with product information
+                await fillQuickViewModal(product);
 
                 // Show modal
                 if (typeof window.showmodalQuickView === 'function') {
@@ -1112,12 +1089,255 @@ function initModalQuickView() {
                 setTimeout(() => {
                     if (typeof lucide !== 'undefined') lucide.createIcons();
                 }, 100);
+                
             } catch (error) {
-                // Error loading product details
+                console.error('Error loading product details for quick view:', error);
+                showNotification('Failed to load product details', 'error');
             }
         });
     });
 }
+
+// ── Fill Quick View Modal with Product Data ──
+async function fillQuickViewModal(product) {
+    // Update basic product information
+    const label = document.getElementById('quickViewLabel');
+    const image = document.getElementById('quick-view-image');
+    const desc = document.getElementById('quick-view-desc');
+    const price = document.getElementById('quick-view-price');
+    
+    if (label) label.textContent = product.name;
+    if (image) image.src = product.primary_image || product.image || '/frontend/assets/chair.png';
+    if (desc) desc.textContent = product.description || product.short_description || 'No description available';
+    if (price) price.textContent = `₱${Math.floor(product.price).toLocaleString('en-US')}`;
+    
+    // Update rating and stars
+    const rating = product.rating || product.average_rating || product.review_rating || 0;
+    const ratingText = document.getElementById('quick-view-rating');
+    if (ratingText) {
+        ratingText.textContent = rating > 0 ? rating.toFixed(1) : 'No rating';
+    }
+    
+    // Update dynamic star rating
+    updateStarRating(rating);
+    
+    // Initialize image carousel with thumbnails
+    const images = product.images || [product.primary_image || product.image];
+    initImageCarouselWithThumbnails(images);
+    
+    // Set product ID for buttons
+    const addToCartBtn = document.getElementById('modalAddToCart');
+    const wishlistBtn = document.getElementById('modalWishlistBtn');
+    
+    if (addToCartBtn) {
+        addToCartBtn.setAttribute('data-product-id', product.id);
+    }
+    
+    if (wishlistBtn) {
+        wishlistBtn.setAttribute('data-product-id', product.id);
+        initModalWishlistButton(product.id);
+    }
+    
+    // Store current product for global access
+    window.currentQuickViewProduct = product;
+}
+
+// ── Initialize Image Carousel with Thumbnails ──
+let currentSlide = 0;
+let productImages = [];
+
+function initImageCarouselWithThumbnails(images = []) {
+    // Set up images array
+    productImages = images.length > 0 ? images : [
+        '/frontend/assets/chair.png',
+        '/frontend/assets/cabinet.png', 
+        '/frontend/assets/floor-lamp.png'
+    ];
+    
+    // Set the main image to the first image
+    const mainImage = document.getElementById('quick-view-image');
+    if (mainImage && productImages[0]) {
+        mainImage.src = productImages[0];
+    }
+    
+    // Create thumbnail indicators
+    createThumbnailIndicators();
+}
+
+function createThumbnailIndicators() {
+    const thumbnailsContainer = document.getElementById('image-thumbnails');
+    if (!thumbnailsContainer) return;
+    
+    // Clear existing thumbnails
+    thumbnailsContainer.innerHTML = '';
+    
+    // Create thumbnail images
+    productImages.forEach((imageSrc, index) => {
+        const thumbnail = document.createElement('div');
+        thumbnail.className = `w-16 h-16 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 border-2 ${index === 0 ? 'border-amber-400' : 'border-gray-200'}`;
+        thumbnail.setAttribute('data-slide', index);
+        
+        const img = document.createElement('img');
+        img.src = imageSrc;
+        img.alt = `Thumbnail ${index + 1}`;
+        img.className = 'w-full h-full object-cover';
+        
+        thumbnail.appendChild(img);
+        thumbnailsContainer.appendChild(thumbnail);
+        
+        // Add click event listener
+        thumbnail.addEventListener('click', () => {
+            currentSlide = index;
+            updateMainImage();
+            updateThumbnailSelection();
+        });
+    });
+}
+
+function updateMainImage() {
+    const mainImage = document.getElementById('quick-view-image');
+    if (mainImage && productImages[currentSlide]) {
+        mainImage.src = productImages[currentSlide];
+    }
+}
+
+function updateThumbnailSelection() {
+    const thumbnails = document.querySelectorAll('#image-thumbnails [data-slide]');
+    thumbnails.forEach((thumbnail, index) => {
+        if (index === currentSlide) {
+            thumbnail.classList.remove('border-gray-200');
+            thumbnail.classList.add('border-amber-400');
+        } else {
+            thumbnail.classList.remove('border-amber-400');
+            thumbnail.classList.add('border-gray-200');
+        }
+    });
+}
+
+// ── Initialize Modal Wishlist Button ──
+async function initModalWishlistButton(productId) {
+    const wishlistBtn = document.getElementById('modalWishlistBtn');
+    const heartIcon = document.getElementById('modal-heart-icon');
+    const wishlistText = document.getElementById('modal-wishlist-text');
+    
+    if (!wishlistBtn || !heartIcon || !wishlistText) return;
+    
+    // Remove existing event listeners to prevent duplicates
+    const newBtn = wishlistBtn.cloneNode(true);
+    wishlistBtn.parentNode.replaceChild(newBtn, wishlistBtn);
+    
+    // Set initial state
+    await updateModalWishlistButtonState(productId);
+    
+    // Add click event listener
+    newBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        try {
+            // Check if API is available
+            if (!window.api) {
+                console.error('window.api is not available!');
+                showNotification('API not available', 'error');
+                return;
+            }
+
+            // Toggle via API
+            const response = await window.api.toggleWishlist(productId);
+
+            // Update button state
+            await updateModalWishlistButtonState(productId);
+
+            // Update offcanvas if open
+            const offcanvas = document.getElementById('offcanvas-wishlist');
+            if (offcanvas && getComputedStyle(offcanvas).visibility !== 'hidden') {
+                await updateWishlistOffcanvas();
+            }
+
+            // Update wishlist count badge
+            await updateWishlistCount();
+            
+            // Update product card wishlist button if it exists
+            updateWishlistButtonState(productId);
+
+        } catch (error) {
+            console.error('Wishlist toggle error:', error);
+            showNotification('Failed to update wishlist', 'error');
+        }
+    });
+}
+
+// ── Update Modal Wishlist Button State ──
+async function updateModalWishlistButtonState(productId) {
+    const heartIcon = document.getElementById('modal-heart-icon');
+    const wishlistText = document.getElementById('modal-wishlist-text');
+    const wishlistBtn = document.getElementById('modalWishlistBtn');
+    
+    if (!heartIcon || !wishlistText || !wishlistBtn) return;
+    
+    try {
+        const response = await window.api.checkWishlist(productId);
+        const isInWishlist = response.in_wishlist;
+        
+        if (isInWishlist) {
+            // Active state - filled red heart
+            heartIcon.classList.add('active');
+            heartIcon.setAttribute('fill', 'currentColor');
+            heartIcon.setAttribute('stroke', 'none');
+            heartIcon.style.color = '#ef4444'; // red-500
+            wishlistText.textContent = 'Liked';
+            wishlistBtn.classList.add('text-red-500', 'border-red-500');
+            wishlistBtn.classList.remove('text-gray-700', 'border-gray-200');
+        } else {
+            // Inactive state - outline heart
+            heartIcon.classList.remove('active');
+            heartIcon.setAttribute('fill', 'none');
+            heartIcon.setAttribute('stroke', 'currentColor');
+            heartIcon.style.color = '#6b7280'; // gray-500
+            wishlistText.textContent = 'Wishlist';
+            wishlistBtn.classList.remove('text-red-500', 'border-red-500');
+            wishlistBtn.classList.add('text-gray-700', 'border-gray-200');
+        }
+        
+        // Re-initialize lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    } catch (error) {
+        console.warn('Failed to update modal wishlist button state:', error);
+    }
+}
+
+// ── Update Star Rating Display ──
+function updateStarRating(rating) {
+    const starContainer = document.getElementById('star-rating-container');
+    if (!starContainer) return;
+    
+    const stars = starContainer.querySelectorAll('[data-lucide="star"]');
+    const ratingValue = parseFloat(rating) || 0;
+    
+    stars.forEach((star, index) => {
+        if (index < Math.floor(ratingValue)) {
+            // Full star
+            star.classList.remove('text-gray-300');
+            star.classList.add('text-amber-400', 'fill-current');
+        } else if (index === Math.floor(ratingValue) && ratingValue % 1 >= 0.5) {
+            // Half star (show as full for simplicity)
+            star.classList.remove('text-gray-300');
+            star.classList.add('text-amber-400', 'fill-current');
+        } else {
+            // Empty star
+            star.classList.remove('text-amber-400', 'fill-current');
+            star.classList.add('text-gray-300');
+        }
+    });
+    
+    // Re-initialize lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
 
 // ── Load Quick View Modal Component ──
 async function loadModalQuickView() {
@@ -1241,16 +1461,9 @@ function initSearchModal() {
                     window.hidemodalsearch();
                 }
                 
-                // Navigate to product or open quick view
+                // Navigate directly to product show page
                 if (productSlug) {
-                    // Try to open quick view modal
-                    const quickViewBtn = document.querySelector(`[data-product-id="${productId}"][data-product-slug="${productSlug}"]`);
-                    if (quickViewBtn) {
-                        quickViewBtn.click();
-                    } else {
-                        // Navigate to product page
-                        window.location.href = `/products/${productSlug}`;
-                    }
+                    window.location.href = `/products/${productSlug}`;
                 }
             });
         });
@@ -2198,7 +2411,7 @@ async function initDatabaseProducts() {
                 price: 12999,
                 image: "/frontend/assets/chair.png",
                 category: "chairs",
-                rating: 4.5,
+                rating: 4.2,
                 stock: "in-stock",
                 material: "Solid Oak Wood",
                 dimensions: "24L x 18W x 32H inches",
@@ -2211,7 +2424,7 @@ async function initDatabaseProducts() {
                 price: 24500,
                 image: "/frontend/assets/cabinet.png",
                 category: "cabinets",
-                rating: 4.8,
+                rating: 4.6,
                 stock: "in-stock",
                 material: "Walnut Wood",
                 dimensions: "48L x 20W x 35H inches",
@@ -2224,7 +2437,7 @@ async function initDatabaseProducts() {
                 price: 16900,
                 image: "/frontend/assets/floor-lamp.png",
                 category: "lighting",
-                rating: 4.7,
+                rating: 3.9,
                 stock: "in-stock",
                 material: "Pine Wood",
                 dimensions: "12L x 12W x 66H inches",

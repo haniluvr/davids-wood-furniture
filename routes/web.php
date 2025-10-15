@@ -248,9 +248,46 @@ Route::get('/api/reviews/{productId}', [App\Http\Controllers\ProductReviewContro
 
 // Public API routes
 Route::get('/api/user/check', function () {
+    \Log::info('Auth check called', [
+        'session_id' => session()->getId(),
+        'auth_check' => Auth::check(),
+        'user_id' => Auth::id(),
+        'url' => request()->url(),
+        'referer' => request()->header('referer'),
+        'user_agent' => request()->header('user-agent')
+    ]);
+    
+    if (Auth::check()) {
+        $user = Auth::user();
+        \Log::info('Auth check - user authenticated', [
+            'user_id' => $user->id,
+            'username' => $user->username
+        ]);
+        
+        return response()->json([
+            'authenticated' => true,
+            'user_id' => $user->id,
+            'user' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'name' => $user->name,
+                'provider' => $user->provider
+            ]
+        ]);
+    }
+    
+    \Log::info('Auth check - user not authenticated', [
+        'session_id' => session()->getId(),
+        'session_data' => session()->all()
+    ]);
+    
     return response()->json([
-        'authenticated' => Auth::check(),
-        'user_id' => Auth::id()
+        'authenticated' => false,
+        'user_id' => null,
+        'user' => null
     ]);
 });
 

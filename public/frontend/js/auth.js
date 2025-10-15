@@ -388,6 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = {
                 username: formData.get('username'),
                 password: formData.get('password'),
+                remember: formData.get('keepLoggedIn') === 'on'
             };
 
             try {

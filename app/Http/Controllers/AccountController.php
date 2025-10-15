@@ -593,4 +593,48 @@ class AccountController extends Controller
 
         return view('receipt', compact('order', 'user'));
     }
+
+    public function orders()
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please log in to view your orders.');
+        }
+
+        // Get user's orders with pagination
+        $orders = Order::where('user_id', $user->id)
+            ->with('orderItems.product')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('account', compact('user', 'orders'));
+    }
+
+    public function wishlist()
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please log in to view your wishlist.');
+        }
+
+        // Get user's wishlist items
+        $wishlistItems = WishlistItem::forUser($user->id)
+            ->with('product')
+            ->get();
+
+        return view('account', compact('user', 'wishlistItems'));
+    }
+
+    public function profile()
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Please log in to view your profile.');
+        }
+
+        return view('account', compact('user'));
+    }
 }

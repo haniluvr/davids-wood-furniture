@@ -1041,6 +1041,13 @@
                 const targetSection = document.getElementById(targetId);
                 if (targetSection) {
                     targetSection.style.display = 'block';
+                    
+                    // Initialize PSGC functions when address book section is accessed
+                    if (targetId === 'address-book-section' && regionsData.length === 0) {
+                        loadRegions().catch(error => {
+                            console.error('Failed to load regions:', error);
+                        });
+                    }
                 }
             });
         });
@@ -1530,15 +1537,22 @@
     // Load all regions
     async function loadRegions() {
         try {
+            console.log('🔄 Loading regions from PSGC API...');
             const response = await fetch(`${PSGC_API}/regions`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            console.log('📡 Response status:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ API Error Response:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const data = await response.json();
-            console.log('API Response:', data);
-            console.log('API Response Type:', typeof data);
-            console.log('Is Array?', Array.isArray(data));
+            console.log('📦 API Response:', data);
+            console.log('📦 API Response Type:', typeof data);
+            console.log('📦 Is Array?', Array.isArray(data));
             if (typeof data === 'object') {
-                console.log('Object keys:', Object.keys(data));
+                console.log('📦 Object keys:', Object.keys(data));
             }
             
             // Extract array from response
@@ -1577,7 +1591,42 @@
             console.log('✅ Regions loaded:', regionsData.length);
         } catch (error) {
             console.error('❌ Error loading regions:', error);
-            showNotification('Failed to load regions. Please refresh the page.', 'error');
+            console.log('🔄 Falling back to static regions data...');
+            
+            // Fallback to static regions data
+            regionsData = [
+                { name: 'National Capital Region (NCR)', code: 'NCR' },
+                { name: 'Cordillera Administrative Region (CAR)', code: 'CAR' },
+                { name: 'Region I (Ilocos Region)', code: '01' },
+                { name: 'Region II (Cagayan Valley)', code: '02' },
+                { name: 'Region III (Central Luzon)', code: '03' },
+                { name: 'Region IV-A (CALABARZON)', code: '04A' },
+                { name: 'Region IV-B (MIMAROPA)', code: '04B' },
+                { name: 'Region V (Bicol Region)', code: '05' },
+                { name: 'Region VI (Western Visayas)', code: '06' },
+                { name: 'Region VII (Central Visayas)', code: '07' },
+                { name: 'Region VIII (Eastern Visayas)', code: '08' },
+                { name: 'Region IX (Zamboanga Peninsula)', code: '09' },
+                { name: 'Region X (Northern Mindanao)', code: '10' },
+                { name: 'Region XI (Davao Region)', code: '11' },
+                { name: 'Region XII (SOCCSKSARGEN)', code: '12' },
+                { name: 'Region XIII (Caraga)', code: '13' },
+                { name: 'Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)', code: 'BARMM' }
+            ];
+            
+            const regionSelect = document.getElementById('region-select');
+            if (regionSelect) {
+                regionSelect.innerHTML = '<option value="">Select Region</option>';
+                regionsData.forEach(region => {
+                    const option = document.createElement('option');
+                    option.value = region.name;
+                    option.setAttribute('data-code', region.code);
+                    option.textContent = region.name;
+                    regionSelect.appendChild(option);
+                });
+            }
+            
+            showNotification('Using offline regions data. Some features may be limited.', 'warning');
         }
     }
     
@@ -1638,6 +1687,14 @@
             console.log('✅ Provinces loaded:', provinces.length);
         } catch (error) {
             console.error('❌ Error loading provinces:', error);
+            
+            // Fallback for NCR (no provinces, load cities directly)
+            if (regionCodeOrName === 'National Capital Region (NCR)' || regionCodeOrName === 'NCR') {
+                console.log('🔄 NCR detected, loading cities directly...');
+                await loadCitiesDirectly(regionCodeOrName);
+                return;
+            }
+            
             showNotification('Failed to load provinces. Please try again.', 'error');
         }
     }
@@ -1682,6 +1739,47 @@
             console.log('✅ Cities/Municipalities loaded:', cities.length);
         } catch (error) {
             console.error('❌ Error loading cities:', error);
+            
+            // Fallback for NCR cities
+            if (regionCodeOrName === 'National Capital Region (NCR)' || regionCodeOrName === 'NCR') {
+                console.log('🔄 Loading NCR cities fallback...');
+                const ncrCities = [
+                    { name: 'Caloocan', type: 'City' },
+                    { name: 'Las Piñas', type: 'City' },
+                    { name: 'Makati', type: 'City' },
+                    { name: 'Malabon', type: 'City' },
+                    { name: 'Mandaluyong', type: 'City' },
+                    { name: 'Manila', type: 'City' },
+                    { name: 'Marikina', type: 'City' },
+                    { name: 'Muntinlupa', type: 'City' },
+                    { name: 'Navotas', type: 'City' },
+                    { name: 'Parañaque', type: 'City' },
+                    { name: 'Pasay', type: 'City' },
+                    { name: 'Pasig', type: 'City' },
+                    { name: 'Pateros', type: 'Municipality' },
+                    { name: 'Quezon City', type: 'City' },
+                    { name: 'San Juan', type: 'City' },
+                    { name: 'Taguig', type: 'City' },
+                    { name: 'Valenzuela', type: 'City' }
+                ];
+                
+                const citySelect = document.getElementById('city-select');
+                if (citySelect) {
+                    citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                    citySelect.disabled = false;
+                    
+                    ncrCities.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.name;
+                        option.textContent = `${city.name} (${city.type})`;
+                        citySelect.appendChild(option);
+                    });
+                }
+                
+                showNotification('Using offline NCR cities data.', 'warning');
+                return;
+            }
+            
             showNotification('Failed to load cities. Please try again.', 'error');
         }
     }
@@ -2136,6 +2234,9 @@
             await loadRegions();
         }
         
+        // Set up event listeners for address form elements
+        setupAddressFormEventListeners();
+        
         // Scroll to the edit form
         document.getElementById('edit-address-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -2146,6 +2247,95 @@
 
     function showAddAddressForm() {
         showNotification('Add new address functionality coming soon!', 'info');
+    }
+
+    // Set up event listeners for address form elements
+    function setupAddressFormEventListeners() {
+        // Region select event listener
+        const regionSelect = document.getElementById('region-select');
+        if (regionSelect) {
+            // Remove existing event listeners to prevent duplicates
+            regionSelect.removeEventListener('change', handleRegionChange);
+            regionSelect.addEventListener('change', handleRegionChange);
+        }
+
+        // Province select event listener
+        const provinceSelect = document.getElementById('province-select');
+        if (provinceSelect) {
+            provinceSelect.removeEventListener('change', handleProvinceChange);
+            provinceSelect.addEventListener('change', handleProvinceChange);
+        }
+
+        // City select event listener
+        const citySelect = document.getElementById('city-select');
+        if (citySelect) {
+            citySelect.removeEventListener('change', handleCityChange);
+            citySelect.addEventListener('change', handleCityChange);
+        }
+    }
+
+    // Event handlers for address form
+    async function handleRegionChange(event) {
+        const selectedRegion = event.target.value;
+        if (selectedRegion) {
+            // Reset dependent selects
+            const provinceSelect = document.getElementById('province-select');
+            const citySelect = document.getElementById('city-select');
+            const barangaySelect = document.getElementById('barangay-select');
+            
+            if (provinceSelect) {
+                provinceSelect.innerHTML = '<option value="">Select Province</option>';
+                provinceSelect.disabled = true;
+            }
+            if (citySelect) {
+                citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                citySelect.disabled = true;
+            }
+            if (barangaySelect) {
+                barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+                barangaySelect.disabled = true;
+            }
+            
+            // Load provinces for selected region
+            await loadProvinces(selectedRegion);
+        }
+    }
+
+    async function handleProvinceChange(event) {
+        const selectedProvince = event.target.value;
+        if (selectedProvince) {
+            // Reset dependent selects
+            const citySelect = document.getElementById('city-select');
+            const barangaySelect = document.getElementById('barangay-select');
+            
+            if (citySelect) {
+                citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+                citySelect.disabled = true;
+            }
+            if (barangaySelect) {
+                barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+                barangaySelect.disabled = true;
+            }
+            
+            // Load cities for selected province
+            await loadCities(selectedProvince);
+        }
+    }
+
+    async function handleCityChange(event) {
+        const selectedCity = event.target.value;
+        if (selectedCity) {
+            // Reset dependent selects
+            const barangaySelect = document.getElementById('barangay-select');
+            
+            if (barangaySelect) {
+                barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+                barangaySelect.disabled = true;
+            }
+            
+            // Load barangays for selected city
+            await loadBarangays(selectedCity);
+        }
     }
 
     // Helper function for notifications

@@ -24,6 +24,17 @@ class SyncWishlistSession
      */
     public function handle(Request $request, Closure $next)
     {
+        $sessionIdBefore = session()->getId();
+        
+        \Log::info('SyncWishlistSession: Middleware called', [
+            'middleware' => 'SyncWishlistSession',
+            'session_id_before' => $sessionIdBefore,
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'auth_check' => auth()->check(),
+            'user_id' => auth()->id()
+        ]);
+        
         // Only sync for guest users (not authenticated users)
         if (!auth()->check()) {
             $sessionId = session()->getId();
@@ -32,6 +43,18 @@ class SyncWishlistSession
             $this->sessionWishlistService->syncSessionWithDatabase($sessionId);
         }
 
-        return $next($request);
+        $response = $next($request);
+        
+        $sessionIdAfter = session()->getId();
+        
+        \Log::info('SyncWishlistSession: Middleware completed', [
+            'middleware' => 'SyncWishlistSession',
+            'session_id_before' => $sessionIdBefore,
+            'session_id_after' => $sessionIdAfter,
+            'session_changed' => $sessionIdBefore !== $sessionIdAfter,
+            'url' => $request->url()
+        ]);
+
+        return $response;
     }
 }

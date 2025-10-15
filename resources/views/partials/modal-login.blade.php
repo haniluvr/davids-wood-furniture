@@ -1,7 +1,7 @@
 <!-- Login Modal -->
 <div class="modal fade hidden" id="modal-login" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content bg-stone-50">
             <div class="modal-header flex items-center justify-between">
                 <h5 class="modal-title" id="loginModalLabel">Sign In</h5>
                 <button type="button" class="btn-close border-none" id="close-login-modal" aria-label="Close">

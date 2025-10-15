@@ -147,17 +147,9 @@ class AuthController extends Controller
         
         Auth::login($user);
         
-        // Regenerate session to prevent session fixation
-        $request->session()->regenerate();
-        
-        // Ensure session is saved
-        $request->session()->save();
+        // Session regeneration is handled by Laravel's regenerate_on_login config
 
-        // Generate a remember token for API authentication
         $user = Auth::user();
-        $token = \Illuminate\Support\Str::random(60);
-        $user->remember_token = $token;
-        $user->save();
         
         \Log::info('User registered and logged in', [
             'user_id' => $user->id,
@@ -176,9 +168,6 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
-            ],
-            'data' => [
-                'token' => $token
             ],
             'authenticated' => Auth::check(),
             'redirect' => route('home')
@@ -230,34 +219,34 @@ class AuthController extends Controller
                    ->orWhere('email', $request->username)
                    ->first();
 
-        if ($user && Auth::attempt(['id' => $user->id, 'password' => $request->password])) {
+        if ($user && Auth::attempt(['id' => $user->id, 'password' => $request->password], $request->boolean('remember'))) {
+            
+            // Get user after successful authentication
+            $user = Auth::user();
             
             \Log::info('User login successful - Migrating guest data', [
                 'user_id' => $user->id,
-                'guest_session_id' => $guestSessionId
+                'guest_session_id' => $guestSessionId,
+                'session_id_after_auth' => session()->getId()
             ]);
             
-            // Migrate guest data BEFORE authentication to prevent session loss
+            // Migrate guest data AFTER authentication to prevent session conflicts
             $cartController = new CartController();
             $cartController->migrateCartToUser($user->id, $guestSessionId);
             
             $sessionWishlistService = new \App\Services\SessionWishlistService();
             $sessionWishlistService->migrateGuestToUser($user->id, $guestSessionId);
             
-
-            // Generate a remember token for API authentication
-            $user = Auth::user();
-            $token = \Illuminate\Support\Str::random(60);
-            $user->remember_token = $token;
-            $user->save();
+            \Log::info('User login - Session handled by Laravel', [
+                'user_id' => $user->id,
+                'session_id' => session()->getId(),
+                'auth_check' => Auth::check()
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',
                 'user' => $user,
-                'data' => [
-                    'token' => $token
-                ],
                 'redirect' => route('home')
             ]);
         }
@@ -292,8 +281,8 @@ class AuthController extends Controller
             session()->flush();
             \Log::info('LOGOUT: Session flushed');
             
-            session()->regenerate();
-            \Log::info('LOGOUT: Session regenerated');
+            // Don't regenerate session during logout to avoid affecting other active sessions
+            \Log::info('LOGOUT: Session cleared (no regeneration)');
             
             // Clear remember token for Google OAuth users
             if ($user && $user->remember_token) {
@@ -329,7 +318,7 @@ class AuthController extends Controller
             try {
                 Auth::logout();
                 session()->flush();
-                session()->regenerate();
+                // Don't regenerate session during emergency cleanup
                 \Log::info('LOGOUT: Emergency cleanup completed');
             } catch (\Exception $cleanupError) {
                 \Log::error('LOGOUT: Emergency cleanup failed', [

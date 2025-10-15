@@ -16,6 +16,16 @@ class CaptureGuestSession
      */
     public function handle(Request $request, Closure $next)
     {
+        $sessionIdBefore = session()->getId();
+        
+        \Log::info('CaptureGuestSession: Middleware called', [
+            'middleware' => 'CaptureGuestSession',
+            'session_id_before' => $sessionIdBefore,
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'auth_check' => auth()->check()
+        ]);
+        
         // Capture session ID at the very beginning of the request
         // This ensures we have the original session ID before any regeneration
         if (!auth()->check()) {
@@ -31,6 +41,18 @@ class CaptureGuestSession
             ]);
         }
 
-        return $next($request);
+        $response = $next($request);
+        
+        $sessionIdAfter = session()->getId();
+        
+        \Log::info('CaptureGuestSession: Middleware completed', [
+            'middleware' => 'CaptureGuestSession',
+            'session_id_before' => $sessionIdBefore,
+            'session_id_after' => $sessionIdAfter,
+            'session_changed' => $sessionIdBefore !== $sessionIdAfter,
+            'url' => $request->url()
+        ]);
+
+        return $response;
     }
 }

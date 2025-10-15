@@ -1,7 +1,7 @@
 <!-- Signup Modal -->
 <div class="modal fade hidden" id="modal-signup" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content bg-stone-50">
             <div class="modal-header flex items-center justify-between">
                 <h5 class="modal-title" id="signupModalLabel">Create Account</h5>
                 <button type="button" class="btn-close border-none" id="close-signup-modal" aria-label="Close">
