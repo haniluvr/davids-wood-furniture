@@ -123,4 +123,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(PaymentMethod::class);
     }
+
+    /**
+     * Check if the user is an SSO user (signed in with Google).
+     */
+    public function isSsoUser(): bool
+    {
+        return !empty($this->google_id) || $this->provider === 'google';
+    }
+
+    /**
+     * Check if the user has a password set.
+     */
+    public function hasPassword(): bool
+    {
+        return !empty($this->password);
+    }
 }

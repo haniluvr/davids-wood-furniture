@@ -420,9 +420,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Continue with login even if migration fails
                     }
                     
-                    // Hide modals and reload page
+                    // Hide modals and redirect to intended URL or reload current page
                     document.getElementById('modal-login')?.classList.add('hidden');
-                    location.reload();
+                    
+                    if (result.redirect && result.redirect !== window.location.href) {
+                        // Redirect to the intended URL
+                        window.location.href = result.redirect;
+                    } else {
+                        // Reload current page if no specific redirect
+                        location.reload();
+                    }
                 } else {
                     console.error('Login failed:', result.message || 'Unknown error');
                     isSubmittingLogin = false;
@@ -509,12 +516,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Continue with registration even if migration fails
                     }
                     
-                    // Hide modals and reload page
+                    // Hide modals and redirect to intended URL or reload current page
                     document.getElementById('modal-signup')?.classList.add('hidden');
                     
                     // Add a small delay to ensure session is saved
                     setTimeout(() => {
-                        location.reload();
+                        if (result.redirect && result.redirect !== window.location.href) {
+                            // Redirect to the intended URL
+                            window.location.href = result.redirect;
+                        } else {
+                            // Reload current page if no specific redirect
+                            location.reload();
+                        }
                     }, 300);
                 } else {
                     // Log validation errors to console only

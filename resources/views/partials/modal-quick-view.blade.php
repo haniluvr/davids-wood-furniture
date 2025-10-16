@@ -46,15 +46,15 @@
           <div class="flex items-start justify-between">
             <div class="space-y-2">
               <div class="text-2xl font-bold text-gray-900" id="quick-view-price">₱0.00</div>
-              <div class="flex items-center space-x-2">
+              <div class="flex items-center space-x-1">
                 <div class="flex items-center space-x-1" id="star-rating-container">
-                  <i data-lucide="star" class="w-4 h-4 text-gray-300"></i>
-                  <i data-lucide="star" class="w-4 h-4 text-gray-300"></i>
-                  <i data-lucide="star" class="w-4 h-4 text-gray-300"></i>
-                  <i data-lucide="star" class="w-4 h-4 text-gray-300"></i>
-                  <i data-lucide="star" class="w-4 h-4 text-gray-300"></i>
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
                 </div>
-                <span class="text-sm font-medium text-gray-600" id="quick-view-rating">No rating</span>
+                <span class="text-sm font-medium text-amber-500" id="quick-view-rating">0.0</span>
               </div>
             </div>
             <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">

@@ -18,7 +18,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $query = Order::with(['user', 'orderItems.product'])
-            ->orderBy('created_at', 'desc');
+            ->orderByStatusPriority();
 
         // Search functionality
         if ($request->has('search') && $request->search) {

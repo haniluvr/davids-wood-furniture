@@ -923,7 +923,7 @@
         <!-- Reviews List -->
         <div class="reviews-list">
             @forelse($reviews as $review)
-                <div style="border-bottom: 1px solid #e5e7eb; padding: 1.5rem 0;">
+                <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
                     <div style="display: flex; justify-content: space-between; align-items-start; margin-bottom: 1rem;">
                         <div>
                             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
@@ -1000,9 +1000,12 @@
                                 <div class="text-right">
                                     <div class="text-gray-500 text-sm">Price</div>
                                     <div class="price text-xl font-bold">₱{{ number_format($relatedProduct->current_price, 0) }}</div>
-                                    <span class="rating flex items-center justify-end mt-1">
-                                        <i data-lucide="star" class="lucide-small mr-1"></i> {{ number_format($relatedProduct->average_rating, 1) }}
-                                    </span>
+                                    <div class="rating flex items-center justify-end mt-1">
+                                        <div class="flex items-center space-x-1">
+                                            <i data-lucide="star" class="w-3 h-3 {{ $relatedProduct->average_rating > 0 ? 'text-amber-400 fill-current' : 'text-amber-500' }}"></i>
+                                            <span class="text-sm font-medium text-amber-500">{{ $relatedProduct->average_rating > 0 ? number_format($relatedProduct->average_rating, 1) : '0.0' }}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

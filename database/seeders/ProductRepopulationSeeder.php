@@ -239,7 +239,7 @@ class ProductRepopulationSeeder extends Seeder
 
     private function generateSKU($categoryId, $subcategoryId, $index)
     {
-        return sprintf('%d%d%02d', $categoryId, $subcategoryId, $index);
+        return sprintf('%d%02d%02d', $categoryId, $subcategoryId, $index);
     }
 
     private function generateMetaData($subcategoryId, $material)

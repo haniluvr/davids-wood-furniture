@@ -159,6 +159,9 @@ class AuthController extends Controller
             'session_id' => session()->getId()
         ]);
 
+        // Get intended redirect URL from session, fallback to home
+        $intendedUrl = session()->pull('url.intended', route('home'));
+
         return response()->json([
             'success' => true,
             'message' => 'Registration successful',
@@ -170,7 +173,7 @@ class AuthController extends Controller
                 'last_name' => $user->last_name,
             ],
             'authenticated' => Auth::check(),
-            'redirect' => route('home')
+            'redirect' => $intendedUrl
         ]);
     }
 
@@ -243,11 +246,14 @@ class AuthController extends Controller
                 'auth_check' => Auth::check()
             ]);
 
+            // Get intended redirect URL from session, fallback to home
+            $intendedUrl = session()->pull('url.intended', route('home'));
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',
                 'user' => $user,
-                'redirect' => route('home')
+                'redirect' => $intendedUrl
             ]);
         }
 
@@ -345,6 +351,10 @@ class AuthController extends Controller
     public function redirectToGoogle()
     {
         try {
+            // Store the current URL as intended URL before redirecting to Google
+            $intendedUrl = request()->input('intended_url', request()->header('referer', route('home')));
+            session()->put('url.intended', $intendedUrl);
+            
             return Socialite::driver('google')->redirect();
         } catch (\Exception $e) {
             return redirect()->route('home')->withErrors(['error' => 'Google OAuth configuration error: ' . $e->getMessage()]);
@@ -470,10 +480,48 @@ class AuthController extends Controller
                 
             }
 
-            return redirect()->route('home')->with('google_signin_success', 'Welcome! Please remember to add a password in your account settings for added security.');
+            // Get intended redirect URL from session, fallback to home
+            $intendedUrl = session()->pull('url.intended', route('home'));
+            
+            return redirect($intendedUrl)->with('google_signin_success', 'Welcome! Please remember to add a password in your account settings for added security.');
         } catch (\Exception $e) {
             \Log::error('Google OAuth error:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return redirect()->route('home')->withErrors(['error' => 'Google authentication failed: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Store the intended URL for redirect after login
+     */
+    public function storeIntendedUrl(Request $request)
+    {
+        try {
+            $intendedUrl = $request->input('intended_url');
+            
+            if ($intendedUrl) {
+                session()->put('url.intended', $intendedUrl);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Intended URL stored successfully'
+                ]);
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'No intended URL provided'
+            ], 400);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error storing intended URL:', [
+                'error' => $e->getMessage(),
+                'intended_url' => $request->input('intended_url')
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to store intended URL'
+            ], 500);
         }
     }
 

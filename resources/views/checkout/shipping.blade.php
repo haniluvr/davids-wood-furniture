@@ -15,7 +15,7 @@
         <label class="block text-sm font-medium text-gray-700 mb-3">Choose Address</label>
         <div class="space-y-3">
             <!-- Default Address Option -->
-            <label class="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-[#8b7355] transition-colors">
+            <label class="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-[#8b7355] transition-colors {{ !$isDefaultAddressComplete ? 'border-red-300 bg-red-50' : '' }}">
                 <input type="radio" name="address_option" value="default" class="mt-1 mr-3" checked>
                 <div class="flex-1">
                     <div class="font-medium text-gray-900">Default Address</div>
@@ -31,6 +31,13 @@
                             <span class="text-gray-500 italic">No address provided</span>
                         @endif
                     </div>
+                    @if(!$isDefaultAddressComplete)
+                        <div class="mt-2 p-2 bg-red-100 border border-red-200 rounded text-sm text-red-700">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 inline mr-1"></i>
+                            Your default address is incomplete. Please use a different address or 
+                            <a href="{{ route('account') }}" class="underline hover:no-underline font-medium">update your profile</a>.
+                        </div>
+                    @endif
                 </div>
             </label>
             
@@ -230,8 +237,9 @@
             @csrf
             <input type="hidden" name="address_option" value="default">
             <button type="submit" 
-                    class="bg-[#8b7355] text-white px-8 py-3 rounded-lg hover:bg-[#6b5b47] transition-colors font-semibold">
-                Continue to Payment
+                    class="px-8 py-3 rounded-lg transition-colors font-semibold {{ $isDefaultAddressComplete ? 'bg-[#8b7355] text-white hover:bg-[#6b5b47]' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }}"
+                    {{ !$isDefaultAddressComplete ? 'disabled' : '' }}>
+                {{ $isDefaultAddressComplete ? 'Continue to Payment' : 'Complete Address Required' }}
             </button>
         </form>
     </div>
@@ -245,6 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const addressOptions = document.querySelectorAll('input[name="address_option"]');
     const customForm = document.getElementById('custom-address-form');
     const defaultContinue = document.getElementById('default-address-continue');
+    const isDefaultAddressComplete = {{ $isDefaultAddressComplete ? 'true' : 'false' }};
     
     addressOptions.forEach(option => {
         option.addEventListener('change', function() {
@@ -263,6 +272,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (defaultOption && defaultOption.checked) {
         customForm.style.display = 'none';
         defaultContinue.style.display = 'flex';
+    }
+    
+    // Prevent form submission if default address is incomplete
+    const defaultForm = defaultContinue.querySelector('form');
+    if (defaultForm && !isDefaultAddressComplete) {
+        defaultForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Your default address is incomplete. Please use a different address or update your profile with a complete address. You can update your address in your account settings.');
+            return false;
+        });
     }
     
     // Form validation for custom address

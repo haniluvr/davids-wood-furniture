@@ -13,17 +13,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create test user
-        User::factory()->create([
-            'first_name' => 'Test',
-            'last_name' => 'User',
-            'email' => 'test@example.com',
-        ]);
-
-        // Seed categories and products
+        // Seed core data
         $this->call([
+            TruncateAllTablesSeeder::class,  // NEW: Truncate all tables first
             CategorySeeder::class,
-            ProductSeeder::class,
+            ProductRepopulationSeeder::class, // Use the IKEA-based product seeder with more products
+            AdminSeeder::class,
+            RealisticDataSeeder::class, // Generate realistic customer data (includes users)
+            ProductPopularitySeeder::class, // Calculate product popularity from wishlist and cart data
         ]);
     }
 }

@@ -165,6 +165,7 @@
                                         $user->barangay,
                                         $user->city,
                                         $user->province,
+                                        $user->region,
                                         $user->zip_code
                                     ]);
                                 @endphp

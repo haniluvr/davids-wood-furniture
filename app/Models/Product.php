@@ -55,6 +55,11 @@ class Product extends Model
         'meta_data' => 'array',
     ];
 
+    protected $appends = [
+        'average_rating',
+        'reviews_count',
+    ];
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
@@ -85,11 +90,11 @@ class Product extends Model
 
     /**
      * Generate a custom product ID based on category and product sequence
-     * Format: AABB where A=main_category, B=sub_category, CC=product_number
+     * Format: A-BB-CC where A=main_category, BB=sub_category, CC=product_number
      */
     public function generateCustomProductId($mainCategoryId, $subCategoryId, $productNumber)
     {
-        return sprintf('%d%d%02d', $mainCategoryId, $subCategoryId, $productNumber);
+        return sprintf('%d%02d%02d', $mainCategoryId, $subCategoryId, $productNumber);
     }
 
     /**
@@ -97,14 +102,14 @@ class Product extends Model
      */
     public function parseCustomProductId($customId)
     {
-        if (strlen($customId) != 4) {
+        if (strlen($customId) != 5) {
             return null;
         }
         
         return [
             'main_category' => (int) substr($customId, 0, 1),
-            'sub_category' => (int) substr($customId, 1, 1),
-            'product_number' => (int) substr($customId, 2, 2)
+            'sub_category' => (int) substr($customId, 1, 2),
+            'product_number' => (int) substr($customId, 3, 2)
         ];
     }
 

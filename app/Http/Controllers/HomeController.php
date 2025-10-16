@@ -12,6 +12,14 @@ class HomeController extends Controller
     {
         $featuredProducts = Product::where('is_active', true)
             ->with('category')
+            ->addSelect([
+                'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
+                    ->whereColumn('product_id', 'products.id')
+                    ->where('is_approved', true)
+            ])
+            ->orderBy('avg_rating', 'desc')
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('created_at', 'desc')
             ->limit(8)
             ->get();
 
@@ -19,6 +27,14 @@ class HomeController extends Controller
         if ($featuredProducts->isEmpty()) {
             $featuredProducts = Product::where('is_active', true)
                 ->with('category')
+                ->addSelect([
+                    'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
+                        ->whereColumn('product_id', 'products.id')
+                        ->where('is_approved', true)
+                ])
+                ->orderBy('avg_rating', 'desc')
+                ->orderBy('sort_order', 'asc')
+                ->orderBy('created_at', 'desc')
                 ->take(3)
                 ->get();
         }

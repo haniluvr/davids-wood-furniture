@@ -93,6 +93,56 @@ Route::get('/product/{id}', function ($id) {
     }
 });
 
+// Get single product by ID for quick view
+Route::get('/products/id/{id}', function ($id) {
+    try {
+        $product = \App\Models\Product::where('id', $id)
+            ->where('is_active', true)
+            ->with(['category', 'approvedReviews'])
+            ->first();
+
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found'
+            ], 404);
+        }
+
+        // Calculate average rating
+        $averageRating = $product->approvedReviews->avg('rating') ?? 0;
+        $reviewCount = $product->approvedReviews->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'description' => $product->description,
+                'price' => $product->price,
+                'sale_price' => $product->sale_price,
+                'image' => $product->image,
+                'primary_image' => $product->primary_image,
+                'images' => $product->images,
+                'sku' => $product->sku,
+                'stock_quantity' => $product->stock_quantity,
+                'category' => $product->category,
+                'average_rating' => round($averageRating, 1),
+                'review_count' => $reviewCount,
+                'rating' => round($averageRating, 1), // For compatibility
+                'review_rating' => round($averageRating, 1), // For compatibility
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching product',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
 // Get single product by slug
 Route::get('/products/{slug}', function ($slug) {
     try {

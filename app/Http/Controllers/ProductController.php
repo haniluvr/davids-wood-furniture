@@ -42,7 +42,15 @@ class ProductController extends Controller
                 break;
             case 'popularity':
             default:
-                $query->orderBy('sort_order', 'asc')->orderBy('created_at', 'desc');
+                // Order by average rating (5 stars first, then 4, 3, 2, 1, 0)
+                $query->addSelect([
+                    'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
+                        ->whereColumn('product_id', 'products.id')
+                        ->where('is_approved', true)
+                ])
+                ->orderBy('avg_rating', 'desc')
+                ->orderBy('sort_order', 'asc')
+                ->orderBy('created_at', 'desc');
                 break;
         }
 
@@ -70,6 +78,14 @@ class ProductController extends Controller
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)
+            ->addSelect([
+                'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
+                    ->whereColumn('product_id', 'products.id')
+                    ->where('is_approved', true)
+            ])
+            ->orderBy('avg_rating', 'desc')
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('created_at', 'desc')
             ->limit(4)
             ->get();
 

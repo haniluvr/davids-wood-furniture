@@ -123,6 +123,7 @@ Route::middleware(['api.session'])->group(function () {
     Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
     Route::get('/api/check-username/{username}', [AuthController::class, 'checkUsername'])->name('check.username');
+    Route::post('/api/store-intended-url', [AuthController::class, 'storeIntendedUrl'])->name('store.intended.url');
 });
 
 // Cart routes (using web middleware for proper session handling)
@@ -152,7 +153,7 @@ Route::get('/api/weather', [ApiController::class, 'weather'])->name('api.weather
 Route::get('/api/products', function (Illuminate\Http\Request $request) {
     try {
         $query = \App\Models\Product::where('is_active', true)
-            ->with(['category']);
+            ->with(['category', 'approvedReviews']);
             
         // Handle filtering
         if ($request->has('category') && $request->get('category') !== 'all') {
@@ -174,7 +175,15 @@ Route::get('/api/products', function (Illuminate\Http\Request $request) {
                 break;
             case 'popularity':
             default:
-                $query->orderBy('sort_order', 'asc')->orderBy('created_at', 'desc');
+                // Order by average rating (5 stars first, then 4, 3, 2, 1, 0)
+                $query->addSelect([
+                    'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
+                        ->whereColumn('product_id', 'products.id')
+                        ->where('is_approved', true)
+                ])
+                ->orderBy('avg_rating', 'desc')
+                ->orderBy('sort_order', 'asc')
+                ->orderBy('created_at', 'desc');
                 break;
         }
 
@@ -203,7 +212,7 @@ Route::get('/api/products', function (Illuminate\Http\Request $request) {
 });
 
 // Protected routes (require authentication)
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'store.intended'])->group(function () {
     Route::get('/account', [AccountController::class, 'index'])->name('account');
     Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
     Route::get('/account/wishlist', [AccountController::class, 'wishlist'])->name('account.wishlist');

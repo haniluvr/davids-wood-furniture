@@ -33,8 +33,11 @@ class CheckoutController extends Controller
         $shippingCost = $this->calculateShipping($user->region, $subtotal);
         $taxAmount = $this->calculateTax($subtotal);
         $total = $subtotal + $shippingCost + $taxAmount;
+        
+        // Check if default address is complete
+        $isDefaultAddressComplete = $this->isDefaultAddressComplete($user);
 
-        return view('checkout.shipping', compact('user', 'cartItems', 'subtotal', 'shippingCost', 'taxAmount', 'total'));
+        return view('checkout.shipping', compact('user', 'cartItems', 'subtotal', 'shippingCost', 'taxAmount', 'total', 'isDefaultAddressComplete'));
     }
 
     /**
@@ -47,6 +50,12 @@ class CheckoutController extends Controller
         if ($addressOption === 'default') {
             // Use user's default address
             $user = auth()->user();
+            
+            // Check if default address is complete
+            if (!$this->isDefaultAddressComplete($user)) {
+                return redirect()->back()->with('error', 'Your default address is incomplete. Please provide a complete address or use a different address for shipping.');
+            }
+            
             $shippingData = [
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
@@ -381,5 +390,28 @@ class CheckoutController extends Controller
         }
         
         return 'Unknown';
+    }
+
+    /**
+     * Check if user's default address is complete
+     */
+    private function isDefaultAddressComplete($user)
+    {
+        // Check essential address fields
+        $requiredFields = [
+            'address_line_1',
+            'city',
+            'province', 
+            'region',
+            'zip_code'
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (empty($user->$field)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

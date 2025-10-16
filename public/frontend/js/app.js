@@ -308,12 +308,14 @@ async function initProductsSection() {
                 description: product.short_description || product.description || product.desc,
                 price: product.price,
                 image: product.primary_image || product.images?.[0]?.url || product.image || 'https://via.placeholder.com/300x300?text=No+Image',
-                rating: product.rating || product.average_rating || product.review_rating || 0,
+                average_rating: product.average_rating || product.rating || product.review_rating || 0,
+                reviews_count: product.reviews_count || 0,
                 stock: product.stock_status || product.stock || 'in-stock',
                 material: product.material,
                 dimensions: product.dimensions,
                 slug: product.slug
             };
+
 
             // Validate product data before rendering
             if (!productData.id) {
@@ -347,10 +349,12 @@ async function initProductsSection() {
                         <div class="text-right">
                             <div class="text-gray-500 text-sm">Price</div>
                             <div class="price text-xl font-bold">₱${Math.floor(productData.price).toLocaleString('en-US')}</div>
-                            <span class="rating flex items-center justify-end mt-1">
-                                <i data-lucide="star" class="lucide-small mr-1"></i> 
-                                ${productData.rating > 0 ? productData.rating.toFixed(1) : 'No rating'}
-                            </span>
+                            <div class="rating flex items-center justify-end mt-1">
+                                <div class="flex items-center space-x-1">
+                                    <i data-lucide="star" class="w-4 h-4 ${productData.average_rating > 0 ? 'text-amber-400 fill-current' : 'text-amber-500'}"></i>
+                                    <span class="text-sm font-medium text-amber-500">${productData.average_rating > 0 ? productData.average_rating.toFixed(1) : '0.0'}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1112,14 +1116,39 @@ async function fillQuickViewModal(product) {
     if (price) price.textContent = `₱${Math.floor(product.price).toLocaleString('en-US')}`;
     
     // Update rating and stars
-    const rating = product.rating || product.average_rating || product.review_rating || 0;
+    const rating = product.average_rating || product.rating || product.review_rating || 0;
     const ratingText = document.getElementById('quick-view-rating');
+    const starContainer = document.getElementById('star-rating-container');
+    
+    // Show 5 stars with proper filling based on rating
     if (ratingText) {
-        ratingText.textContent = rating > 0 ? rating.toFixed(1) : 'No rating';
+        ratingText.textContent = rating > 0 ? rating.toFixed(1) : '0.0';
+        ratingText.className = 'text-sm font-medium text-amber-500';
+    }
+    if (starContainer) {
+        let starsHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= Math.floor(rating)) {
+                // Full star
+                starsHTML += `<i data-lucide="star" class="w-4 h-4 text-amber-400 fill-current"></i>`;
+            } else if (i === Math.ceil(rating) && rating % 1 >= 0.5) {
+                // Half star - create with CSS mask
+                starsHTML += `<div class="relative w-4 h-4">
+                    <i data-lucide="star" class="w-4 h-4 text-amber-500 absolute"></i>
+                    <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-current absolute" style="clip-path: inset(0 50% 0 0);"></i>
+                </div>`;
+            } else {
+                // Outlined star
+                starsHTML += `<i data-lucide="star" class="w-4 h-4 text-amber-500"></i>`;
+            }
+        }
+        starContainer.innerHTML = starsHTML;
     }
     
-    // Update dynamic star rating
-    updateStarRating(rating);
+    // Re-initialize lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
     
     // Initialize image carousel with thumbnails
     const images = product.images || [product.primary_image || product.image];
@@ -1777,6 +1806,9 @@ function initNavbarButtons() {
             event.preventDefault();
             event.stopPropagation();
             
+            // Store current URL for redirect after login
+            storeIntendedUrl();
+            
             if (typeof window.showmodallogin === 'function') {
                 window.showmodallogin();
             } else {
@@ -1799,6 +1831,9 @@ function initNavbarButtons() {
         openSignupBtn.addEventListener('click', function(event) {
             event.preventDefault();
             event.stopPropagation();
+            
+            // Store current URL for redirect after signup
+            storeIntendedUrl();
             
             if (typeof window.showmodalsignup === 'function') {
                 window.showmodalsignup();
@@ -1936,6 +1971,32 @@ function initAuthModals() {
                 }
             }, 300);
         });
+    }
+}
+
+// ── Store Intended URL for Redirect After Login ──
+function storeIntendedUrl() {
+    try {
+        // Store the current URL as the intended URL for redirect after login
+        const currentUrl = window.location.href;
+        
+        // Make an API call to store the intended URL in the session
+        fetch('/api/store-intended-url', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            body: JSON.stringify({
+                intended_url: currentUrl
+            })
+        }).catch(error => {
+            console.warn('Failed to store intended URL:', error);
+            // Continue anyway - the middleware will handle it
+        });
+    } catch (error) {
+        console.warn('Error storing intended URL:', error);
     }
 }
 

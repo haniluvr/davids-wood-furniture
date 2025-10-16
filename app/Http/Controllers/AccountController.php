@@ -35,7 +35,7 @@ class AccountController extends Controller
             ->with('product')
             ->get();
 
-        // Get user's orders with pagination
+        // Get user's orders with pagination in chronological order (most recent first)
         $orders = Order::where('user_id', $user->id)
             ->with('orderItems.product')
             ->orderBy('created_at', 'desc')
@@ -59,47 +59,96 @@ class AccountController extends Controller
     {
         $user = Auth::user();
         
-        // Build validation rules
-        $rules = [
-            'first_name' => 'nullable|string|max:255',
-            'last_name' => 'nullable|string|max:255',
-            'street' => 'nullable|string|max:255',
-            'barangay' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'province' => 'nullable|string|max:255',
-            'zip_code' => 'nullable|string|max:10',
-        ];
+        // Debug logging
+        \Log::info('Profile update request', [
+            'user_id' => $user->id,
+            'request_data' => $request->all(),
+            'current_user' => [
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'phone' => $user->phone
+            ]
+        ]);
         
-        // Phone validation: if user already has a phone number, don't allow them to remove it
+        // Determine which fields have actually changed
+        $changedFields = [];
+        $validationRules = [];
+        
+        // Check first name
+        if ($request->has('first_name') && $request->first_name !== $user->first_name) {
+            $changedFields['first_name'] = $request->first_name;
+            $validationRules['first_name'] = 'required|string|max:255';
+        }
+        
+        // Check last name
+        if ($request->has('last_name') && $request->last_name !== $user->last_name) {
+            $changedFields['last_name'] = $request->last_name;
+            $validationRules['last_name'] = 'required|string|max:255';
+        }
+        
+        // Check username
+        \Log::info('Username check', [
+            'has_username' => $request->has('username'),
+            'request_username' => $request->username,
+            'current_username' => $user->username,
+            'is_different' => $request->has('username') && $request->username !== $user->username
+        ]);
+        
+        if ($request->has('username') && $request->username !== $user->username) {
+            $changedFields['username'] = $request->username;
+            $validationRules['username'] = 'required|string|min:3|max:20|regex:/^[a-zA-Z0-9_-]+$/|unique:users,username,' . $user->id;
+            \Log::info('Username will be updated', ['new_username' => $request->username]);
+        }
+        
+        // Check email
+        if ($request->has('email') && $request->email !== $user->email) {
+            $changedFields['email'] = $request->email;
+            $validationRules['email'] = 'required|email|unique:users,email,' . $user->id;
+            $validationRules['password'] = 'required'; // Always require password for email changes
+        }
+        
+        // Check phone
         if ($request->has('phone')) {
             $phoneValue = trim($request->phone);
+            $currentPhone = $user->phone ?? '';
             
-            // If user had a phone number before and is trying to clear it, show error
-            if (!empty($user->phone) && empty($phoneValue)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Phone number cannot be removed once added. You can only update it.'
-                ], 422);
-            }
-            
-            // If providing a phone number, validate Philippine format (10-11 digits, starts with 0 or 9)
-            if (!empty($phoneValue)) {
-                $rules['phone'] = [
-                    'string',
-                    'min:10',
-                    'max:11',
-                    'regex:/^[09]\d{9,10}$/' // Starts with 0 or 9, followed by 9-10 more digits
-                ];
+            // Only validate if phone is actually changing
+            if ($phoneValue !== $currentPhone) {
+                // If user had a phone number before and is trying to clear it, show error
+                if (!empty($user->phone) && empty($phoneValue)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Phone number cannot be removed once added. You can only update it.'
+                    ], 422);
+                }
+                
+                // If providing a phone number, validate Philippine format
+                if (!empty($phoneValue)) {
+                    $changedFields['phone'] = $phoneValue;
+                    $validationRules['phone'] = [
+                        'required',
+                        'string',
+                        'min:10',
+                        'max:11',
+                        'regex:/^[09]\d{9,10}$/' // Starts with 0 or 9, followed by 9-10 more digits
+                    ];
+                }
             }
         }
         
-        // If email is being updated, require password
-        if ($request->has('email') && $request->email !== $user->email) {
-            $rules['email'] = 'required|email|unique:users,email,' . $user->id;
-            $rules['password'] = 'required';
+        // If no fields have changed, return success without doing anything
+        if (empty($changedFields)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'No changes detected',
+                'user' => $user
+            ]);
         }
-
-        $validator = Validator::make($request->all(), $rules);
+        
+        // Validate only the changed fields
+        $validator = Validator::make($request->all(), $validationRules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -110,7 +159,7 @@ class AccountController extends Controller
         }
 
         // If email is being changed, verify password
-        if ($request->has('email') && $request->email !== $user->email) {
+        if (isset($changedFields['email'])) {
             if (!$request->has('password') || !Hash::check($request->password, $user->password)) {
                 return response()->json([
                     'success' => false,
@@ -120,40 +169,23 @@ class AccountController extends Controller
         }
 
         try {
-            $updateData = [];
-            
-            // Update only provided fields
-            if ($request->has('first_name')) $updateData['first_name'] = $request->first_name;
-            if ($request->has('last_name')) $updateData['last_name'] = $request->last_name;
-            if ($request->has('email') && $request->email !== $user->email) $updateData['email'] = $request->email;
-            
-            // Handle phone update
-            if ($request->has('phone')) {
-                $phoneValue = trim($request->phone);
-                
+            // Auto-format phone if it's being updated
+            if (isset($changedFields['phone'])) {
+                $phoneValue = $changedFields['phone'];
                 // Auto-format: Add "0" prefix if starts with 9
                 if (!empty($phoneValue) && strlen($phoneValue) >= 10 && $phoneValue[0] === '9') {
-                    $phoneValue = '0' . $phoneValue;
-                }
-                
-                // Only update if not trying to clear an existing phone number
-                if (!empty($user->phone) || !empty($phoneValue)) {
-                    $updateData['phone'] = $phoneValue;
+                    $changedFields['phone'] = '0' . $phoneValue;
                 }
             }
             
-            if ($request->has('street')) $updateData['street'] = $request->street;
-            if ($request->has('barangay')) $updateData['barangay'] = $request->barangay;
-            if ($request->has('city')) $updateData['city'] = $request->city;
-            if ($request->has('province')) $updateData['province'] = $request->province;
-            if ($request->has('zip_code')) $updateData['zip_code'] = $request->zip_code;
-            
-            $user->update($updateData);
+            // Update only the changed fields
+            $user->update($changedFields);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Profile updated successfully',
-                'user' => $user
+                'user' => $user,
+                'changed_fields' => array_keys($changedFields) // For debugging
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -167,8 +199,8 @@ class AccountController extends Controller
     {
         $user = Auth::user();
         
-        $validator = Validator::make($request->all(), [
-            'current_password' => 'required',
+        // Build validation rules based on whether user has a password
+        $validationRules = [
             'new_password' => [
                 'required',
                 'string',
@@ -179,7 +211,14 @@ class AccountController extends Controller
                 'regex:/[!@#$%^&*(),.?":{}|<>]/', // must contain a special character
             ],
             'new_password_confirmation' => 'required|same:new_password',
-        ]);
+        ];
+        
+        // Only require current password if user already has a password
+        if ($user->hasPassword()) {
+            $validationRules['current_password'] = 'required';
+        }
+        
+        $validator = Validator::make($request->all(), $validationRules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -189,27 +228,33 @@ class AccountController extends Controller
             ], 422);
         }
 
-        // Check current password
-        if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Current password is incorrect'
-            ], 400);
+        // Check current password only if user has a password
+        if ($user->hasPassword()) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Current password is incorrect'
+                ], 400);
+            }
         }
 
         try {
+            $hadPassword = $user->hasPassword();
+            
             $user->update([
                 'password' => Hash::make($request->new_password)
             ]);
 
+            $message = $hadPassword ? 'Password changed successfully' : 'Password added successfully';
+            
             return response()->json([
                 'success' => true,
-                'message' => 'Password changed successfully'
+                'message' => $message
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to change password: ' . $e->getMessage()
+                'message' => 'Failed to update password: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -556,7 +601,7 @@ class AccountController extends Controller
             $query->where('status', $status);
         }
         
-        // Get paginated orders
+        // Get paginated orders in chronological order (most recent first)
         $orders = $query->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'page', $page);
 

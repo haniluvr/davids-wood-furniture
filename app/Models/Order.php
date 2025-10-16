@@ -178,4 +178,46 @@ class Order extends Model
         $code = ($first % 10) . ($second % 10);
         return str_pad($code, 2, '0', STR_PAD_LEFT);
     }
+
+    /**
+     * Scope for ordering orders by proper status priority and date
+     * 
+     * Customer view order priority logic:
+     * 1. pending (new orders waiting to be processed)
+     * 2. processing (orders being worked on)
+     * 3. shipped (orders that have been shipped)
+     * 4. delivered (completed orders)
+     * 5. cancelled can appear anywhere in between
+     * 6. Within each status group, sort by created_at desc (most recent first)
+     */
+    public function scopeOrderByStatusPriority($query)
+    {
+        return $query->orderByRaw("
+            CASE 
+                WHEN status = 'pending' THEN 1
+                WHEN status = 'processing' THEN 2
+                WHEN status = 'shipped' THEN 3
+                WHEN status = 'delivered' THEN 4
+                WHEN status = 'cancelled' THEN 5
+                ELSE 6
+            END,
+            created_at DESC
+        ");
+    }
+
+    /**
+     * Get status priority for sorting
+     * Lower number = higher priority
+     */
+    public function getStatusPriority(): int
+    {
+        return match($this->status) {
+            'pending' => 1,
+            'processing' => 2,
+            'shipped' => 3,
+            'delivered' => 4,
+            'cancelled' => 5,
+            default => 6
+        };
+    }
 }

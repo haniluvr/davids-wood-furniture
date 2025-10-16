@@ -60,6 +60,7 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
 - **Product Management** - Full CRUD operations with image uploads
 - **Category Management** - Hierarchical category structure
 - **Inventory Tracking** - Stock levels, low stock alerts, movement history
+- **Product Popularity Analytics** - Track product performance based on wishlist and cart interactions
 - **Customer Management** - View and manage customer accounts
 - **Order Management** - Process orders, update status, generate reports, track shipments
 - **Review Moderation** - Approve/reject customer reviews
@@ -431,8 +432,13 @@ php artisan db:seed
 # Or seed specific seeders:
 php artisan db:seed --class=AdminSeeder
 php artisan db:seed --class=CategorySeeder
-php artisan db:seed --class=ProductSeeder
-php artisan db:seed --class=WoodProductsSeeder
+php artisan db:seed --class=ProductRepopulationSeeder
+php artisan db:seed --class=RealisticDataSeeder
+php artisan db:seed --class=ProductPopularitySeeder
+
+# For fresh start (truncates all tables first):
+php artisan db:seed --class=TruncateAllTablesSeeder
+php artisan db:seed
 ```
 
 ---
@@ -602,6 +608,50 @@ Access the application:
 4. Add admin notes and update status
 5. Click "Reply via Email" to respond
 
+### Using the Product Popularity System
+
+**For Admins:**
+1. Access admin panel → **Analytics** or **Products**
+2. View product popularity metrics based on:
+   - Wishlist additions count
+   - Cart additions count
+   - Total popularity score
+3. Use popularity data for:
+   - Product recommendations
+   - Inventory planning
+   - Marketing campaigns
+   - Featured product selection
+
+**Data Generation:**
+- Popularity scores are automatically calculated from user interactions
+- Run `php artisan db:seed --class=ProductPopularitySeeder` to recalculate
+- Top 10 most popular products are displayed during seeding
+
+### Using the Enhanced Data Seeding
+
+**Realistic Data Generation:**
+```bash
+# Generate 75 realistic Filipino users with authentic data
+php artisan db:seed --class=RealisticDataSeeder
+
+# Generate additional users (up to 75 total)
+php artisan db:seed --class=CompleteUserSeeder
+
+# Calculate product popularity from existing data
+php artisan db:seed --class=ProductPopularitySeeder
+
+# Reset all data and start fresh
+php artisan db:seed --class=TruncateAllTablesSeeder
+php artisan db:seed
+```
+
+**Features of Realistic Data:**
+- Authentic Filipino names and addresses
+- Realistic order distribution (65% delivered, 12% shipped, etc.)
+- Bilingual product reviews (English and Filipino)
+- Proper Philippine phone numbers and postal codes
+- Realistic shopping cart and wishlist data
+
 ---
 
 ## Project Structure
@@ -620,7 +670,8 @@ davids-wood-furniture/
 │   │   │   └── ContactController.php        # Contact form
 │   │   └── Middleware/
 │   │       ├── AdminMiddleware.php  # Admin authentication
-│   │       └── ForceHttps.php       # HTTPS enforcement
+│   │       ├── ForceHttps.php       # HTTPS enforcement
+│   │       └── StoreIntendedUrl.php # Remember intended URL after login
 │   ├── Models/
 │   │   ├── Product.php
 │   │   ├── ProductReview.php        # Review model
@@ -636,7 +687,14 @@ davids-wood-furniture/
 │       └── SessionWishlistService.php
 ├── database/
 │   ├── migrations/                  # Database schema
+│   │   ├── create_product_popularity_table.php  # Product popularity tracking
+│   │   └── update_product_skus_to_five_digit_format.php  # SKU standardization
 │   └── seeders/                     # Sample data
+│       ├── RealisticDataSeeder.php  # Realistic Filipino user data
+│       ├── ProductPopularitySeeder.php  # Popularity calculation
+│       ├── TruncateAllTablesSeeder.php  # Safe database reset
+│       ├── PhilippineDataHelper.php  # Philippine data API integration
+│       └── CompleteUserSeeder.php  # Additional user generation
 ├── public/
 │   ├── admin/                       # Admin panel assets
 │   └── frontend/                    # Public site assets
@@ -694,6 +752,38 @@ davids-wood-furniture/
 ---
 
 ## Recent Updates
+
+### Version 1.0.5 (October 2025)
+
+#### Product Popularity Tracking & Enhanced Data Management
+- **Product Popularity System**: Advanced analytics for product performance
+  - New `product_popularity` table tracking wishlist and cart interactions
+  - Real-time popularity scoring based on user engagement
+  - Automatic calculation of total popularity scores
+  - Performance-optimized indexes for fast queries
+  - Top 10 most popular products reporting in seeder
+  
+- **SKU Format Standardization**: Improved product identification system
+  - Migrated all product SKUs to standardized 5-digit format
+  - Category-based SKU structure: `{main_category}{subcategory}{product_id}`
+  - Automatic SKU generation and migration for existing products
+  - Better inventory tracking and product management
+  
+- **Enhanced Data Seeding**: Comprehensive realistic data generation
+  - **RealisticDataSeeder**: Generates 75 realistic Filipino users with authentic data
+  - **PhilippineDataHelper**: API integration for authentic Philippine addresses and names
+  - **TruncateAllTablesSeeder**: Safe database reset with proper foreign key handling
+  - **ProductPopularitySeeder**: Calculates and populates popularity metrics
+  - **CompleteUserSeeder**: Additional user generation with Philippine demographics
+  - Realistic order distribution (65% delivered, 12% shipped, 10% processing, 8% pending, 5% cancelled)
+  - Authentic Filipino names, addresses, and phone numbers
+  - Bilingual review templates (English and Filipino)
+  
+- **Improved User Experience**: Better navigation and session management
+  - **StoreIntendedUrl Middleware**: Remembers user's intended destination after login
+  - Prevents redirect loops by excluding auth routes
+  - Enhanced session management for better user flow
+  - Smart URL storage for GET requests only
 
 ### Version 1.0.4 (October 2025)
 
@@ -991,11 +1081,38 @@ php artisan view:clear
    ```
 3. For MySQL, create database:
    ```sql
-   CREATE DATABASE davidswood_furniture;
+   CREATE DATABASE davids_wood;
    ```
 4. Test connection:
    ```bash
    php artisan migrate:status
+   ```
+
+#### Issue: Product SKU format errors
+**Solution:**
+1. Run the SKU migration to update all products to 5-digit format:
+   ```bash
+   php artisan migrate
+   ```
+2. The migration automatically converts SKUs to format: `{main_category}{subcategory}{product_id}`
+3. If you need to regenerate SKUs, run:
+   ```bash
+   php artisan db:seed --class=ProductIdFormatSeeder
+   ```
+
+#### Issue: Product popularity data not showing
+**Solution:**
+1. Ensure the product_popularity table exists:
+   ```bash
+   php artisan migrate
+   ```
+2. Calculate popularity scores from existing data:
+   ```bash
+   php artisan db:seed --class=ProductPopularitySeeder
+   ```
+3. Check if you have wishlist and cart data:
+   ```bash
+   php artisan db:seed --class=RealisticDataSeeder
    ```
 
 #### Issue: Permission denied (Linux/macOS)

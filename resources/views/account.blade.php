@@ -278,21 +278,26 @@
                                 <label class="form-label block">FIRST NAME</label>
                                 <input type="text" name="first_name" value="{{ $user->first_name }}" class="w-full form-input" required>
                             </div>
-                            
                             <div>
-                                <label class="form-label block">PHONE NUMBER</label>
-                                <input type="tel" name="phone" id="phone-input" value="{{ $user->phone ?? '' }}" class="w-full form-input" data-original-phone="{{ $user->phone ?? '' }}" placeholder="09xxxxxxxxx" maxlength="11">
-                                <p id="phone-error" class="text-sm text-red-600 mt-1 hidden">Phone number cannot be removed once added. You can only update it.</p>
-                                <p id="phone-format-error" class="text-sm text-red-600 mt-1 hidden">Please enter a valid phone number.</p>
+                                <label class="form-label block">USERNAME</label>
+                                <input type="text" name="username" value="{{ $user->username }}" class="w-full form-input" required>
+                                <p id="username-error" class="text-sm text-red-600 mt-1 hidden">Username is already taken or invalid.</p>
+                                <p class="text-sm text-gray-500 mt-1">Choose a unique username for your account.</p>
                             </div>
                             <button type="submit" class="save-button">
                                 SAVE
                             </button>
                         </div>
-                        <div>
+                        <div class="space-y-4">
                             <div>
                                 <label class="form-label block">LAST NAME</label>
                                 <input type="text" name="last_name" value="{{ $user->last_name }}" class="w-full form-input" required>
+                            </div>
+                            <div>
+                                <label class="form-label block">PHONE NUMBER</label>
+                                <input type="tel" name="phone" id="phone-input" value="{{ $user->phone ?? '' }}" class="w-full form-input" data-original-phone="{{ $user->phone ?? '' }}" placeholder="09xxxxxxxxx" maxlength="11">
+                                <p id="phone-error" class="text-sm text-red-600 mt-1 hidden">Phone number cannot be removed once added. You can only update it.</p>
+                                <p id="phone-format-error" class="text-sm text-red-600 mt-1 hidden">Please enter a valid phone number.</p>
                             </div>
                         </div>
                     </form>
@@ -325,19 +330,37 @@
 
                 <!-- Password Section -->
                 <div>
-                    <h3 class="border-b text-xl font-bold text-gray-900 mb-8 pb-3">Password</h3>
+                    <h3 class="border-b text-xl font-bold text-gray-900 mb-8 pb-3">
+                        @if($user->hasPassword())
+                            Password
+                        @else
+                            Add Password
+                        @endif
+                    </h3>
                     <form id="password-form" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div>
-                            <p class="text-gray-600 mb-6">Change your account password for better security.</p>
+                            @if($user->hasPassword())
+                                <p class="text-gray-600 mb-6">Change your account password for better security.</p>
+                            @else
+                                <p class="text-gray-600 mb-6">Add a password to your account for additional security and easier login.</p>
+                            @endif
                         </div>
                         <div class="space-y-4">
+                            @if($user->hasPassword())
+                                <div>
+                                    <label class="form-label block">CURRENT PASSWORD</label>
+                                    <input type="password" name="current_password" id="current-password" class="w-full form-input" required>
+                                    <p id="current-password-error" class="text-sm text-red-600 mt-1 hidden">Current password is incorrect.</p>
+                                </div>
+                            @endif
                             <div>
-                                <label class="form-label block">CURRENT PASSWORD</label>
-                                <input type="password" name="current_password" id="current-password" class="w-full form-input" required>
-                                <p id="current-password-error" class="text-sm text-red-600 mt-1 hidden">Current password is incorrect.</p>
-                            </div>
-                            <div>
-                                <label class="form-label block">NEW PASSWORD</label>
+                                <label class="form-label block">
+                                    @if($user->hasPassword())
+                                        NEW PASSWORD
+                                    @else
+                                        PASSWORD
+                                    @endif
+                                </label>
                                 <div class="relative">
                                     <input type="password" name="new_password" id="new-password" class="w-full form-input pr-12" required>
                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -411,7 +434,13 @@
                                                 <p class="text-gray-500 italic">No address provided</p>
                                             @endif
                                         </div>
-                                        <button class="text-[#8b7355] hover:text-[#6b5b47] font-medium" onclick="showEditAddressForm()">Edit</button>
+                                        <button class="text-[#8b7355] hover:text-[#6b5b47] font-medium" onclick="showEditAddressForm()">
+                                            @if($user->street || $user->city || $user->province)
+                                                Edit
+                                            @else
+                                                Add
+                                            @endif
+                                        </button>
                                     </div>
                                 </div>
                                 
@@ -426,10 +455,22 @@
                 
                 <!-- Edit Address Form (Hidden by default) -->
                 <div id="edit-address-form" class="border-gray-200 pb-8 mb-8" style="display: none;">
-                    <h3 class="border-b text-xl font-bold text-gray-900 mb-8 pb-3">Edit Address</h3>
+                    <h3 class="border-b text-xl font-bold text-gray-900 mb-8 pb-3">
+                        @if($user->street || $user->city || $user->province)
+                            Edit Address
+                        @else
+                            Add Address
+                        @endif
+                    </h3>
                     <form id="update-address-form" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div>
-                            <p class="text-gray-600 mb-6">Update your default delivery address.</p>
+                            <p class="text-gray-600 mb-6">
+                                @if($user->street || $user->city || $user->province)
+                                    Update your default delivery address.
+                                @else
+                                    Add your default delivery address.
+                                @endif
+                            </p>
                         </div>
                         <div class="space-y-4">
                             <div>
@@ -525,14 +566,20 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                         @foreach($wishlistItems as $item)
                         <div class="border border-gray-200 rounded-lg p-4">
-                            <div class="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
+                            <div class="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity" 
+                                 onclick="openQuickView({{ $item->product->id ?? 'null' }}, '{{ $item->product->slug ?? '' }}')">
                                 @if($item->product && $item->product->image)
                                     <img src="{{ $item->product->image }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover rounded-lg">
                                 @else
                                     <i data-lucide="heart" class="text-gray-400 w-8 h-8"></i>
                                 @endif
                         </div>
-                            <h3 class="font-medium text-gray-900">{{ $item->product->name ?? 'Product' }}</h3>
+                            <h3 class="font-medium text-gray-900 cursor-pointer hover:text-[#8b7355] transition-colors" 
+                                data-product-id="{{ $item->product->id ?? '' }}" 
+                                data-product-slug="{{ $item->product->slug ?? '' }}"
+                                onclick="openQuickView({{ $item->product->id ?? 'null' }}, '{{ $item->product->slug ?? '' }}')">
+                                {{ $item->product->name ?? 'Product' }}
+                            </h3>
                             <p class="text-gray-600">₱{{ number_format($item->product->price ?? 0, 2) }}</p>
                         </div>
                         @endforeach
@@ -1120,37 +1167,152 @@
             });
         }
 
+        // Username input validation and error clearing
+        const usernameInput = document.querySelector('input[name="username"]');
+        const usernameError = document.getElementById('username-error');
+        
+        if (usernameInput && usernameError) {
+            // Clear any existing errors on page load
+            usernameError.classList.add('hidden');
+            usernameInput.classList.remove('border-red-500');
+            
+            usernameInput.addEventListener('input', function() {
+                // Clear error when user starts typing
+                usernameError.classList.add('hidden');
+                this.classList.remove('border-red-500');
+            });
+        }
+
         // Handle personal information form submission
         const personalInfoForm = document.getElementById('personal-info-form');
         if (personalInfoForm) {
             personalInfoForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                // Check phone validation before submitting
-                const phoneInput = document.getElementById('phone-input');
-                if (phoneInput) {
-                    const originalPhone = phoneInput.getAttribute('data-original-phone');
-                    const currentValue = phoneInput.value.trim();
+                // Get current user data for comparison
+                const currentUser = {
+                    first_name: '{{ $user->first_name }}',
+                    last_name: '{{ $user->last_name }}',
+                    username: '{{ $user->username }}',
+                    email: '{{ $user->email }}',
+                    phone: '{{ $user->phone ?? "" }}'
+                };
+                
+                // Only validate fields that have actually changed
+                const formData = new FormData(this);
+                const allData = Object.fromEntries(formData);
+                
+                // Validate username only if it has changed
+                const usernameInputs = document.querySelectorAll('input[name="username"]');
+                console.log('Found username inputs:', usernameInputs.length);
+                
+                // Find the username input within the personal info form, not the login modal
+                const personalInfoForm = document.getElementById('personal-info-form');
+                console.log('Personal info form found:', personalInfoForm);
+                const usernameInput = personalInfoForm ? personalInfoForm.querySelector('input[name="username"]') : null;
+                const usernameError = document.getElementById('username-error');
+                
+                console.log('Correct username input found:', usernameInput);
+                
+                if (usernameInput && usernameError) {
+                    console.log('Username input element found:', usernameInput);
+                    console.log('Username input value:', usernameInput.value);
+                    console.log('Username input type:', usernameInput.type);
+                    console.log('Username input name:', usernameInput.name);
                     
-                    if (originalPhone && !currentValue) {
-                        showNotification('Phone number cannot be removed once added', 'error');
-                        return;
-                    }
+                    const username = usernameInput.value.trim();
+                    const hasChanged = username !== currentUser.username;
                     
-                    // Validate Philippine phone format if phone is provided
-                    if (currentValue.length > 0) {
-                        const isValidLength = currentValue.length >= 10 && currentValue.length <= 11;
-                        const startsCorrectly = currentValue[0] === '0' || currentValue[0] === '9';
+                    console.log('Username validation check:', {
+                        current: currentUser.username,
+                        new: username,
+                        hasChanged: hasChanged,
+                        allDataUsername: allData.username,
+                        inputValue: usernameInput.value,
+                        trimmedValue: usernameInput.value.trim()
+                    });
+                    
+                    if (hasChanged) {
+                        // Clear any existing errors
+                        usernameError.classList.add('hidden');
+                        usernameInput.classList.remove('border-red-500');
                         
-                        if (!isValidLength || !startsCorrectly) {
-                            showNotification('Please enter a valid Philippine phone number (10-11 digits)', 'error');
+                        // Basic username validation
+                        if (!username || username.length === 0) {
+                            usernameError.textContent = 'Username is required.';
+                            usernameError.classList.remove('hidden');
+                            usernameInput.classList.add('border-red-500');
                             return;
+                        }
+                        
+                        // Username format validation (alphanumeric, underscore, hyphen, 3-20 characters)
+                        const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+                        if (!usernameRegex.test(username)) {
+                            usernameError.textContent = 'Username must be 3-20 characters long and contain only letters, numbers, underscores, and hyphens.';
+                            usernameError.classList.remove('hidden');
+                            usernameInput.classList.add('border-red-500');
+                            return;
+                        }
+                    } else {
+                        // Username hasn't changed, make sure error is hidden
+                        usernameError.classList.add('hidden');
+                        usernameInput.classList.remove('border-red-500');
+                    }
+                }
+                
+                // Validate phone only if it has changed
+                if (allData.phone !== undefined && allData.phone !== currentUser.phone) {
+                    const phoneInput = document.getElementById('phone-input');
+                    if (phoneInput) {
+                        const originalPhone = phoneInput.getAttribute('data-original-phone');
+                        const currentValue = phoneInput.value.trim();
+                        
+                        if (originalPhone && !currentValue) {
+                            showNotification('Phone number cannot be removed once added', 'error');
+                            return;
+                        }
+                        
+                        // Validate Philippine phone format if phone is provided
+                        if (currentValue.length > 0) {
+                            const isValidLength = currentValue.length >= 10 && currentValue.length <= 11;
+                            const startsCorrectly = currentValue[0] === '0' || currentValue[0] === '9';
+                            
+                            if (!isValidLength || !startsCorrectly) {
+                                showNotification('Please enter a valid Philippine phone number (10-11 digits)', 'error');
+                                return;
+                            }
                         }
                     }
                 }
                 
-                const formData = new FormData(this);
-                const data = Object.fromEntries(formData);
+                // Check each field and only include if it has changed
+                const data = {};
+                if (allData.first_name && allData.first_name !== currentUser.first_name) {
+                    data.first_name = allData.first_name;
+                }
+                if (allData.last_name && allData.last_name !== currentUser.last_name) {
+                    data.last_name = allData.last_name;
+                }
+                if (usernameInput && usernameInput.value.trim() !== currentUser.username) {
+                    data.username = usernameInput.value.trim();
+                }
+                if (allData.email && allData.email !== currentUser.email) {
+                    data.email = allData.email;
+                    data.password = allData.password; // Include password for email changes
+                }
+                if (allData.phone !== undefined && allData.phone !== currentUser.phone) {
+                    data.phone = allData.phone;
+                }
+                
+                console.log('Data being sent:', data);
+                console.log('All form data:', allData);
+                console.log('Current user data:', currentUser);
+                
+                // If no fields have changed, show message and return
+                if (Object.keys(data).length === 0) {
+                    showNotification('No changes detected', 'info');
+                    return;
+                }
                 
                 try {
                     const response = await fetch('/api/account/profile/update', {
@@ -1170,8 +1332,23 @@
                         if (phoneInput && data.phone) {
                             phoneInput.setAttribute('data-original-phone', data.phone);
                         }
+                        // Force refresh the page
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     } else {
-                        showNotification(result.message || 'Failed to update personal information', 'error');
+                        // Check if error is related to username
+                        if (result.message && (result.message.toLowerCase().includes('username') || result.message.toLowerCase().includes('taken'))) {
+                            if (usernameError) {
+                                usernameError.textContent = result.message;
+                                usernameError.classList.remove('hidden');
+                            }
+                            if (usernameInput) {
+                                usernameInput.classList.add('border-red-500');
+                            }
+                        } else {
+                            showNotification(result.message || 'Failed to update personal information', 'error');
+                        }
                     }
                 } catch (error) {
                     showNotification('An error occurred while updating personal information', 'error');
@@ -1239,6 +1416,10 @@
                         if (emailPasswordInput) {
                             emailPasswordInput.value = '';
                         }
+                        // Force refresh the page
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     } else {
                         // Check if error is related to incorrect password
                         if (result.message && result.message.toLowerCase().includes('password')) {
@@ -1380,6 +1561,10 @@
                         ['req-length', 'req-lowercase', 'req-uppercase', 'req-number', 'req-special'].forEach(reqId => {
                             validatePasswordRequirement(reqId, false);
                         });
+                        // Force refresh the page
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     } else {
                         // Check if error is related to current password
                         if (result.message && result.message.toLowerCase().includes('current password')) {
@@ -2882,6 +3067,53 @@
                 ordersContainer.style.opacity = '1';
                 ordersContainer.style.pointerEvents = 'auto';
             }
+        }
+    }
+
+    // Function to open quick view modal for wishlist items
+    async function openQuickView(productId, productSlug) {
+        if (!productId) {
+            console.error('Product ID is required');
+            return;
+        }
+
+        try {
+            // Fetch product data
+            const response = await fetch(`/api/products/id/${productId}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch product data');
+            }
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Failed to fetch product data');
+            }
+            
+            const product = result.data;
+            
+            // Fill modal with product information
+            await fillQuickViewModal(product);
+            
+            // Show modal
+            if (typeof window.showmodalQuickView === 'function') {
+                window.showmodalQuickView();
+            } else {
+                // Fallback method
+                const modal = document.getElementById('modalQuickView');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            }
+            
+            // Re-init icons after modal opens
+            setTimeout(() => {
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }, 100);
+            
+        } catch (error) {
+            console.error('Error opening quick view:', error);
+            showNotification('Failed to load product details', 'error');
         }
     }
 </script>

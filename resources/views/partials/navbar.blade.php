@@ -86,7 +86,7 @@
                                 </li>
                                 <li class="border-t border-gray-200"></li>
                                 <li class="px-4 py-2">
-                                    <a class="block text-gray-700 hover:bg-gray-100" href="{{ route('auth.google') }}">Sign in with Google</a>
+                                    <a class="block text-gray-700 hover:bg-gray-100" href="{{ route('auth.google') }}?intended_url={{ urlencode(request()->fullUrl()) }}">Sign in with Google</a>
                                 </li>
                             </ul>
                             @endauth
