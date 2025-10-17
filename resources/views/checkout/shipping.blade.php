@@ -159,12 +159,12 @@
             
             <!-- Province -->
             <div class="mt-6">
-                <label for="province" class="block text-sm font-medium text-gray-700 mb-2">Province *</label>
+                <label for="province" class="block text-sm font-medium text-gray-700 mb-2">Province</label>
                 <select id="province" 
                         name="province" 
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8b7355] focus:border-transparent @error('province') border-red-500 @enderror"
-                        required disabled>
-                    <option value="">Select Province</option>
+                        disabled>
+                    <option value="">Select Province (Optional)</option>
                 </select>
                 @error('province')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -187,11 +187,11 @@
             
             <!-- Barangay -->
             <div class="mt-6">
-                <label for="barangay" class="block text-sm font-medium text-gray-700 mb-2">Barangay</label>
+                <label for="barangay" class="block text-sm font-medium text-gray-700 mb-2">Barangay *</label>
                 <select id="barangay" 
                         name="barangay" 
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8b7355] focus:border-transparent @error('barangay') border-red-500 @enderror"
-                        disabled>
+                        required disabled>
                     <option value="">Select Barangay</option>
                 </select>
                 @error('barangay')

@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ApiController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 // Admin subdomain routes (MUST BE FIRST!)
@@ -284,6 +285,14 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
     Route::post('/api/account/logout', [AccountController::class, 'logout']);
     Route::get('/api/account/orders', [AccountController::class, 'getOrders']);
     Route::get('/account/receipt/{orderNumber}', [AccountController::class, 'viewReceipt'])->name('account.receipt');
+    
+    // Notification routes
+    Route::get('/api/notifications', [NotificationController::class, 'getUserNotifications']);
+    Route::get('/api/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
+    Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/api/notifications/{id}', [NotificationController::class, 'deleteNotification']);
+    Route::delete('/api/notifications/clear-all', [NotificationController::class, 'clearAll']);
     
     // Product Reviews
     Route::post('/api/reviews/submit', [App\Http\Controllers\ProductReviewController::class, 'store'])->name('reviews.store');

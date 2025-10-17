@@ -4,7 +4,7 @@
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         sidebarCollapsed ? 'lg:w-16' : 'lg:w-72'
     ]"
-    class="absolute left-0 top-0 z-9999 flex h-screen flex-col overflow-y-hidden bg-white dark:bg-boxdark border-r border-stroke dark:border-strokedark duration-200 ease-out lg:static lg:translate-x-0"
+    class="absolute left-0 top-0 z-9999 flex h-screen flex-col overflow-y-hidden bg-white dark:bg-boxdark border-r border-stroke dark:border-strokedark duration-300 ease-linear lg:static lg:translate-x-0"
     @click.outside="sidebarOpen = false"
     x-data="{ 
         ordersOpen: false,
@@ -13,7 +13,6 @@
         customersOpen: false,
         contactOpen: false,
         shippingOpen: false,
-        salesOpen: false,
         contentOpen: false,
         settingsOpen: false,
         reportsOpen: false
@@ -33,7 +32,6 @@
                 customersOpen = false;
                 contactOpen = false;
                 shippingOpen = false;
-                salesOpen = false;
                 contentOpen = false;
                 settingsOpen = false;
                 reportsOpen = false;
@@ -65,7 +63,7 @@
     </div>
     <!-- SIDEBAR HEADER -->
 
-    <div class="no-scrollbar flex flex-col overflow-y-auto duration-200 ease-out">
+    <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
         <!-- Sidebar Menu -->
         <nav class="mt-5 px-4 py-4 lg:mt-9 lg:px-6">
             <ul class="mb-6 flex flex-col gap-1.5">
@@ -73,7 +71,7 @@
                 <!-- Dashboard (Top-level) -->
                 <li>
                                 <a
-                                    class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-150 ease-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.dashboard') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
+                                    class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.dashboard') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                                     href="{{ route('admin.dashboard') }}"
                                     :title="sidebarCollapsed ? 'Dashboard' : ''"
                                     x-tooltip="sidebarCollapsed ? 'Dashboard' : ''"
@@ -87,7 +85,7 @@
                 <li>
                     <button
                         @click="!sidebarCollapsed && (ordersOpen = !ordersOpen)"
-                        class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-150 ease-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.orders.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
+                        class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.orders.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                         :title="sidebarCollapsed ? 'Orders' : ''"
                         x-tooltip="sidebarCollapsed ? 'Orders' : ''"
                     >
@@ -95,7 +93,7 @@
                             <i data-lucide="shopping-cart" class="w-5 h-5 flex-shrink-0"></i>
                             <span x-show="!sidebarCollapsed" x-transition>Orders</span>
                         </div>
-                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-150 ease-out flex-shrink-0" :class="ordersOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
+                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="ordersOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="ordersOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
                         <li><a href="{{ route('admin.orders.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.index') ? 'text-primary dark:text-primary' : '' }}">All Orders</a></li>
@@ -219,27 +217,6 @@
                     </ul>
                 </li>
 
-                <!-- Sales & Promotions Accordion -->
-                <li>
-                    <button
-                        @click="!sidebarCollapsed && (salesOpen = !salesOpen)"
-                        class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.coupons.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
-                        :title="sidebarCollapsed ? 'Sales & Promotions' : ''"
-                    >
-                        <div class="flex items-center gap-2.5">
-                            <i data-lucide="percent" class="w-5 h-5 flex-shrink-0"></i>
-                            <span x-show="!sidebarCollapsed" x-transition>Sales & Promotions</span>
-                        </div>
-                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="salesOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
-                    </button>
-                    <ul x-show="salesOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.coupons.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.coupons*') ? 'text-primary dark:text-primary' : '' }}">Coupons & Promotions</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Discounts & Coupons</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Seasonal Campaigns</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">B2B Pricing</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Gift Cards</a></li>
-                    </ul>
-                </li>
 
                 <!-- Content Accordion -->
                 <li>

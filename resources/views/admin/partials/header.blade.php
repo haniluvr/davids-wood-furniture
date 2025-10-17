@@ -4,7 +4,7 @@
         <div class="flex items-center gap-4">
             <!-- Sidebar Toggle Button -->
             <button
-                class="flex items-center justify-center w-10 h-10 rounded-xl border border-stroke bg-white text-gray-600 hover:text-primary hover:bg-primary/5 hover:border-primary/20 transition-all duration-150 ease-out dark:border-strokedark dark:bg-boxdark dark:text-gray-400 dark:hover:text-primary dark:hover:bg-primary/10"
+                class="flex items-center justify-center w-10 h-10 rounded-xl border border-stroke bg-white text-gray-600 hover:text-primary hover:bg-primary/5 hover:border-primary/20 transition-all duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-400 dark:hover:text-primary dark:hover:bg-primary/10"
                 @click.stop="
                     if (window.innerWidth < 1024) {
                         sidebarOpen = !sidebarOpen;
@@ -14,24 +14,29 @@
                 "
                 :class="sidebarOpen ? 'text-primary bg-primary/5 border-primary/20' : ''"
             >
-                <i data-lucide="menu" class="w-5 h-5 transition-transform duration-150 ease-out" :class="sidebarOpen ? 'rotate-90' : ''" x-show="window.innerWidth < 1024"></i>
-                <i data-lucide="panel-left" class="w-5 h-5 transition-transform duration-150 ease-out" x-show="window.innerWidth >= 1024 && !sidebarCollapsed"></i>
-                <i data-lucide="panel-right" class="w-5 h-5 transition-transform duration-150 ease-out" x-show="window.innerWidth >= 1024 && sidebarCollapsed"></i>
+                <i data-lucide="menu" class="w-5 h-5 transition-transform duration-200" :class="sidebarOpen ? 'rotate-90' : ''" x-show="window.innerWidth < 1024"></i>
+                <i data-lucide="panel-left" class="w-5 h-5 transition-transform duration-200" x-show="window.innerWidth >= 1024 && !sidebarCollapsed"></i>
+                <i data-lucide="panel-right" class="w-5 h-5 transition-transform duration-200" x-show="window.innerWidth >= 1024 && sidebarCollapsed"></i>
             </button>
 
             <!-- Search Bar -->
             <div class="hidden sm:block">
                 <form action="#" method="POST">
                     <div class="relative">
-                        <button class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors duration-150 ease-out dark:text-bodydark dark:hover:text-primary">
+                        <button class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors duration-200 dark:text-bodydark dark:hover:text-primary">
                             <i data-lucide="search" class="w-4 h-4"></i>
                         </button>
 
                         <input
                             type="text"
-                            placeholder="Search products, orders, customers..."
-                            class="w-full bg-white/80 backdrop-blur-sm pl-11 pr-4 py-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-150 ease-out dark:bg-boxdark/80 dark:text-white dark:placeholder-gray-500 xl:w-80 border border-stroke/50 rounded-xl dark:border-strokedark/50 hover:border-primary/30 focus:border-primary/50"
+                            placeholder="Search or type command..."
+                            class="w-full bg-gray-100 pl-11 pr-16 py-3 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-200 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 xl:w-80 rounded-lg border-0 hover:bg-gray-200 dark:hover:bg-gray-600"
                         />
+                        
+                        <!-- Keyboard Shortcut Button -->
+                        <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200">
+                            <span class="text-xs font-medium bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded border">⌘K</span>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -39,37 +44,23 @@
 
         <div class="flex items-center gap-3 2xsm:gap-7">
             <ul class="flex items-center gap-2 2xsm:gap-4">
-                <!-- Dark Mode Toggler -->
+                <!-- Dark Mode Toggle Button -->
                 <li>
-                    <label
-                        :class="darkMode ? 'bg-primary shadow-lg shadow-primary/25' : 'bg-gray-200 dark:bg-gray-700'"
-                        class="relative m-0 block h-8 w-16 rounded-full cursor-pointer transition-all duration-200 ease-out"
+                    <button
+                        @click="darkMode = !darkMode"
+                        class="flex items-center justify-center w-10 h-10 rounded-xl border border-stroke bg-white text-gray-600 hover:text-primary hover:bg-primary/5 hover:border-primary/20 transition-all duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-400 dark:hover:text-primary dark:hover:bg-primary/10"
+                        :title="darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
                     >
-                        <input
-                            type="checkbox"
-                            :value="darkMode"
-                            @change="darkMode = !darkMode"
-                            class="absolute top-0 z-50 m-0 h-full w-full cursor-pointer opacity-0"
-                        />
-                        <span
-                            :class="darkMode && '!right-1 !translate-x-full !bg-white shadow-lg'"
-                            class="absolute left-1 top-1/2 flex h-6 w-6 -translate-y-1/2 translate-x-0 items-center justify-center rounded-full bg-white shadow-md transition-all duration-200 ease-out dark:bg-gray-800"
-                        >
-                            <span class="dark:hidden transition-opacity duration-200" :class="darkMode ? 'opacity-0' : 'opacity-100'">
-                                <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-500"></i>
-                            </span>
-                            <span class="hidden dark:inline-block transition-opacity duration-200" :class="darkMode ? 'opacity-100' : 'opacity-0'">
-                                <i data-lucide="moon" class="w-3.5 h-3.5 text-blue-400"></i>
-                            </span>
-                        </span>
-                    </label>
+                        <i data-lucide="moon" class="w-4 h-4 transition-opacity duration-200" :class="darkMode ? 'opacity-0' : 'opacity-100'"></i>
+                        <i data-lucide="sun" class="w-4 h-4 absolute transition-opacity duration-200" :class="darkMode ? 'opacity-100' : 'opacity-0'"></i>
+                    </button>
                 </li>
-                <!-- Dark Mode Toggler -->
+                <!-- Dark Mode Toggle Button -->
 
                 <!-- Notification Menu Area -->
                 <li class="relative" x-data="{ dropdownOpen: false, notifying: true }">
                     <a
-                        class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-stroke/50 bg-white/80 backdrop-blur-sm hover:text-primary hover:bg-primary/5 hover:border-primary/20 transition-all duration-150 ease-out dark:border-strokedark/50 dark:bg-boxdark/80 dark:text-white dark:hover:bg-primary/10"
+                        class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-brand-brown/20 bg-white/80 backdrop-blur-sm hover:text-brand-green hover:bg-brand-green/5 hover:border-brand-green/20 transition-all duration-200 dark:border-brand-brown/30 dark:bg-brand-dark-dm/80 dark:text-brand-beige dark:hover:bg-brand-green/10"
                         href="#"
                         @click.prevent="dropdownOpen = ! dropdownOpen; notifying = false"
                     >
@@ -173,7 +164,7 @@
             <!-- User Area -->
             <div class="relative" x-data="{ dropdownOpen: false }">
                 <a
-                    class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition-all duration-150 ease-out"
+                    class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition-all duration-200"
                     href="#"
                     @click.prevent="dropdownOpen = ! dropdownOpen"
                 >
@@ -191,7 +182,7 @@
                         <span class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-green-500 border-2 border-white dark:border-boxdark"></span>
                     </div>
 
-                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 dark:text-gray-400 hidden sm:block transition-transform duration-150 ease-out" :class="dropdownOpen ? 'rotate-180' : ''"></i>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 dark:text-gray-400 hidden sm:block transition-transform duration-200" :class="dropdownOpen ? 'rotate-180' : ''"></i>
                 </a>
 
                 <!-- Dropdown Start -->

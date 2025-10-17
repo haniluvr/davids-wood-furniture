@@ -61,7 +61,7 @@ class CheckoutController extends Controller
                 'last_name' => $user->last_name,
                 'email' => $user->email,
                 'phone' => $user->phone,
-                'address_line_1' => $user->address_line_1,
+                'address_line_1' => $user->street,
                 'address_line_2' => $user->address_line_2,
                 'city' => $user->city,
                 'province' => $user->province,
@@ -80,9 +80,9 @@ class CheckoutController extends Controller
                 'address_line_1' => 'required|string|max:255',
                 'address_line_2' => 'nullable|string|max:255',
                 'city' => 'required|string|max:255',
-                'province' => 'required|string|max:255',
+                'province' => 'nullable|string|max:255',
                 'region' => 'required|string|max:255',
-                'barangay' => 'nullable|string|max:255',
+                'barangay' => 'required|string|max:255',
                 'zip_code' => 'required|string|max:10',
             ]);
             
@@ -397,11 +397,12 @@ class CheckoutController extends Controller
      */
     private function isDefaultAddressComplete($user)
     {
-        // Check essential address fields
+        // Check essential address fields - street, barangay, city, region, zipcode
+        // Province can be null as per user requirement
         $requiredFields = [
-            'address_line_1',
+            'street',
+            'barangay',
             'city',
-            'province', 
             'region',
             'zip_code'
         ];

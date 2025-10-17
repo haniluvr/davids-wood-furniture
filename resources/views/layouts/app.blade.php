@@ -51,6 +51,8 @@
         @include('partials.offcanvas-wishlist')
         <!-- cart offcanvas-->
         @include('partials.offcanvas-cart')
+        <!-- notification offcanvas -->
+        @include('partials.offcanvas-notification')
         <!-- quick view modal-->
         @include('partials.modal-quick-view')
         
@@ -217,6 +219,7 @@
                 // Initialize all offcanvas
                 initOffcanvas('offcanvas-wishlist');
                 initOffcanvas('offcanvas-cart');
+                initOffcanvas('offcanvas-notification');
             }
 
             // Modal and Offcanvas initialization functions
@@ -593,6 +596,12 @@
                         panel.classList.remove('translate-x-full');
                         panel.classList.add('translate-x-0');
                     }, 10);
+                    
+                    // Prevent body scrolling when offcanvas is open
+                    // Store the current scrollbar width to prevent layout shift
+                    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+                    document.body.style.overflow = 'hidden';
+                    document.body.style.paddingRight = scrollbarWidth + 'px';
                 };
 
                 const hide = function() {
@@ -628,6 +637,9 @@
                         el.classList.add('hidden');
                         // Reset for next opening
                         panel.classList.remove('translate-x-full');
+                        // Restore body scrolling when offcanvas is closed
+                        document.body.style.overflow = 'auto';
+                        document.body.style.paddingRight = '';
                     }, 300);
                 };
 

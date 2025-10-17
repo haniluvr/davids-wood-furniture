@@ -1607,6 +1607,23 @@ function initNavbarButtons() {
         });
     }
 
+    // Notification Offcanvas Button
+    const openNotificationBtn = document.getElementById('openNotificationOffcanvas');
+    if (openNotificationBtn) {
+        openNotificationBtn.addEventListener('click', async function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Load notifications when offcanvas is opened
+            await loadNotifications();
+            
+            // Show notification offcanvas
+            if (typeof window.showoffcanvasnotification === 'function') {
+                window.showoffcanvasnotification();
+            }
+        });
+    }
+
     // Cart Offcanvas Button
     const openCartBtn = document.getElementById('openCartOffcanvas');
     if (openCartBtn) {
@@ -1663,12 +1680,67 @@ function initNavbarButtons() {
                 offcanvas.style.display = 'none';
                 // Reset panel position for next opening
                 panel.classList.remove('translate-x-full');
-                document.body.style.overflow = '';
+                document.body.style.overflow = 'auto';
             }, 300);
         }
     };
 
     // Cart Offcanvas Functions
+    // Notification Offcanvas Functions
+    window.showoffcanvasnotification = function() {
+        const offcanvas = document.getElementById('offcanvas-notification');
+        const panel = document.getElementById('offcanvas-notification-panel');
+        if (offcanvas && panel) {
+            offcanvas.classList.remove('hidden');
+            offcanvas.style.display = 'block';
+            
+            // Force a reflow to ensure the element is visible before animation
+            offcanvas.offsetHeight;
+            
+            // Start panel slide animation with a small delay for smooth transition
+            requestAnimationFrame(() => {
+                panel.classList.remove('translate-x-full');
+            });
+            
+            document.body.style.overflow = 'hidden';
+        }
+    };
+
+    window.hideoffcanvasnotification = function() {
+        const offcanvas = document.getElementById('offcanvas-notification');
+        const panel = document.getElementById('offcanvas-notification-panel');
+        if (offcanvas && panel) {
+            // Start panel slide-out animation
+            panel.classList.add('translate-x-full');
+            
+            // Hide the element entirely after slide animation completes
+            setTimeout(() => {
+                offcanvas.classList.add('hidden');
+                offcanvas.style.display = 'none';
+                // Reset panel position for next opening
+                panel.classList.remove('translate-x-full');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+    };
+
+    // Notification offcanvas button event handlers
+    const markAllReadBtn = document.getElementById('mark-all-read-btn');
+    if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', async function() {
+            await markAllNotificationsAsRead();
+        });
+    }
+
+    const clearAllNotificationsBtn = document.getElementById('clear-all-notifications-btn');
+    if (clearAllNotificationsBtn) {
+        clearAllNotificationsBtn.addEventListener('click', async function() {
+            if (confirm('Are you sure you want to clear all notifications?')) {
+                await clearAllNotifications();
+            }
+        });
+    }
+
     window.showoffcanvascart = function() {
         const offcanvas = document.getElementById('offcanvas-cart');
         const panel = document.getElementById('offcanvas-cart-panel');
@@ -1698,7 +1770,7 @@ function initNavbarButtons() {
                 offcanvas.style.display = 'none';
                 // Reset panel position for next opening
                 panel.classList.remove('translate-x-full');
-                document.body.style.overflow = '';
+                document.body.style.overflow = 'auto';
             }, 300);
         }
     };
@@ -2105,6 +2177,282 @@ async function updateBothBadgeCounts() {
     }
 }
 
+// ── Notification Functions ──
+async function updateNotificationCount() {
+    try {
+        const response = await fetch('/api/notifications/unread-count', {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch notification count');
+        }
+        
+        const data = await response.json();
+        const count = data.count || 0;
+        const badge = document.getElementById('notification-count');
+        
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count > 9 ? '9+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to update notification count:', error);
+    }
+}
+
+async function loadNotifications() {
+    try {
+        const response = await fetch('/api/notifications', {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch notifications');
+        }
+        
+        const data = await response.json();
+        const notifications = data.notifications || [];
+        
+        renderNotifications(notifications);
+    } catch (error) {
+        console.error('Failed to load notifications:', error);
+        showNotificationError();
+    }
+}
+
+function renderNotifications(notifications) {
+    const emptyState = document.getElementById('notification-empty-state');
+    const notificationList = document.getElementById('notification-list');
+    const notificationFooter = document.getElementById('notification-footer');
+    
+    if (notifications.length === 0) {
+        emptyState.style.display = 'block';
+        notificationList.style.display = 'none';
+        notificationFooter.style.display = 'none';
+        return;
+    }
+    
+    emptyState.style.display = 'none';
+    notificationList.style.display = 'block';
+    notificationFooter.style.display = 'block';
+    
+    notificationList.innerHTML = notifications.map(notification => {
+        const isUnread = ['pending', 'sent'].includes(notification.status);
+        const timeAgo = getTimeAgo(notification.created_at);
+        const iconClass = getNotificationIcon(notification.type);
+        
+        return `
+            <div class="notification-item ${isUnread ? 'unread' : 'read'}" data-id="${notification.id}">
+                <div class="flex items-start space-x-3 p-3 border-b border-gray-100 last:border-b-0">
+                    <div class="flex-shrink-0">
+                        <i data-lucide="${iconClass}" class="w-5 h-5 ${isUnread ? 'text-blue-600' : 'text-gray-400'}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-medium text-gray-900">${escapeHtml(notification.title)}</h4>
+                            <span class="text-xs text-gray-500">${timeAgo}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">${escapeHtml(notification.message)}</p>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(notification.status)}">
+                                ${getStatusText(notification.status)}
+                            </span>
+                            <div class="flex space-x-2">
+                                ${isUnread ? `<button class="text-xs text-blue-600 hover:text-blue-800" onclick="markNotificationAsRead(${notification.id})">Mark as read</button>` : ''}
+                                <button class="text-xs text-red-600 hover:text-red-800" onclick="deleteNotification(${notification.id})">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Re-initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function showNotificationError() {
+    const emptyState = document.getElementById('notification-empty-state');
+    const notificationList = document.getElementById('notification-list');
+    const notificationFooter = document.getElementById('notification-footer');
+    
+    emptyState.innerHTML = `
+        <div class="text-center py-8">
+            <i data-lucide="alert-circle" class="w-12 h-12 text-red-400 mx-auto mb-4"></i>
+            <p class="text-gray-500 text-sm">Failed to load notifications.</p>
+            <button class="text-blue-600 text-sm mt-2" onclick="loadNotifications()">Try again</button>
+        </div>
+    `;
+    emptyState.style.display = 'block';
+    notificationList.style.display = 'none';
+    notificationFooter.style.display = 'none';
+    
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+async function markNotificationAsRead(id) {
+    try {
+        const response = await fetch(`/api/notifications/${id}/read`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to mark notification as read');
+        }
+        
+        // Reload notifications and update count
+        await Promise.all([
+            loadNotifications(),
+            updateNotificationCount()
+        ]);
+    } catch (error) {
+        console.error('Failed to mark notification as read:', error);
+    }
+}
+
+async function markAllNotificationsAsRead() {
+    try {
+        const response = await fetch('/api/notifications/read-all', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to mark all notifications as read');
+        }
+        
+        // Reload notifications and update count
+        await Promise.all([
+            loadNotifications(),
+            updateNotificationCount()
+        ]);
+    } catch (error) {
+        console.error('Failed to mark all notifications as read:', error);
+    }
+}
+
+async function deleteNotification(id) {
+    try {
+        const response = await fetch(`/api/notifications/${id}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete notification');
+        }
+        
+        // Reload notifications and update count
+        await Promise.all([
+            loadNotifications(),
+            updateNotificationCount()
+        ]);
+    } catch (error) {
+        console.error('Failed to delete notification:', error);
+    }
+}
+
+async function clearAllNotifications() {
+    try {
+        const response = await fetch('/api/notifications/clear-all', {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to clear all notifications');
+        }
+        
+        // Reload notifications and update count
+        await Promise.all([
+            loadNotifications(),
+            updateNotificationCount()
+        ]);
+    } catch (error) {
+        console.error('Failed to clear all notifications:', error);
+    }
+}
+
+// Helper functions
+function getTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    
+    return date.toLocaleDateString();
+}
+
+function getNotificationIcon(type) {
+    const iconMap = {
+        'email': 'mail',
+        'sms': 'message-square',
+        'push': 'smartphone',
+        'system': 'bell',
+        'order': 'package',
+        'payment': 'credit-card',
+        'shipping': 'truck'
+    };
+    return iconMap[type] || 'bell';
+}
+
+function getStatusBadgeClass(status) {
+    const classMap = {
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'sent': 'bg-blue-100 text-blue-800',
+        'read': 'bg-green-100 text-green-800',
+        'failed': 'bg-red-100 text-red-800'
+    };
+    return classMap[status] || 'bg-gray-100 text-gray-800';
+}
+
+function getStatusText(status) {
+    const textMap = {
+        'pending': 'Pending',
+        'sent': 'Unread',
+        'read': 'Read',
+        'failed': 'Failed'
+    };
+    return textMap[status] || status;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // ── Load Cart Items (with debouncing) ──
 let loadCartItemsTimeout;
 async function loadCartItems() {
@@ -2397,7 +2745,7 @@ function initializeAllComponents() {
     });
 
     // Initialize all offcanvas components
-    const offcanvasComponents = ['offcanvas-wishlist', 'offcanvas-cart'];
+    const offcanvasComponents = ['offcanvas-wishlist', 'offcanvas-cart', 'offcanvas-notification'];
     offcanvasComponents.forEach(offcanvas => {
         const offcanvasElement = document.getElementById(offcanvas);
         if (offcanvasElement) {
@@ -2557,6 +2905,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Load both cart and wishlist counts simultaneously
     try {
         await updateBothBadgeCounts();
+    } catch (error) {
+    }
+
+    // Load notification count for authenticated users
+    try {
+        await updateNotificationCount();
     } catch (error) {
     }
 

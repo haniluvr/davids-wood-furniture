@@ -193,31 +193,6 @@
     
     <style>
         [x-cloak] { display: none !important; }
-        
-        /* Performance optimizations */
-        * {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        
-        /* Optimize transitions */
-        .transition-all {
-            will-change: transform, opacity, background-color, border-color, color, fill, stroke;
-        }
-        
-        /* Reduce repaints */
-        .backdrop-blur-xl {
-            will-change: backdrop-filter;
-        }
     </style>
     
     @stack('styles')

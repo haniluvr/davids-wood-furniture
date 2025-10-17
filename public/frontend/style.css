@@ -3063,3 +3063,84 @@ select.form-input:focus {
 select.form-input:disabled {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%9ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
 }
+
+/* Notification Styles */
+.notification-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.notification-item:hover {
+  background-color: #f9fafb;
+}
+
+.notification-item.unread {
+  background-color: #eff6ff;
+  border-left: 3px solid #3b82f6;
+}
+
+.notification-item.read {
+  opacity: 0.8;
+}
+
+.notification-item .notification-icon {
+  transition: color 0.2s ease-in-out;
+}
+
+.notification-item.unread .notification-icon {
+  color: #3b82f6;
+}
+
+.notification-item.read .notification-icon {
+  color: #9ca3af;
+}
+
+/* Notification badge - no animation */
+#notification-count {
+  /* Removed pulsing animation for static display */
+}
+
+/* Notification offcanvas specific styles */
+#offcanvas-notification .offcanvas-body {
+  padding: 0;
+}
+
+#offcanvas-notification .notification-item:last-child {
+  border-bottom: none;
+}
+
+#offcanvas-notification .empty-state-text {
+  color: #6b7280;
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+/* Notification status badges */
+.notification-status-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.notification-status-badge.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.notification-status-badge.sent {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.notification-status-badge.read {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.notification-status-badge.failed {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
