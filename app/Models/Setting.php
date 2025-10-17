@@ -189,4 +189,14 @@ class Setting extends Model
     {
         return (bool) self::get('maintenance_mode', false);
     }
+
+    public static function getValue(string $key, $default = null)
+    {
+        return self::get($key, $default);
+    }
+
+    public static function setValue(string $key, $value): void
+    {
+        self::set($key, $value);
+    }
 }

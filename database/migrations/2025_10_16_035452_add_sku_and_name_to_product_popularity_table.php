@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('product_popularity', function (Blueprint $table) {
-            $table->string('sku')->after('product_id')->comment('Product SKU from products table');
-            $table->string('product_name')->after('sku')->comment('Product name from products table');
-            $table->index('sku');
+            if (!Schema::hasColumn('product_popularity', 'sku')) {
+                $table->string('sku')->after('product_id')->comment('Product SKU from products table');
+            }
+            if (!Schema::hasColumn('product_popularity', 'product_name')) {
+                $table->string('product_name')->after('sku')->comment('Product name from products table');
+            }
+            if (!Schema::hasIndex('product_popularity', 'product_popularity_sku_index')) {
+                $table->index('sku');
+            }
         });
     }
 

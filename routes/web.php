@@ -69,12 +69,65 @@ $adminRoutes = function () {
         Route::post('inventory/bulk-update', [App\Http\Controllers\Admin\InventoryController::class, 'bulkUpdate'])->name('inventory.bulk-update');
         
         // Settings
-        Route::resource('settings', App\Http\Controllers\Admin\SettingController::class)->only(['index', 'update']);
+        Route::resource('settings', App\Http\Controllers\Admin\SettingController::class)->only(['index']);
+        Route::post('settings/general', [App\Http\Controllers\Admin\SettingController::class, 'updateGeneral'])->name('settings.update-general');
+        Route::post('settings/email', [App\Http\Controllers\Admin\SettingController::class, 'updateEmail'])->name('settings.update-email');
+        Route::post('settings/payment-gateway/{paymentGateway}', [App\Http\Controllers\Admin\SettingController::class, 'updatePaymentGateway'])->name('settings.update-payment-gateway');
+        Route::post('settings/shipping-method', [App\Http\Controllers\Admin\SettingController::class, 'createShippingMethod'])->name('settings.create-shipping-method');
+        Route::put('settings/shipping-method/{shippingMethod}', [App\Http\Controllers\Admin\SettingController::class, 'updateShippingMethod'])->name('settings.update-shipping-method');
+        Route::delete('settings/shipping-method/{shippingMethod}', [App\Http\Controllers\Admin\SettingController::class, 'deleteShippingMethod'])->name('settings.delete-shipping-method');
+        Route::post('settings/test-email', [App\Http\Controllers\Admin\SettingController::class, 'testEmail'])->name('settings.test-email');
+        Route::post('settings/clear-cache', [App\Http\Controllers\Admin\SettingController::class, 'clearCache'])->name('settings.clear-cache');
+        
+        // Coupons/Promotions
+        Route::resource('coupons', App\Http\Controllers\Admin\CouponController::class);
+        Route::post('coupons/{coupon}/toggle-status', [App\Http\Controllers\Admin\CouponController::class, 'toggleStatus'])->name('coupons.toggle-status');
+        Route::post('coupons/generate-code', [App\Http\Controllers\Admin\CouponController::class, 'generateCode'])->name('coupons.generate-code');
+        Route::post('coupons/{coupon}/duplicate', [App\Http\Controllers\Admin\CouponController::class, 'duplicate'])->name('coupons.duplicate');
+        
+            // Shipping Methods
+            Route::resource('shipping-methods', App\Http\Controllers\Admin\ShippingMethodController::class);
+            Route::post('shipping-methods/{shippingMethod}/toggle-status', [App\Http\Controllers\Admin\ShippingMethodController::class, 'toggleStatus'])->name('shipping-methods.toggle-status');
+            Route::post('shipping-methods/reorder', [App\Http\Controllers\Admin\ShippingMethodController::class, 'reorder'])->name('shipping-methods.reorder');
+            
+            // Payment Gateways
+            Route::resource('payment-gateways', App\Http\Controllers\Admin\PaymentGatewayController::class);
+            Route::post('payment-gateways/{paymentGateway}/toggle-status', [App\Http\Controllers\Admin\PaymentGatewayController::class, 'toggleStatus'])->name('payment-gateways.toggle-status');
+            Route::post('payment-gateways/{paymentGateway}/toggle-mode', [App\Http\Controllers\Admin\PaymentGatewayController::class, 'toggleMode'])->name('payment-gateways.toggle-mode');
+            Route::post('payment-gateways/{paymentGateway}/test-connection', [App\Http\Controllers\Admin\PaymentGatewayController::class, 'testConnection'])->name('payment-gateways.test-connection');
+            Route::post('payment-gateways/reorder', [App\Http\Controllers\Admin\PaymentGatewayController::class, 'reorder'])->name('payment-gateways.reorder');
+            
+            // CMS Pages
+            Route::resource('cms-pages', App\Http\Controllers\Admin\CmsPageController::class);
+            Route::post('cms-pages/{cmsPage}/toggle-status', [App\Http\Controllers\Admin\CmsPageController::class, 'toggleStatus'])->name('cms-pages.toggle-status');
+            Route::post('cms-pages/{cmsPage}/duplicate', [App\Http\Controllers\Admin\CmsPageController::class, 'duplicate'])->name('cms-pages.duplicate');
+            Route::get('cms-pages/{cmsPage}/preview', [App\Http\Controllers\Admin\CmsPageController::class, 'preview'])->name('cms-pages.preview');
+            Route::post('cms-pages/generate-slug', [App\Http\Controllers\Admin\CmsPageController::class, 'generateSlug'])->name('cms-pages.generate-slug');
         
         // Analytics
-        Route::get('/analytics', function () {
-            return view('admin.analytics.index');
-        })->name('analytics');
+        Route::get('analytics', [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('analytics/sales', [App\Http\Controllers\Admin\AnalyticsController::class, 'sales'])->name('analytics.sales');
+        Route::get('analytics/customers', [App\Http\Controllers\Admin\AnalyticsController::class, 'customers'])->name('analytics.customers');
+        Route::get('analytics/products', [App\Http\Controllers\Admin\AnalyticsController::class, 'products'])->name('analytics.products');
+        Route::get('analytics/revenue', [App\Http\Controllers\Admin\AnalyticsController::class, 'revenue'])->name('analytics.revenue');
+        Route::get('analytics/export', [App\Http\Controllers\Admin\AnalyticsController::class, 'export'])->name('analytics.export');
+        
+        // Reviews Management
+        Route::resource('reviews', App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'show', 'destroy']);
+        Route::post('reviews/{review}/approve', [App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('reviews.approve');
+        Route::post('reviews/{review}/reject', [App\Http\Controllers\Admin\ReviewController::class, 'reject'])->name('reviews.reject');
+        Route::post('reviews/{review}/respond', [App\Http\Controllers\Admin\ReviewController::class, 'respond'])->name('reviews.respond');
+        Route::put('reviews/{review}/response', [App\Http\Controllers\Admin\ReviewController::class, 'updateResponse'])->name('reviews.update-response');
+        Route::delete('reviews/{review}/response', [App\Http\Controllers\Admin\ReviewController::class, 'removeResponse'])->name('reviews.remove-response');
+        Route::post('reviews/bulk-approve', [App\Http\Controllers\Admin\ReviewController::class, 'bulkApprove'])->name('reviews.bulk-approve');
+        Route::post('reviews/bulk-reject', [App\Http\Controllers\Admin\ReviewController::class, 'bulkReject'])->name('reviews.bulk-reject');
+            Route::post('reviews/bulk-delete', [App\Http\Controllers\Admin\ReviewController::class, 'bulkDelete'])->name('reviews.bulk-delete');
+            Route::get('reviews/export', [App\Http\Controllers\Admin\ReviewController::class, 'export'])->name('reviews.export');
+            
+            // Permissions Management
+            Route::get('permissions', [App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('permissions.index');
+            Route::post('permissions', [App\Http\Controllers\Admin\PermissionController::class, 'update'])->name('permissions.update');
+            Route::post('permissions/reset', [App\Http\Controllers\Admin\PermissionController::class, 'resetToDefaults'])->name('permissions.reset');
         
         // Contact Messages
         Route::get('contact-messages', [App\Http\Controllers\ContactController::class, 'index'])->name('contact-messages.index');

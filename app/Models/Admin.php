@@ -124,6 +124,16 @@ class Admin extends Authenticatable
         return $this->hasMany(CmsPage::class, 'updated_by');
     }
 
+    public function orderActivities(): HasMany
+    {
+        return $this->hasMany(OrderActivity::class, 'admin_id');
+    }
+
+    public function reviewResponses(): HasMany
+    {
+        return $this->hasMany(ProductReview::class, 'responded_by');
+    }
+
     // Scopes
     public function scopeActive($query)
     {

@@ -54,6 +54,20 @@ module.exports = {
         success: '#219653',
         danger: '#D34053',
         warning: '#FFA70B',
+        
+        // Brand Colors - Light Mode
+        'brand-dark': '#0D1E1E',      // Primary dark navy
+        'brand-green': '#52734F',     // Sage green accent
+        'brand-beige': '#D3D0CF',     // Light beige background
+        'brand-brown': '#6C464E',     // Muted brown
+        'brand-rose': '#96616B',      // Rose accent
+        
+        // Dark Mode Variants
+        'brand-dark-dm': '#1A2F2F',   // Lighter navy for dark mode
+        'brand-green-dm': '#6B9266',  // Lighter green for dark mode
+        'brand-beige-dm': '#2A2826',  // Dark beige for dark mode
+        'brand-brown-dm': '#8B5D68',  // Lighter brown for dark mode
+        'brand-rose-dm': '#B38791',   // Lighter rose for dark mode
       },
       fontSize: {
         'title-xxl': ['44px', '55px'],
@@ -210,6 +224,11 @@ module.exports = {
       },
       backgroundImage: {
         video: "url('../images/video/video-01.png')",
+        'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0))',
+        'glass-gradient-dark': 'linear-gradient(135deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0))',
+      },
+      backdropBlur: {
+        xs: '2px',
       },
       content: {
         'icon-copy': 'url("../images/icon/icon-copy-alt.svg")',
@@ -260,6 +279,15 @@ module.exports = {
         10: '0px 1px 2px 0px rgba(0, 0, 0, 0.10)',
         11: '0px 1px 3px 0px rgba(166, 175, 195, 0.40)',
         12: '0px 0px 0px 1000px rgba(0, 0, 0, 0.50)',
+        
+        // Glassmorphism & Preline-inspired shadows
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+        'glass-inset': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+        'preline': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        'preline-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        'preline-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        'brand': '0 4px 6px -1px rgba(13, 30, 30, 0.1), 0 2px 4px -1px rgba(13, 30, 30, 0.06)',
+        'brand-lg': '0 10px 15px -3px rgba(13, 30, 30, 0.1), 0 4px 6px -2px rgba(13, 30, 30, 0.05)',
       },
       dropShadow: {
         1: '0px 1px 0px #E2E8F0',

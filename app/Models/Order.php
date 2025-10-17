@@ -55,6 +55,23 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function activities(): HasMany
+    {
+        return $this->hasMany(OrderActivity::class);
+    }
+
+    public function coupons()
+    {
+        return $this->belongsToMany(Coupon::class, 'coupon_usage')
+                    ->withPivot('discount_amount', 'used_at')
+                    ->withTimestamps();
+    }
+
+    public function paymentGateway(): BelongsTo
+    {
+        return $this->belongsTo(PaymentGateway::class);
+    }
+
     /**
      * Generate a unique order number in format: ORD-YYYY-NNNN
      * YYYY = Year when order was made

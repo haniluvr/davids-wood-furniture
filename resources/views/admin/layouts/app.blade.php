@@ -16,6 +16,9 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Preline UI -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/preline/dist/preline.min.css">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -28,6 +31,20 @@
                         danger: '#D34053',
                         warning: '#FFA70B',
                         info: '#0FADCF',
+                        
+                        // Brand Colors - Light Mode
+                        'brand-dark': '#0D1E1E',      // Primary dark navy
+                        'brand-green': '#52734F',     // Sage green accent
+                        'brand-beige': '#D3D0CF',     // Light beige background
+                        'brand-brown': '#6C464E',     // Muted brown
+                        'brand-rose': '#96616B',      // Rose accent
+                        
+                        // Dark Mode Variants
+                        'brand-dark-dm': '#1A2F2F',   // Lighter navy for dark mode
+                        'brand-green-dm': '#6B9266',  // Lighter green for dark mode
+                        'brand-beige-dm': '#2A2826',  // Dark beige for dark mode
+                        'brand-brown-dm': '#8B5D68',  // Lighter brown for dark mode
+                        'brand-rose-dm': '#B38791',   // Lighter rose for dark mode
                         dark: '#1C2434',
                         'body': '#64748B',
                         'bodydark': '#AEB7C0',
@@ -176,15 +193,48 @@
     
     <style>
         [x-cloak] { display: none !important; }
+        
+        /* Performance optimizations */
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Optimize transitions */
+        .transition-all {
+            will-change: transform, opacity, background-color, border-color, color, fill, stroke;
+        }
+        
+        /* Reduce repaints */
+        .backdrop-blur-xl {
+            will-change: backdrop-filter;
+        }
     </style>
     
     @stack('styles')
 </head>
-<body class="bg-whiten dark:bg-boxdark-2" x-data="{ 
+<body class="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-boxdark-2 dark:to-boxdark" x-data="{ 
     sidebarOpen: false, 
-    darkMode: localStorage.getItem('darkMode') === 'true' || false 
+    darkMode: localStorage.getItem('darkMode') === 'true' || false,
+    sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true' || false
 }" 
-x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))" 
+x-init="
+    $watch('darkMode', val => localStorage.setItem('darkMode', val));
+    $watch('sidebarCollapsed', val => localStorage.setItem('sidebarCollapsed', val));
+    // Auto-collapse on mobile
+    if (window.innerWidth < 1024) {
+        sidebarCollapsed = false;
+    }
+" 
 :class="{ 'dark': darkMode }">
     <div class="flex h-screen overflow-hidden">
         @include('admin.partials.sidebar')
@@ -225,5 +275,8 @@ x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))"
             }, 100);
         });
     </script>
+    
+    <!-- Preline UI Script -->
+    <script src="https://cdn.jsdelivr.net/npm/preline/dist/preline.min.js"></script>
 </body>
 </html>

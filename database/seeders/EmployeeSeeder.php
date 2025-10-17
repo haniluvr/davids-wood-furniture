@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Admin;
+use App\Models\Employee;
 use Illuminate\Support\Facades\Hash;
 
 class EmployeeSeeder extends Seeder
@@ -13,9 +13,9 @@ class EmployeeSeeder extends Seeder
      */
     public function run(): void
     {
-        // Clear existing admins (disable foreign key checks temporarily)
+        // Clear existing employees (disable foreign key checks temporarily)
         \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Admin::truncate();
+        Employee::truncate();
         \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $employees = [
@@ -211,7 +211,7 @@ class EmployeeSeeder extends Seeder
         ];
 
         foreach ($employees as $employee) {
-            Admin::create($employee);
+            Employee::create($employee);
         }
 
         $this->command->info('Employees seeded successfully!');
