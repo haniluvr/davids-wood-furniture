@@ -120,6 +120,7 @@
                     <ul x-show="productsOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
                         <li><a href="{{ route('admin.products.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.products.index') ? 'text-primary dark:text-primary' : '' }}">All Products</a></li>
                         <li><a href="{{ route('admin.products.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.products.create') ? 'text-primary dark:text-primary' : '' }}">Add New Product</a></li>
+                        <li><a href="{{ route('admin.images.upload-page') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.images.upload-page') ? 'text-primary dark:text-primary' : '' }}">Image Upload</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Categories</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Materials & Finishes</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Custom Orders</a></li>

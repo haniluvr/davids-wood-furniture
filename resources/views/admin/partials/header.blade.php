@@ -58,14 +58,14 @@
                 <!-- Dark Mode Toggle Button -->
 
                 <!-- Notification Menu Area -->
-                <li class="relative" x-data="{ dropdownOpen: false, notifying: true }">
+                <li class="relative" x-data="{ dropdownOpen: false }">
                     <a
                         class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-brand-brown/20 bg-white/80 backdrop-blur-sm hover:text-brand-green hover:bg-brand-green/5 hover:border-brand-green/20 transition-all duration-200 dark:border-brand-brown/30 dark:bg-brand-dark-dm/80 dark:text-brand-beige dark:hover:bg-brand-green/10"
                         href="#"
-                        @click.prevent="dropdownOpen = ! dropdownOpen; notifying = false"
+                        @click.prevent="dropdownOpen = ! dropdownOpen"
                     >
                         <span
-                            :class="!notifying && 'hidden'"
+                            x-show="unreadCount > 0"
                             class="absolute -top-1 -right-1 z-10 h-3 w-3 rounded-full bg-red-500 border-2 border-white dark:border-boxdark"
                         >
                             <span
@@ -92,61 +92,52 @@
                         <div class="px-6 py-4 border-b border-stroke/50 dark:border-strokedark/50">
                             <div class="flex items-center justify-between">
                                 <h5 class="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h5>
-                                <span class="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">3 new</span>
+                                <span x-show="unreadCount > 0" class="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary" x-text="unreadCount + ' new'"></span>
                             </div>
                         </div>
 
                         <ul class="flex h-auto flex-col overflow-y-auto">
-                            <li>
-                                <a
-                                    class="flex flex-col gap-3 border-b border-stroke/30 px-6 py-4 hover:bg-gray-50/80 dark:border-strokedark/30 dark:hover:bg-gray-800/50 transition-colors duration-200"
-                                    href="#"
-                                >
-                                    <div class="flex items-start gap-3">
-                                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                                            <i data-lucide="shopping-cart" class="h-4 w-4 text-green-600 dark:text-green-400"></i>
+                            <template x-for="notification in notifications.slice(0, 5)" :key="notification.id">
+                                <li>
+                                    <a
+                                        class="flex flex-col gap-3 border-b border-stroke/30 px-6 py-4 hover:bg-gray-50/80 dark:border-strokedark/30 dark:hover:bg-gray-800/50 transition-colors duration-200"
+                                        :class="notification.read ? 'opacity-60' : 'bg-blue-50/50 dark:bg-blue-900/10'"
+                                        href="#"
+                                        @click="markNotificationAsRead(notification.id)"
+                                    >
+                                        <div class="flex items-start gap-3">
+                                            <div class="flex h-8 w-8 items-center justify-center rounded-full"
+                                                 :class="{
+                                                     'bg-green-100 dark:bg-green-900/30': notification.type === 'order',
+                                                     'bg-yellow-100 dark:bg-yellow-900/30': notification.type === 'inventory',
+                                                     'bg-blue-100 dark:bg-blue-900/30': notification.type === 'review',
+                                                     'bg-purple-100 dark:bg-purple-900/30': notification.type === 'order_status',
+                                                     'bg-gray-100 dark:bg-gray-900/30': notification.type === 'info'
+                                                 }">
+                                                <i data-lucide="shopping-cart" class="h-4 w-4" 
+                                                   :class="{
+                                                       'text-green-600 dark:text-green-400': notification.type === 'order',
+                                                       'text-yellow-600 dark:text-yellow-400': notification.type === 'inventory',
+                                                       'text-blue-600 dark:text-blue-400': notification.type === 'review',
+                                                       'text-purple-600 dark:text-purple-400': notification.type === 'order_status',
+                                                       'text-gray-600 dark:text-gray-400': notification.type === 'info'
+                                                   }"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="notification.title"></p>
+                                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1" x-text="notification.message"></p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-2" x-text="formatTime(notification.timestamp)"></p>
+                                            </div>
+                                            <div x-show="!notification.read" class="h-2 w-2 rounded-full bg-primary mt-2"></div>
                                         </div>
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium text-gray-900 dark:text-white">New Order Received</p>
-                                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Order #12345 from John Doe - $299.99</p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">2 minutes ago</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    class="flex flex-col gap-3 border-b border-stroke/30 px-6 py-4 hover:bg-gray-50/80 dark:border-strokedark/30 dark:hover:bg-gray-800/50 transition-colors duration-200"
-                                    href="#"
-                                >
-                                    <div class="flex items-start gap-3">
-                                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
-                                            <i data-lucide="alert-triangle" class="h-4 w-4 text-yellow-600 dark:text-yellow-400"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Low Stock Alert</p>
-                                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Oak Dining Table is running low (3 remaining)</p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">1 hour ago</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    class="flex flex-col gap-3 px-6 py-4 hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition-colors duration-200"
-                                    href="#"
-                                >
-                                    <div class="flex items-start gap-3">
-                                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-                                            <i data-lucide="user-plus" class="h-4 w-4 text-blue-600 dark:text-blue-400"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium text-gray-900 dark:text-white">New Customer Registration</p>
-                                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Sarah Johnson has joined David's Wood</p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">3 hours ago</p>
-                                        </div>
-                                    </div>
-                                </a>
+                                    </a>
+                                </li>
+                            </template>
+                            <li x-show="notifications.length === 0" class="px-6 py-8 text-center">
+                                <div class="text-gray-500 dark:text-gray-400">
+                                    <i data-lucide="bell-off" class="h-8 w-8 mx-auto mb-2 opacity-50"></i>
+                                    <p class="text-sm">No notifications yet</p>
+                                </div>
                             </li>
                         </ul>
                         

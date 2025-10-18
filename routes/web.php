@@ -33,102 +33,159 @@ $adminRoutes = function () {
         Route::post('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
         
         // Product Management
-        Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
+        Route::middleware('admin.permission:products.view')->group(function () {
+            Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
+        });
         
         // Order Management
-        Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
-        Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
-        Route::post('orders/{order}/refund', [App\Http\Controllers\Admin\OrderController::class, 'processRefund'])->name('orders.process-refund');
-        Route::get('orders/{order}/invoice', [App\Http\Controllers\Admin\OrderController::class, 'downloadInvoice'])->name('orders.download-invoice');
-        Route::get('orders/{order}/packing-slip', [App\Http\Controllers\Admin\OrderController::class, 'downloadPackingSlip'])->name('orders.download-packing-slip');
+        Route::middleware('admin.permission:orders.view')->group(function () {
+            Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
+            Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
+            Route::post('orders/{order}/refund', [App\Http\Controllers\Admin\OrderController::class, 'processRefund'])->name('orders.process-refund');
+            Route::get('orders/{order}/invoice', [App\Http\Controllers\Admin\OrderController::class, 'downloadInvoice'])->name('orders.download-invoice');
+            Route::get('orders/{order}/packing-slip', [App\Http\Controllers\Admin\OrderController::class, 'downloadPackingSlip'])->name('orders.download-packing-slip');
+        });
         
         // User Management
-        Route::resource('users', App\Http\Controllers\Admin\UserController::class);
-        Route::post('users/{user}/suspend', [App\Http\Controllers\Admin\UserController::class, 'suspend'])->name('users.suspend');
-        Route::post('users/{user}/unsuspend', [App\Http\Controllers\Admin\UserController::class, 'unsuspend'])->name('users.unsuspend');
-        Route::post('users/{user}/verify-email', [App\Http\Controllers\Admin\UserController::class, 'verifyEmail'])->name('users.verify-email');
-        Route::post('users/{user}/unverify-email', [App\Http\Controllers\Admin\UserController::class, 'unverifyEmail'])->name('users.unverify-email');
-        Route::post('users/{user}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
-        Route::get('users-export', [App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
+        Route::middleware('admin.permission:users.view')->group(function () {
+            Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+            Route::post('users/{user}/suspend', [App\Http\Controllers\Admin\UserController::class, 'suspend'])->name('users.suspend');
+            Route::post('users/{user}/unsuspend', [App\Http\Controllers\Admin\UserController::class, 'unsuspend'])->name('users.unsuspend');
+            Route::post('users/{user}/verify-email', [App\Http\Controllers\Admin\UserController::class, 'verifyEmail'])->name('users.verify-email');
+            Route::post('users/{user}/unverify-email', [App\Http\Controllers\Admin\UserController::class, 'unverifyEmail'])->name('users.unverify-email');
+            Route::post('users/{user}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
+            Route::get('users-export', [App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
+        });
         
         // Admin User Management
-        Route::get('admins', [App\Http\Controllers\Admin\UserController::class, 'admins'])->name('users.admins');
-        Route::get('admins/create', [App\Http\Controllers\Admin\UserController::class, 'createAdmin'])->name('users.create-admin');
-        Route::post('admins', [App\Http\Controllers\Admin\UserController::class, 'storeAdmin'])->name('users.store-admin');
-        Route::delete('admins/{admin}', [App\Http\Controllers\Admin\UserController::class, 'destroyAdmin'])->name('users.destroy-admin');
+        Route::middleware('admin.permission:admins.view')->group(function () {
+            Route::get('admins', [App\Http\Controllers\Admin\UserController::class, 'admins'])->name('users.admins');
+            Route::get('admins/create', [App\Http\Controllers\Admin\UserController::class, 'createAdmin'])->name('users.create-admin');
+            Route::post('admins', [App\Http\Controllers\Admin\UserController::class, 'storeAdmin'])->name('users.store-admin');
+            Route::delete('admins/{admin}', [App\Http\Controllers\Admin\UserController::class, 'destroyAdmin'])->name('users.destroy-admin');
+        });
         
         // Inventory Management
-        Route::get('inventory', [App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');
-        Route::get('inventory/low-stock', [App\Http\Controllers\Admin\InventoryController::class, 'lowStockAlerts'])->name('inventory.low-stock');
-        Route::get('inventory/movements', [App\Http\Controllers\Admin\InventoryController::class, 'movements'])->name('inventory.movements');
-        Route::get('inventory/export', [App\Http\Controllers\Admin\InventoryController::class, 'export'])->name('inventory.export');
-        Route::get('inventory/{product}', [App\Http\Controllers\Admin\InventoryController::class, 'show'])->name('inventory.show');
-        Route::get('inventory/{product}/adjust', [App\Http\Controllers\Admin\InventoryController::class, 'adjust'])->name('inventory.adjust');
-        Route::post('inventory/{product}/adjust', [App\Http\Controllers\Admin\InventoryController::class, 'processAdjustment'])->name('inventory.process-adjustment');
-        Route::post('products/{product}/add-stock', [App\Http\Controllers\Admin\InventoryController::class, 'addStock'])->name('inventory.add-stock');
-        Route::post('products/{product}/remove-stock', [App\Http\Controllers\Admin\InventoryController::class, 'removeStock'])->name('inventory.remove-stock');
-        Route::post('inventory/bulk-update', [App\Http\Controllers\Admin\InventoryController::class, 'bulkUpdate'])->name('inventory.bulk-update');
+        Route::middleware('admin.permission:inventory.view')->group(function () {
+            Route::get('inventory', [App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');
+            Route::get('inventory/low-stock', [App\Http\Controllers\Admin\InventoryController::class, 'lowStockAlerts'])->name('inventory.low-stock');
+            Route::get('inventory/movements', [App\Http\Controllers\Admin\InventoryController::class, 'movements'])->name('inventory.movements');
+            Route::get('inventory/export', [App\Http\Controllers\Admin\InventoryController::class, 'export'])->name('inventory.export');
+            Route::get('inventory/{product}', [App\Http\Controllers\Admin\InventoryController::class, 'show'])->name('inventory.show');
+            Route::get('inventory/{product}/adjust', [App\Http\Controllers\Admin\InventoryController::class, 'adjust'])->name('inventory.adjust');
+            Route::post('inventory/{product}/adjust', [App\Http\Controllers\Admin\InventoryController::class, 'processAdjustment'])->name('inventory.process-adjustment');
+            Route::post('products/{product}/add-stock', [App\Http\Controllers\Admin\InventoryController::class, 'addStock'])->name('inventory.add-stock');
+            Route::post('products/{product}/remove-stock', [App\Http\Controllers\Admin\InventoryController::class, 'removeStock'])->name('inventory.remove-stock');
+            Route::post('inventory/bulk-update', [App\Http\Controllers\Admin\InventoryController::class, 'bulkUpdate'])->name('inventory.bulk-update');
+        });
         
         // Settings
-        Route::resource('settings', App\Http\Controllers\Admin\SettingController::class)->only(['index']);
-        Route::post('settings/general', [App\Http\Controllers\Admin\SettingController::class, 'updateGeneral'])->name('settings.update-general');
-        Route::post('settings/email', [App\Http\Controllers\Admin\SettingController::class, 'updateEmail'])->name('settings.update-email');
-        Route::post('settings/payment-gateway/{paymentGateway}', [App\Http\Controllers\Admin\SettingController::class, 'updatePaymentGateway'])->name('settings.update-payment-gateway');
-        Route::post('settings/shipping-method', [App\Http\Controllers\Admin\SettingController::class, 'createShippingMethod'])->name('settings.create-shipping-method');
-        Route::put('settings/shipping-method/{shippingMethod}', [App\Http\Controllers\Admin\SettingController::class, 'updateShippingMethod'])->name('settings.update-shipping-method');
-        Route::delete('settings/shipping-method/{shippingMethod}', [App\Http\Controllers\Admin\SettingController::class, 'deleteShippingMethod'])->name('settings.delete-shipping-method');
-        Route::post('settings/test-email', [App\Http\Controllers\Admin\SettingController::class, 'testEmail'])->name('settings.test-email');
-        Route::post('settings/clear-cache', [App\Http\Controllers\Admin\SettingController::class, 'clearCache'])->name('settings.clear-cache');
+        Route::middleware('admin.permission:settings.view')->group(function () {
+            Route::resource('settings', App\Http\Controllers\Admin\SettingController::class)->only(['index']);
+            Route::post('settings/general', [App\Http\Controllers\Admin\SettingController::class, 'updateGeneral'])->name('settings.update-general');
+            Route::post('settings/email', [App\Http\Controllers\Admin\SettingController::class, 'updateEmail'])->name('settings.update-email');
+            Route::post('settings/payment-gateway/{paymentGateway}', [App\Http\Controllers\Admin\SettingController::class, 'updatePaymentGateway'])->name('settings.update-payment-gateway');
+            Route::post('settings/shipping-method', [App\Http\Controllers\Admin\SettingController::class, 'createShippingMethod'])->name('settings.create-shipping-method');
+            Route::put('settings/shipping-method/{shippingMethod}', [App\Http\Controllers\Admin\SettingController::class, 'updateShippingMethod'])->name('settings.update-shipping-method');
+            Route::delete('settings/shipping-method/{shippingMethod}', [App\Http\Controllers\Admin\SettingController::class, 'deleteShippingMethod'])->name('settings.delete-shipping-method');
+            Route::post('settings/test-email', [App\Http\Controllers\Admin\SettingController::class, 'testEmail'])->name('settings.test-email');
+            Route::post('settings/clear-cache', [App\Http\Controllers\Admin\SettingController::class, 'clearCache'])->name('settings.clear-cache');
+        });
         
-        // Coupons/Promotions
-        Route::resource('coupons', App\Http\Controllers\Admin\CouponController::class);
-        Route::post('coupons/{coupon}/toggle-status', [App\Http\Controllers\Admin\CouponController::class, 'toggleStatus'])->name('coupons.toggle-status');
-        Route::post('coupons/generate-code', [App\Http\Controllers\Admin\CouponController::class, 'generateCode'])->name('coupons.generate-code');
-        Route::post('coupons/{coupon}/duplicate', [App\Http\Controllers\Admin\CouponController::class, 'duplicate'])->name('coupons.duplicate');
         
-            // Shipping Methods
+        // Shipping Methods
+        Route::middleware('admin.permission:shipping.view')->group(function () {
             Route::resource('shipping-methods', App\Http\Controllers\Admin\ShippingMethodController::class);
             Route::post('shipping-methods/{shippingMethod}/toggle-status', [App\Http\Controllers\Admin\ShippingMethodController::class, 'toggleStatus'])->name('shipping-methods.toggle-status');
             Route::post('shipping-methods/reorder', [App\Http\Controllers\Admin\ShippingMethodController::class, 'reorder'])->name('shipping-methods.reorder');
-            
-            // Payment Gateways
+        });
+        
+        // Payment Gateways
+        Route::middleware('admin.permission:payment_gateways.view')->group(function () {
             Route::resource('payment-gateways', App\Http\Controllers\Admin\PaymentGatewayController::class);
             Route::post('payment-gateways/{paymentGateway}/toggle-status', [App\Http\Controllers\Admin\PaymentGatewayController::class, 'toggleStatus'])->name('payment-gateways.toggle-status');
             Route::post('payment-gateways/{paymentGateway}/toggle-mode', [App\Http\Controllers\Admin\PaymentGatewayController::class, 'toggleMode'])->name('payment-gateways.toggle-mode');
             Route::post('payment-gateways/{paymentGateway}/test-connection', [App\Http\Controllers\Admin\PaymentGatewayController::class, 'testConnection'])->name('payment-gateways.test-connection');
             Route::post('payment-gateways/reorder', [App\Http\Controllers\Admin\PaymentGatewayController::class, 'reorder'])->name('payment-gateways.reorder');
-            
-            // CMS Pages
+        });
+        
+        // CMS Pages
+        Route::middleware('admin.permission:cms.view')->group(function () {
             Route::resource('cms-pages', App\Http\Controllers\Admin\CmsPageController::class);
             Route::post('cms-pages/{cmsPage}/toggle-status', [App\Http\Controllers\Admin\CmsPageController::class, 'toggleStatus'])->name('cms-pages.toggle-status');
             Route::post('cms-pages/{cmsPage}/duplicate', [App\Http\Controllers\Admin\CmsPageController::class, 'duplicate'])->name('cms-pages.duplicate');
             Route::get('cms-pages/{cmsPage}/preview', [App\Http\Controllers\Admin\CmsPageController::class, 'preview'])->name('cms-pages.preview');
             Route::post('cms-pages/generate-slug', [App\Http\Controllers\Admin\CmsPageController::class, 'generateSlug'])->name('cms-pages.generate-slug');
+        });
         
         // Analytics
-        Route::get('analytics', [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
-        Route::get('analytics/sales', [App\Http\Controllers\Admin\AnalyticsController::class, 'sales'])->name('analytics.sales');
-        Route::get('analytics/customers', [App\Http\Controllers\Admin\AnalyticsController::class, 'customers'])->name('analytics.customers');
-        Route::get('analytics/products', [App\Http\Controllers\Admin\AnalyticsController::class, 'products'])->name('analytics.products');
-        Route::get('analytics/revenue', [App\Http\Controllers\Admin\AnalyticsController::class, 'revenue'])->name('analytics.revenue');
-        Route::get('analytics/export', [App\Http\Controllers\Admin\AnalyticsController::class, 'export'])->name('analytics.export');
+        Route::middleware('admin.permission:analytics.view')->group(function () {
+            Route::get('analytics', [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
+            Route::get('analytics/sales', [App\Http\Controllers\Admin\AnalyticsController::class, 'sales'])->name('analytics.sales');
+            Route::get('analytics/customers', [App\Http\Controllers\Admin\AnalyticsController::class, 'customers'])->name('analytics.customers');
+            Route::get('analytics/products', [App\Http\Controllers\Admin\AnalyticsController::class, 'products'])->name('analytics.products');
+            Route::get('analytics/revenue', [App\Http\Controllers\Admin\AnalyticsController::class, 'revenue'])->name('analytics.revenue');
+            Route::get('analytics/export', [App\Http\Controllers\Admin\AnalyticsController::class, 'export'])->name('analytics.export');
+        });
         
         // Reviews Management
-        Route::resource('reviews', App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'show', 'destroy']);
-        Route::post('reviews/{review}/approve', [App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('reviews.approve');
-        Route::post('reviews/{review}/reject', [App\Http\Controllers\Admin\ReviewController::class, 'reject'])->name('reviews.reject');
-        Route::post('reviews/{review}/respond', [App\Http\Controllers\Admin\ReviewController::class, 'respond'])->name('reviews.respond');
-        Route::put('reviews/{review}/response', [App\Http\Controllers\Admin\ReviewController::class, 'updateResponse'])->name('reviews.update-response');
-        Route::delete('reviews/{review}/response', [App\Http\Controllers\Admin\ReviewController::class, 'removeResponse'])->name('reviews.remove-response');
-        Route::post('reviews/bulk-approve', [App\Http\Controllers\Admin\ReviewController::class, 'bulkApprove'])->name('reviews.bulk-approve');
-        Route::post('reviews/bulk-reject', [App\Http\Controllers\Admin\ReviewController::class, 'bulkReject'])->name('reviews.bulk-reject');
+        Route::middleware('admin.permission:reviews.view')->group(function () {
+            Route::resource('reviews', App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'show', 'destroy']);
+            Route::post('reviews/{review}/approve', [App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('reviews.approve');
+            Route::post('reviews/{review}/reject', [App\Http\Controllers\Admin\ReviewController::class, 'reject'])->name('reviews.reject');
+            Route::post('reviews/{review}/respond', [App\Http\Controllers\Admin\ReviewController::class, 'respond'])->name('reviews.respond');
+            Route::put('reviews/{review}/response', [App\Http\Controllers\Admin\ReviewController::class, 'updateResponse'])->name('reviews.update-response');
+            Route::delete('reviews/{review}/response', [App\Http\Controllers\Admin\ReviewController::class, 'removeResponse'])->name('reviews.remove-response');
+            Route::post('reviews/bulk-approve', [App\Http\Controllers\Admin\ReviewController::class, 'bulkApprove'])->name('reviews.bulk-approve');
+            Route::post('reviews/bulk-reject', [App\Http\Controllers\Admin\ReviewController::class, 'bulkReject'])->name('reviews.bulk-reject');
             Route::post('reviews/bulk-delete', [App\Http\Controllers\Admin\ReviewController::class, 'bulkDelete'])->name('reviews.bulk-delete');
             Route::get('reviews/export', [App\Http\Controllers\Admin\ReviewController::class, 'export'])->name('reviews.export');
-            
-            // Permissions Management
+        });
+        
+        // Permissions Management (Super Admin only)
+        Route::middleware('admin.permission:admins.edit')->group(function () {
             Route::get('permissions', [App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('permissions.index');
             Route::post('permissions', [App\Http\Controllers\Admin\PermissionController::class, 'update'])->name('permissions.update');
             Route::post('permissions/reset', [App\Http\Controllers\Admin\PermissionController::class, 'resetToDefaults'])->name('permissions.reset');
+        });
+        
+        // Audit Trail
+        Route::middleware('admin.permission:audit_logs.view')->group(function () {
+            Route::get('audit', [App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit.index');
+            Route::get('audit/export', [App\Http\Controllers\Admin\AuditController::class, 'export'])->name('audit.export');
+        });
+        
+        // Notifications Management
+        Route::middleware('admin.permission:notifications.view')->group(function () {
+            Route::get('notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
+            Route::get('notifications/templates', [App\Http\Controllers\Admin\NotificationController::class, 'templates'])->name('notifications.templates');
+            Route::post('notifications/templates/{template}', [App\Http\Controllers\Admin\NotificationController::class, 'updateTemplate'])->name('notifications.update-template');
+            Route::post('notifications/send', [App\Http\Controllers\Admin\NotificationController::class, 'send'])->name('notifications.send');
+            Route::post('notifications/test', [App\Http\Controllers\Admin\NotificationController::class, 'test'])->name('notifications.test');
+        });
+        
+        // Bulk Actions
+        Route::middleware('admin.permission:products.bulk_actions')->group(function () {
+            Route::post('bulk/products', [App\Http\Controllers\Admin\BulkActionController::class, 'products'])->name('bulk.products');
+            Route::post('bulk/orders', [App\Http\Controllers\Admin\BulkActionController::class, 'orders'])->name('bulk.orders');
+            Route::post('bulk/users', [App\Http\Controllers\Admin\BulkActionController::class, 'users'])->name('bulk.users');
+            Route::post('bulk/reviews', [App\Http\Controllers\Admin\BulkActionController::class, 'reviews'])->name('bulk.reviews');
+        });
+        
+        // Image Upload
+        Route::middleware('admin.permission:products.edit')->group(function () {
+            Route::get('images/upload', function() {
+                return view('admin.images.upload');
+            })->name('images.upload-page');
+            Route::post('images/upload', [App\Http\Controllers\Admin\ImageUploadController::class, 'upload'])->name('images.upload');
+            Route::delete('images/{image}', [App\Http\Controllers\Admin\ImageUploadController::class, 'delete'])->name('images.delete');
+            Route::post('images/reorder', [App\Http\Controllers\Admin\ImageUploadController::class, 'reorder'])->name('images.reorder');
+        });
+            
+            // API Routes for image upload
+            Route::get('api/products', function() {
+                return \App\Models\Product::select('id', 'name')->get();
+            })->name('api.products');
         
         // Contact Messages
         Route::get('contact-messages', [App\Http\Controllers\ContactController::class, 'index'])->name('contact-messages.index');

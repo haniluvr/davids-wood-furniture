@@ -145,7 +145,7 @@
                     id="content"
                     name="content"
                     rows="20"
-                    class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('content') border-red-500 @enderror"
+                    class="tinymce w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('content') border-red-500 @enderror"
                     required
                 >{{ old('content') }}</textarea>
                 @error('content')
@@ -303,35 +303,8 @@
     </form>
 </div>
 
-<!-- TinyMCE Script -->
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize TinyMCE
-    tinymce.init({
-        selector: '#content',
-        height: 500,
-        plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'media', 'table', 'help', 'wordcount'
-        ],
-        toolbar: 'undo redo | blocks | ' +
-            'bold italic backcolor | alignleft aligncenter ' +
-            'alignright alignjustify | bullist numlist outdent indent | ' +
-            'removeformat | help',
-        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
-        branding: false,
-        promotion: false,
-        menubar: false,
-        statusbar: false,
-        setup: function (editor) {
-            editor.on('change', function () {
-                editor.save();
-            });
-        }
-    });
-
     // Auto-generate slug from title
     const titleInput = document.getElementById('title');
     const slugInput = document.getElementById('slug');

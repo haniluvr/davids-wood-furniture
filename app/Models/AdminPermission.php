@@ -108,11 +108,6 @@ class AdminPermission extends Model
             'admins.edit',
             'admins.delete',
 
-            // Coupons
-            'coupons.view',
-            'coupons.create',
-            'coupons.edit',
-            'coupons.delete',
 
             // Shipping
             'shipping.view',
@@ -175,10 +170,6 @@ class AdminPermission extends Model
                 'users.create' => true,
                 'users.edit' => true,
                 'users.suspend' => true,
-                'coupons.view' => true,
-                'coupons.create' => true,
-                'coupons.edit' => true,
-                'coupons.delete' => true,
                 'shipping.view' => true,
                 'shipping.create' => true,
                 'shipping.edit' => true,
@@ -211,9 +202,6 @@ class AdminPermission extends Model
                 'inventory.adjust' => true,
                 'users.view' => true,
                 'users.edit' => true,
-                'coupons.view' => true,
-                'coupons.create' => true,
-                'coupons.edit' => true,
                 'shipping.view' => true,
                 'shipping.edit' => true,
                 'analytics.view' => true,
@@ -229,7 +217,6 @@ class AdminPermission extends Model
                 'orders.update_status' => true,
                 'inventory.view' => true,
                 'users.view' => true,
-                'coupons.view' => true,
                 'shipping.view' => true,
                 'analytics.view' => true,
                 'reviews.view' => true,

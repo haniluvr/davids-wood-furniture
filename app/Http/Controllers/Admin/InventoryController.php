@@ -9,6 +9,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Events\LowStockAlert;
 
 class InventoryController extends Controller
 {
@@ -123,6 +124,11 @@ class InventoryController extends Controller
             $validated['notes'],
             Auth::guard('admin')->id()
         );
+
+        // Check for low stock alert
+        if ($newStock <= 10) { // Low stock threshold
+            event(new LowStockAlert($product, $newStock, 10));
+        }
 
         return redirect()->route('admin.inventory.show', $product)
             ->with('success', 'Stock adjustment completed successfully.');

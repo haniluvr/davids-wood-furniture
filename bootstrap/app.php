@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminAuth::class,
             'admin.subdomain' => \App\Http\Middleware\AdminSubdomainMiddleware::class,
+            'admin.permission' => \App\Http\Middleware\CheckAdminPermission::class,
             'force.https' => \App\Http\Middleware\ForceHttps::class,
             'store.intended' => \App\Http\Middleware\StoreIntendedUrl::class,
         ]);

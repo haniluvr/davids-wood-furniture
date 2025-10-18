@@ -7,6 +7,7 @@ use App\Models\ProductReview;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Events\NewReview;
 
 class ReviewController extends Controller
 {

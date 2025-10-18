@@ -9,6 +9,8 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Events\OrderCreated;
+use App\Events\OrderStatusChanged;
 
 class OrderController extends Controller
 {
@@ -160,6 +162,9 @@ class OrderController extends Controller
 
             DB::commit();
 
+            // Fire order created event
+            event(new OrderCreated($order));
+
             return redirect()->route('admin.orders.show', $order)
                 ->with('success', 'Order created successfully.');
 
@@ -279,6 +284,9 @@ class OrderController extends Controller
 
         $order->update($updateData);
 
+        // Fire order status changed event
+        event(new OrderStatusChanged($order, $oldStatus, $newStatus));
+
         return back()->with('success', 'Order status updated successfully.');
     }
 
@@ -287,9 +295,9 @@ class OrderController extends Controller
      */
     public function downloadInvoice(Order $order)
     {
-        $order->load(['user', 'orderItems.product']);
+        $order->load(['user', 'items.product']);
         
-        $pdf = Pdf::loadView('admin.orders.invoice', compact('order'));
+        $pdf = Pdf::loadView('admin.orders.pdf.invoice-pdf', compact('order'));
         
         return $pdf->download('invoice-' . $order->order_number . '.pdf');
     }
@@ -299,9 +307,9 @@ class OrderController extends Controller
      */
     public function downloadPackingSlip(Order $order)
     {
-        $order->load(['user', 'orderItems.product']);
+        $order->load(['user', 'items.product']);
         
-        $pdf = Pdf::loadView('admin.orders.packing-slip', compact('order'));
+        $pdf = Pdf::loadView('admin.orders.pdf.packing-slip-pdf', compact('order'));
         
         return $pdf->download('packing-slip-' . $order->order_number . '.pdf');
     }
