@@ -6,8 +6,12 @@ echo "Starting Laravel application..."
 # Set basic environment variables
 export APP_ENV=production
 export APP_DEBUG=false
-export DB_CONNECTION=sqlite
-export DB_DATABASE=/var/www/html/database/database.sqlite
+export DB_CONNECTION=mysql
+export DB_HOST=${DB_HOST:-mysql}
+export DB_PORT=${DB_PORT:-3306}
+export DB_DATABASE=${DB_DATABASE:-davidswood_furniture}
+export DB_USERNAME=${DB_USERNAME:-root}
+export DB_PASSWORD=${DB_PASSWORD:-}
 
 # Create .env file with basic configuration
 echo "Creating .env file..."
@@ -21,14 +25,18 @@ APP_URL=http://localhost
 LOG_CHANNEL=stack
 LOG_LEVEL=debug
 
-DB_CONNECTION=sqlite
-DB_DATABASE=/var/www/html/database/database.sqlite
+DB_CONNECTION=mysql
+DB_HOST=\${DB_HOST}
+DB_PORT=\${DB_PORT}
+DB_DATABASE=\${DB_DATABASE}
+DB_USERNAME=\${DB_USERNAME}
+DB_PASSWORD=\${DB_PASSWORD}
 
 BROADCAST_DRIVER=log
 CACHE_DRIVER=file
 FILESYSTEM_DISK=local
 QUEUE_CONNECTION=sync
-SESSION_DRIVER=file
+SESSION_DRIVER=database
 SESSION_LIFETIME=120
 
 MAIL_MAILER=log
@@ -49,15 +57,17 @@ mkdir -p storage/framework/cache
 mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
 mkdir -p bootstrap/cache
-mkdir -p database
-
-# Create SQLite database
-echo "Creating SQLite database..."
-touch database/database.sqlite
-chmod 664 database/database.sqlite
 
 # Set permissions
 chmod -R 775 storage bootstrap/cache
+
+# Wait for MySQL to be ready
+echo "Waiting for MySQL connection..."
+until php artisan tinker --execute="DB::connection()->getPdo();" 2>/dev/null; do
+    echo "MySQL is unavailable - sleeping"
+    sleep 2
+done
+echo "MySQL is ready!"
 
 # Run migrations
 echo "Running migrations..."
