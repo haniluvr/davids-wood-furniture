@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y \
     php8.2 \
     php8.2-cli \
-    php8.2-fpm \
     php8.2-mysql \
     php8.2-xml \
     php8.2-gd \
@@ -28,24 +27,12 @@ RUN apt-get update && apt-get install -y \
     php8.2-zip \
     php8.2-bcmath \
     php8.2-intl \
-    apache2 \
-    libapache2-mod-php8.2 \
     nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Configure Apache
-RUN a2enmod rewrite php8.2
-RUN echo '<VirtualHost *:80>\n\
-    DocumentRoot /var/www/html/public\n\
-    <Directory /var/www/html/public>\n\
-        AllowOverride All\n\
-        Require all granted\n\
-    </Directory>\n\
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # Set working directory
 WORKDIR /var/www/html
@@ -71,8 +58,8 @@ RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html && \
     chmod -R 775 storage bootstrap/cache
 
-# Expose port
+# Expose port (Railway will set the PORT environment variable)
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+# Start PHP built-in server
+CMD php artisan serve --host=0.0.0.0 --port=$PORT
