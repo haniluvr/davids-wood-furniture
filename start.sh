@@ -7,11 +7,24 @@ echo "Starting Laravel application..."
 export APP_ENV=production
 export APP_DEBUG=false
 export DB_CONNECTION=mysql
-export DB_HOST=${DB_HOST:-mysql}
-export DB_PORT=${DB_PORT:-3306}
-export DB_DATABASE=${DB_DATABASE:-davidswood_furniture}
-export DB_USERNAME=${DB_USERNAME:-root}
-export DB_PASSWORD=${DB_PASSWORD:-}
+
+# Parse MYSQL_URL if provided (Railway format)
+if [ -n "$MYSQL_URL" ]; then
+    echo "Parsing MYSQL_URL..."
+    # MYSQL_URL format: mysql://username:password@host:port/database
+    export DB_HOST=$(echo $MYSQL_URL | sed 's/.*@\([^:]*\):.*/\1/')
+    export DB_PORT=$(echo $MYSQL_URL | sed 's/.*:\([0-9]*\)\/.*/\1/')
+    export DB_DATABASE=$(echo $MYSQL_URL | sed 's/.*\/\([^?]*\).*/\1/')
+    export DB_USERNAME=$(echo $MYSQL_URL | sed 's/mysql:\/\/\([^:]*\):.*/\1/')
+    export DB_PASSWORD=$(echo $MYSQL_URL | sed 's/mysql:\/\/[^:]*:\([^@]*\)@.*/\1/')
+else
+    # Fallback to individual variables
+    export DB_HOST=${DB_HOST:-mysql}
+    export DB_PORT=${DB_PORT:-3306}
+    export DB_DATABASE=${DB_DATABASE:-davidswood_furniture}
+    export DB_USERNAME=${DB_USERNAME:-root}
+    export DB_PASSWORD=${DB_PASSWORD:-}
+fi
 
 # Create .env file with basic configuration
 echo "Creating .env file..."
