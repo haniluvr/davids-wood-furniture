@@ -63,6 +63,12 @@ chmod -R 775 storage bootstrap/cache
 echo "Running migrations..."
 php artisan migrate --force
 
+# Test Laravel configuration
+echo "Testing Laravel configuration..."
+php artisan config:show app.name
+php artisan config:show app.key
+
 # Start the application
 echo "Starting PHP server on port $PORT..."
+echo "Server will be available at: http://0.0.0.0:$PORT"
 php artisan serve --host=0.0.0.0 --port=$PORT --verbose

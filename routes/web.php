@@ -434,6 +434,16 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
 // Public review routes
 Route::get('/api/reviews/{productId}', [App\Http\Controllers\ProductReviewController::class, 'index'])->name('reviews.index');
 
+// Simple test route
+Route::get('/test-route', function () {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'Laravel route is working',
+        'timestamp' => now(),
+        'app_name' => config('app.name')
+    ]);
+});
+
 // Health check endpoint for Railway - simple version that doesn't depend on Laravel
 Route::get('/health', function () {
     try {
