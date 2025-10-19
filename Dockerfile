@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     zip \
     && add-apt-repository ppa:ondrej/php \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get update \
     && apt-get install -y \
     php8.2 \
@@ -30,7 +31,6 @@ RUN apt-get update && apt-get install -y \
     apache2 \
     libapache2-mod-php8.2 \
     nodejs \
-    npm \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -53,11 +53,17 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Install dependencies and build
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist && \
-    npm install && \
-    npm run build && \
-    php artisan config:cache && \
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+# Install Node dependencies with legacy peer deps
+RUN npm install --legacy-peer-deps --verbose
+
+# Build frontend assets
+RUN npm run build
+
+# Laravel optimizations
+RUN php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache
 
