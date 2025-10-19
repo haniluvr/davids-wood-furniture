@@ -14,7 +14,7 @@ class TestNotificationsSeeder extends Seeder
      */
     public function run(): void
     {
-        $userId = 258;
+        $userId = 76;
         
         // Check if user exists
         $user = User::find($userId);

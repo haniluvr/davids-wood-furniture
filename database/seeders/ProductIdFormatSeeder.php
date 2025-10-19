@@ -67,7 +67,7 @@ class ProductIdFormatSeeder extends Seeder
             }
         }
 
-        echo "\nProduct categorization system setup complete!\n";
+        echo "\nPrrunoduct categorization system setup complete!\n";
         echo "Custom ID format: A-BB-CC where:\n";
         echo "- A: Main category ID (1-6)\n";
         echo "- BB: Subcategory ID within main category (01-99)\n"; 

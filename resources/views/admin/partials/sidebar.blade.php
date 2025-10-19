@@ -15,8 +15,8 @@
         messagesOpen: false,
         shippingOpen: false,
         contentOpen: false,
-        settingsOpen: false,
-        reportsOpen: false
+        reportsOpen: false,
+        settingsPopoverOpen: false
     }"
     x-init="
         // Function to save accordion states to session storage
@@ -30,11 +30,23 @@
                 messagesOpen: messagesOpen,
                 shippingOpen: shippingOpen,
                 contentOpen: contentOpen,
-                settingsOpen: settingsOpen,
                 reportsOpen: reportsOpen
             };
             sessionStorage.setItem('sidebarAccordionStates', JSON.stringify(states));
             console.log('Sidebar states saved:', states);
+        }
+        
+        // Function to close all accordions except the one being opened
+        window.closeAllAccordions = function(except = null) {
+            if (except !== 'orders') ordersOpen = false;
+            if (except !== 'products') productsOpen = false;
+            if (except !== 'inventory') inventoryOpen = false;
+            if (except !== 'customers') customersOpen = false;
+            if (except !== 'contact') contactOpen = false;
+            if (except !== 'messages') messagesOpen = false;
+            if (except !== 'shipping') shippingOpen = false;
+            if (except !== 'content') contentOpen = false;
+            if (except !== 'reports') reportsOpen = false;
         }
         
         // Restore accordion states from session storage
@@ -48,7 +60,6 @@
         messagesOpen = savedStates.messagesOpen || false;
         shippingOpen = savedStates.shippingOpen || false;
         contentOpen = savedStates.contentOpen || false;
-        settingsOpen = savedStates.settingsOpen || false;
         reportsOpen = savedStates.reportsOpen || false;
         
         // Auto-collapse on mobile
@@ -67,7 +78,6 @@
         $watch('messagesOpen', val => window.saveAccordionStates());
         $watch('shippingOpen', val => window.saveAccordionStates());
         $watch('contentOpen', val => window.saveAccordionStates());
-        $watch('settingsOpen', val => window.saveAccordionStates());
         $watch('reportsOpen', val => window.saveAccordionStates());
         
         // Close all menus when sidebar is collapsed (with safety check)
@@ -82,8 +92,8 @@
                     messagesOpen = false;
                     shippingOpen = false;
                     contentOpen = false;
-                    settingsOpen = false;
                     reportsOpen = false;
+                    settingsPopoverOpen = false;
                 }
             });
         }
@@ -134,7 +144,7 @@
                 <!-- Orders Accordion -->
                 <li>
                     <button
-                        @click="!sidebarCollapsed && (ordersOpen = !ordersOpen)"
+                        @click="!sidebarCollapsed && (ordersOpen = !ordersOpen, window.closeAllAccordions('orders'))"
                         class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.orders.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                         :title="sidebarCollapsed ? 'Orders' : ''"
                         x-tooltip="sidebarCollapsed ? 'Orders' : ''"
@@ -157,7 +167,7 @@
                 <!-- Products Accordion -->
                 <li>
                     <button
-                        @click="!sidebarCollapsed && (productsOpen = !productsOpen)"
+                        @click="!sidebarCollapsed && (productsOpen = !productsOpen, window.closeAllAccordions('products'))"
                         class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.products.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                         :title="sidebarCollapsed ? 'Products' : ''"
                     >
@@ -170,17 +180,13 @@
                     <ul x-show="productsOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
                         <li><a href="{{ route('admin.products.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.products.index') ? 'text-primary dark:text-primary' : '' }}">All Products</a></li>
                         <li><a href="{{ route('admin.products.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.products.create') ? 'text-primary dark:text-primary' : '' }}">Add New Product</a></li>
-                        <li><a href="{{ route('admin.images.upload-page') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.images.upload-page') ? 'text-primary dark:text-primary' : '' }}">Image Upload</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Categories</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Materials & Finishes</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Custom Orders</a></li>
                     </ul>
                 </li>
 
                 <!-- Inventory Accordion -->
                 <li>
                     <button
-                        @click="!sidebarCollapsed && (inventoryOpen = !inventoryOpen)"
+                        @click="!sidebarCollapsed && (inventoryOpen = !inventoryOpen, window.closeAllAccordions('inventory'))"
                         class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.inventory.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                         :title="sidebarCollapsed ? 'Inventory' : ''"
                     >
@@ -194,14 +200,13 @@
                         <li><a href="{{ route('admin.inventory.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.index') ? 'text-primary dark:text-primary' : '' }}">Stock Levels</a></li>
                         <li><a href="{{ route('admin.inventory.low-stock') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.low-stock') ? 'text-primary dark:text-primary' : '' }}">Low Stock Alerts</a></li>
                         <li><a href="{{ route('admin.inventory.movements') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.movements') ? 'text-primary dark:text-primary' : '' }}">Inventory History</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Wood Material Inventory</a></li>
                     </ul>
                 </li>
 
                 <!-- Customers Accordion -->
                 <li>
                     <button
-                        @click="!sidebarCollapsed && (customersOpen = !customersOpen)"
+                        @click="!sidebarCollapsed && (customersOpen = !customersOpen, window.closeAllAccordions('customers'))"
                         class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.users.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                         :title="sidebarCollapsed ? 'Customers' : ''"
                     >
@@ -215,15 +220,13 @@
                         <li><a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.index') ? 'text-primary dark:text-primary' : '' }}">All Customers</a></li>
                         <li><a href="{{ route('admin.users.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.create') ? 'text-primary dark:text-primary' : '' }}">Add Customer</a></li>
                         <li><a href="{{ route('admin.users.admins') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.admins') ? 'text-primary dark:text-primary' : '' }}">Admin Users</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Customer Groups</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Wishlist Tracking</a></li>
                     </ul>
                 </li>
 
                 <!-- Messages Accordion -->
                 <li>
                     <button
-                        @click="!sidebarCollapsed && (messagesOpen = !messagesOpen)"
+                        @click="!sidebarCollapsed && (messagesOpen = !messagesOpen, window.closeAllAccordions('messages'))"
                         class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.messages.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                         :title="sidebarCollapsed ? 'Messages' : ''"
                     >
@@ -250,7 +253,7 @@
                 <!-- Shipping & Logistics Accordion -->
                 <li>
                     <button
-                        @click="!sidebarCollapsed && (shippingOpen = !shippingOpen)"
+                        @click="!sidebarCollapsed && (shippingOpen = !shippingOpen, window.closeAllAccordions('shipping'))"
                         class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.shipping-methods.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                         :title="sidebarCollapsed ? 'Shipping & Logistics' : ''"
                     >
@@ -272,7 +275,7 @@
                 <!-- Content Accordion -->
                 <li>
                     <button
-                        @click="!sidebarCollapsed && (contentOpen = !contentOpen)"
+                        @click="!sidebarCollapsed && (contentOpen = !contentOpen, window.closeAllAccordions('content'))"
                         class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.cms-pages.*') || request()->routeIs('admin.reviews.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                         :title="sidebarCollapsed ? 'Content' : ''"
                     >
@@ -291,34 +294,11 @@
                     </ul>
                 </li>
 
-                <!-- Settings Accordion -->
-                <li>
-                    <button
-                        @click="!sidebarCollapsed && (settingsOpen = !settingsOpen)"
-                        class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.settings.*') || request()->routeIs('admin.shipping-methods.*') || request()->routeIs('admin.payment-gateways.*') || request()->routeIs('admin.users.admins') || request()->routeIs('admin.permissions.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
-                        :title="sidebarCollapsed ? 'Settings' : ''"
-                    >
-                        <div class="flex items-center gap-2.5">
-                            <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i>
-                            <span x-show="!sidebarCollapsed" x-transition>Settings</span>
-                        </div>
-                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="settingsOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
-                    </button>
-                    <ul x-show="settingsOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.settings.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.settings.index') ? 'text-primary dark:text-primary' : '' }}">Store Settings</a></li>
-                        <li><a href="{{ route('admin.shipping-methods.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.shipping-methods*') ? 'text-primary dark:text-primary' : '' }}">Shipping Methods</a></li>
-                        <li><a href="{{ route('admin.payment-gateways.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.payment-gateways*') ? 'text-primary dark:text-primary' : '' }}">Payment Gateways</a></li>
-                        <li><a href="{{ route('admin.users.admins') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.admins') ? 'text-primary dark:text-primary' : '' }}">User Roles</a></li>
-                        <li><a href="{{ route('admin.permissions.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.permissions*') ? 'text-primary dark:text-primary' : '' }}">Permissions</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Sustainability Settings</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Integrations</a></li>
-                    </ul>
-                </li>
 
                 <!-- Reports Accordion -->
                 <li>
                     <button
-                        @click="!sidebarCollapsed && (reportsOpen = !reportsOpen)"
+                        @click="!sidebarCollapsed && (reportsOpen = !reportsOpen, window.closeAllAccordions('reports'))"
                         class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.analytics*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                         :title="sidebarCollapsed ? 'Reports' : ''"
                     >
@@ -340,6 +320,69 @@
             </ul>
         </nav>
         <!-- Sidebar Menu -->
+    </div>
+    
+    <!-- Fixed Settings Button at Bottom -->
+    <div class="mt-auto p-4 border-t border-stroke dark:border-strokedark">
+        <div class="relative" x-data="{ settingsPopoverOpen: false }">
+            <!-- Settings Button -->
+            <button
+                @click="settingsPopoverOpen = !settingsPopoverOpen"
+                class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors duration-200"
+                :title="sidebarCollapsed ? 'Settings' : ''"
+            >
+                <span x-show="!sidebarCollapsed" x-transition class="text-sm">Settings</span>
+                <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
+            
+            <!-- Settings Popover -->
+            <div
+                x-show="settingsPopoverOpen"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                @click.outside="settingsPopoverOpen = false"
+                class="absolute bottom-full right-0 mb-2 w-64 rounded-lg border border-stroke bg-white shadow-lg dark:border-strokedark dark:bg-boxdark z-50"
+                :class="sidebarCollapsed ? 'right-0' : 'right-0'"
+            >
+                <div class="p-2">
+                    <div class="space-y-1">
+                        <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.settings.index') ? 'bg-primary/10 text-primary' : '' }}">
+                            <i data-lucide="store" class="w-4 h-4"></i>
+                            Store Settings
+                        </a>
+                        <a href="{{ route('admin.shipping-methods.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.shipping-methods*') ? 'bg-primary/10 text-primary' : '' }}">
+                            <i data-lucide="truck" class="w-4 h-4"></i>
+                            Shipping Methods
+                        </a>
+                        <a href="{{ route('admin.payment-gateways.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.payment-gateways*') ? 'bg-primary/10 text-primary' : '' }}">
+                            <i data-lucide="credit-card" class="w-4 h-4"></i>
+                            Payment Gateways
+                        </a>
+                        <a href="{{ route('admin.users.admins') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.users.admins') ? 'bg-primary/10 text-primary' : '' }}">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                            User Roles
+                        </a>
+                        <a href="{{ route('admin.permissions.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.permissions*') ? 'bg-primary/10 text-primary' : '' }}">
+                            <i data-lucide="shield" class="w-4 h-4"></i>
+                            Permissions
+                        </a>
+                        <hr class="my-2 border-stroke dark:border-strokedark">
+                        <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                            <i data-lucide="leaf" class="w-4 h-4"></i>
+                            Sustainability Settings
+                        </a>
+                        <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                            <i data-lucide="plug" class="w-4 h-4"></i>
+                            Integrations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </aside>
 <!-- Sidebar End -->

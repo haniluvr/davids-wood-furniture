@@ -371,9 +371,9 @@
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                     @endif
-                </div>
-                @empty
-                <div class="text-center py-8">
+            </div>
+            @empty
+            <div class="text-center py-8">
                     <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4 dark:bg-stone-800">
                         <i data-lucide="activity" class="w-6 h-6 text-stone-400"></i>
                     </div>

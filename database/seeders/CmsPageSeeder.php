@@ -16,6 +16,7 @@ class CmsPageSeeder extends Seeder
             [
                 'title' => 'About Us',
                 'slug' => 'about-us',
+                'created_by' => 1, // Admin user ID
                 'content' => '<h1>About David\'s Wood Furniture</h1>
                 <p>Welcome to David\'s Wood Furniture, where craftsmanship meets quality. For over 20 years, we have been creating beautiful, handcrafted furniture that brings warmth and character to your home.</p>
                 
@@ -196,6 +197,7 @@ class CmsPageSeeder extends Seeder
         ];
 
         foreach ($cmsPages as $page) {
+            $page['created_by'] = 1; // Admin user ID
             CmsPage::create($page);
         }
 

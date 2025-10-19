@@ -21,18 +21,12 @@ class EmployeeSeeder extends Seeder
         $employees = [
             // Super Admin
             [
-                'employee_id' => 'EMP001',
                 'first_name' => 'David',
                 'last_name' => 'Atelier',
                 'email' => 'david@dwatelier.co',
                 'password' => Hash::make('password123'),
                 'phone' => '+63 912 345 6789',
                 'role' => 'super_admin',
-                'department' => 'Executive',
-                'position' => 'Founder & CEO',
-                'hire_date' => '2020-01-01',
-                'salary' => 150000.00,
-                'employment_status' => 'active',
                 'permissions' => [
                     'users.view', 'users.create', 'users.edit', 'users.delete',
                     'products.view', 'products.create', 'products.edit', 'products.delete',
@@ -44,22 +38,17 @@ class EmployeeSeeder extends Seeder
                     'cms.view', 'cms.create', 'cms.edit', 'cms.delete',
                 ],
                 'status' => 'active',
+                'email_verified_at' => now(),
             ],
             
             // Admin
             [
-                'employee_id' => 'EMP002',
                 'first_name' => 'Sarah',
                 'last_name' => 'Johnson',
                 'email' => 'sarah.johnson@dwatelier.co',
                 'password' => Hash::make('password123'),
                 'phone' => '+63 912 345 6790',
                 'role' => 'admin',
-                'department' => 'Operations',
-                'position' => 'Operations Manager',
-                'hire_date' => '2021-03-15',
-                'salary' => 80000.00,
-                'employment_status' => 'active',
                 'permissions' => [
                     'users.view', 'users.create', 'users.edit',
                     'products.view', 'products.create', 'products.edit',
@@ -70,22 +59,17 @@ class EmployeeSeeder extends Seeder
                     'cms.view', 'cms.create', 'cms.edit',
                 ],
                 'status' => 'active',
+                'email_verified_at' => now(),
             ],
             
             // Manager
             [
-                'employee_id' => 'EMP003',
                 'first_name' => 'Michael',
                 'last_name' => 'Chen',
                 'email' => 'michael.chen@dwatelier.co',
                 'password' => Hash::make('password123'),
                 'phone' => '+63 912 345 6791',
                 'role' => 'manager',
-                'department' => 'Sales',
-                'position' => 'Sales Manager',
-                'hire_date' => '2021-06-01',
-                'salary' => 65000.00,
-                'employment_status' => 'active',
                 'permissions' => [
                     'users.view',
                     'products.view', 'products.edit',
@@ -95,22 +79,17 @@ class EmployeeSeeder extends Seeder
                     'employees.view',
                 ],
                 'status' => 'active',
+                'email_verified_at' => now(),
             ],
             
             // Manager
             [
-                'employee_id' => 'EMP004',
                 'first_name' => 'Maria',
                 'last_name' => 'Rodriguez',
                 'email' => 'maria.rodriguez@dwatelier.co',
                 'password' => Hash::make('password123'),
                 'phone' => '+63 912 345 6792',
                 'role' => 'manager',
-                'department' => 'Production',
-                'position' => 'Production Manager',
-                'hire_date' => '2021-08-15',
-                'salary' => 70000.00,
-                'employment_status' => 'active',
                 'permissions' => [
                     'products.view', 'products.create', 'products.edit',
                     'inventory.view', 'inventory.create', 'inventory.edit',
@@ -118,22 +97,17 @@ class EmployeeSeeder extends Seeder
                     'employees.view',
                 ],
                 'status' => 'active',
+                'email_verified_at' => now(),
             ],
             
             // Employee
             [
-                'employee_id' => 'EMP005',
                 'first_name' => 'John',
                 'last_name' => 'Smith',
                 'email' => 'john.smith@dwatelier.co',
                 'password' => Hash::make('password123'),
                 'phone' => '+63 912 345 6793',
                 'role' => 'staff',
-                'department' => 'Sales',
-                'position' => 'Sales Representative',
-                'hire_date' => '2022-01-10',
-                'salary' => 35000.00,
-                'employment_status' => 'active',
                 'permissions' => [
                     'users.view',
                     'products.view',
@@ -141,65 +115,50 @@ class EmployeeSeeder extends Seeder
                     'reports.view',
                 ],
                 'status' => 'active',
+                'email_verified_at' => now(),
             ],
             
             // Employee
             [
-                'employee_id' => 'EMP006',
                 'first_name' => 'Lisa',
                 'last_name' => 'Wang',
                 'email' => 'lisa.wang@dwatelier.co',
                 'password' => Hash::make('password123'),
                 'phone' => '+63 912 345 6794',
                 'role' => 'staff',
-                'department' => 'Customer Service',
-                'position' => 'Customer Service Representative',
-                'hire_date' => '2022-03-20',
-                'salary' => 30000.00,
-                'employment_status' => 'active',
                 'permissions' => [
                     'users.view',
                     'orders.view', 'orders.edit',
                     'reports.view',
                 ],
                 'status' => 'active',
+                'email_verified_at' => now(),
             ],
             
             // Employee
             [
-                'employee_id' => 'EMP007',
                 'first_name' => 'Robert',
                 'last_name' => 'Brown',
                 'email' => 'robert.brown@dwatelier.co',
                 'password' => Hash::make('password123'),
                 'phone' => '+63 912 345 6795',
                 'role' => 'staff',
-                'department' => 'Production',
-                'position' => 'Craftsman',
-                'hire_date' => '2022-05-15',
-                'salary' => 40000.00,
-                'employment_status' => 'active',
                 'permissions' => [
                     'products.view',
                     'inventory.view',
                 ],
                 'status' => 'active',
+                'email_verified_at' => now(),
             ],
             
             // Employee
             [
-                'employee_id' => 'EMP008',
                 'first_name' => 'Jennifer',
                 'last_name' => 'Davis',
                 'email' => 'jennifer.davis@dwatelier.co',
                 'password' => Hash::make('password123'),
                 'phone' => '+63 912 345 6796',
                 'role' => 'staff',
-                'department' => 'Administration',
-                'position' => 'Administrative Assistant',
-                'hire_date' => '2022-07-01',
-                'salary' => 28000.00,
-                'employment_status' => 'active',
                 'permissions' => [
                     'users.view',
                     'products.view',
@@ -207,6 +166,7 @@ class EmployeeSeeder extends Seeder
                     'reports.view',
                 ],
                 'status' => 'active',
+                'email_verified_at' => now(),
             ],
         ];
 

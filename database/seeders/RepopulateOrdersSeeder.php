@@ -17,7 +17,7 @@ class RepopulateOrdersSeeder extends Seeder
     public function run(): void
     {
         // Get user_id 1
-        $user = User::find(1);
+        $user = User::find(76);
         if (!$user) {
             $this->command->error('User with ID 1 not found!');
             return;

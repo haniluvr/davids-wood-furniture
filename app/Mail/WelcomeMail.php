@@ -56,3 +56,4 @@ class WelcomeMail extends Mailable
 }
 
 
+

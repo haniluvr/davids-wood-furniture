@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
             TruncateAllTablesSeeder::class,  // NEW: Truncate all tables first
             CategorySeeder::class,
             ProductRepopulationSeeder::class, // Use the IKEA-based product seeder with more products
-            AdminSeeder::class,
+            EmployeeSeeder::class,
             RealisticDataSeeder::class, // Generate realistic customer data (includes users)
             ProductPopularitySeeder::class, // Calculate product popularity from wishlist and cart data
         ]);

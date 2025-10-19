@@ -15,7 +15,7 @@ return new class extends Migration
             $table->enum('fulfillment_status', ['pending', 'packed', 'shipped', 'delivered'])->default('pending')->after('status');
             $table->enum('return_status', ['none', 'requested', 'approved', 'received', 'completed'])->default('none')->after('fulfillment_status');
             $table->string('rma_number')->nullable()->after('return_status');
-            $table->string('carrier')->nullable()->after('tracking_number');
+            $table->string('carrier')->nullable()->after('rma_number');
             $table->boolean('requires_approval')->default(false)->after('carrier');
             $table->text('approval_reason')->nullable()->after('requires_approval');
             $table->timestamp('approved_at')->nullable()->after('approval_reason');

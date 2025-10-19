@@ -84,3 +84,4 @@ class NewsletterMail extends Mailable
 }
 
 
+
