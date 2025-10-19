@@ -8,6 +8,12 @@ export APP_ENV=${APP_ENV:-production}
 export APP_DEBUG=${APP_DEBUG:-false}
 export DB_CONNECTION=${DB_CONNECTION:-sqlite}
 
+# Create .env file if it doesn't exist
+if [ ! -f .env ]; then
+    echo "Creating .env file..."
+    cp .env.example .env
+fi
+
 # Generate APP_KEY if not set
 if [ -z "$APP_KEY" ]; then
     echo "Generating APP_KEY..."

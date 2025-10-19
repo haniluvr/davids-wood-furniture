@@ -49,9 +49,8 @@ RUN npm install --legacy-peer-deps --verbose
 # Build frontend assets
 RUN npm run build
 
-# Generate APP_KEY if not set and run Laravel optimizations
-RUN php artisan key:generate --force && \
-    php artisan config:cache && \
+# Laravel optimizations (skip key generation - will be done at runtime)
+RUN php artisan config:cache && \
     php artisan view:cache
 
 # Set permissions
