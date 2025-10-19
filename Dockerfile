@@ -62,9 +62,8 @@ RUN npm install --legacy-peer-deps --verbose
 # Build frontend assets
 RUN npm run build
 
-# Laravel optimizations
+# Laravel optimizations (skip route cache to avoid conflicts)
 RUN php artisan config:cache && \
-    php artisan route:cache && \
     php artisan view:cache
 
 # Set permissions
