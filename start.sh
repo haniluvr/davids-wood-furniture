@@ -8,6 +8,11 @@ export APP_ENV=production
 export APP_DEBUG=false
 export DB_CONNECTION=mysql
 
+# Debug all environment variables first
+echo "--- All environment variables ---"
+printenv | grep -E "(MYSQL|DB_)" | head -10
+echo "--- End environment variables ---"
+
 # Parse MYSQL_URL if provided (Railway format)
 if [ -n "$MYSQL_URL" ]; then
     echo "Parsing MYSQL_URL..."
@@ -23,13 +28,20 @@ if [ -n "$MYSQL_URL" ]; then
     echo "Parsed DB_DATABASE: $DB_DATABASE"
     echo "Parsed DB_USERNAME: $DB_USERNAME"
 else
-    echo "MYSQL_URL not found, using fallback variables"
+    echo "MYSQL_URL not found, checking individual variables..."
+    echo "DB_HOST: ${DB_HOST:-not set}"
+    echo "DB_PORT: ${DB_PORT:-not set}"
+    echo "DB_DATABASE: ${DB_DATABASE:-not set}"
+    echo "DB_USERNAME: ${DB_USERNAME:-not set}"
+    echo "DB_PASSWORD: ${DB_PASSWORD:-not set}"
+    
     # Fallback to individual variables
     export DB_HOST=${DB_HOST:-mysql}
     export DB_PORT=${DB_PORT:-3306}
     export DB_DATABASE=${DB_DATABASE:-davidswood_furniture}
     export DB_USERNAME=${DB_USERNAME:-root}
     export DB_PASSWORD=${DB_PASSWORD:-}
+    echo "Using fallback values:"
     echo "Fallback DB_HOST: $DB_HOST"
     echo "Fallback DB_PORT: $DB_PORT"
     echo "Fallback DB_DATABASE: $DB_DATABASE"
@@ -71,6 +83,17 @@ EOF
 # Generate APP_KEY
 echo "Generating APP_KEY..."
 php artisan key:generate --force
+
+# Verify APP_KEY was generated
+echo "Verifying APP_KEY..."
+if grep -q "APP_KEY=" .env && ! grep -q "APP_KEY=$" .env; then
+    echo "APP_KEY generated successfully"
+else
+    echo "APP_KEY generation failed, creating manually..."
+    # Generate a 32-character random key manually
+    APP_KEY_VALUE=$(openssl rand -base64 32)
+    sed -i "s/APP_KEY=/APP_KEY=base64:$APP_KEY_VALUE/" .env
+fi
 
 # Create necessary directories
 echo "Creating directories..."
