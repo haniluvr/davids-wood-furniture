@@ -20,6 +20,20 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
+# Load .env variables into the current shell environment
+echo "Loading environment variables..."
+set -a
+. ./.env
+set +a
+
+# Debug: Check if APP_KEY is set
+echo "APP_KEY status: ${APP_KEY:+SET}"
+if [ -n "$APP_KEY" ]; then
+    echo "APP_KEY length: ${#APP_KEY}"
+else
+    echo "APP_KEY is not set!"
+fi
+
 # Clear and cache config
 echo "Caching configuration..."
 php artisan config:clear
