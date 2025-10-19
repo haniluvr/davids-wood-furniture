@@ -434,6 +434,15 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
 // Public review routes
 Route::get('/api/reviews/{productId}', [App\Http\Controllers\ProductReviewController::class, 'index'])->name('reviews.index');
 
+// Health check endpoint for Railway
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now(),
+        'service' => 'davids-wood-furniture'
+    ]);
+});
+
 // Public API routes
 Route::get('/api/user/check', function () {
     \Log::info('Auth check called', [
