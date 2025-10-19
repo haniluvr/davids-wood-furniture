@@ -3,63 +3,65 @@
 # Railway startup script for Laravel
 echo "Starting Laravel application..."
 
-# Set default environment variables if not set
-export APP_ENV=${APP_ENV:-production}
-export APP_DEBUG=${APP_DEBUG:-false}
-export DB_CONNECTION=${DB_CONNECTION:-sqlite}
-export DB_DATABASE=${DB_DATABASE:-/var/www/html/database/database.sqlite}
+# Set basic environment variables
+export APP_ENV=production
+export APP_DEBUG=false
+export DB_CONNECTION=sqlite
+export DB_DATABASE=/var/www/html/database/database.sqlite
 
-# Create .env file if it doesn't exist
-if [ ! -f .env ]; then
-    echo "Creating .env file..."
-    cp .env.example .env
-fi
+# Create .env file with basic configuration
+echo "Creating .env file..."
+cat > .env << EOF
+APP_NAME="David's Wood Furniture"
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=
+APP_URL=http://localhost
 
-# Generate APP_KEY if not set
-if [ -z "$APP_KEY" ]; then
-    echo "Generating APP_KEY..."
-    php artisan key:generate --force
-fi
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
 
-# Load .env variables into the current shell environment
-echo "Loading environment variables..."
-set -a
-. ./.env
-set +a
+DB_CONNECTION=sqlite
+DB_DATABASE=/var/www/html/database/database.sqlite
 
-# Debug: Check if APP_KEY is set
-echo "APP_KEY status: ${APP_KEY:+SET}"
-if [ -n "$APP_KEY" ]; then
-    echo "APP_KEY length: ${#APP_KEY}"
-else
-    echo "APP_KEY is not set!"
-fi
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
 
-# Clear and cache config
-echo "Caching configuration..."
-php artisan config:clear
-php artisan config:cache
+MAIL_MAILER=log
+MAIL_FROM_ADDRESS="noreply@davidswood.test"
+MAIL_FROM_NAME="David's Wood Furniture"
 
-# Create storage directories if they don't exist
+VITE_APP_NAME="David's Wood Furniture"
+EOF
+
+# Generate APP_KEY
+echo "Generating APP_KEY..."
+php artisan key:generate --force
+
+# Create necessary directories
+echo "Creating directories..."
 mkdir -p storage/logs
 mkdir -p storage/framework/cache
 mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
 mkdir -p bootstrap/cache
+mkdir -p database
 
-# Create SQLite database if it doesn't exist
-if [ "$DB_CONNECTION" = "sqlite" ] && [ ! -f "$DB_DATABASE" ]; then
-    echo "Creating SQLite database..."
-    touch "$DB_DATABASE"
-    chmod 664 "$DB_DATABASE"
-fi
+# Create SQLite database
+echo "Creating SQLite database..."
+touch database/database.sqlite
+chmod 664 database/database.sqlite
 
-# Run database migrations
-echo "Running database migrations..."
-php artisan migrate --force
-
-# Set proper permissions
+# Set permissions
 chmod -R 775 storage bootstrap/cache
+
+# Run migrations
+echo "Running migrations..."
+php artisan migrate --force
 
 # Start the application
 echo "Starting PHP server on port $PORT..."
