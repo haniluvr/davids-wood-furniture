@@ -7,6 +7,7 @@ echo "Starting Laravel application..."
 export APP_ENV=${APP_ENV:-production}
 export APP_DEBUG=${APP_DEBUG:-false}
 export DB_CONNECTION=${DB_CONNECTION:-sqlite}
+export DB_DATABASE=${DB_DATABASE:-/var/www/html/database/database.sqlite}
 
 # Create .env file if it doesn't exist
 if [ ! -f .env ]; then
@@ -45,6 +46,17 @@ mkdir -p storage/framework/cache
 mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
 mkdir -p bootstrap/cache
+
+# Create SQLite database if it doesn't exist
+if [ "$DB_CONNECTION" = "sqlite" ] && [ ! -f "$DB_DATABASE" ]; then
+    echo "Creating SQLite database..."
+    touch "$DB_DATABASE"
+    chmod 664 "$DB_DATABASE"
+fi
+
+# Run database migrations
+echo "Running database migrations..."
+php artisan migrate --force
 
 # Set proper permissions
 chmod -R 775 storage bootstrap/cache
