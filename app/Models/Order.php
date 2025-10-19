@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
@@ -12,6 +13,14 @@ class Order extends Model
         'user_id',
         'order_number',
         'status',
+        'fulfillment_status',
+        'return_status',
+        'rma_number',
+        'carrier',
+        'requires_approval',
+        'approval_reason',
+        'approved_at',
+        'approved_by',
         'subtotal',
         'tax_amount',
         'shipping_amount',
@@ -43,6 +52,8 @@ class Order extends Model
         'shipping_address' => 'array',
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'requires_approval' => 'boolean',
     ];
 
     public function user(): BelongsTo
@@ -70,6 +81,21 @@ class Order extends Model
     public function paymentGateway(): BelongsTo
     {
         return $this->belongsTo(PaymentGateway::class);
+    }
+
+    public function fulfillment(): HasOne
+    {
+        return $this->hasOne(OrderFulfillment::class);
+    }
+
+    public function returnRepairs(): HasMany
+    {
+        return $this->hasMany(ReturnRepair::class);
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'approved_by');
     }
 
     /**

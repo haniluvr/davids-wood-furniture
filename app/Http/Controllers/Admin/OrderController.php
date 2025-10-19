@@ -126,7 +126,7 @@ class OrderController extends Controller
             }
 
             $taxAmount = $subtotal * 0.1; // 10% tax
-            $shippingCost = $subtotal > 100 ? 0 : 15; // Free shipping over $100
+            $shippingCost = $subtotal > 5000 ? 0 : 150; // Free shipping over ₱5000
             $discountAmount = 0; // No discounts for now
             $totalAmount = $subtotal + $taxAmount + $shippingCost - $discountAmount;
 
@@ -140,7 +140,7 @@ class OrderController extends Controller
                 'shipping_cost' => $shippingCost,
                 'discount_amount' => $discountAmount,
                 'total_amount' => $totalAmount,
-                'currency' => 'USD',
+                'currency' => 'PHP',
                 'billing_address' => $validated['billing_address'],
                 'shipping_address' => $validated['shipping_address'],
                 'payment_method' => $validated['payment_method'],
@@ -331,11 +331,214 @@ class OrderController extends Controller
             'payment_status' => 'refunded',
             'status' => 'returned',
             'notes' => ($order->notes ? $order->notes . "\n\n" : '') . 
-                      "Refund processed: $" . $request->refund_amount . 
+                      "Refund processed: ₱" . $request->refund_amount . 
                       "\nReason: " . $request->refund_reason . 
                       "\nProcessed at: " . now()->format('Y-m-d H:i:s'),
         ]);
 
         return back()->with('success', 'Refund processed successfully.');
+    }
+
+    /**
+     * Display orders pending approval.
+     */
+    public function pendingApproval(Request $request)
+    {
+        $query = Order::with(['user', 'orderItems.product', 'approvedBy'])
+            ->where('requires_approval', true)
+            ->whereNull('approved_at')
+            ->orderBy('created_at', 'asc');
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('order_number', 'like', '%' . $search . '%')
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('first_name', 'like', '%' . $search . '%')
+                               ->orWhere('last_name', 'like', '%' . $search . '%')
+                               ->orWhere('email', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        $orders = $query->paginate(15);
+
+        // Get statistics
+        $stats = [
+            'pending_approval' => Order::where('requires_approval', true)->whereNull('approved_at')->count(),
+            'approved_today' => Order::where('requires_approval', true)->whereDate('approved_at', today())->count(),
+            'total_requiring_approval' => Order::where('requires_approval', true)->count(),
+        ];
+
+        return view('admin.orders.pending-approval', compact('orders', 'stats'));
+    }
+
+    /**
+     * Approve an order.
+     */
+    public function approveOrder(Request $request, Order $order)
+    {
+        $request->validate([
+            'admin_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $order->update([
+            'requires_approval' => false,
+            'approved_at' => now(),
+            'approved_by' => auth('admin')->id(),
+            'status' => 'processing',
+            'admin_notes' => $request->admin_notes,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order approved successfully'
+        ]);
+    }
+
+    /**
+     * Reject an order.
+     */
+    public function rejectOrder(Request $request, Order $order)
+    {
+        $request->validate([
+            'admin_notes' => 'required|string|max:1000',
+        ]);
+
+        $order->update([
+            'requires_approval' => false,
+            'status' => 'cancelled',
+            'admin_notes' => $request->admin_notes,
+        ]);
+
+        // Restore product stock
+        foreach ($order->orderItems as $item) {
+            if ($item->product) {
+                $item->product->increment('stock_quantity', $item->quantity);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order rejected successfully'
+        ]);
+    }
+
+    /**
+     * Bulk update order statuses.
+     */
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'order_ids' => 'required|array',
+            'order_ids.*' => 'exists:orders,id',
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+        ]);
+
+        $orderIds = $request->order_ids;
+        $newStatus = $request->status;
+
+        DB::transaction(function () use ($orderIds, $newStatus) {
+            foreach ($orderIds as $orderId) {
+                $order = Order::findOrFail($orderId);
+                $oldStatus = $order->status;
+
+                $updateData = ['status' => $newStatus];
+
+                if ($newStatus === 'shipped' && $oldStatus !== 'shipped') {
+                    $updateData['shipped_at'] = now();
+                }
+                
+                if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
+                    $updateData['delivered_at'] = now();
+                }
+
+                $order->update($updateData);
+                event(new OrderStatusChanged($order, $oldStatus, $newStatus));
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => count($orderIds) . ' orders updated successfully'
+        ]);
+    }
+
+    /**
+     * Export orders to CSV.
+     */
+    public function export(Request $request)
+    {
+        $query = Order::with(['user', 'orderItems.product']);
+
+        // Apply same filters as index
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('order_number', 'like', '%' . $search . '%')
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('first_name', 'like', '%' . $search . '%')
+                               ->orWhere('last_name', 'like', '%' . $search . '%')
+                               ->orWhere('email', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $orders = $query->get();
+
+        $filename = 'orders_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($orders) {
+            $file = fopen('php://output', 'w');
+            
+            // CSV headers
+            fputcsv($file, [
+                'Order Number',
+                'Customer Name',
+                'Customer Email',
+                'Status',
+                'Payment Status',
+                'Total Amount',
+                'Currency',
+                'Created At',
+                'Items Count'
+            ]);
+
+            // CSV data
+            foreach ($orders as $order) {
+                fputcsv($file, [
+                    $order->order_number,
+                    $order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'Guest',
+                    $order->user ? $order->user->email : 'N/A',
+                    $order->status,
+                    $order->payment_status,
+                    $order->total_amount,
+                    $order->currency,
+                    $order->created_at->format('Y-m-d H:i:s'),
+                    $order->orderItems->count()
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

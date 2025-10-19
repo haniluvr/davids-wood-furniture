@@ -56,16 +56,19 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
 - **CMS Pages** - Dynamic content pages (About, Contact, Privacy, etc.)
 
 ### Admin Dashboard (Subdomain)
-- **Real-time Dashboard** - Statistics, charts, recent activity
-- **Product Management** - Full CRUD operations with image uploads
+- **Real-time Dashboard** - Statistics, charts, recent activity with enhanced KPIs
+- **Product Management** - Full CRUD operations with image uploads and bulk operations
 - **Category Management** - Hierarchical category structure
 - **Inventory Tracking** - Stock levels, low stock alerts, movement history
 - **Product Popularity Analytics** - Track product performance based on wishlist and cart interactions
 - **Customer Management** - View and manage customer accounts
 - **Order Management** - Process orders, update status, generate reports, track shipments
+- **Order Fulfillment** - Complete fulfillment workflow with packing, shipping, and tracking
+- **Returns & Repairs Management** - Handle returns, repairs, and exchanges with RMA system
+- **Message Management** - Advanced contact message system with status tracking and assignment
 - **Review Moderation** - Approve/reject customer reviews
-- **Contact Management** - View and respond to customer inquiries
-- **Analytics** - Sales trends, revenue reports, customer insights
+- **Email Preview System** - Preview all email templates before sending
+- **Analytics** - Sales trends, revenue reports, customer insights with deep BI analytics
 - **Notifications** - Admin alerts and activity monitoring
 - **Audit Logs** - Complete activity tracking for security
 - **Employee Management** - Role-based access control
@@ -663,6 +666,16 @@ davids-wood-furniture/
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Admin/              # Admin panel controllers
+│   │   │   │   ├── FulfillmentController.php    # Order fulfillment management
+│   │   │   │   ├── ReturnsRepairsController.php # Returns & repairs management
+│   │   │   │   ├── MessageController.php        # Advanced message management
+│   │   │   │   ├── EmailPreviewController.php   # Email template previews
+│   │   │   │   ├── AnalyticsController.php      # Deep BI analytics
+│   │   │   │   ├── DashboardController.php      # Enhanced dashboard
+│   │   │   │   ├── OrderController.php          # Order management
+│   │   │   │   ├── ProductController.php        # Product management
+│   │   │   │   ├── UserController.php           # Customer management
+│   │   │   │   └── InventoryController.php      # Inventory tracking
 │   │   │   ├── CartController.php
 │   │   │   ├── OrderController.php
 │   │   │   ├── ProductController.php
@@ -675,9 +688,11 @@ davids-wood-furniture/
 │   ├── Models/
 │   │   ├── Product.php
 │   │   ├── ProductReview.php        # Review model
-│   │   ├── ContactMessage.php       # Contact form model
+│   │   ├── ContactMessage.php       # Enhanced contact form model
+│   │   ├── OrderFulfillment.php     # Order fulfillment tracking
+│   │   ├── ReturnRepair.php         # Returns & repairs management
 │   │   ├── Category.php
-│   │   ├── Order.php
+│   │   ├── Order.php                # Enhanced with fulfillment & returns
 │   │   ├── Cart.php
 │   │   ├── User.php
 │   │   └── Admin.php
@@ -688,7 +703,12 @@ davids-wood-furniture/
 ├── database/
 │   ├── migrations/                  # Database schema
 │   │   ├── create_product_popularity_table.php  # Product popularity tracking
-│   │   └── update_product_skus_to_five_digit_format.php  # SKU standardization
+│   │   ├── update_product_skus_to_five_digit_format.php  # SKU standardization
+│   │   ├── create_returns_repairs_table.php     # Returns & repairs management
+│   │   ├── create_order_fulfillment_table.php   # Order fulfillment tracking
+│   │   ├── update_orders_table_for_fulfillment_returns.php  # Enhanced order fields
+│   │   ├── update_contact_messages_for_messages_system.php  # Enhanced message system
+│   │   └── update_orders_currency_to_php.php    # Currency standardization
 │   └── seeders/                     # Sample data
 │       ├── RealisticDataSeeder.php  # Realistic Filipino user data
 │       ├── ProductPopularitySeeder.php  # Popularity calculation
@@ -701,6 +721,15 @@ davids-wood-furniture/
 ├── resources/
 │   ├── views/
 │   │   ├── admin/                   # Admin panel views
+│   │   │   ├── orders/
+│   │   │   │   ├── fulfillment.blade.php        # Order fulfillment management
+│   │   │   │   ├── pending-approval.blade.php   # Pending approval orders
+│   │   │   │   └── returns-repairs.blade.php    # Returns & repairs management
+│   │   │   ├── messages/                        # Message management views
+│   │   │   ├── emails/
+│   │   │   │   └── preview.blade.php            # Email template previews
+│   │   │   └── partials/
+│   │   │       └── sidebar.blade.php            # Enhanced navigation
 │   │   ├── layouts/                 # Public site layouts
 │   │   ├── partials/                # Reusable components
 │   │   └── checkout/                # Checkout pages
@@ -753,7 +782,96 @@ davids-wood-furniture/
 
 ## Recent Updates
 
-### Version 1.0.5 (October 2025)
+### Version 1.4.12 (October 2025)
+
+#### Advanced Order Management & Fulfillment System
+- **Order Fulfillment Workflow**: Complete fulfillment management system
+  - New `OrderFulfillment` model with detailed tracking of packing, shipping, and delivery
+  - Fulfillment status tracking: pending → packed → shipped → delivered
+  - Packing notes and shipping notes for internal communication
+  - Employee tracking for who packed and shipped each order
+  - Bulk shipping operations with multiple tracking numbers
+  - Print-ready shipping labels with order details
+  - Fulfillment statistics dashboard with real-time metrics
+
+- **Returns & Repairs Management**: Comprehensive RMA (Return Merchandise Authorization) system
+  - New `ReturnRepair` model supporting returns, repairs, and exchanges
+  - Unique RMA number generation (format: RMA-YYYY-XXXX)
+  - Photo upload system for return documentation (up to 5 photos)
+  - Complete workflow: requested → approved → received → processing → completed
+  - Refund processing with amount and method tracking
+  - Admin notes and customer notes for communication
+  - Product-specific return tracking with quantities
+  - Status-based filtering and bulk operations
+
+- **Enhanced Order Processing**: Advanced order management features
+  - Order approval system for high-value or special orders
+  - Fulfillment status integration with main order status
+  - Carrier and tracking number management
+  - Order currency standardization to PHP (Philippine Peso)
+  - Enhanced order filtering and search capabilities
+
+#### Advanced Message Management System
+- **Contact Message Enhancement**: Upgraded contact form management
+  - New `MessageController` with advanced filtering and search
+  - Message assignment system for admin workload distribution
+  - Tag system for message categorization and organization
+  - Status tracking: new → read → responded → archived
+  - Date range filtering and bulk status updates
+  - Internal notes system for admin communication
+  - Response tracking with timestamps and admin attribution
+
+#### Email System & Communication
+- **Email Preview System**: Complete email template management
+  - New `EmailPreviewController` for testing all email templates
+  - Preview system for: order confirmations, status updates, low stock alerts, reviews, newsletters, welcome emails, abandoned cart
+  - Sample data generation for realistic email previews
+  - Email template testing before sending to customers
+  - Enhanced email templates with better styling and content
+
+- **Enhanced Email Templates**: Improved email communications
+  - Updated `WelcomeMail`, `NewsletterMail`, and `AbandonedCartMail` classes
+  - Better email formatting and responsive design
+  - Improved content structure and call-to-action placement
+
+#### Database & Infrastructure Updates
+- **New Database Tables**: Enhanced data structure
+  - `order_fulfillment` table for detailed fulfillment tracking
+  - `returns_repairs` table for RMA management
+  - Updated `orders` table with fulfillment and return status fields
+  - Enhanced `contact_messages` table with assignment and tagging
+  - Inventory movement type tracking for better analytics
+
+- **Model Enhancements**: Improved data relationships
+  - New `OrderFulfillment` model with progress tracking
+  - New `ReturnRepair` model with RMA generation and status management
+  - Enhanced `ContactMessage` model with assignment and tagging
+  - Updated `Order` model with fulfillment and return relationships
+
+#### Admin Interface Improvements
+- **Enhanced Dashboard**: Improved admin experience
+  - Real-time fulfillment statistics and metrics
+  - Low stock alerts with direct action links
+  - Recent activity feed with order, message, and inventory updates
+  - Enhanced KPIs with daily, weekly, and monthly breakdowns
+  - Unread message count badges in sidebar navigation
+
+- **New Admin Views**: Additional management interfaces
+  - Order fulfillment management page with bulk operations
+  - Returns and repairs management with photo uploads
+  - Enhanced message management with filtering and assignment
+  - Email preview system for template testing
+  - Pending approval orders management
+
+#### Analytics & Reporting
+- **Deep BI Analytics**: Advanced business intelligence features
+  - Enhanced `AnalyticsController` with comprehensive metrics
+  - Conversion metrics and traffic source analysis
+  - Geographic data and seasonal trend analysis
+  - Profitability analysis and customer insights
+  - Advanced time filtering with custom date ranges
+
+### Version 1.4.11 (October 2025)
 
 #### Product Popularity Tracking & Enhanced Data Management
 - **Product Popularity System**: Advanced analytics for product performance
@@ -785,7 +903,7 @@ davids-wood-furniture/
   - Enhanced session management for better user flow
   - Smart URL storage for GET requests only
 
-### Version 1.0.4 (October 2025)
+### Version 1.4.10 (October 2025)
 
 #### Google OAuth Integration & Pagination Improvements
 - **Google OAuth Authentication**: Added social login with Google
@@ -802,7 +920,7 @@ davids-wood-furniture/
   - Maintains filter and sort state across pagination
   - Automatic pagination rendering on products page
 
-### Version 1.0.3 (October 2025)
+### Version 1.4.9 (October 2025)
 
 #### Product Review & Rating System
 - **Complete Review System**: Comprehensive product review and rating functionality
@@ -821,7 +939,7 @@ davids-wood-furniture/
 - **Auto-fill**: Name and email auto-filled for logged-in users
 - **AJAX Submission**: Smooth form submission with loading states
 
-### Version 1.0.2 (October 2025)
+### Version 1.4.8 (October 2025)
 
 #### Order Management Enhancements
 - **Order Receipts**: Added professional receipt generation for completed orders
@@ -834,7 +952,7 @@ davids-wood-furniture/
   - Display of tracking numbers when available
   - Improved order details view with expandable sections
 
-### Version 1.0.1 (October 2025)
+### Version 1.4.7 (October 2025)
 
 #### Domain & Routing Updates
 - **Migrated to custom domain**: Changed from localhost to `davidswood.test`

@@ -62,6 +62,10 @@ class InventoryController extends Controller
             'low_stock_products' => Product::lowStock()->count(),
             'out_of_stock_products' => Product::outOfStock()->count(),
             'total_stock_value' => Product::where('is_active', true)->sum(DB::raw('stock_quantity * price')),
+            'products_needing_reorder' => Product::where('is_active', true)
+                ->whereRaw('stock_quantity <= low_stock_threshold')
+                ->count(),
+            'average_stock_level' => Product::where('is_active', true)->avg('stock_quantity'),
             'recent_movements' => InventoryMovement::with('product')->latest()->take(10)->get(),
         ];
 
@@ -341,5 +345,125 @@ class InventoryController extends Controller
             DB::rollback();
             return back()->withErrors(['error' => 'Bulk update failed: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Display low stock alerts.
+     */
+    public function lowStock(Request $request)
+    {
+        $query = Product::with(['category'])
+            ->where('is_active', true)
+            ->whereRaw('stock_quantity <= low_stock_threshold')
+            ->orderBy('stock_quantity', 'asc');
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('sku', 'like', '%' . $search . '%');
+            });
+        }
+
+        $products = $query->paginate(20);
+
+        // Get statistics
+        $stats = [
+            'total_low_stock' => Product::where('is_active', true)
+                ->whereRaw('stock_quantity <= low_stock_threshold')
+                ->count(),
+            'critical_stock' => Product::where('is_active', true)
+                ->whereRaw('stock_quantity <= (low_stock_threshold * 0.5)')
+                ->count(),
+            'out_of_stock' => Product::where('is_active', true)
+                ->where('stock_quantity', 0)
+                ->count(),
+        ];
+
+        return view('admin.inventory.low-stock', compact('products', 'stats'));
+    }
+
+    /**
+     * Bulk restock low stock products.
+     */
+    public function bulkRestock(Request $request)
+    {
+        $request->validate([
+            'product_ids' => 'required|array',
+            'product_ids.*' => 'exists:products,id',
+            'quantity' => 'required|integer|min:1',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $productIds = $request->product_ids;
+        $quantity = $request->quantity;
+        $notes = $request->notes;
+
+        DB::beginTransaction();
+        try {
+            $products = Product::whereIn('id', $productIds)->get();
+
+            foreach ($products as $product) {
+                $oldQuantity = $product->stock_quantity;
+                $newQuantity = $oldQuantity + $quantity;
+
+                $product->update(['stock_quantity' => $newQuantity]);
+
+                // Log the movement
+                InventoryMovement::create([
+                    'product_id' => $product->id,
+                    'type' => 'restock',
+                    'quantity' => $quantity,
+                    'previous_quantity' => $oldQuantity,
+                    'new_quantity' => $newQuantity,
+                    'notes' => $notes ?: 'Bulk restock from low stock alerts',
+                    'created_by' => Auth::guard('admin')->id(),
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Restocked {$quantity} units for " . count($productIds) . ' products'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Bulk restock failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update reorder point for a product.
+     */
+    public function updateReorderPoint(Request $request, Product $product)
+    {
+        $request->validate([
+            'low_stock_threshold' => 'required|integer|min:0',
+        ]);
+
+        $oldThreshold = $product->low_stock_threshold;
+        $product->update(['low_stock_threshold' => $request->low_stock_threshold]);
+
+        // Log the change
+        InventoryMovement::create([
+            'product_id' => $product->id,
+            'type' => 'reorder_point_update',
+            'quantity' => 0,
+            'previous_quantity' => $oldThreshold,
+            'new_quantity' => $request->low_stock_threshold,
+            'notes' => 'Reorder point updated',
+            'created_by' => Auth::guard('admin')->id(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Reorder point updated successfully'
+        ]);
     }
 }

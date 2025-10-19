@@ -13,12 +13,18 @@ class ContactMessage extends Model
         'email',
         'message',
         'status',
-        'admin_notes',
+        'internal_notes',
+        'tags',
+        'assigned_to',
         'read_at',
+        'responded_at',
+        'responded_by',
     ];
 
     protected $casts = [
+        'tags' => 'array',
         'read_at' => 'datetime',
+        'responded_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -29,6 +35,22 @@ class ContactMessage extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the admin assigned to this message
+     */
+    public function assignedTo(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'assigned_to');
+    }
+
+    /**
+     * Get the admin who responded to this message
+     */
+    public function respondedBy(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'responded_by');
     }
 
     /**
@@ -45,6 +67,18 @@ class ContactMessage extends Model
     }
 
     /**
+     * Mark message as responded
+     */
+    public function markAsResponded(int $adminId): void
+    {
+        $this->update([
+            'status' => 'responded',
+            'responded_at' => now(),
+            'responded_by' => $adminId,
+        ]);
+    }
+
+    /**
      * Scope to get only new messages
      */
     public function scopeNew($query)
@@ -58,5 +92,21 @@ class ContactMessage extends Model
     public function scopeUnread($query)
     {
         return $query->where('status', 'new');
+    }
+
+    /**
+     * Scope to get responded messages
+     */
+    public function scopeResponded($query)
+    {
+        return $query->where('status', 'responded');
+    }
+
+    /**
+     * Scope to get read messages
+     */
+    public function scopeRead($query)
+    {
+        return $query->where('status', 'read');
     }
 }

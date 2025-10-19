@@ -75,7 +75,7 @@
         <div class="mt-4 flex items-end justify-between">
             <div>
                 <h4 class="text-title-md font-bold text-black dark:text-white">
-                    ${{ number_format($stats['total_revenue'], 2) }}
+                    ₱{{ number_format($stats['total_revenue'], 2) }}
                 </h4>
                 <span class="text-sm font-medium">Total Revenue</span>
             </div>
@@ -208,7 +208,7 @@
         </div>
         <div class="col-span-1 flex items-center">
             <p class="text-sm text-black dark:text-white font-medium">
-                ${{ number_format($order->total_amount, 2) }}
+                ₱{{ number_format($order->total_amount, 2) }}
             </p>
         </div>
         <div class="col-span-1 flex items-center">

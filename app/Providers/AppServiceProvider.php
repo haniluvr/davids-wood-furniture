@@ -19,6 +19,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Dynamically set APP_URL based on the request domain
+        $host = request()->getHost();
+        
+        if ($host === 'admin.davidswood.test') {
+            config(['app.url' => 'https://admin.davidswood.test:8443']);
+        } elseif ($host === 'davidswood.test') {
+            config(['app.url' => 'https://davidswood.test:8443']);
+        } elseif ($host === 'admin.localhost') {
+            config(['app.url' => 'http://admin.localhost:8080']);
+        } elseif ($host === 'localhost') {
+            config(['app.url' => 'http://localhost:8080']);
+        }
     }
 }

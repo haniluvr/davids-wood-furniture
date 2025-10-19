@@ -29,100 +29,100 @@
 
 <!-- Stats Cards Start -->
 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-    <!-- Total Customers Card -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 shadow-lg shadow-blue-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 dark:from-blue-900/20 dark:to-blue-800/10">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500 shadow-lg">
-                    <i data-lucide="users" class="w-6 h-6 text-white"></i>
-                </div>
-                <div class="mt-4">
-                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($totalUsers) }}
-                    </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Total Customers</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +12.5%
-                </span>
-            </div>
-        </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-blue-500/10"></div>
-    </div>
-
-    <!-- Total Orders Card -->
+    <!-- Revenue Today Card -->
     <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-6 shadow-lg shadow-emerald-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/20 dark:from-emerald-900/20 dark:to-emerald-800/10">
         <div class="flex items-center justify-between">
             <div>
                 <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500 shadow-lg">
-                    <i data-lucide="shopping-cart" class="w-6 h-6 text-white"></i>
+                    <i data-lucide="dollar-sign" class="w-6 h-6 text-white"></i>
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($totalOrders) }}
+                        ₱{{ number_format($revenueToday, 2) }}
                     </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Total Orders</p>
+                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Revenue Today</p>
                 </div>
             </div>
             <div class="text-right">
                 <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
                     <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +8.2%
+                    Today
                 </span>
             </div>
         </div>
         <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-emerald-500/10"></div>
     </div>
 
-    <!-- Total Products Card -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 p-6 shadow-lg shadow-amber-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/20 dark:from-amber-900/20 dark:to-amber-800/10">
+    <!-- Orders Status Card -->
+    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 shadow-lg shadow-blue-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 dark:from-blue-900/20 dark:to-blue-800/10">
         <div class="flex items-center justify-between">
             <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500 shadow-lg">
-                    <i data-lucide="package" class="w-6 h-6 text-white"></i>
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500 shadow-lg">
+                    <i data-lucide="shopping-cart" class="w-6 h-6 text-white"></i>
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($totalProducts) }}
+                        {{ number_format($pendingOrders) }}
                     </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Total Products</p>
+                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Pending Orders</p>
                 </div>
             </div>
             <div class="text-right">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +5.1%
+                <span class="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    <i data-lucide="clock" class="w-3 h-3"></i>
+                    {{ number_format($completedOrders) }} completed
                 </span>
             </div>
         </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-amber-500/10"></div>
+        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-blue-500/10"></div>
     </div>
 
-    <!-- Total Revenue Card -->
+    <!-- New Customers Card -->
     <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100/50 p-6 shadow-lg shadow-purple-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/20 dark:from-purple-900/20 dark:to-purple-800/10">
         <div class="flex items-center justify-between">
             <div>
                 <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500 shadow-lg">
-                    <i data-lucide="dollar-sign" class="w-6 h-6 text-white"></i>
+                    <i data-lucide="users" class="w-6 h-6 text-white"></i>
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        ${{ number_format($totalRevenue, 2) }}
+                        {{ number_format($newCustomersToday) }}
                     </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Total Revenue</p>
+                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">New Customers Today</p>
                 </div>
             </div>
             <div class="text-right">
                 <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +15.3%
+                    <i data-lucide="user-plus" class="w-3 h-3"></i>
+                    {{ number_format($newCustomersThisWeek) }} this week
                 </span>
             </div>
         </div>
         <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-purple-500/10"></div>
+    </div>
+
+    <!-- Messages & Alerts Card -->
+    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 p-6 shadow-lg shadow-amber-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/20 dark:from-amber-900/20 dark:to-amber-800/10">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500 shadow-lg">
+                    <i data-lucide="bell" class="w-6 h-6 text-white"></i>
+                </div>
+                <div class="mt-4">
+                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
+                        {{ number_format($unreadMessages) }}
+                    </h3>
+                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Unread Messages</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                    <i data-lucide="alert-triangle" class="w-3 h-3"></i>
+                    {{ number_format($lowStockCount) }} low stock
+                </span>
+            </div>
+        </div>
+        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-amber-500/10"></div>
     </div>
 </div>
 <!-- Stats Cards End -->
@@ -156,7 +156,7 @@
                 <div class="h-3 w-3 rounded-full bg-emerald-500"></div>
                 <div>
                     <p class="text-sm font-medium text-stone-900 dark:text-white">Revenue</p>
-                    <p class="text-lg font-bold text-emerald-600">${{ number_format($totalRevenue, 2) }}</p>
+                    <p class="text-lg font-bold text-emerald-600">₱{{ number_format($totalRevenue, 2) }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -301,7 +301,7 @@
                     </div>
 
                     <div class="flex items-center justify-center p-4">
-                        <p class="font-bold text-stone-900 dark:text-white">${{ number_format($order->total_amount, 2) }}</p>
+                        <p class="font-bold text-stone-900 dark:text-white">₱{{ number_format($order->total_amount, 2) }}</p>
                     </div>
 
                     <div class="hidden items-center justify-center p-4 sm:flex">
@@ -328,52 +328,59 @@
         </div>
     </div>
 
-    <!-- Low Stock Products -->
+    <!-- Recent Activity Feed -->
     <div class="col-span-12 xl:col-span-4">
         <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
             <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h3 class="text-xl font-bold text-stone-900 dark:text-white">Low Stock Alert</h3>
-                    <p class="text-sm text-stone-600 dark:text-gray-400">Products running low on stock</p>
+                    <h3 class="text-xl font-bold text-stone-900 dark:text-white">Recent Activity</h3>
+                    <p class="text-sm text-stone-600 dark:text-gray-400">Latest business activities</p>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <a href="{{ route('admin.products.index') }}" class="text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors duration-200">View All</a>
+                    <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                        Live
+                    </span>
                 </div>
             </div>
 
-            @forelse($lowStockProducts as $product)
-            <div class="mb-4 rounded-xl border border-stone-200/50 p-4 transition-all duration-200 hover:border-red-200 hover:bg-red-50/50 dark:border-strokedark/50 dark:hover:border-red-800/50 dark:hover:bg-red-900/10">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 rounded-lg bg-stone-100 flex items-center justify-center dark:bg-stone-800">
-                            @if($product->images && count($product->images) > 0)
-                                <img class="h-8 w-8 object-cover rounded" src="{{ asset('storage/' . $product->images[0]) }}" alt="{{ $product->name }}" />
-                            @else
-                                <i data-lucide="package" class="w-4 h-4 text-stone-400"></i>
-                            @endif
-                        </div>
-                        <div>
-                            <p class="font-semibold text-stone-900 dark:text-white">{{ $product->name }}</p>
-                            <p class="text-xs text-stone-500 dark:text-gray-400">SKU: {{ $product->sku }}</p>
-                        </div>
+            <div class="space-y-4">
+                @forelse($recentActivity as $activity)
+                <div class="flex items-start gap-3 p-3 rounded-xl border border-stone-200/50 hover:bg-stone-50/50 dark:border-strokedark/50 dark:hover:bg-stone-800/20 transition-all duration-200">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full flex-shrink-0"
+                         :class="{
+                             'bg-green-100 dark:bg-green-900/30': '{{ $activity['type'] }}' === 'order',
+                             'bg-blue-100 dark:bg-blue-900/30': '{{ $activity['type'] }}' === 'message',
+                             'bg-yellow-100 dark:bg-yellow-900/30': '{{ $activity['type'] }}' === 'inventory',
+                             'bg-purple-100 dark:bg-purple-900/30': '{{ $activity['type'] }}' === 'review'
+                         }">
+                        <i data-lucide="shopping-cart" class="h-4 w-4" 
+                           :class="{
+                               'text-green-600 dark:text-green-400': '{{ $activity['type'] }}' === 'order',
+                               'text-blue-600 dark:text-blue-400': '{{ $activity['type'] }}' === 'message',
+                               'text-yellow-600 dark:text-yellow-400': '{{ $activity['type'] }}' === 'inventory',
+                               'text-purple-600 dark:text-purple-400': '{{ $activity['type'] }}' === 'review'
+                           }"></i>
                     </div>
-                    <div class="text-right">
-                        <span class="text-sm font-bold text-red-600 dark:text-red-400">{{ $product->stock_quantity }} left</span>
-                        <p class="text-xs text-stone-500 dark:text-gray-400">{{ number_format(($product->stock_quantity / ($product->low_stock_threshold ?: 10)) * 100) }}% of threshold</p>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-stone-900 dark:text-white">{{ $activity['title'] }}</p>
+                        <p class="text-xs text-stone-600 dark:text-gray-400 mt-1">{{ $activity['message'] }}</p>
+                        <p class="text-xs text-stone-500 dark:text-gray-500 mt-2">{{ $activity['timestamp']->diffForHumans() }}</p>
                     </div>
+                    @if(isset($activity['url']))
+                    <a href="{{ $activity['url'] }}" class="flex-shrink-0 text-stone-400 hover:text-primary transition-colors duration-200">
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                    @endif
                 </div>
-                <div class="w-full bg-stone-200 rounded-full h-2 dark:bg-stone-700">
-                    <div class="bg-gradient-to-r from-red-500 to-red-600 h-2 rounded-full transition-all duration-300" style="width: {{ min(100, ($product->stock_quantity / ($product->low_stock_threshold ?: 10)) * 100) }}%"></div>
+                @empty
+                <div class="text-center py-8">
+                    <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4 dark:bg-stone-800">
+                        <i data-lucide="activity" class="w-6 h-6 text-stone-400"></i>
+                    </div>
+                    <p class="text-sm text-stone-500 dark:text-gray-400">No recent activity</p>
                 </div>
+                @endforelse
             </div>
-            @empty
-            <div class="text-center py-8">
-                <div class="mx-auto h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-4 dark:bg-green-900/30">
-                    <i data-lucide="check-circle" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
-                </div>
-                <p class="text-sm text-stone-500 dark:text-gray-400">All products are well stocked</p>
-            </div>
-            @endforelse
         </div>
     </div>
 </div>

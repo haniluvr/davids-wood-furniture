@@ -12,31 +12,81 @@
         inventoryOpen: false,
         customersOpen: false,
         contactOpen: false,
+        messagesOpen: false,
         shippingOpen: false,
         contentOpen: false,
         settingsOpen: false,
         reportsOpen: false
     }"
     x-init="
-        // Auto-collapse on mobile
-        if (window.innerWidth < 1024) {
-            $parent.sidebarCollapsed = false;
+        // Function to save accordion states to session storage
+        window.saveAccordionStates = function() {
+            const states = {
+                ordersOpen: ordersOpen,
+                productsOpen: productsOpen,
+                inventoryOpen: inventoryOpen,
+                customersOpen: customersOpen,
+                contactOpen: contactOpen,
+                messagesOpen: messagesOpen,
+                shippingOpen: shippingOpen,
+                contentOpen: contentOpen,
+                settingsOpen: settingsOpen,
+                reportsOpen: reportsOpen
+            };
+            sessionStorage.setItem('sidebarAccordionStates', JSON.stringify(states));
+            console.log('Sidebar states saved:', states);
         }
         
-        // Close all menus when sidebar is collapsed
-        $watch('$parent.sidebarCollapsed', val => {
-            if (val) {
-                ordersOpen = false;
-                productsOpen = false;
-                inventoryOpen = false;
-                customersOpen = false;
-                contactOpen = false;
-                shippingOpen = false;
-                contentOpen = false;
-                settingsOpen = false;
-                reportsOpen = false;
+        // Restore accordion states from session storage
+        const savedStates = JSON.parse(sessionStorage.getItem('sidebarAccordionStates') || '{}');
+        console.log('Restoring sidebar states:', savedStates);
+        ordersOpen = savedStates.ordersOpen || false;
+        productsOpen = savedStates.productsOpen || false;
+        inventoryOpen = savedStates.inventoryOpen || false;
+        customersOpen = savedStates.customersOpen || false;
+        contactOpen = savedStates.contactOpen || false;
+        messagesOpen = savedStates.messagesOpen || false;
+        shippingOpen = savedStates.shippingOpen || false;
+        contentOpen = savedStates.contentOpen || false;
+        settingsOpen = savedStates.settingsOpen || false;
+        reportsOpen = savedStates.reportsOpen || false;
+        
+        // Auto-collapse on mobile
+        if (window.innerWidth < 1024) {
+            if (typeof $parent !== 'undefined' && $parent.sidebarCollapsed !== undefined) {
+                $parent.sidebarCollapsed = false;
             }
-        });
+        }
+        
+        // Save accordion states to session storage when they change
+        $watch('ordersOpen', val => window.saveAccordionStates());
+        $watch('productsOpen', val => window.saveAccordionStates());
+        $watch('inventoryOpen', val => window.saveAccordionStates());
+        $watch('customersOpen', val => window.saveAccordionStates());
+        $watch('contactOpen', val => window.saveAccordionStates());
+        $watch('messagesOpen', val => window.saveAccordionStates());
+        $watch('shippingOpen', val => window.saveAccordionStates());
+        $watch('contentOpen', val => window.saveAccordionStates());
+        $watch('settingsOpen', val => window.saveAccordionStates());
+        $watch('reportsOpen', val => window.saveAccordionStates());
+        
+        // Close all menus when sidebar is collapsed (with safety check)
+        if (typeof $parent !== 'undefined') {
+            $watch('$parent.sidebarCollapsed', val => {
+                if (val) {
+                    ordersOpen = false;
+                    productsOpen = false;
+                    inventoryOpen = false;
+                    customersOpen = false;
+                    contactOpen = false;
+                    messagesOpen = false;
+                    shippingOpen = false;
+                    contentOpen = false;
+                    settingsOpen = false;
+                    reportsOpen = false;
+                }
+            });
+        }
     "
 >
     <!-- SIDEBAR HEADER -->
@@ -98,9 +148,9 @@
                     <ul x-show="ordersOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
                         <li><a href="{{ route('admin.orders.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.index') ? 'text-primary dark:text-primary' : '' }}">All Orders</a></li>
                         <li><a href="{{ route('admin.orders.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.create') ? 'text-primary dark:text-primary' : '' }}">Create Order</a></li>
-                        <li><a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Pending Approval</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Fulfillment</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Returns & Repairs</a></li>
+                        <li><a href="{{ route('admin.orders.pending-approval') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.pending-approval') ? 'text-primary dark:text-primary' : '' }}">Pending Approval</a></li>
+                        <li><a href="{{ route('admin.orders.fulfillment') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.fulfillment*') ? 'text-primary dark:text-primary' : '' }}">Fulfillment</a></li>
+                        <li><a href="{{ route('admin.orders.returns-repairs.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.returns-repairs*') ? 'text-primary dark:text-primary' : '' }}">Returns & Repairs</a></li>
                     </ul>
                 </li>
 
@@ -170,16 +220,16 @@
                     </ul>
                 </li>
 
-                <!-- Contact Messages Accordion -->
+                <!-- Messages Accordion -->
                 <li>
                     <button
-                        @click="!sidebarCollapsed && (contactOpen = !contactOpen)"
-                        class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.contact-messages.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
-                        :title="sidebarCollapsed ? 'Contact Messages' : ''"
+                        @click="!sidebarCollapsed && (messagesOpen = !messagesOpen)"
+                        class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.messages.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
+                        :title="sidebarCollapsed ? 'Messages' : ''"
                     >
                         <div class="flex items-center gap-2.5">
-                            <i data-lucide="mail" class="w-5 h-5 flex-shrink-0"></i>
-                            <span x-show="!sidebarCollapsed" x-transition>Contact Messages</span>
+                            <i data-lucide="message-square" class="w-5 h-5 flex-shrink-0"></i>
+                            <span x-show="!sidebarCollapsed" x-transition>Messages</span>
                             @php
                                 $newMessagesCount = \App\Models\ContactMessage::where('status', 'new')->count();
                             @endphp
@@ -187,13 +237,13 @@
                                 <span class="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full" x-show="!sidebarCollapsed">{{ $newMessagesCount }}</span>
                             @endif
                         </div>
-                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="contactOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
+                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="messagesOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
-                    <ul x-show="contactOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.contact-messages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.contact-messages.index') && !request('status') ? 'text-primary dark:text-primary' : '' }}">All Messages</a></li>
-                        <li><a href="{{ route('admin.contact-messages.index', ['status' => 'new']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'new' ? 'text-primary dark:text-primary' : '' }}">New Messages</a></li>
-                        <li><a href="{{ route('admin.contact-messages.index', ['status' => 'read']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'read' ? 'text-primary dark:text-primary' : '' }}">Read</a></li>
-                        <li><a href="{{ route('admin.contact-messages.index', ['status' => 'responded']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'responded' ? 'text-primary dark:text-primary' : '' }}">Responded</a></li>
+                    <ul x-show="messagesOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
+                        <li><a href="{{ route('admin.messages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.messages.index') && !request('status') ? 'text-primary dark:text-primary' : '' }}">All Messages</a></li>
+                        <li><a href="{{ route('admin.messages.index', ['status' => 'new']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'new' ? 'text-primary dark:text-primary' : '' }}">New Messages</a></li>
+                        <li><a href="{{ route('admin.messages.index', ['status' => 'read']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'read' ? 'text-primary dark:text-primary' : '' }}">Read</a></li>
+                        <li><a href="{{ route('admin.messages.index', ['status' => 'responded']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'responded' ? 'text-primary dark:text-primary' : '' }}">Responded</a></li>
                     </ul>
                 </li>
 

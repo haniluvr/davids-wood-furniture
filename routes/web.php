@@ -35,16 +35,56 @@ $adminRoutes = function () {
         // Product Management
         Route::middleware('admin.permission:products.view')->group(function () {
             Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
+            Route::patch('products/{product}/toggle-status', [App\Http\Controllers\Admin\ProductController::class, 'toggleStatus'])->name('products.toggle-status');
+            Route::post('products/{product}/restock', [App\Http\Controllers\Admin\ProductController::class, 'restock'])->name('products.restock');
+            Route::post('products/bulk-update-status', [App\Http\Controllers\Admin\ProductController::class, 'bulkUpdateStatus'])->name('products.bulk-update-status');
+            Route::post('products/bulk-update-prices', [App\Http\Controllers\Admin\ProductController::class, 'bulkUpdatePrices'])->name('products.bulk-update-prices');
+            Route::post('products/bulk-restock', [App\Http\Controllers\Admin\ProductController::class, 'bulkRestock'])->name('products.bulk-restock');
+            Route::get('products/export', [App\Http\Controllers\Admin\ProductController::class, 'export'])->name('products.export');
         });
         
         // Order Management
-        Route::middleware('admin.permission:orders.view')->group(function () {
+        // Route::middleware('admin.permission:orders.view')->group(function () {
+            // IMPORTANT: Custom routes must come BEFORE resource routes to avoid conflicts
+            
+            // Pending Approval
+            Route::get('orders/pending-approval', [App\Http\Controllers\Admin\OrderController::class, 'pendingApproval'])->name('orders.pending-approval');
+            
+            // Fulfillment
+            Route::get('orders/fulfillment', [App\Http\Controllers\Admin\FulfillmentController::class, 'index'])->name('orders.fulfillment');
+            Route::get('orders/fulfillment/{order}', [App\Http\Controllers\Admin\FulfillmentController::class, 'show'])->name('orders.fulfillment.show');
+            Route::post('orders/fulfillment/{order}/packing', [App\Http\Controllers\Admin\FulfillmentController::class, 'updatePackingStatus'])->name('orders.fulfillment.packing');
+            Route::post('orders/fulfillment/{order}/shipping', [App\Http\Controllers\Admin\FulfillmentController::class, 'updateShippingStatus'])->name('orders.fulfillment.shipping');
+            Route::post('orders/fulfillment/bulk-ship', [App\Http\Controllers\Admin\FulfillmentController::class, 'bulkMarkShipped'])->name('orders.fulfillment.bulk-ship');
+            Route::get('orders/fulfillment/{order}/print-label', [App\Http\Controllers\Admin\FulfillmentController::class, 'printLabel'])->name('orders.fulfillment.print-label');
+            
+            // Returns & Repairs
+            Route::get('orders/returns-repairs', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'index'])->name('orders.returns-repairs.index');
+            Route::get('orders/returns-repairs/create', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'create'])->name('orders.returns-repairs.create');
+            Route::post('orders/returns-repairs', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'store'])->name('orders.returns-repairs.store');
+            Route::get('orders/returns-repairs/{returnRepair}', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'show'])->name('orders.returns-repairs.show');
+            Route::post('orders/returns-repairs/{returnRepair}/approve', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'approve'])->name('orders.returns-repairs.approve');
+            Route::post('orders/returns-repairs/{returnRepair}/reject', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'reject'])->name('orders.returns-repairs.reject');
+            Route::post('orders/returns-repairs/{returnRepair}/received', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'markReceived'])->name('orders.returns-repairs.received');
+            Route::post('orders/returns-repairs/{returnRepair}/refund', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'processRefund'])->name('orders.returns-repairs.refund');
+            Route::post('orders/returns-repairs/{returnRepair}/complete', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'markCompleted'])->name('orders.returns-repairs.complete');
+            Route::post('orders/returns-repairs/{returnRepair}/notes', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'updateNotes'])->name('orders.returns-repairs.notes');
+            Route::post('orders/returns-repairs/{returnRepair}/photos', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'uploadPhotos'])->name('orders.returns-repairs.photos');
+            Route::delete('orders/returns-repairs/{returnRepair}/photos', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'deletePhoto'])->name('orders.returns-repairs.delete-photo');
+            
+            // Bulk Actions & Export (before resource routes)
+            Route::post('orders/bulk-update-status', [App\Http\Controllers\Admin\OrderController::class, 'bulkUpdateStatus'])->name('orders.bulk-update-status');
+            Route::get('orders/export', [App\Http\Controllers\Admin\OrderController::class, 'export'])->name('orders.export');
+            
+            // Resource routes (must come AFTER custom routes)
             Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
             Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
             Route::post('orders/{order}/refund', [App\Http\Controllers\Admin\OrderController::class, 'processRefund'])->name('orders.process-refund');
             Route::get('orders/{order}/invoice', [App\Http\Controllers\Admin\OrderController::class, 'downloadInvoice'])->name('orders.download-invoice');
             Route::get('orders/{order}/packing-slip', [App\Http\Controllers\Admin\OrderController::class, 'downloadPackingSlip'])->name('orders.download-packing-slip');
-        });
+            Route::post('orders/{order}/approve', [App\Http\Controllers\Admin\OrderController::class, 'approveOrder'])->name('orders.approve');
+            Route::post('orders/{order}/reject', [App\Http\Controllers\Admin\OrderController::class, 'rejectOrder'])->name('orders.reject');
+        // });
         
         // User Management
         Route::middleware('admin.permission:users.view')->group(function () {
@@ -55,6 +95,12 @@ $adminRoutes = function () {
             Route::post('users/{user}/unverify-email', [App\Http\Controllers\Admin\UserController::class, 'unverifyEmail'])->name('users.unverify-email');
             Route::post('users/{user}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
             Route::get('users-export', [App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
+            Route::post('users/{user}/tags', [App\Http\Controllers\Admin\UserController::class, 'addTags'])->name('users.add-tags');
+            Route::post('users/{user}/remove-tag', [App\Http\Controllers\Admin\UserController::class, 'removeTag'])->name('users.remove-tag');
+            Route::post('users/{user}/notes', [App\Http\Controllers\Admin\UserController::class, 'updateNotes'])->name('users.update-notes');
+            Route::get('users/{user}/analytics', [App\Http\Controllers\Admin\UserController::class, 'getCustomerAnalytics'])->name('users.analytics');
+            Route::post('users/bulk-update-tags', [App\Http\Controllers\Admin\UserController::class, 'bulkUpdateTags'])->name('users.bulk-update-tags');
+            Route::get('users/group/{group}', [App\Http\Controllers\Admin\UserController::class, 'getByGroup'])->name('users.by-group');
         });
         
         // Admin User Management
@@ -77,6 +123,8 @@ $adminRoutes = function () {
             Route::post('products/{product}/add-stock', [App\Http\Controllers\Admin\InventoryController::class, 'addStock'])->name('inventory.add-stock');
             Route::post('products/{product}/remove-stock', [App\Http\Controllers\Admin\InventoryController::class, 'removeStock'])->name('inventory.remove-stock');
             Route::post('inventory/bulk-update', [App\Http\Controllers\Admin\InventoryController::class, 'bulkUpdate'])->name('inventory.bulk-update');
+            Route::post('inventory/bulk-restock', [App\Http\Controllers\Admin\InventoryController::class, 'bulkRestock'])->name('inventory.bulk-restock');
+            Route::post('inventory/{product}/update-reorder-point', [App\Http\Controllers\Admin\InventoryController::class, 'updateReorderPoint'])->name('inventory.update-reorder-point');
         });
         
         // Settings
@@ -130,6 +178,8 @@ $adminRoutes = function () {
             Route::get('analytics/products', [App\Http\Controllers\Admin\AnalyticsController::class, 'products'])->name('analytics.products');
             Route::get('analytics/revenue', [App\Http\Controllers\Admin\AnalyticsController::class, 'revenue'])->name('analytics.revenue');
             Route::get('analytics/export', [App\Http\Controllers\Admin\AnalyticsController::class, 'export'])->name('analytics.export');
+            Route::get('analytics/customer-lifetime-value', [App\Http\Controllers\Admin\AnalyticsController::class, 'customerLifetimeValue'])->name('analytics.customer-lifetime-value');
+            Route::get('analytics/product-performance', [App\Http\Controllers\Admin\AnalyticsController::class, 'productPerformance'])->name('analytics.product-performance');
         });
         
         // Reviews Management
@@ -191,11 +241,17 @@ $adminRoutes = function () {
                 return \App\Models\Product::select('id', 'name')->get();
             })->name('api.products');
         
-        // Contact Messages
-        Route::get('contact-messages', [App\Http\Controllers\ContactController::class, 'index'])->name('contact-messages.index');
-        Route::get('contact-messages/{contactMessage}', [App\Http\Controllers\ContactController::class, 'show'])->name('contact-messages.show');
-        Route::patch('contact-messages/{contactMessage}', [App\Http\Controllers\ContactController::class, 'update'])->name('contact-messages.update');
-        Route::delete('contact-messages/{contactMessage}', [App\Http\Controllers\ContactController::class, 'destroy'])->name('contact-messages.destroy');
+        // Messages (reorganized from contact-messages)
+        Route::get('messages', [App\Http\Controllers\Admin\MessageController::class, 'index'])->name('messages.index');
+        Route::get('messages/{message}', [App\Http\Controllers\Admin\MessageController::class, 'show'])->name('messages.show');
+        Route::patch('messages/{message}', [App\Http\Controllers\Admin\MessageController::class, 'update'])->name('messages.update');
+        Route::delete('messages/{message}', [App\Http\Controllers\Admin\MessageController::class, 'destroy'])->name('messages.destroy');
+        Route::post('messages/{message}/respond', [App\Http\Controllers\Admin\MessageController::class, 'markAsResponded'])->name('messages.respond');
+        Route::post('messages/{message}/assign', [App\Http\Controllers\Admin\MessageController::class, 'assign'])->name('messages.assign');
+        Route::post('messages/{message}/tags', [App\Http\Controllers\Admin\MessageController::class, 'addTags'])->name('messages.add-tags');
+        Route::post('messages/{message}/remove-tag', [App\Http\Controllers\Admin\MessageController::class, 'removeTag'])->name('messages.remove-tag');
+        Route::post('messages/bulk-update-status', [App\Http\Controllers\Admin\MessageController::class, 'bulkUpdateStatus'])->name('messages.bulk-update-status');
+        Route::get('messages/status/{status}', [App\Http\Controllers\Admin\MessageController::class, 'getByStatus'])->name('messages.by-status');
     });
 };
 

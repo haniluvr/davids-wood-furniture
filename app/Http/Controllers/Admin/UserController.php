@@ -9,6 +9,7 @@ use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -61,7 +62,7 @@ class UserController extends Controller
 
         $users = $query->paginate(15);
 
-        // Get statistics
+        // Get statistics with lifetime value calculations
         $stats = [
             'total_users' => User::count(),
             'active_users' => User::whereNotNull('email_verified_at')->count(),
@@ -69,9 +70,22 @@ class UserController extends Controller
             'suspended_users' => User::where('is_suspended', true)->count(),
             'google_users' => User::whereNotNull('google_id')->count(),
             'recent_registrations' => User::where('created_at', '>=', now()->subDays(30))->count(),
+            'total_customer_value' => Order::where('payment_status', 'paid')->sum('total_amount'),
+            'average_order_value' => Order::where('payment_status', 'paid')->avg('total_amount'),
+            'repeat_customers' => User::whereHas('orders', function($q) {
+                $q->where('payment_status', 'paid');
+            }, '>=', 2)->count(),
         ];
 
-        return view('admin.users.index', compact('users', 'stats'));
+        // Get customer groups for filtering
+        $customerGroups = [
+            'new_customers' => 'New Customers (0-1 orders)',
+            'regular_customers' => 'Regular Customers (2-5 orders)',
+            'loyal_customers' => 'Loyal Customers (6-15 orders)',
+            'vip_customers' => 'VIP Customers (15+ orders)',
+        ];
+
+        return view('admin.users.index', compact('users', 'stats', 'customerGroups'));
     }
 
     /**
@@ -405,5 +419,186 @@ class UserController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Add tags to customer.
+     */
+    public function addTags(Request $request, User $user)
+    {
+        $request->validate([
+            'tags' => 'required|array',
+            'tags.*' => 'string|max:50',
+        ]);
+
+        $currentTags = $user->tags ?? [];
+        $newTags = array_unique(array_merge($currentTags, $request->tags));
+        
+        $user->update(['tags' => $newTags]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tags added successfully'
+        ]);
+    }
+
+    /**
+     * Remove tag from customer.
+     */
+    public function removeTag(Request $request, User $user)
+    {
+        $request->validate([
+            'tag' => 'required|string',
+        ]);
+
+        $currentTags = $user->tags ?? [];
+        $newTags = array_values(array_filter($currentTags, function($tag) use ($request) {
+            return $tag !== $request->tag;
+        }));
+        
+        $user->update(['tags' => $newTags]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tag removed successfully'
+        ]);
+    }
+
+    /**
+     * Update customer notes.
+     */
+    public function updateNotes(Request $request, User $user)
+    {
+        $request->validate([
+            'admin_notes' => 'nullable|string|max:2000',
+        ]);
+
+        $user->update(['admin_notes' => $request->admin_notes]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Notes updated successfully'
+        ]);
+    }
+
+    /**
+     * Get customer lifetime value and analytics.
+     */
+    public function getCustomerAnalytics(User $user)
+    {
+        $orders = $user->orders()->where('payment_status', 'paid')->get();
+        
+        $analytics = [
+            'total_orders' => $orders->count(),
+            'total_spent' => $orders->sum('total_amount'),
+            'average_order_value' => $orders->avg('total_amount'),
+            'first_order_date' => $orders->min('created_at'),
+            'last_order_date' => $orders->max('created_at'),
+            'days_since_last_order' => $orders->max('created_at') ? now()->diffInDays($orders->max('created_at')) : null,
+            'customer_lifetime_days' => $user->created_at ? now()->diffInDays($user->created_at) : 0,
+            'order_frequency' => $orders->count() > 0 && $user->created_at ? 
+                $orders->count() / max(1, now()->diffInDays($user->created_at) / 30) : 0,
+            'customer_group' => $this->getCustomerGroup($orders->count()),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'analytics' => $analytics
+        ]);
+    }
+
+    /**
+     * Determine customer group based on order count.
+     */
+    private function getCustomerGroup($orderCount)
+    {
+        if ($orderCount == 0) return 'Prospect';
+        if ($orderCount <= 1) return 'New Customer';
+        if ($orderCount <= 5) return 'Regular Customer';
+        if ($orderCount <= 15) return 'Loyal Customer';
+        return 'VIP Customer';
+    }
+
+    /**
+     * Bulk update customer tags.
+     */
+    public function bulkUpdateTags(Request $request)
+    {
+        $request->validate([
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'exists:users,id',
+            'tags' => 'required|array',
+            'tags.*' => 'string|max:50',
+            'action' => 'required|in:add,remove,replace',
+        ]);
+
+        $userIds = $request->user_ids;
+        $newTags = $request->tags;
+        $action = $request->action;
+
+        $users = User::whereIn('id', $userIds)->get();
+
+        foreach ($users as $user) {
+            $currentTags = $user->tags ?? [];
+            
+            switch ($action) {
+                case 'add':
+                    $updatedTags = array_unique(array_merge($currentTags, $newTags));
+                    break;
+                case 'remove':
+                    $updatedTags = array_values(array_filter($currentTags, function($tag) use ($newTags) {
+                        return !in_array($tag, $newTags);
+                    }));
+                    break;
+                case 'replace':
+                    $updatedTags = $newTags;
+                    break;
+            }
+            
+            $user->update(['tags' => $updatedTags]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tags updated for ' . count($userIds) . ' customers'
+        ]);
+    }
+
+    /**
+     * Get customers by group.
+     */
+    public function getByGroup($group)
+    {
+        $query = User::withCount(['orders' => function($q) {
+            $q->where('payment_status', 'paid');
+        }]);
+
+        switch ($group) {
+            case 'new_customers':
+                $query->having('orders_count', '<=', 1);
+                break;
+            case 'regular_customers':
+                $query->having('orders_count', '>=', 2)->having('orders_count', '<=', 5);
+                break;
+            case 'loyal_customers':
+                $query->having('orders_count', '>=', 6)->having('orders_count', '<=', 15);
+                break;
+            case 'vip_customers':
+                $query->having('orders_count', '>=', 16);
+                break;
+        }
+
+        $users = $query->paginate(20);
+
+        return response()->json([
+            'success' => true,
+            'users' => $users->items(),
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+            ]
+        ]);
     }
 }
