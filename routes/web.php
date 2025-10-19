@@ -90,6 +90,10 @@ $adminRoutes = function () {
             Route::delete('settings/shipping-method/{shippingMethod}', [App\Http\Controllers\Admin\SettingController::class, 'deleteShippingMethod'])->name('settings.delete-shipping-method');
             Route::post('settings/test-email', [App\Http\Controllers\Admin\SettingController::class, 'testEmail'])->name('settings.test-email');
             Route::post('settings/clear-cache', [App\Http\Controllers\Admin\SettingController::class, 'clearCache'])->name('settings.clear-cache');
+            
+            // Email preview routes
+            Route::get('emails/preview', [App\Http\Controllers\Admin\EmailPreviewController::class, 'index'])->name('emails.preview');
+            Route::get('emails/preview/{type}', [App\Http\Controllers\Admin\EmailPreviewController::class, 'preview'])->name('emails.preview.type');
         });
         
         

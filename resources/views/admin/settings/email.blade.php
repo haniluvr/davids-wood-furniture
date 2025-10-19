@@ -318,6 +318,73 @@
             </div>
         </div>
 
+        <!-- Email Template Previews -->
+        <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
+            <h4 class="text-lg font-semibold text-black dark:text-white mb-6">Email Template Previews</h4>
+            
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <a href="{{ route('admin.emails.preview', 'order-created') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900">
+                        <i data-lucide="shopping-cart" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <div>
+                        <h5 class="font-medium text-black dark:text-white">Order Confirmation</h5>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Preview order confirmation email</p>
+                    </div>
+                </a>
+
+                <a href="{{ route('admin.emails.preview', 'order-status-changed') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
+                        <i data-lucide="truck" class="h-5 w-5 text-green-600 dark:text-green-400"></i>
+                    </div>
+                    <div>
+                        <h5 class="font-medium text-black dark:text-white">Status Update</h5>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Preview order status email</p>
+                    </div>
+                </a>
+
+                <a href="{{ route('admin.emails.preview', 'welcome') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900">
+                        <i data-lucide="user-plus" class="h-5 w-5 text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                    <div>
+                        <h5 class="font-medium text-black dark:text-white">Welcome Email</h5>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Preview welcome email</p>
+                    </div>
+                </a>
+
+                <a href="{{ route('admin.emails.preview', 'newsletter') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900">
+                        <i data-lucide="mail" class="h-5 w-5 text-orange-600 dark:text-orange-400"></i>
+                    </div>
+                    <div>
+                        <h5 class="font-medium text-black dark:text-white">Newsletter</h5>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Preview newsletter email</p>
+                    </div>
+                </a>
+
+                <a href="{{ route('admin.emails.preview', 'abandoned-cart') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900">
+                        <i data-lucide="shopping-bag" class="h-5 w-5 text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div>
+                        <h5 class="font-medium text-black dark:text-white">Abandoned Cart</h5>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Preview cart reminder email</p>
+                    </div>
+                </a>
+
+                <a href="{{ route('admin.emails.preview') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-900">
+                        <i data-lucide="eye" class="h-5 w-5 text-gray-600 dark:text-gray-400"></i>
+                    </div>
+                    <div>
+                        <h5 class="font-medium text-black dark:text-white">All Templates</h5>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">View all email templates</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
         <!-- Test Email -->
         <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
             <h4 class="text-lg font-semibold text-black dark:text-white mb-6">Test Email Configuration</h4>

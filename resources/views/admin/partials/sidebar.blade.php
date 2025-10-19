@@ -2,7 +2,7 @@
 <aside
     :class="[
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
-        sidebarCollapsed ? 'lg:w-16' : 'lg:w-72'
+        sidebarCollapsed ? 'lg:w-23' : 'lg:w-72'
     ]"
     class="absolute left-0 top-0 z-9999 flex h-screen flex-col overflow-y-hidden bg-white dark:bg-boxdark border-r border-stroke dark:border-strokedark duration-300 ease-linear lg:static lg:translate-x-0"
     @click.outside="sidebarOpen = false"
@@ -44,7 +44,7 @@
         <a href="{{ route('admin.dashboard') }}" :class="sidebarCollapsed ? 'justify-center' : ''">
             <div class="flex items-center gap-3">
                 <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg">
-                    <span class="text-white font-bold text-lg">DW</span>
+                    <img src="{{ asset('admin/images/logo/favicon.png') }}" alt="Logo" class="h-8">
                 </div>
                 <div x-show="!sidebarCollapsed" x-transition>
                     <h1 class="text-gray-900 dark:text-white text-xl font-bold">David's Wood</h1>
