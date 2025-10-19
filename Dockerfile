@@ -61,5 +61,5 @@ RUN chown -R www-data:www-data /var/www/html && \
 # Expose port (Railway will set the PORT environment variable)
 EXPOSE 80
 
-# Start PHP built-in server
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+# Start PHP built-in server with debugging
+CMD echo "Starting PHP server on port $PORT" && php artisan serve --host=0.0.0.0 --port=$PORT --verbose

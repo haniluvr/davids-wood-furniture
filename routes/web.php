@@ -434,13 +434,21 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
 // Public review routes
 Route::get('/api/reviews/{productId}', [App\Http\Controllers\ProductReviewController::class, 'index'])->name('reviews.index');
 
-// Health check endpoint for Railway
+// Health check endpoint for Railway - simple version that doesn't depend on Laravel
 Route::get('/health', function () {
-    return response()->json([
-        'status' => 'ok',
-        'timestamp' => now(),
-        'service' => 'davids-wood-furniture'
-    ]);
+    try {
+        return response()->json([
+            'status' => 'ok',
+            'timestamp' => date('Y-m-d H:i:s'),
+            'service' => 'davids-wood-furniture',
+            'php_version' => PHP_VERSION
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
 });
 
 // Public API routes
