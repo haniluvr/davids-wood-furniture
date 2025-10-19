@@ -39,7 +39,6 @@ README.md
 *.md
 
 # Docker files
-Dockerfile
 .docker/
 .dockerignore
 
@@ -47,3 +46,9 @@ Dockerfile
 railway.json
 nixpacks.toml
 .railwayignore
+
+# Large files that might cause context issues
+*.sqlite
+*.sqlite3
+database/database.sqlite
+database/database_backup_*.sqlite
