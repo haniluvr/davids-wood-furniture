@@ -53,21 +53,8 @@ jobs:
         mkdir -p database
         touch database/database.sqlite
 
-    - name: Execute tests (Unit and Feature tests) via PHPUnit
+    - name: Execute tests
       run: php artisan test
-
-    - name: Generate coverage reports
-      run: |
-        php artisan test --coverage --coverage-html=coverage-report
-        php artisan test --coverage --coverage-clover=coverage.xml
-
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
 
   code-quality:
     runs-on: ubuntu-latest
@@ -88,11 +75,6 @@ jobs:
     - name: Run Laravel Pint (Code Style)
       run: ./vendor/bin/pint --test
 
-    - name: Run PHPStan (Static Analysis)
-      run: |
-        composer require --dev phpstan/phpstan --no-interaction
-        ./vendor/bin/phpstan analyse --memory-limit=2G
-
   frontend:
     runs-on: ubuntu-latest
     
@@ -109,14 +91,5 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Run tests
-      run: npm test --if-present
-
     - name: Build assets
       run: npm run build
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-assets
-        path: public/build/

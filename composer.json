@@ -60,11 +60,6 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
-        ],
-        "build": [
-            "@php artisan config:cache",
-            "@php artisan route:cache",
-            "@php artisan view:cache"
         ]
     },
     "extra": {
