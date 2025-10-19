@@ -49,8 +49,9 @@ RUN npm install --legacy-peer-deps --verbose
 # Build frontend assets
 RUN npm run build
 
-# Laravel optimizations (skip route cache to avoid conflicts)
-RUN php artisan config:cache && \
+# Generate APP_KEY if not set and run Laravel optimizations
+RUN php artisan key:generate --force && \
+    php artisan config:cache && \
     php artisan view:cache
 
 # Set permissions
@@ -61,5 +62,9 @@ RUN chown -R www-data:www-data /var/www/html && \
 # Expose port (Railway will set the PORT environment variable)
 EXPOSE 80
 
-# Start PHP built-in server with debugging
-CMD echo "Starting PHP server on port $PORT" && php artisan serve --host=0.0.0.0 --port=$PORT --verbose
+# Copy and make startup script executable
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Start the application using the startup script
+CMD ["/start.sh"]
