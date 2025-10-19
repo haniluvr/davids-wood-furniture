@@ -48,11 +48,11 @@ LOG_CHANNEL=stack
 LOG_LEVEL=debug
 
 DB_CONNECTION=mysql
-DB_HOST=\${DB_HOST}
-DB_PORT=\${DB_PORT}
-DB_DATABASE=\${DB_DATABASE}
-DB_USERNAME=\${DB_USERNAME}
-DB_PASSWORD=\${DB_PASSWORD}
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_DATABASE=$DB_DATABASE
+DB_USERNAME=$DB_USERNAME
+DB_PASSWORD=$DB_PASSWORD
 
 BROADCAST_DRIVER=log
 CACHE_DRIVER=file
@@ -112,6 +112,14 @@ fi
 echo "Testing Laravel configuration..."
 php artisan config:show app.name
 php artisan config:show app.key
+
+# Debug environment variables
+echo "--- Environment variables before starting PHP server ---"
+echo "PORT: $PORT"
+echo "APP_ENV: $APP_ENV"
+echo "DB_HOST: $DB_HOST"
+echo "DB_DATABASE: $DB_DATABASE"
+echo "--- End environment variables ---"
 
 # Start the application
 echo "Starting PHP server on port $PORT..."
