@@ -84,15 +84,21 @@ EOF
 echo "Generating APP_KEY..."
 php artisan key:generate --force
 
-# Verify APP_KEY was generated
+# Verify APP_KEY was generated and reload it
 echo "Verifying APP_KEY..."
 if grep -q "APP_KEY=" .env && ! grep -q "APP_KEY=$" .env; then
     echo "APP_KEY generated successfully"
+    # Extract the APP_KEY from .env and export it
+    APP_KEY_VALUE=$(grep "APP_KEY=" .env | cut -d'=' -f2)
+    export APP_KEY="$APP_KEY_VALUE"
+    echo "Exported APP_KEY: $APP_KEY"
 else
     echo "APP_KEY generation failed, creating manually..."
     # Generate a 32-character random key manually
-    APP_KEY_VALUE=$(openssl rand -base64 32)
-    sed -i "s/APP_KEY=/APP_KEY=base64:$APP_KEY_VALUE/" .env
+    APP_KEY_VALUE="base64:$(openssl rand -base64 32)"
+    sed -i "s/APP_KEY=/APP_KEY=$APP_KEY_VALUE/" .env
+    export APP_KEY="$APP_KEY_VALUE"
+    echo "Manually created APP_KEY: $APP_KEY"
 fi
 
 # Create necessary directories
@@ -135,6 +141,17 @@ fi
 echo "Testing Laravel configuration..."
 php artisan config:show app.name
 php artisan config:show app.key
+
+# Final APP_KEY verification
+echo "Final APP_KEY verification..."
+if [ -n "$APP_KEY" ] && [ "$APP_KEY" != "" ]; then
+    echo "APP_KEY is properly set: $APP_KEY"
+else
+    echo "ERROR: APP_KEY is still not set!"
+    echo "Contents of .env APP_KEY line:"
+    grep "APP_KEY=" .env
+    exit 1
+fi
 
 # Debug environment variables
 echo "--- Environment variables before starting PHP server ---"
