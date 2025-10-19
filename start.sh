@@ -101,6 +101,10 @@ else
     echo "Manually created APP_KEY: $APP_KEY"
 fi
 
+# Clear Laravel config cache to ensure APP_KEY is loaded
+echo "Clearing Laravel config cache..."
+php artisan config:clear
+
 # Create necessary directories
 echo "Creating directories..."
 mkdir -p storage/logs
