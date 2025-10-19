@@ -3,7 +3,8 @@ nixPkgs = ["php82", "nodejs-18_x"]
 
 [phases.install]
 cmds = [
-  "composer install --no-dev --optimize-autoloader --no-interaction",
+  "curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer",
+  "composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist",
   "npm ci",
   "npm run build"
 ]
