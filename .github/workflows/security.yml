@@ -1,0 +1,43 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.2
+
+    - name: Install Dependencies
+      run: composer install --no-interaction
+
+    - name: Run Security Checker
+      run: |
+        composer require --dev enlightn/security-checker
+        ./vendor/bin/security-checker security:check composer.lock
+
+    - name: Run PHP CS Fixer Security Rules
+      run: |
+        composer require --dev friendsofphp/php-cs-fixer
+        ./vendor/bin/php-cs-fixer fix --dry-run --diff --rules=@Security
+
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/init@v3
+      with:
+        languages: php
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3

@@ -1,0 +1,87 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+
+env:
+  APP_ENV: production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.2
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, redis
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install PHP dependencies
+      run: composer install --no-dev --optimize-autoloader --no-interaction
+
+    - name: Install Node dependencies
+      run: npm ci
+
+    - name: Build assets
+      run: npm run build
+
+    - name: Create deployment package
+      run: |
+        tar -czf deployment.tar.gz \
+          --exclude='.git' \
+          --exclude='.github' \
+          --exclude='node_modules' \
+          --exclude='tests' \
+          --exclude='.env.example' \
+          --exclude='README.md' \
+          .
+
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd /var/www/html/davids-wood-furniture
+          git pull origin main
+          composer install --no-dev --optimize-autoloader
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          php artisan migrate --force
+          php artisan queue:restart
+          sudo systemctl reload php8.2-fpm
+          sudo systemctl reload nginx
+
+    # Alternative: Deploy to cloud platforms
+    - name: Deploy to Heroku
+      if: false  # Set to true if using Heroku
+      uses: akhileshns/heroku-deploy@v3.12.14
+      with:
+        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+        heroku_app_name: "davids-wood-furniture"
+        heroku_email: ${{ secrets.HEROKU_EMAIL }}
+
+    - name: Deploy to DigitalOcean App Platform
+      if: false  # Set to true if using DigitalOcean
+      uses: digitalocean/app_action@v1.0.0
+      with:
+        app_id: ${{ secrets.DIGITALOCEAN_APP_ID }}
+        token: ${{ secrets.DIGITALOCEAN_TOKEN }}
