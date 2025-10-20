@@ -103,10 +103,15 @@ jobs:
     - name: Prepare SSH key
       shell: bash
       run: |
+        # Write the SSH key with proper formatting
         echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
         chmod 600 key.pem
-        # Ensure proper line endings for SSH key
+        # Ensure proper line endings and format
         sed -i 's/\r$//' key.pem
+        # Verify the key format
+        head -1 key.pem | grep -q "BEGIN" || (echo "Invalid key format" && exit 1)
+        # Test SSH connection
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
     - uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -148,8 +153,8 @@ jobs:
         done
         docker image prune -f
         EOF
-        scp -o StrictHostKeyChecking=no -i key.pem deploy-docker.sh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
-        ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod +x /tmp/deploy-docker.sh && /tmp/deploy-docker.sh"
+        scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem deploy-docker.sh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod +x /tmp/deploy-docker.sh && /tmp/deploy-docker.sh"
     - name: Post-deploy health check
       run: |
         sleep 20
