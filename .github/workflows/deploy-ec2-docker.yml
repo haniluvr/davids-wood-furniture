@@ -43,6 +43,11 @@ jobs:
     - run: php artisan key:generate
     - run: chmod -R 777 storage bootstrap/cache
     - run: mkdir -p database && touch database/database.sqlite
+    - name: Remove duplicate sessions migration (CI only)
+      run: |
+        if [ -f database/migrations/2025_01_27_190400_create_sessions_table.php ]; then
+          rm database/migrations/2025_01_27_190400_create_sessions_table.php
+        fi
     - name: Run migrations (sqlite)
       env:
         DB_CONNECTION: sqlite
