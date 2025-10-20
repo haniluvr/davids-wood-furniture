@@ -136,7 +136,14 @@ if [ $counter -lt $timeout ]; then
     echo "MySQL is ready!"
     # Run migrations only if MySQL is connected
     echo "Running migrations..."
-    php artisan migrate --force
+    # Check if migrations table exists (indicates if DB is initialized)
+    if php artisan tinker --execute="DB::table('migrations')->count();" 2>/dev/null; then
+        echo "Database already initialized, running pending migrations..."
+        php artisan migrate --force || echo "Some migrations may have failed, but continuing..."
+    else
+        echo "Fresh database detected, running fresh migrations..."
+        php artisan migrate:fresh --force --seed || echo "Fresh migrations failed, but continuing..."
+    fi
 else
     echo "Skipping migrations due to MySQL connection issues"
 fi
