@@ -75,7 +75,7 @@ jobs:
   build-and-push:
     needs: [test, code-quality]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
     steps:
     - uses: actions/checkout@v4
     - uses: aws-actions/configure-aws-credentials@v4
@@ -97,7 +97,7 @@ jobs:
   deploy:
     needs: [build-and-push]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: ${{ always() && (github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     environment: ${{ github.event.inputs.environment || 'production' }}
     steps:
     - name: Prepare SSH key
