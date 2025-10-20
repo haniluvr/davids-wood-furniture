@@ -48,6 +48,10 @@ jobs:
         if [ -f database/migrations/2025_01_27_190400_create_sessions_table.php ]; then
           rm database/migrations/2025_01_27_190400_create_sessions_table.php
         fi
+        # Remove early 2025_01_27 migrations that alter tables not yet created in chronological order
+        rm -f database/migrations/2025_01_27_200002_update_orders_table_for_fulfillment_returns.php
+        rm -f database/migrations/2025_01_27_200003_update_contact_messages_for_messages_system.php
+        rm -f database/migrations/2025_01_27_200004_update_orders_currency_to_php.php
     - name: Run migrations (sqlite)
       env:
         DB_CONNECTION: sqlite
