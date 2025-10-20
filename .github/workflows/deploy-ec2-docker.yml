@@ -84,6 +84,11 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: ${{ github.event.inputs.environment || 'production' }}
     steps:
+    - name: Prepare SSH key
+      shell: bash
+      run: |
+        echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+        chmod 600 key.pem
     - uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -99,14 +104,18 @@ jobs:
         IMAGE_TAG="${{ env.IMAGE_TAG }}"
         CONTAINER_NAME="davids-wood-furniture"
         APP_PORT=80
+        # Note: Ensure the EC2 instance has an instance role with ECR read permissions (AmazonEC2ContainerRegistryReadOnly),
+        # or AWS credentials configured for aws ecr login to work.
         aws ecr get-login-password --region ${{ env.AWS_REGION }} \
           | docker login --username AWS --password-stdin $ECR_REGISTRY
         if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then docker stop $CONTAINER_NAME; fi
         if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then docker rm $CONTAINER_NAME; fi
         docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker run -d --name $CONTAINER_NAME --restart unless-stopped -p $APP_PORT:80 \
+          --add-host=host.docker.internal:host-gateway \
+          -e PORT=80 \
           -e APP_ENV=production -e APP_DEBUG=false \
-          -e DB_CONNECTION=mysql -e DB_HOST=localhost -e DB_PORT=3306 \
+          -e DB_CONNECTION=mysql -e DB_HOST=host.docker.internal -e DB_PORT=3306 \
           -e DB_DATABASE=davidswood_furniture -e DB_USERNAME=davidswood_user \
           -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
           -e REDIS_HOST=localhost -e REDIS_PORT=6379 \
@@ -121,8 +130,8 @@ jobs:
         done
         docker image prune -f
         EOF
-        scp -o StrictHostKeyChecking=no -i ${{ secrets.EC2_SSH_KEY }} deploy-docker.sh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
-        ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_SSH_KEY }} ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod +x /tmp/deploy-docker.sh && /tmp/deploy-docker.sh"
+        scp -o StrictHostKeyChecking=no -i key.pem deploy-docker.sh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
+        ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod +x /tmp/deploy-docker.sh && /tmp/deploy-docker.sh"
     - name: Post-deploy health check
       run: |
         sleep 20
