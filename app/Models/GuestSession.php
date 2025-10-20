@@ -2,21 +2,21 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class GuestSession extends Model
 {
     protected $table = 'guest_sessions';
-    
+
     protected $primaryKey = 'session_id';
-    
+
     public $incrementing = false;
-    
+
     protected $keyType = 'string';
-    
+
     public $timestamps = false; // Disable timestamps since we only have created_at
 
     protected $fillable = [
@@ -52,7 +52,7 @@ class GuestSession extends Model
     public static function createSession(): self
     {
         $sessionId = Str::uuid()->toString();
-        
+
         return self::create([
             'session_id' => $sessionId,
             'expires_at' => Carbon::now()->addDays(30), // 30 days expiration
@@ -65,8 +65,8 @@ class GuestSession extends Model
     public static function findOrCreateSession(string $sessionId): self
     {
         $session = self::find($sessionId);
-        
-        if (!$session) {
+
+        if (! $session) {
             try {
                 $session = self::create([
                     'session_id' => $sessionId,
@@ -74,22 +74,22 @@ class GuestSession extends Model
                 ]);
                 \Log::info('Guest session created successfully', [
                     'session_id' => $sessionId,
-                    'created_at' => $session->created_at
+                    'created_at' => $session->created_at,
                 ]);
             } catch (\Exception $e) {
                 \Log::error('Failed to create guest session', [
                     'session_id' => $sessionId,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
                 throw $e;
             }
         } else {
             \Log::info('Guest session found', [
                 'session_id' => $sessionId,
-                'created_at' => $session->created_at
+                'created_at' => $session->created_at,
             ]);
         }
-        
+
         return $session;
     }
 

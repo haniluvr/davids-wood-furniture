@@ -2,21 +2,22 @@
 
 namespace App\Mail;
 
+use App\Models\CartItem;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\User;
-use App\Models\CartItem;
 
 class AbandonedCartMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $user;
+
     public $cartItems;
+
     public $cartTotal;
 
     /**
@@ -79,7 +80,3 @@ class AbandonedCartMail extends Mailable
         });
     }
 }
-
-
-
-

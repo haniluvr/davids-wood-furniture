@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
 use App\Models\PaymentGateway;
+use App\Models\Setting;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
@@ -20,7 +19,7 @@ class SettingController extends Controller
         $settings = Setting::all()->pluck('value', 'key');
         $paymentGateways = PaymentGateway::ordered()->get();
         $shippingMethods = ShippingMethod::ordered()->get();
-        
+
         return view('admin.settings.index', compact('settings', 'paymentGateways', 'shippingMethods'));
     }
 
@@ -203,12 +202,12 @@ class SettingController extends Controller
             // Send test email
             \Mail::raw('This is a test email from your admin panel.', function ($message) use ($request) {
                 $message->to($request->test_email)
-                        ->subject('Test Email from Admin Panel');
+                    ->subject('Test Email from Admin Panel');
             });
 
-            return back()->with('success', 'Test email sent successfully to ' . $request->test_email);
+            return back()->with('success', 'Test email sent successfully to '.$request->test_email);
         } catch (\Exception $e) {
-            return back()->withErrors(['email' => 'Failed to send test email: ' . $e->getMessage()]);
+            return back()->withErrors(['email' => 'Failed to send test email: '.$e->getMessage()]);
         }
     }
 

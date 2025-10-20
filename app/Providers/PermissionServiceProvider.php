@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Gate;
 use App\Models\AdminPermission;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
 
 class PermissionServiceProvider extends ServiceProvider
 {
@@ -23,7 +23,7 @@ class PermissionServiceProvider extends ServiceProvider
     {
         // Register permission gates
         Gate::define('admin-permission', function ($user, $permission) {
-            if (!$user || !$user->role) {
+            if (! $user || ! $user->role) {
                 return false;
             }
 
@@ -37,10 +37,10 @@ class PermissionServiceProvider extends ServiceProvider
 
         // Define specific permission gates
         $permissions = AdminPermission::getAllPermissions();
-        
+
         foreach ($permissions as $permission) {
             Gate::define($permission, function ($user) use ($permission) {
-                if (!$user || !$user->role) {
+                if (! $user || ! $user->role) {
                     return false;
                 }
 

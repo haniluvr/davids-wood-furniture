@@ -66,12 +66,13 @@ class InventoryMovement extends Model
     public function getFormattedQuantityAttribute()
     {
         $sign = $this->type === 'out' ? '-' : '+';
-        return $sign . abs($this->quantity);
+
+        return $sign.abs($this->quantity);
     }
 
     public function getTypeColorAttribute()
     {
-        return match($this->type) {
+        return match ($this->type) {
             'in' => 'text-green-600',
             'out' => 'text-red-600',
             'adjustment' => 'text-blue-600',
@@ -81,7 +82,7 @@ class InventoryMovement extends Model
 
     public function getTypeBadgeColorAttribute()
     {
-        return match($this->type) {
+        return match ($this->type) {
             'in' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
             'out' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
             'adjustment' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',

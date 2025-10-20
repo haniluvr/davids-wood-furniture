@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class AuditLog extends Model
 {
@@ -61,7 +60,7 @@ class AuditLog extends Model
     }
 
     // Static methods for logging
-    public static function log(string $action, $user, $model = null, array $oldValues = [], array $newValues = [], string $description = null): self
+    public static function log(string $action, $user, $model = null, array $oldValues = [], array $newValues = [], ?string $description = null): self
     {
         return self::create([
             'user_type' => $user instanceof Admin ? 'admin' : 'user',
@@ -113,15 +112,15 @@ class AuditLog extends Model
         if ($this->user_type === 'admin' && $this->user) {
             return $this->user->full_name;
         } elseif ($this->user_type === 'user' && $this->user) {
-            return $this->user->first_name . ' ' . $this->user->last_name;
+            return $this->user->first_name.' '.$this->user->last_name;
         }
-        
+
         return 'Unknown User';
     }
 
     public function getActionColorAttribute(): string
     {
-        return match($this->action) {
+        return match ($this->action) {
             'create' => 'text-green-600',
             'update' => 'text-blue-600',
             'delete' => 'text-red-600',

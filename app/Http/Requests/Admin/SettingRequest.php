@@ -30,7 +30,7 @@ class SettingRequest extends FormRequest
                 'time_format' => 'required|string|max:10',
                 'items_per_page' => 'required|integer|min:1|max:100',
                 'maintenance_mode' => 'boolean',
-                'maintenance_message' => 'nullable|string|max:1000'
+                'maintenance_message' => 'nullable|string|max:1000',
             ]);
         }
 
@@ -46,7 +46,7 @@ class SettingRequest extends FormRequest
                 'mail_from_address' => 'required|email|max:255',
                 'mail_from_name' => 'required|string|max:255',
                 'mail_reply_to' => 'nullable|email|max:255',
-                'mail_test_email' => 'nullable|email|max:255'
+                'mail_test_email' => 'nullable|email|max:255',
             ]);
         }
 
@@ -60,7 +60,7 @@ class SettingRequest extends FormRequest
                 'payment_gateway_secret_key' => 'nullable|string|max:500',
                 'payment_gateway_webhook_secret' => 'nullable|string|max:500',
                 'auto_capture_payments' => 'boolean',
-                'payment_timeout' => 'required|integer|min:1|max:1440'
+                'payment_timeout' => 'required|integer|min:1|max:1440',
             ]);
         }
 
@@ -76,7 +76,7 @@ class SettingRequest extends FormRequest
                 'shipping_origin_city' => 'required|string|max:255',
                 'shipping_origin_postal_code' => 'required|string|max:20',
                 'shipping_processing_time' => 'required|integer|min:0|max:30',
-                'shipping_delivery_time' => 'required|integer|min:0|max:30'
+                'shipping_delivery_time' => 'required|integer|min:0|max:30',
             ]);
         }
 
@@ -92,7 +92,7 @@ class SettingRequest extends FormRequest
                 'low_stock_notification_enabled' => 'boolean',
                 'new_order_notification_enabled' => 'boolean',
                 'new_review_notification_enabled' => 'boolean',
-                'new_user_notification_enabled' => 'boolean'
+                'new_user_notification_enabled' => 'boolean',
             ]);
         }
 
@@ -199,7 +199,7 @@ class SettingRequest extends FormRequest
             'low_stock_threshold.required' => 'Low stock threshold is required.',
             'low_stock_threshold.integer' => 'Low stock threshold must be a whole number.',
             'low_stock_threshold.min' => 'Low stock threshold cannot be negative.',
-            'low_stock_threshold.max' => 'Low stock threshold cannot exceed 1000.'
+            'low_stock_threshold.max' => 'Low stock threshold cannot exceed 1000.',
         ];
     }
 
@@ -256,7 +256,7 @@ class SettingRequest extends FormRequest
             'low_stock_notification_enabled' => 'low stock notification enabled',
             'new_order_notification_enabled' => 'new order notification enabled',
             'new_review_notification_enabled' => 'new review notification enabled',
-            'new_user_notification_enabled' => 'new user notification enabled'
+            'new_user_notification_enabled' => 'new user notification enabled',
         ];
     }
 }

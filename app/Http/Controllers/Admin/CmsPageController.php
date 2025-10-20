@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CmsPage;
 use App\Models\AuditLog;
+use App\Models\CmsPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -21,8 +21,8 @@ class CmsPageController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('slug', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%");
             });
         }
 
@@ -69,16 +69,16 @@ class CmsPageController extends Controller
         }
 
         $data = $request->all();
-        
+
         // Generate slug if not provided
         if (empty($data['slug'])) {
             $data['slug'] = Str::slug($data['title']);
-            
+
             // Ensure slug is unique
             $originalSlug = $data['slug'];
             $counter = 1;
             while (CmsPage::where('slug', $data['slug'])->exists()) {
-                $data['slug'] = $originalSlug . '-' . $counter;
+                $data['slug'] = $originalSlug.'-'.$counter;
                 $counter++;
             }
         }
@@ -120,7 +120,7 @@ class CmsPageController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:cms_pages,slug,' . $cmsPage->id,
+            'slug' => 'nullable|string|max:255|unique:cms_pages,slug,'.$cmsPage->id,
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
             'meta_title' => 'nullable|string|max:255',
@@ -140,22 +140,22 @@ class CmsPageController extends Controller
 
         $oldValues = $cmsPage->toArray();
         $data = $request->all();
-        
+
         // Generate slug if not provided
         if (empty($data['slug'])) {
             $data['slug'] = Str::slug($data['title']);
-            
+
             // Ensure slug is unique (excluding current page)
             $originalSlug = $data['slug'];
             $counter = 1;
             while (CmsPage::where('slug', $data['slug'])->where('id', '!=', $cmsPage->id)->exists()) {
-                $data['slug'] = $originalSlug . '-' . $counter;
+                $data['slug'] = $originalSlug.'-'.$counter;
                 $counter++;
             }
         }
 
         // Set published_at if not provided and page is being activated
-        if (empty($data['published_at']) && $data['is_active'] && !$cmsPage->is_active) {
+        if (empty($data['published_at']) && $data['is_active'] && ! $cmsPage->is_active) {
             $data['published_at'] = now();
         }
 
@@ -180,7 +180,7 @@ class CmsPageController extends Controller
     public function destroy(CmsPage $cmsPage)
     {
         $oldValues = $cmsPage->toArray();
-        
+
         // Log the action
         AuditLog::create([
             'admin_id' => Auth::id(),
@@ -202,15 +202,15 @@ class CmsPageController extends Controller
     public function toggleStatus(CmsPage $cmsPage)
     {
         $oldStatus = $cmsPage->is_active;
-        $newStatus = !$cmsPage->is_active;
-        
+        $newStatus = ! $cmsPage->is_active;
+
         $updateData = ['is_active' => $newStatus];
-        
+
         // Set published_at if activating for the first time
-        if ($newStatus && !$cmsPage->published_at) {
+        if ($newStatus && ! $cmsPage->published_at) {
             $updateData['published_at'] = now();
         }
-        
+
         $cmsPage->update($updateData);
 
         // Log the action
@@ -228,15 +228,15 @@ class CmsPageController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'CMS page status updated successfully.',
-            'is_active' => $cmsPage->is_active
+            'is_active' => $cmsPage->is_active,
         ]);
     }
 
     public function duplicate(CmsPage $cmsPage)
     {
         $newCmsPage = $cmsPage->replicate();
-        $newCmsPage->title = $cmsPage->title . ' (Copy)';
-        $newCmsPage->slug = $cmsPage->slug . '-copy-' . time();
+        $newCmsPage->title = $cmsPage->title.' (Copy)';
+        $newCmsPage->slug = $cmsPage->slug.'-copy-'.time();
         $newCmsPage->is_active = false;
         $newCmsPage->published_at = null;
         $newCmsPage->save();
@@ -270,12 +270,12 @@ class CmsPageController extends Controller
         }
 
         $slug = Str::slug($title);
-        
+
         // Ensure slug is unique
         $originalSlug = $slug;
         $counter = 1;
         while (CmsPage::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $counter;
+            $slug = $originalSlug.'-'.$counter;
             $counter++;
         }
 

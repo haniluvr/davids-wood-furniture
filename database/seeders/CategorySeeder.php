@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Category;
+use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
@@ -24,7 +23,7 @@ class CategorySeeder extends Seeder
             ],
             [
                 'name' => 'Cabinets',
-                'slug' => 'cabinets', 
+                'slug' => 'cabinets',
                 'description' => 'Storage solutions including dressers, wardrobes, and storage cabinets.',
                 'is_active' => true,
                 'sort_order' => 2,
@@ -119,7 +118,7 @@ class CategorySeeder extends Seeder
         // Create subcategories
         foreach ($subCategories as $mainCategoryIndex => $subCats) {
             $mainCategory = $mainCategoryObjects[$mainCategoryIndex - 1];
-            
+
             foreach ($subCats as $index => $subCat) {
                 Category::create([
                     'name' => $subCat['name'],

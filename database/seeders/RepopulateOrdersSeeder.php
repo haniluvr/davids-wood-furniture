@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class RepopulateOrdersSeeder extends Seeder
@@ -18,8 +18,9 @@ class RepopulateOrdersSeeder extends Seeder
     {
         // Get user_id 1
         $user = User::find(76);
-        if (!$user) {
+        if (! $user) {
             $this->command->error('User with ID 1 not found!');
+
             return;
         }
 
@@ -27,10 +28,11 @@ class RepopulateOrdersSeeder extends Seeder
         $products = Product::take(5)->get();
         if ($products->isEmpty()) {
             $this->command->error('No products found! Please seed products first.');
+
             return;
         }
 
-        $this->command->info('Creating 9 orders for user: ' . $user->email);
+        $this->command->info('Creating 9 orders for user: '.$user->email);
 
         // Create orders with different statuses following the priority logic
         $orders = [
@@ -39,13 +41,13 @@ class RepopulateOrdersSeeder extends Seeder
                 'status' => 'pending',
                 'created_at' => now()->subHours(2),
                 'products' => [$products[0], $products[1]],
-                'quantities' => [1, 2]
+                'quantities' => [1, 2],
             ],
             [
                 'status' => 'pending',
                 'created_at' => now()->subHours(4),
                 'products' => [$products[2]],
-                'quantities' => [1]
+                'quantities' => [1],
             ],
 
             // Processing orders
@@ -53,13 +55,13 @@ class RepopulateOrdersSeeder extends Seeder
                 'status' => 'processing',
                 'created_at' => now()->subDays(1),
                 'products' => [$products[0], $products[3]],
-                'quantities' => [2, 1]
+                'quantities' => [2, 1],
             ],
             [
                 'status' => 'processing',
                 'created_at' => now()->subDays(2),
                 'products' => [$products[1], $products[2], $products[4]],
-                'quantities' => [1, 1, 1]
+                'quantities' => [1, 1, 1],
             ],
 
             // Cancelled orders (can appear anywhere)
@@ -67,7 +69,7 @@ class RepopulateOrdersSeeder extends Seeder
                 'status' => 'cancelled',
                 'created_at' => now()->subDays(3),
                 'products' => [$products[0]],
-                'quantities' => [1]
+                'quantities' => [1],
             ],
 
             // Shipped orders
@@ -75,13 +77,13 @@ class RepopulateOrdersSeeder extends Seeder
                 'status' => 'shipped',
                 'created_at' => now()->subDays(5),
                 'products' => [$products[1], $products[3]],
-                'quantities' => [1, 2]
+                'quantities' => [1, 2],
             ],
             [
                 'status' => 'shipped',
                 'created_at' => now()->subDays(7),
                 'products' => [$products[2]],
-                'quantities' => [3]
+                'quantities' => [3],
             ],
 
             // Delivered orders
@@ -89,13 +91,13 @@ class RepopulateOrdersSeeder extends Seeder
                 'status' => 'delivered',
                 'created_at' => now()->subDays(10),
                 'products' => [$products[0], $products[4]],
-                'quantities' => [1, 1]
+                'quantities' => [1, 1],
             ],
             [
                 'status' => 'delivered',
                 'created_at' => now()->subDays(15),
                 'products' => [$products[1], $products[2], $products[3]],
-                'quantities' => [2, 1, 1]
+                'quantities' => [2, 1, 1],
             ],
         ];
 
@@ -105,13 +107,13 @@ class RepopulateOrdersSeeder extends Seeder
                 // Calculate totals
                 $subtotal = 0;
                 $orderItems = [];
-                
+
                 foreach ($orderData['products'] as $index => $product) {
                     $quantity = $orderData['quantities'][$index];
                     $unitPrice = $product->price;
                     $totalPrice = $unitPrice * $quantity;
                     $subtotal += $totalPrice;
-                    
+
                     $orderItems[] = [
                         'product_id' => $product->id,
                         'product_name' => $product->name,
@@ -183,10 +185,10 @@ class RepopulateOrdersSeeder extends Seeder
 
             DB::commit();
             $this->command->info('Successfully created 9 orders for user_id 1!');
-            
+
         } catch (\Exception $e) {
             DB::rollback();
-            $this->command->error('Failed to create orders: ' . $e->getMessage());
+            $this->command->error('Failed to create orders: '.$e->getMessage());
         }
     }
 }

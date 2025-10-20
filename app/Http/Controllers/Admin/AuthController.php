@@ -17,7 +17,7 @@ class AuthController extends Controller
         if (Auth::guard('admin')->check()) {
             return redirect()->route('admin.dashboard');
         }
-        
+
         return view('admin.auth.login');
     }
 
@@ -33,20 +33,20 @@ class AuthController extends Controller
 
         // Check if admin exists and is active
         $admin = Admin::where('email', $credentials['email'])->first();
-        
-        if (!$admin) {
+
+        if (! $admin) {
             throw ValidationException::withMessages([
                 'email' => ['These credentials do not match our records.'],
             ]);
         }
 
-        if (!$admin->isActive()) {
+        if (! $admin->isActive()) {
             throw ValidationException::withMessages([
                 'email' => ['Your account has been suspended. Please contact the administrator.'],
             ]);
         }
 
-        if (!Hash::check($credentials['password'], $admin->password)) {
+        if (! Hash::check($credentials['password'], $admin->password)) {
             throw ValidationException::withMessages([
                 'email' => ['These credentials do not match our records.'],
             ]);
@@ -54,23 +54,23 @@ class AuthController extends Controller
 
         // Login the admin
         Auth::guard('admin')->login($admin, $remember);
-        
+
         // Update last login info
         $admin->updateLastLogin();
-        
+
         // Log the login
         AuditLog::logLogin($admin);
 
         $request->session()->regenerate();
 
         return redirect()->intended(route('admin.dashboard'))
-            ->with('success', 'Welcome back, ' . $admin->first_name . '!');
+            ->with('success', 'Welcome back, '.$admin->first_name.'!');
     }
 
     public function logout(Request $request)
     {
         $admin = Auth::guard('admin')->user();
-        
+
         if ($admin) {
             // Log the logout
             AuditLog::logLogout($admin);
@@ -98,7 +98,7 @@ class AuthController extends Controller
 
         // Here you would implement password reset functionality
         // For now, we'll just return a success message
-        
+
         return back()->with('success', 'Password reset link has been sent to your email.');
     }
 }

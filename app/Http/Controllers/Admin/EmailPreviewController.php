@@ -3,14 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\NewsletterMail;
-use App\Mail\WelcomeMail;
-use App\Mail\AbandonedCartMail;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\ProductReview;
 use App\Models\User;
-use Illuminate\Http\Request;
 
 class EmailPreviewController extends Controller
 {
@@ -41,30 +36,30 @@ class EmailPreviewController extends Controller
             switch ($type) {
                 case 'order-created':
                     return $this->previewOrderCreated();
-                
+
                 case 'order-status-changed':
                     return $this->previewOrderStatusChanged();
-                
+
                 case 'low-stock':
                     return $this->previewLowStock();
-                
+
                 case 'new-review':
                     return $this->previewNewReview();
-                
+
                 case 'newsletter':
                     return $this->previewNewsletter();
-                
+
                 case 'welcome':
                     return $this->previewWelcome();
-                
+
                 case 'abandoned-cart':
                     return $this->previewAbandonedCart();
-                
+
                 default:
                     abort(404, 'Email type not found');
             }
         } catch (\Exception $e) {
-            abort(500, 'Error generating email preview: ' . $e->getMessage());
+            abort(500, 'Error generating email preview: '.$e->getMessage());
         }
     }
 
@@ -75,7 +70,7 @@ class EmailPreviewController extends Controller
     {
         $order = $this->getSampleOrder();
         $user = $this->getSampleUser();
-        
+
         return view('emails.orders.created', compact('order', 'user'));
     }
 
@@ -88,7 +83,7 @@ class EmailPreviewController extends Controller
         $user = $this->getSampleUser();
         $newStatus = 'shipped';
         $oldStatus = 'processing';
-        
+
         return view('emails.orders.status-changed', compact('order', 'user', 'newStatus', 'oldStatus'));
     }
 
@@ -98,7 +93,7 @@ class EmailPreviewController extends Controller
     private function previewLowStock()
     {
         $product = $this->getSampleProduct();
-        
+
         return view('emails.inventory.low-stock', compact('product'));
     }
 
@@ -108,7 +103,7 @@ class EmailPreviewController extends Controller
     private function previewNewReview()
     {
         $review = $this->getSampleReview();
-        
+
         return view('emails.reviews.new-review', compact('review'));
     }
 
@@ -120,7 +115,7 @@ class EmailPreviewController extends Controller
         $subscriber = $this->getSampleUser();
         $featuredProducts = $this->getSampleProducts(3);
         $promotions = collect([]);
-        
+
         return view('emails.marketing.newsletter', compact('subscriber', 'featuredProducts', 'promotions'));
     }
 
@@ -130,7 +125,7 @@ class EmailPreviewController extends Controller
     private function previewWelcome()
     {
         $user = $this->getSampleUser();
-        
+
         return view('emails.marketing.welcome', compact('user'));
     }
 
@@ -144,7 +139,7 @@ class EmailPreviewController extends Controller
         $cartTotal = $cartItems->sum(function ($item) {
             return $item->price * $item->quantity;
         });
-        
+
         return view('emails.marketing.abandoned-cart', compact('user', 'cartItems', 'cartTotal'));
     }
 
@@ -171,12 +166,12 @@ class EmailPreviewController extends Controller
                 'state' => 'NY',
                 'postal_code' => '10001',
                 'country' => 'United States',
-                'phone' => '(555) 123-4567'
+                'phone' => '(555) 123-4567',
             ],
             'created_at' => now(),
             'updated_at' => now(),
             'user' => $this->getSampleUser(),
-            'items' => $this->getSampleOrderItems()
+            'items' => $this->getSampleOrderItems(),
         ];
     }
 
@@ -194,8 +189,8 @@ class EmailPreviewController extends Controller
                 'product' => (object) [
                     'id' => 1,
                     'name' => 'Oak Dining Table',
-                    'sku' => 'OAK-DT-001'
-                ]
+                    'sku' => 'OAK-DT-001',
+                ],
             ],
             (object) [
                 'id' => 2,
@@ -205,9 +200,9 @@ class EmailPreviewController extends Controller
                 'product' => (object) [
                     'id' => 2,
                     'name' => 'Oak Dining Chairs',
-                    'sku' => 'OAK-DC-001'
-                ]
-            ]
+                    'sku' => 'OAK-DC-001',
+                ],
+            ],
         ]);
     }
 
@@ -220,7 +215,7 @@ class EmailPreviewController extends Controller
             'id' => 1,
             'name' => 'John Doe',
             'email' => 'john.doe@example.com',
-            'phone' => '(555) 123-4567'
+            'phone' => '(555) 123-4567',
         ];
     }
 
@@ -238,9 +233,9 @@ class EmailPreviewController extends Controller
             'low_stock_threshold' => 5,
             'is_active' => true,
             'category' => (object) [
-                'name' => 'Dining Room'
+                'name' => 'Dining Room',
             ],
-            'updated_at' => now()
+            'updated_at' => now(),
         ];
     }
 
@@ -253,15 +248,16 @@ class EmailPreviewController extends Controller
         for ($i = 1; $i <= $count; $i++) {
             $products[] = (object) [
                 'id' => $i,
-                'name' => 'Sample Product ' . $i,
+                'name' => 'Sample Product '.$i,
                 'description' => 'This is a sample product description that showcases the quality and craftsmanship of our furniture.',
                 'price' => 500.00 + ($i * 100),
                 'sale_price' => $i === 2 ? 450.00 : null,
                 'average_rating' => 4.5,
                 'reviews_count' => 12,
-                'images' => ['sample-image.jpg']
+                'images' => ['sample-image.jpg'],
             ];
         }
+
         return collect($products);
     }
 
@@ -280,7 +276,7 @@ class EmailPreviewController extends Controller
             'is_approved' => false,
             'created_at' => now(),
             'user' => $this->getSampleUser(),
-            'product' => $this->getSampleProduct()
+            'product' => $this->getSampleProduct(),
         ];
     }
 
@@ -298,8 +294,8 @@ class EmailPreviewController extends Controller
                     'id' => 1,
                     'name' => 'Oak Dining Table',
                     'sku' => 'OAK-DT-001',
-                    'images' => ['oak-dining-table.jpg']
-                ]
+                    'images' => ['oak-dining-table.jpg'],
+                ],
             ],
             (object) [
                 'id' => 2,
@@ -309,13 +305,9 @@ class EmailPreviewController extends Controller
                     'id' => 2,
                     'name' => 'Oak Side Chairs',
                     'sku' => 'OAK-SC-001',
-                    'images' => ['oak-side-chairs.jpg']
-                ]
-            ]
+                    'images' => ['oak-side-chairs.jpg'],
+                ],
+            ],
         ]);
     }
 }
-
-
-
-

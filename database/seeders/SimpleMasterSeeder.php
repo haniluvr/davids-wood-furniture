@@ -8,7 +8,7 @@ class SimpleMasterSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * 
+     *
      * Simple version that works reliably without external API calls
      */
     public function run(): void
@@ -79,5 +79,3 @@ class SimpleMasterSeeder extends Seeder
         $this->command->info('================================================');
     }
 }
-
-

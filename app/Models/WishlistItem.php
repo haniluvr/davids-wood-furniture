@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WishlistItem extends Model
 {
     const UPDATED_AT = null; // Only created_at column exists
-    
+
     protected $fillable = [
         'user_id',
         'session_id',

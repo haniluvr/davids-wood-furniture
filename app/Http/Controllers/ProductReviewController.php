@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductReview;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductReview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -17,11 +17,11 @@ class ProductReviewController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'You must be logged in to submit a review'
+                'message' => 'You must be logged in to submit a review',
             ], 401);
         }
 
@@ -37,22 +37,22 @@ class ProductReviewController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         // Verify that the user actually purchased this product in this order
         $order = Order::where('id', $request->order_id)
             ->where('user_id', $user->id)
-            ->whereHas('orderItems', function($query) use ($request) {
+            ->whereHas('orderItems', function ($query) use ($request) {
                 $query->where('product_id', $request->product_id);
             })
             ->first();
 
-        if (!$order) {
+        if (! $order) {
             return response()->json([
                 'success' => false,
-                'message' => 'You can only review products you have purchased'
+                'message' => 'You can only review products you have purchased',
             ], 403);
         }
 
@@ -65,7 +65,7 @@ class ProductReviewController extends Controller
         if ($existingReview) {
             return response()->json([
                 'success' => false,
-                'message' => 'You have already reviewed this product for this order'
+                'message' => 'You have already reviewed this product for this order',
             ], 409);
         }
 
@@ -84,7 +84,7 @@ class ProductReviewController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Thank you! Your review has been submitted and is pending approval.',
-            'review' => $review
+            'review' => $review,
         ]);
     }
 
@@ -94,7 +94,7 @@ class ProductReviewController extends Controller
     public function index($productId)
     {
         $product = Product::findOrFail($productId);
-        
+
         $reviews = ProductReview::where('product_id', $productId)
             ->where('is_approved', true)
             ->with('user')
@@ -105,7 +105,7 @@ class ProductReviewController extends Controller
             'success' => true,
             'reviews' => $reviews,
             'average_rating' => $product->average_rating,
-            'total_reviews' => $product->reviews_count
+            'total_reviews' => $product->reviews_count,
         ]);
     }
 }

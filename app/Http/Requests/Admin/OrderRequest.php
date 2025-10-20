@@ -54,7 +54,7 @@ class OrderRequest extends FormRequest
             'shipping_method' => 'nullable|string|max:255',
             'tracking_number' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
-            'internal_notes' => 'nullable|string'
+            'internal_notes' => 'nullable|string',
         ];
     }
 
@@ -110,7 +110,7 @@ class OrderRequest extends FormRequest
             'total_amount.numeric' => 'Total amount must be a valid number.',
             'total_amount.min' => 'Total amount cannot be negative.',
             'currency.required' => 'Currency is required.',
-            'currency.max' => 'Currency code cannot exceed 3 characters.'
+            'currency.max' => 'Currency code cannot exceed 3 characters.',
         ];
     }
 
@@ -134,7 +134,7 @@ class OrderRequest extends FormRequest
             'shipping_method' => 'shipping method',
             'tracking_number' => 'tracking number',
             'notes' => 'customer notes',
-            'internal_notes' => 'internal notes'
+            'internal_notes' => 'internal notes',
         ];
     }
 }

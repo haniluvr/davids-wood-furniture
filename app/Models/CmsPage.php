@@ -84,8 +84,8 @@ class CmsPage extends Model
     public function scopePublished($query)
     {
         return $query->where('is_active', true)
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now());
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
     }
 
     public function scopeOrdered($query)
@@ -97,9 +97,9 @@ class CmsPage extends Model
     public function getFeaturedImageUrlAttribute(): ?string
     {
         if ($this->featured_image) {
-            return asset('storage/' . $this->featured_image);
+            return asset('storage/'.$this->featured_image);
         }
-        
+
         return null;
     }
 
@@ -132,19 +132,19 @@ class CmsPage extends Model
 
     public function isDraft(): bool
     {
-        return $this->is_active && (!$this->published_at || $this->published_at > now());
+        return $this->is_active && (! $this->published_at || $this->published_at > now());
     }
 
     public function isInactive(): bool
     {
-        return !$this->is_active;
+        return ! $this->is_active;
     }
 
     public function publish(): bool
     {
         return $this->update([
             'is_active' => true,
-            'published_at' => $this->published_at ?: now()
+            'published_at' => $this->published_at ?: now(),
         ]);
     }
 

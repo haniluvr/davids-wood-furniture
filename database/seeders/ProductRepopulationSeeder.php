@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class ProductRepopulationSeeder extends Seeder
@@ -80,16 +80,16 @@ class ProductRepopulationSeeder extends Seeder
                 // Generate product data
                 $productName = $this->generateProductName($subcategory->name, $i);
                 $slug = Str::slug($productName);
-                
+
                 // Determine room categories based on subcategory
                 $roomCategories = $this->getRoomCategories($spec['subcategory_id']);
-                
+
                 // Generate pricing in Philippine Peso
                 $price = $this->generatePrice($spec['subcategory_id'], $i);
-                
+
                 // Generate material
                 $material = $this->generateMaterial($spec['subcategory_id']);
-                
+
                 // Generate images
                 $images = $this->generateImages($subcategorySlug, $i);
                 $gallery = $this->generateGallery($subcategorySlug, $i);
@@ -123,10 +123,10 @@ class ProductRepopulationSeeder extends Seeder
     {
         $prefixes = ['Premium', 'Classic', 'Modern', 'Elegant', 'Contemporary', 'Luxury', 'Deluxe', 'Executive'];
         $materials = ['Oak', 'Pine', 'Walnut', 'Mahogany', 'Teak', 'Maple', 'Cherry', 'Ash'];
-        
+
         $prefix = $prefixes[($index - 1) % count($prefixes)];
         $material = $materials[($index - 1) % count($materials)];
-        
+
         return "{$prefix} {$material} {$subcategoryName}";
     }
 
@@ -183,13 +183,12 @@ class ProductRepopulationSeeder extends Seeder
 
         $range = $basePrices[$subcategoryId] ?? [5000, 15000];
         $basePrice = rand($range[0], $range[1]);
-        
+
         // Add variation based on index
         $variation = ($index - 1) * 500;
+
         return $basePrice + $variation;
     }
-
-
 
     private function generateMaterial($subcategoryId)
     {
@@ -213,7 +212,7 @@ class ProductRepopulationSeeder extends Seeder
     {
         return [
             "{$subcategorySlug}-{$index}-1.jpg",
-            "{$subcategorySlug}-{$index}-2.jpg"
+            "{$subcategorySlug}-{$index}-2.jpg",
         ];
     }
 
@@ -223,7 +222,7 @@ class ProductRepopulationSeeder extends Seeder
             "{$subcategorySlug}-{$index}-1.jpg",
             "{$subcategorySlug}-{$index}-2.jpg",
             "{$subcategorySlug}-{$index}-3.jpg",
-            "{$subcategorySlug}-{$index}-4.jpg"
+            "{$subcategorySlug}-{$index}-4.jpg",
         ];
     }
 
@@ -250,7 +249,7 @@ class ProductRepopulationSeeder extends Seeder
             'material' => $material,
             'origin' => 'Philippines',
             'care_instructions' => 'Clean with dry cloth, avoid direct sunlight',
-            'delivery_time' => '3-5 business days'
+            'delivery_time' => '3-5 business days',
         ];
     }
 }

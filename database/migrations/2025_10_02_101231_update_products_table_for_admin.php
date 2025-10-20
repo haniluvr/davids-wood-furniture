@@ -13,31 +13,31 @@ return new class extends Migration
     {
         Schema::table('products', function (Blueprint $table) {
             // Add admin-specific fields if they don't exist
-            if (!Schema::hasColumn('products', 'low_stock_threshold')) {
+            if (! Schema::hasColumn('products', 'low_stock_threshold')) {
                 $table->integer('low_stock_threshold')->default(10)->after('stock_quantity');
             }
-            if (!Schema::hasColumn('products', 'weight')) {
+            if (! Schema::hasColumn('products', 'weight')) {
                 $table->decimal('weight', 8, 2)->nullable()->after('price');
             }
-            if (!Schema::hasColumn('products', 'dimensions')) {
+            if (! Schema::hasColumn('products', 'dimensions')) {
                 $table->string('dimensions')->nullable()->after('weight');
             }
-            if (!Schema::hasColumn('products', 'barcode')) {
+            if (! Schema::hasColumn('products', 'barcode')) {
                 $table->string('barcode')->nullable()->after('sku');
             }
-            if (!Schema::hasColumn('products', 'cost_price')) {
+            if (! Schema::hasColumn('products', 'cost_price')) {
                 $table->decimal('cost_price', 10, 2)->nullable()->after('price');
             }
-            if (!Schema::hasColumn('products', 'sale_price')) {
+            if (! Schema::hasColumn('products', 'sale_price')) {
                 $table->decimal('sale_price', 10, 2)->nullable()->after('cost_price');
             }
-            if (!Schema::hasColumn('products', 'tax_class')) {
+            if (! Schema::hasColumn('products', 'tax_class')) {
                 $table->string('tax_class')->nullable()->after('sale_price');
             }
-            if (!Schema::hasColumn('products', 'created_by')) {
+            if (! Schema::hasColumn('products', 'created_by')) {
                 $table->unsignedBigInteger('created_by')->nullable()->after('is_active');
             }
-            if (!Schema::hasColumn('products', 'updated_by')) {
+            if (! Schema::hasColumn('products', 'updated_by')) {
                 $table->unsignedBigInteger('updated_by')->nullable()->after('created_by');
             }
         });
@@ -58,7 +58,7 @@ return new class extends Migration
                 'sale_price',
                 'tax_class',
                 'created_by',
-                'updated_by'
+                'updated_by',
             ]);
         });
     }

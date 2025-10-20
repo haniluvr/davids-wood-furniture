@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
@@ -15,16 +15,16 @@ class NotificationController extends Controller
     public function getUserNotifications(Request $request): JsonResponse
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         $perPage = $request->get('per_page', 15);
-        
-        $notifications = Notification::where(function($query) use ($user) {
-                $query->where('recipient_type', 'user')
-                      ->where('recipient_id', $user->id);
-            })
+
+        $notifications = Notification::where(function ($query) use ($user) {
+            $query->where('recipient_type', 'user')
+                ->where('recipient_id', $user->id);
+        })
             ->orWhere('recipient_type', 'all')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
@@ -36,8 +36,8 @@ class NotificationController extends Controller
                 'last_page' => $notifications->lastPage(),
                 'per_page' => $notifications->perPage(),
                 'total' => $notifications->total(),
-                'has_more' => $notifications->hasMorePages()
-            ]
+                'has_more' => $notifications->hasMorePages(),
+            ],
         ]);
     }
 
@@ -47,17 +47,17 @@ class NotificationController extends Controller
     public function getUnreadCount(): JsonResponse
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['count' => 0]);
         }
 
-        $count = Notification::where(function($query) use ($user) {
-                $query->where(function($subQuery) use ($user) {
-                    $subQuery->where('recipient_type', 'user')
-                             ->where('recipient_id', $user->id);
-                })
-                ->orWhere('recipient_type', 'all');
+        $count = Notification::where(function ($query) use ($user) {
+            $query->where(function ($subQuery) use ($user) {
+                $subQuery->where('recipient_type', 'user')
+                    ->where('recipient_id', $user->id);
             })
+                ->orWhere('recipient_type', 'all');
+        })
             ->where('status', 'sent')
             ->count();
 
@@ -70,19 +70,19 @@ class NotificationController extends Controller
     public function markAsRead(Request $request, $id): JsonResponse
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         $notification = Notification::where('id', $id)
-            ->where(function($query) use ($user) {
+            ->where(function ($query) use ($user) {
                 $query->where('recipient_type', 'user')
-                      ->where('recipient_id', $user->id);
+                    ->where('recipient_id', $user->id);
             })
             ->orWhere('recipient_type', 'all')
             ->first();
 
-        if (!$notification) {
+        if (! $notification) {
             return response()->json(['error' => 'Notification not found'], 404);
         }
 
@@ -97,25 +97,25 @@ class NotificationController extends Controller
     public function markAllAsRead(): JsonResponse
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $updated = Notification::where(function($query) use ($user) {
-                $query->where('recipient_type', 'user')
-                      ->where('recipient_id', $user->id);
-            })
+        $updated = Notification::where(function ($query) use ($user) {
+            $query->where('recipient_type', 'user')
+                ->where('recipient_id', $user->id);
+        })
             ->orWhere('recipient_type', 'all')
             ->where('status', 'sent')
             ->update([
-                'status' => 'read',
-                'read_at' => now()
-            ]);
+            'status' => 'read',
+            'read_at' => now(),
+        ]);
 
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'message' => 'All notifications marked as read',
-            'updated_count' => $updated
+            'updated_count' => $updated,
         ]);
     }
 
@@ -125,19 +125,19 @@ class NotificationController extends Controller
     public function deleteNotification(Request $request, $id): JsonResponse
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         $notification = Notification::where('id', $id)
-            ->where(function($query) use ($user) {
+            ->where(function ($query) use ($user) {
                 $query->where('recipient_type', 'user')
-                      ->where('recipient_id', $user->id);
+                    ->where('recipient_id', $user->id);
             })
             ->orWhere('recipient_type', 'all')
             ->first();
 
-        if (!$notification) {
+        if (! $notification) {
             return response()->json(['error' => 'Notification not found'], 404);
         }
 
@@ -152,21 +152,21 @@ class NotificationController extends Controller
     public function clearAll(): JsonResponse
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $deleted = Notification::where(function($query) use ($user) {
-                $query->where('recipient_type', 'user')
-                      ->where('recipient_id', $user->id);
-            })
+        $deleted = Notification::where(function ($query) use ($user) {
+            $query->where('recipient_type', 'user')
+                ->where('recipient_id', $user->id);
+        })
             ->orWhere('recipient_type', 'all')
             ->delete();
 
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'message' => 'All notifications cleared',
-            'deleted_count' => $deleted
+            'deleted_count' => $deleted,
         ]);
     }
 }

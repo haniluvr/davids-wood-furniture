@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\CartItem;
-use App\Models\Product;
 use App\Models\GuestSession;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
@@ -27,19 +26,18 @@ class CartController extends Controller
     {
         try {
             // Force session start
-            if (!session()->isStarted()) {
+            if (! session()->isStarted()) {
                 session()->start();
             }
-            
+
             $sessionId = session()->getId();
-            
-            
+
             // Use Laravel's built-in authentication
             $userId = null;
             if (\Auth::check()) {
                 $userId = \Auth::id();
             }
-            
+
             if ($userId) {
                 // User is logged in - get their cart items
                 $cartItems = CartItem::forUser($userId)
@@ -51,18 +49,18 @@ class CartController extends Controller
                 $cartItems = CartItem::forGuest($sessionId)
                     ->with('product')
                     ->get();
-                
+
             }
-            
+
             $subtotal = $cartItems->sum('total_price');
             $totalItems = $cartItems->count(); // Count number of items, not quantity
-            
+
             return response()->json([
                 'success' => true,
                 'data' => [
                     'cart_items' => $cartItems,
                     'subtotal' => $subtotal,
-                    'total_items' => $totalItems
+                    'total_items' => $totalItems,
                 ],
                 'session_id' => $sessionId,
                 'debug' => [
@@ -70,13 +68,13 @@ class CartController extends Controller
                     'user_id' => $userId,
                     'items_count' => $cartItems->count(),
                     'request_cookies' => $request->cookies->all(),
-                    'session_cookie' => $request->cookie('laravel_session')
-                ]
+                    'session_cookie' => $request->cookie('laravel_session'),
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching cart: ' . $e->getMessage()
+                'message' => 'Error fetching cart: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -89,19 +87,18 @@ class CartController extends Controller
         try {
             $request->validate([
                 'product_id' => 'required|integer|exists:products,id',
-                'quantity' => 'integer|min:1'
+                'quantity' => 'integer|min:1',
             ]);
 
             // Force session start
-            if (!session()->isStarted()) {
+            if (! session()->isStarted()) {
                 session()->start();
             }
-            
+
             $sessionId = session()->getId();
             $productId = $request->product_id;
             $quantity = $request->quantity ?? 1;
-            
-            
+
             // Use Laravel's built-in authentication
             $userId = null;
             if (\Auth::check()) {
@@ -110,7 +107,7 @@ class CartController extends Controller
 
             // Get the product
             $product = Product::findOrFail($productId);
-            
+
             if ($userId) {
                 // User is logged in
                 $existingItem = CartItem::forUser($userId)
@@ -133,16 +130,16 @@ class CartController extends Controller
                         'product_name' => $product->name,
                         'product_sku' => $product->sku,
                         'product_data' => [
-                            'image' => is_array($product->images) && !empty($product->images) ? $product->images[0] : null,
+                            'image' => is_array($product->images) && ! empty($product->images) ? $product->images[0] : null,
                             'slug' => $product->slug,
-                            'description' => $product->short_description
-                        ]
+                            'description' => $product->short_description,
+                        ],
                     ]);
                 }
             } else {
                 // Guest user
                 $this->getOrCreateGuestSession($sessionId);
-                
+
                 $existingItem = CartItem::forGuest($sessionId)
                     ->where('product_id', $productId)
                     ->first();
@@ -163,15 +160,15 @@ class CartController extends Controller
                         'product_name' => $product->name,
                         'product_sku' => $product->sku,
                         'product_data' => [
-                            'image' => is_array($product->images) && !empty($product->images) ? $product->images[0] : null,
+                            'image' => is_array($product->images) && ! empty($product->images) ? $product->images[0] : null,
                             'slug' => $product->slug,
-                            'description' => $product->short_description
-                        ]
+                            'description' => $product->short_description,
+                        ],
                     ]);
                 }
-                
+
             }
-            
+
             // Force session save to ensure cookie is set
             session()->save();
 
@@ -185,13 +182,13 @@ class CartController extends Controller
                     'product_id' => $productId,
                     'quantity' => $quantity,
                     'request_cookies' => $request->cookies->all(),
-                    'session_cookie' => $request->cookie('laravel_session')
-                ]
+                    'session_cookie' => $request->cookie('laravel_session'),
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error adding to cart: ' . $e->getMessage()
+                'message' => 'Error adding to cart: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -203,20 +200,20 @@ class CartController extends Controller
     {
         $request->validate([
             'product_id' => 'required|integer|exists:products,id',
-            'quantity' => 'required|integer|min:1'
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $userId = Auth::id();
         $sessionId = session()->getId();
-        
+
         if ($userId) {
             $cartItem = CartItem::forUser($userId)
                 ->where('product_id', $request->product_id)
                 ->first();
         } else {
             $cartItem = CartItem::forGuest($sessionId)
-            ->where('product_id', $request->product_id)
-            ->first();
+                ->where('product_id', $request->product_id)
+                ->first();
         }
 
         if ($cartItem) {
@@ -227,7 +224,7 @@ class CartController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cart item updated successfully'
+            'message' => 'Cart item updated successfully',
         ]);
     }
 
@@ -237,25 +234,25 @@ class CartController extends Controller
     public function removeFromCart(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|integer|exists:products,id'
+            'product_id' => 'required|integer|exists:products,id',
         ]);
 
         $userId = Auth::id();
         $sessionId = session()->getId();
-        
+
         if ($userId) {
             CartItem::forUser($userId)
                 ->where('product_id', $request->product_id)
                 ->delete();
         } else {
             CartItem::forGuest($sessionId)
-            ->where('product_id', $request->product_id)
-            ->delete();
+                ->where('product_id', $request->product_id)
+                ->delete();
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Item removed from cart successfully'
+            'message' => 'Item removed from cart successfully',
         ]);
     }
 
@@ -266,7 +263,7 @@ class CartController extends Controller
     {
         $userId = Auth::id();
         $sessionId = session()->getId();
-        
+
         if ($userId) {
             CartItem::forUser($userId)->delete();
         } else {
@@ -275,7 +272,7 @@ class CartController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cart cleared successfully'
+            'message' => 'Cart cleared successfully',
         ]);
     }
 
@@ -288,7 +285,7 @@ class CartController extends Controller
             DB::transaction(function () use ($userId, $sessionId) {
                 // Get all guest cart items
                 $guestCartItems = CartItem::forGuest($sessionId)->get();
-                
+
                 foreach ($guestCartItems as $guestItem) {
                     // Check if user already has this product in their cart
                     $existingUserItem = CartItem::forUser($userId)
@@ -311,20 +308,19 @@ class CartController extends Controller
 
                 // Delete any remaining guest items (duplicates that were merged)
                 CartItem::forGuest($sessionId)->delete();
-                
+
                 // Clean up guest session
                 GuestSession::where('session_id', $sessionId)->delete();
             });
-
 
         } catch (\Exception $e) {
             \Log::error('Cart migration failed', [
                 'user_id' => $userId,
                 'session_id' => $sessionId,
-                'error' => $e->getMessage()
-        ]);
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
-}
 
     /**
      * Clear user cart (called when user logs out)
@@ -336,7 +332,7 @@ class CartController extends Controller
         } catch (\Exception $e) {
             \Log::error('Failed to clear user cart', [
                 'user_id' => $userId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }

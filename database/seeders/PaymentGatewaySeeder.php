@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\PaymentGateway;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Crypt;
 
 class PaymentGatewaySeeder extends Seeder

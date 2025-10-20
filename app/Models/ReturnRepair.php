@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ReturnRepair extends Model
 {
     protected $table = 'returns_repairs';
-    
+
     protected $fillable = [
         'rma_number',
         'order_id',
@@ -61,19 +60,20 @@ class ReturnRepair extends Model
     {
         $year = date('Y');
         $maxAttempts = 100;
-        
+
         for ($i = 0; $i < $maxAttempts; $i++) {
             // Generate 4-character alphanumeric code
             $code = strtoupper(substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), 0, 4));
             $rmaNumber = "RMA-{$year}-{$code}";
-            
-            if (!self::where('rma_number', $rmaNumber)->exists()) {
+
+            if (! self::where('rma_number', $rmaNumber)->exists()) {
                 return $rmaNumber;
             }
         }
-        
+
         // Fallback
         $code = strtoupper(substr(base_convert(time(), 10, 36), -4));
+
         return "RMA-{$year}-{$code}";
     }
 
@@ -82,7 +82,7 @@ class ReturnRepair extends Model
      */
     public function getStatusColorAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'requested' => 'yellow',
             'approved' => 'blue',
             'received' => 'purple',

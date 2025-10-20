@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ContactMessage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
@@ -24,15 +23,15 @@ class MessageController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%')
-                  ->orWhere('message', 'like', '%' . $search . '%')
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('first_name', 'like', '%' . $search . '%')
-                               ->orWhere('last_name', 'like', '%' . $search . '%')
-                               ->orWhere('email', 'like', '%' . $search . '%');
-                  });
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%')
+                    ->orWhere('message', 'like', '%'.$search.'%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%');
+                    });
             });
         }
 
@@ -63,7 +62,7 @@ class MessageController extends Controller
     public function show(ContactMessage $message)
     {
         $message->load(['user', 'assignedTo', 'respondedBy']);
-        
+
         // Mark as read when admin views it
         if ($message->status === 'new') {
             $message->update(['status' => 'read', 'read_at' => now()]);
@@ -96,7 +95,7 @@ class MessageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Message updated successfully'
+            'message' => 'Message updated successfully',
         ]);
     }
 
@@ -117,7 +116,7 @@ class MessageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Message marked as responded'
+            'message' => 'Message marked as responded',
         ]);
     }
 
@@ -134,7 +133,7 @@ class MessageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Message assigned successfully'
+            'message' => 'Message assigned successfully',
         ]);
     }
 
@@ -150,12 +149,12 @@ class MessageController extends Controller
 
         $currentTags = $message->tags ?? [];
         $newTags = array_unique(array_merge($currentTags, $request->tags));
-        
+
         $message->update(['tags' => $newTags]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Tags added successfully'
+            'message' => 'Tags added successfully',
         ]);
     }
 
@@ -169,15 +168,15 @@ class MessageController extends Controller
         ]);
 
         $currentTags = $message->tags ?? [];
-        $newTags = array_values(array_filter($currentTags, function($tag) use ($request) {
+        $newTags = array_values(array_filter($currentTags, function ($tag) use ($request) {
             return $tag !== $request->tag;
         }));
-        
+
         $message->update(['tags' => $newTags]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Tag removed successfully'
+            'message' => 'Tag removed successfully',
         ]);
     }
 
@@ -206,7 +205,7 @@ class MessageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => count($messageIds) . ' messages updated successfully'
+            'message' => count($messageIds).' messages updated successfully',
         ]);
     }
 
@@ -219,7 +218,7 @@ class MessageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Message deleted successfully'
+            'message' => 'Message deleted successfully',
         ]);
     }
 
@@ -244,7 +243,7 @@ class MessageController extends Controller
                 'last_page' => $messages->lastPage(),
                 'per_page' => $messages->perPage(),
                 'total' => $messages->total(),
-            ]
+            ],
         ]);
     }
 }

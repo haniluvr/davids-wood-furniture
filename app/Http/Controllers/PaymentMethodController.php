@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\PaymentMethod;
 
 class PaymentMethodController extends Controller
 {
-
     /**
      * Get user's payment methods
      */
@@ -21,7 +20,7 @@ class PaymentMethodController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $paymentMethods
+            'data' => $paymentMethods,
         ]);
     }
 
@@ -36,7 +35,7 @@ class PaymentMethodController extends Controller
             'card_number' => 'required_if:type,card|string|min:13|max:19',
             'card_holder_name' => 'required_if:type,card|string|max:255',
             'card_expiry_month' => 'required_if:type,card|integer|min:1|max:12',
-            'card_expiry_year' => 'required_if:type,card|integer|min:' . date('Y'),
+            'card_expiry_year' => 'required_if:type,card|integer|min:'.date('Y'),
             'card_cvv' => 'required_if:type,card|string|min:3|max:4',
             'gcash_number' => 'required_if:type,gcash|string|regex:/^09[0-9]{9}$/',
             'gcash_name' => 'required_if:type,gcash|string|max:255',
@@ -85,7 +84,7 @@ class PaymentMethodController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Payment method added successfully',
-            'data' => $paymentMethod
+            'data' => $paymentMethod,
         ]);
     }
 
@@ -101,7 +100,7 @@ class PaymentMethodController extends Controller
         $request->validate([
             'card_holder_name' => 'required_if:type,card|string|max:255',
             'card_expiry_month' => 'required_if:type,card|integer|min:1|max:12',
-            'card_expiry_year' => 'required_if:type,card|integer|min:' . date('Y'),
+            'card_expiry_year' => 'required_if:type,card|integer|min:'.date('Y'),
             'gcash_name' => 'required_if:type,gcash|string|max:255',
             'billing_address' => 'required_if:type,card|array',
             'billing_address.address_line_1' => 'required_if:type,card|string|max:255',
@@ -131,7 +130,7 @@ class PaymentMethodController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Payment method updated successfully',
-            'data' => $paymentMethod
+            'data' => $paymentMethod,
         ]);
     }
 
@@ -157,7 +156,7 @@ class PaymentMethodController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Payment method removed successfully'
+            'message' => 'Payment method removed successfully',
         ]);
     }
 
@@ -179,7 +178,7 @@ class PaymentMethodController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Default payment method updated successfully',
-            'data' => $paymentMethod
+            'data' => $paymentMethod,
         ]);
     }
 }

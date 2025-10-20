@@ -37,7 +37,7 @@ return new class extends Migration
                 'assigned_to',
                 'read_at',
                 'responded_at',
-                'responded_by'
+                'responded_by',
             ]);
         });
     }

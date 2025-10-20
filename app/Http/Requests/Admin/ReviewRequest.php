@@ -21,7 +21,7 @@ class ReviewRequest extends FormRequest
             'is_approved' => 'boolean',
             'is_featured' => 'boolean',
             'admin_response' => 'nullable|string|max:1000',
-            'responded_by' => 'nullable|exists:admins,id'
+            'responded_by' => 'nullable|exists:admins,id',
         ];
     }
 
@@ -38,7 +38,7 @@ class ReviewRequest extends FormRequest
             'review.required' => 'Review text is required.',
             'review.max' => 'Review cannot exceed 2000 characters.',
             'admin_response.max' => 'Admin response cannot exceed 1000 characters.',
-            'responded_by.exists' => 'Selected admin does not exist.'
+            'responded_by.exists' => 'Selected admin does not exist.',
         ];
     }
 
@@ -52,7 +52,7 @@ class ReviewRequest extends FormRequest
             'is_approved' => 'approval status',
             'is_featured' => 'featured status',
             'admin_response' => 'admin response',
-            'responded_by' => 'responded by'
+            'responded_by' => 'responded by',
         ];
     }
 }

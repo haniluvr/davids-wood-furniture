@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\Category;
 use App\Models\AuditLog;
+use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -20,21 +20,21 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $query = Product::with(['category']);
-        
+
         // Search functionality
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('sku', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('sku', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         }
-        
+
         // Category filter
         if ($request->filled('category') && $request->category !== 'all') {
             $query->where('category_id', $request->category);
         }
-        
+
         // Status filter
         if ($request->filled('status')) {
             if ($request->status === 'active') {
@@ -47,7 +47,7 @@ class ProductController extends Controller
                 $query->where('stock_quantity', 0);
             }
         }
-        
+
         // Price range filter
         if ($request->filled('price_min')) {
             $query->where('price', '>=', $request->price_min);
@@ -55,12 +55,12 @@ class ProductController extends Controller
         if ($request->filled('price_max')) {
             $query->where('price', '<=', $request->price_max);
         }
-        
+
         // Material filter
         if ($request->filled('material') && $request->material !== 'all') {
             $query->where('material', $request->material);
         }
-        
+
         // Stock level filter
         if ($request->filled('stock_level')) {
             switch ($request->stock_level) {
@@ -75,15 +75,15 @@ class ProductController extends Controller
                     break;
             }
         }
-        
+
         // Sort
         $sortBy = $request->get('sort', 'created_at');
         $sortOrder = $request->get('order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
-        
+
         $products = $query->paginate(12)->withQueryString();
         $categories = Category::all();
-        
+
         // Get statistics
         $stats = [
             'total_products' => Product::count(),
@@ -92,7 +92,7 @@ class ProductController extends Controller
             'out_of_stock_products' => Product::where('stock_quantity', 0)->count(),
             'total_inventory_value' => Product::sum(DB::raw('price * stock_quantity')),
         ];
-        
+
         // Get materials for filter
         $materials = Product::select('material')
             ->whereNotNull('material')
@@ -100,7 +100,7 @@ class ProductController extends Controller
             ->distinct()
             ->orderBy('material')
             ->pluck('material');
-        
+
         return view('admin.products.index', compact('products', 'categories', 'stats', 'materials'));
     }
 
@@ -110,6 +110,7 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::all();
+
         return view('admin.products.create', compact('categories'));
     }
 
@@ -141,10 +142,10 @@ class ProductController extends Controller
 
         // Generate slug
         $validated['slug'] = Str::slug($validated['name']);
-        
+
         // Set created_by
         $validated['created_by'] = Auth::guard('admin')->id();
-        
+
         // Handle images
         if ($request->hasFile('images')) {
             $images = [];
@@ -157,7 +158,7 @@ class ProductController extends Controller
         }
 
         $product = Product::create($validated);
-        
+
         // Log the action
         AuditLog::logCreate(Auth::guard('admin')->user(), $product);
 
@@ -171,6 +172,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $product->load(['category']);
+
         return view('admin.products.show', compact('product'));
     }
 
@@ -180,6 +182,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $categories = Category::all();
+
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
@@ -189,7 +192,7 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $oldValues = $product->toArray();
-        
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -197,8 +200,8 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
-            'sku' => 'required|string|unique:products,sku,' . $product->id,
-            'barcode' => 'nullable|string|unique:products,barcode,' . $product->id,
+            'sku' => 'required|string|unique:products,sku,'.$product->id,
+            'barcode' => 'nullable|string|unique:products,barcode,'.$product->id,
             'category_id' => 'required|exists:categories,id',
             'stock_quantity' => 'required|integer|min:0',
             'low_stock_threshold' => 'required|integer|min:0',
@@ -215,10 +218,10 @@ class ProductController extends Controller
         if ($validated['name'] !== $product->name) {
             $validated['slug'] = Str::slug($validated['name']);
         }
-        
+
         // Set updated_by
         $validated['updated_by'] = Auth::guard('admin')->id();
-        
+
         // Handle images
         if ($request->hasFile('images')) {
             // Delete old images
@@ -227,7 +230,7 @@ class ProductController extends Controller
                     Storage::disk('public')->delete($image);
                 }
             }
-            
+
             $images = [];
             foreach ($request->file('images') as $image) {
                 $path = $image->store('products', 'public');
@@ -238,7 +241,7 @@ class ProductController extends Controller
         }
 
         $product->update($validated);
-        
+
         // Log the action
         AuditLog::logUpdate(Auth::guard('admin')->user(), $product, $oldValues);
 
@@ -257,10 +260,10 @@ class ProductController extends Controller
                 Storage::disk('public')->delete($image);
             }
         }
-        
+
         // Log the action before deletion
         AuditLog::logDelete(Auth::guard('admin')->user(), $product);
-        
+
         $product->delete();
 
         return redirect()->route('admin.products.index')
@@ -273,17 +276,17 @@ class ProductController extends Controller
     public function toggleStatus(Product $product)
     {
         $oldValues = $product->toArray();
-        
+
         $product->update([
-            'is_active' => !$product->is_active,
+            'is_active' => ! $product->is_active,
             'updated_by' => Auth::guard('admin')->id(),
         ]);
-        
+
         // Log the action
         AuditLog::logUpdate(Auth::guard('admin')->user(), $product, $oldValues);
-        
+
         $status = $product->is_active ? 'activated' : 'deactivated';
-        
+
         return redirect()->back()
             ->with('success', "Product {$status} successfully.");
     }
@@ -308,10 +311,10 @@ class ProductController extends Controller
         ]);
 
         $status = $isActive ? 'activated' : 'deactivated';
-        
+
         return response()->json([
             'success' => true,
-            'message' => count($productIds) . " products {$status} successfully"
+            'message' => count($productIds)." products {$status} successfully",
         ]);
     }
 
@@ -335,8 +338,8 @@ class ProductController extends Controller
 
         foreach ($products as $product) {
             $oldPrice = $product->price;
-            $newPrice = $adjustment === 'increase' 
-                ? $oldPrice + $amount 
+            $newPrice = $adjustment === 'increase'
+                ? $oldPrice + $amount
                 : max(0, $oldPrice - $amount);
 
             $product->update([
@@ -347,7 +350,7 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Prices updated for ' . count($productIds) . ' products'
+            'message' => 'Prices updated for '.count($productIds).' products',
         ]);
     }
 
@@ -383,7 +386,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Product restocked with {$request->quantity} units. New stock: {$newQuantity}",
-            'new_stock' => $newQuantity
+            'new_stock' => $newQuantity,
         ]);
     }
 
@@ -427,7 +430,7 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Restocked {$quantity} units for " . count($productIds) . ' products'
+            'message' => "Restocked {$quantity} units for ".count($productIds).' products',
         ]);
     }
 
@@ -440,10 +443,10 @@ class ProductController extends Controller
 
         // Apply same filters as index
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('sku', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('sku', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -463,16 +466,16 @@ class ProductController extends Controller
 
         $products = $query->get();
 
-        $filename = 'products_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
-        
+        $filename = 'products_export_'.now()->format('Y-m-d_H-i-s').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($products) {
+        $callback = function () use ($products) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV headers
             fputcsv($file, [
                 'SKU',
@@ -483,7 +486,7 @@ class ProductController extends Controller
                 'Low Stock Threshold',
                 'Material',
                 'Status',
-                'Created At'
+                'Created At',
             ]);
 
             // CSV data
@@ -497,7 +500,7 @@ class ProductController extends Controller
                     $product->low_stock_threshold,
                     $product->material ?? 'N/A',
                     $product->is_active ? 'Active' : 'Inactive',
-                    $product->created_at->format('Y-m-d H:i:s')
+                    $product->created_at->format('Y-m-d H:i:s'),
                 ]);
             }
 

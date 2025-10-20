@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Category;
-use Illuminate\Http\Request;
+use App\Models\Product;
 
 class HomeController extends Controller
 {
@@ -15,7 +14,7 @@ class HomeController extends Controller
             ->addSelect([
                 'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
                     ->whereColumn('product_id', 'products.id')
-                    ->where('is_approved', true)
+                    ->where('is_approved', true),
             ])
             ->orderBy('avg_rating', 'desc')
             ->orderBy('sort_order', 'asc')
@@ -30,7 +29,7 @@ class HomeController extends Controller
                 ->addSelect([
                     'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
                         ->whereColumn('product_id', 'products.id')
-                        ->where('is_approved', true)
+                        ->where('is_approved', true),
                 ])
                 ->orderBy('avg_rating', 'desc')
                 ->orderBy('sort_order', 'asc')

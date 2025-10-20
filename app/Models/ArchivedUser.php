@@ -64,4 +64,3 @@ class ArchivedUser extends Model
         'remember_token',
     ];
 }
-

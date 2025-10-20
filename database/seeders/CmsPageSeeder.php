@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\CmsPage;
+use Illuminate\Database\Seeder;
 
 class CmsPageSeeder extends Seeder
 {
@@ -75,7 +75,7 @@ class CmsPageSeeder extends Seeder
                 'title' => 'Privacy Policy',
                 'slug' => 'privacy-policy',
                 'content' => '<h1>Privacy Policy</h1>
-                <p><strong>Last updated:</strong> ' . now()->format('F d, Y') . '</p>
+                <p><strong>Last updated:</strong> '.now()->format('F d, Y').'</p>
                 
                 <h2>Information We Collect</h2>
                 <p>We collect information you provide directly to us, such as when you create an account, make a purchase, or contact us for support.</p>
@@ -106,7 +106,7 @@ class CmsPageSeeder extends Seeder
                 'title' => 'Terms of Service',
                 'slug' => 'terms-of-service',
                 'content' => '<h1>Terms of Service</h1>
-                <p><strong>Last updated:</strong> ' . now()->format('F d, Y') . '</p>
+                <p><strong>Last updated:</strong> '.now()->format('F d, Y').'</p>
                 
                 <h2>Acceptance of Terms</h2>
                 <p>By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement.</p>

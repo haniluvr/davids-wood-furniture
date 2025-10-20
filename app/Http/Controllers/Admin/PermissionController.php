@@ -14,7 +14,7 @@ class PermissionController extends Controller
     {
         $roles = ['super_admin', 'admin', 'manager', 'staff', 'viewer'];
         $permissions = AdminPermission::getAllPermissions();
-        
+
         $rolePermissions = [];
         foreach ($roles as $role) {
             $rolePermissions[$role] = AdminPermission::getRolePermissions($role);
@@ -32,7 +32,7 @@ class PermissionController extends Controller
         ]);
 
         $permissions = $request->input('permissions');
-        
+
         foreach ($permissions as $role => $rolePermissions) {
             foreach ($rolePermissions as $permission => $granted) {
                 AdminPermission::updateOrCreate(

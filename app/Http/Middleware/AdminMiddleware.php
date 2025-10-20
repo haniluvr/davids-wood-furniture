@@ -16,7 +16,7 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Check if admin is authenticated using the admin guard
-        if (!auth()->guard('admin')->check()) {
+        if (! auth()->guard('admin')->check()) {
             return redirect()->route('admin.login');
         }
 

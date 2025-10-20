@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->json('metadata')->nullable(); // Additional data
             $table->timestamps();
-            
+
             $table->index(['order_id', 'created_at']);
             $table->index('admin_id');
         });

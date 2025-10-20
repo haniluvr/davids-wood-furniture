@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Admin extends Authenticatable
 {
@@ -50,16 +50,16 @@ class Admin extends Authenticatable
     // Accessors
     public function getFullNameAttribute(): string
     {
-        return $this->first_name . ' ' . $this->last_name;
+        return $this->first_name.' '.$this->last_name;
     }
 
     public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar) {
-            return asset('storage/' . $this->avatar);
+            return asset('storage/'.$this->avatar);
         }
-        
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->full_name) . '&color=3C50E0&background=EBF4FF';
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->full_name).'&color=3C50E0&background=EBF4FF';
     }
 
     // Role and Permission Methods
@@ -90,6 +90,7 @@ class Admin extends Authenticatable
         }
 
         $permissions = $this->permissions ?? [];
+
         return in_array($permission, $permissions);
     }
 

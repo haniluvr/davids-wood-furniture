@@ -17,10 +17,10 @@ class ProductRequest extends FormRequest
 
         return [
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:products,slug,' . $productId,
+            'slug' => 'required|string|max:255|unique:products,slug,'.$productId,
             'description' => 'required|string',
             'short_description' => 'nullable|string|max:500',
-            'sku' => 'required|string|max:100|unique:products,sku,' . $productId,
+            'sku' => 'required|string|max:100|unique:products,sku,'.$productId,
             'price' => 'required|numeric|min:0',
             'compare_price' => 'nullable|numeric|min:0|gt:price',
             'cost_price' => 'nullable|numeric|min:0',
@@ -44,7 +44,7 @@ class ProductRequest extends FormRequest
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
-            'sort_order' => 'nullable|integer|min:0'
+            'sort_order' => 'nullable|integer|min:0',
         ];
     }
 
@@ -92,7 +92,7 @@ class ProductRequest extends FormRequest
             'tags.*.string' => 'Each tag must be a string.',
             'tags.*.max' => 'Each tag cannot exceed 50 characters.',
             'sort_order.integer' => 'Sort order must be a whole number.',
-            'sort_order.min' => 'Sort order cannot be negative.'
+            'sort_order.min' => 'Sort order cannot be negative.',
         ];
     }
 
@@ -125,7 +125,7 @@ class ProductRequest extends FormRequest
             'meta_keywords' => 'meta keywords',
             'images' => 'product images',
             'tags' => 'product tags',
-            'sort_order' => 'sort order'
+            'sort_order' => 'sort order',
         ];
     }
 }

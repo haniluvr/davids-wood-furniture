@@ -32,13 +32,13 @@ return new class extends Migration
             $table->dropForeign(['approved_by']);
             $table->dropColumn([
                 'fulfillment_status',
-                'return_status', 
+                'return_status',
                 'rma_number',
                 'carrier',
                 'requires_approval',
                 'approval_reason',
                 'approved_at',
-                'approved_by'
+                'approved_by',
             ]);
         });
     }

@@ -16,11 +16,11 @@ class StoreIntendedUrl
     public function handle(Request $request, Closure $next): Response
     {
         // Only store intended URL for GET requests to avoid storing POST/PUT/DELETE URLs
-        if ($request->isMethod('GET') && !$request->expectsJson()) {
+        if ($request->isMethod('GET') && ! $request->expectsJson()) {
             // Don't store URLs for login, register, or auth routes to avoid redirect loops
             $currentPath = $request->path();
             $excludedPaths = ['login', 'register', 'auth/google', 'auth/google/callback'];
-            
+
             $shouldStore = true;
             foreach ($excludedPaths as $excludedPath) {
                 if (str_starts_with($currentPath, $excludedPath)) {
@@ -28,7 +28,7 @@ class StoreIntendedUrl
                     break;
                 }
             }
-            
+
             if ($shouldStore) {
                 // Store the current URL as the intended URL for redirect after login
                 session()->put('url.intended', $request->fullUrl());

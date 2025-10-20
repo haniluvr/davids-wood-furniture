@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PaymentGateway;
 use App\Models\AuditLog;
+use App\Models\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Validator;
 
 class PaymentGatewayController extends Controller
 {
@@ -21,8 +21,8 @@ class PaymentGatewayController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('display_name', 'like', "%{$search}%")
-                  ->orWhere('gateway_key', 'like', "%{$search}%");
+                    ->orWhere('display_name', 'like', "%{$search}%")
+                    ->orWhere('gateway_key', 'like', "%{$search}%");
             });
         }
 
@@ -70,7 +70,7 @@ class PaymentGatewayController extends Controller
         }
 
         $data = $request->all();
-        
+
         // Encrypt sensitive configuration data
         if (isset($data['config']) && is_array($data['config'])) {
             $encryptedConfig = [];
@@ -116,7 +116,7 @@ class PaymentGatewayController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'gateway_key' => 'required|string|max:255|unique:payment_gateways,gateway_key,' . $paymentGateway->id,
+            'gateway_key' => 'required|string|max:255|unique:payment_gateways,gateway_key,'.$paymentGateway->id,
             'display_name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'config' => 'nullable|array',
@@ -137,7 +137,7 @@ class PaymentGatewayController extends Controller
 
         $oldValues = $paymentGateway->toArray();
         $data = $request->all();
-        
+
         // Encrypt sensitive configuration data
         if (isset($data['config']) && is_array($data['config'])) {
             $encryptedConfig = [];
@@ -172,7 +172,7 @@ class PaymentGatewayController extends Controller
     public function destroy(PaymentGateway $paymentGateway)
     {
         $oldValues = $paymentGateway->toArray();
-        
+
         // Log the action
         AuditLog::create([
             'admin_id' => Auth::id(),
@@ -194,7 +194,7 @@ class PaymentGatewayController extends Controller
     public function toggleStatus(PaymentGateway $paymentGateway)
     {
         $oldStatus = $paymentGateway->is_active;
-        $paymentGateway->update(['is_active' => !$paymentGateway->is_active]);
+        $paymentGateway->update(['is_active' => ! $paymentGateway->is_active]);
 
         // Log the action
         AuditLog::create([
@@ -211,14 +211,14 @@ class PaymentGatewayController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Payment gateway status updated successfully.',
-            'is_active' => $paymentGateway->is_active
+            'is_active' => $paymentGateway->is_active,
         ]);
     }
 
     public function toggleMode(PaymentGateway $paymentGateway)
     {
         $oldMode = $paymentGateway->is_test_mode;
-        $paymentGateway->update(['is_test_mode' => !$paymentGateway->is_test_mode]);
+        $paymentGateway->update(['is_test_mode' => ! $paymentGateway->is_test_mode]);
 
         // Log the action
         AuditLog::create([
@@ -235,7 +235,7 @@ class PaymentGatewayController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Payment gateway mode updated successfully.',
-            'is_test_mode' => $paymentGateway->is_test_mode
+            'is_test_mode' => $paymentGateway->is_test_mode,
         ]);
     }
 
@@ -245,12 +245,12 @@ class PaymentGatewayController extends Controller
             // This would typically make an API call to test the connection
             // For now, we'll simulate a test
             $isConnected = true; // Replace with actual API test
-            
+
             if ($isConnected) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Connection test successful.',
-                    'gateway' => $paymentGateway->display_name
+                    'gateway' => $paymentGateway->display_name,
                 ]);
             } else {
                 return response()->json([
@@ -261,7 +261,7 @@ class PaymentGatewayController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Connection test failed: ' . $e->getMessage(),
+                'message' => 'Connection test failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -293,7 +293,7 @@ class PaymentGatewayController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Payment gateways reordered successfully.'
+            'message' => 'Payment gateways reordered successfully.',
         ]);
     }
 }

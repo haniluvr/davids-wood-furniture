@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class ShippingMethod extends Model
 {
@@ -67,16 +67,16 @@ class ShippingMethod extends Model
         switch ($this->type) {
             case 'flat_rate':
                 return $this->cost;
-            
+
             case 'free_shipping':
                 return 0;
-            
+
             case 'weight_based':
                 return $this->calculateWeightBasedCost($weight);
-            
+
             case 'price_based':
                 return $this->calculatePriceBasedCost($orderAmount);
-            
+
             default:
                 return $this->cost;
         }
@@ -84,7 +84,7 @@ class ShippingMethod extends Model
 
     private function calculateWeightBasedCost($weight): float
     {
-        if (!$this->weight_rates || !is_array($this->weight_rates)) {
+        if (! $this->weight_rates || ! is_array($this->weight_rates)) {
             return $this->cost;
         }
 
@@ -92,7 +92,9 @@ class ShippingMethod extends Model
         $remainingWeight = $weight;
 
         foreach ($this->weight_rates as $rate) {
-            if ($remainingWeight <= 0) break;
+            if ($remainingWeight <= 0) {
+                break;
+            }
 
             $rateWeight = $rate['weight'] ?? 0;
             $rateCost = $rate['cost'] ?? 0;
@@ -119,7 +121,7 @@ class ShippingMethod extends Model
     public function isAvailableFor($orderAmount = 0, $weight = 0, $zone = null): bool
     {
         // Check if method is active
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return false;
         }
 
@@ -134,7 +136,7 @@ class ShippingMethod extends Model
         }
 
         // Check zone availability
-        if ($zone && $this->zones && !in_array($zone, $this->zones)) {
+        if ($zone && $this->zones && ! in_array($zone, $this->zones)) {
             return false;
         }
 
@@ -145,9 +147,10 @@ class ShippingMethod extends Model
     {
         if ($this->estimated_days_min && $this->estimated_days_max) {
             if ($this->estimated_days_min === $this->estimated_days_max) {
-                return $this->estimated_days_min . ' day' . ($this->estimated_days_min > 1 ? 's' : '');
+                return $this->estimated_days_min.' day'.($this->estimated_days_min > 1 ? 's' : '');
             }
-            return $this->estimated_days_min . '-' . $this->estimated_days_max . ' days';
+
+            return $this->estimated_days_min.'-'.$this->estimated_days_max.' days';
         }
 
         return 'Standard delivery';

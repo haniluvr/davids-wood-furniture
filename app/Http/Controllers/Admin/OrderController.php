@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\User;
-use App\Models\Product;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Events\OrderCreated;
 use App\Events\OrderStatusChanged;
+use App\Http\Controllers\Controller;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -25,13 +25,13 @@ class OrderController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', '%' . $search . '%')
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('first_name', 'like', '%' . $search . '%')
-                               ->orWhere('last_name', 'like', '%' . $search . '%')
-                               ->orWhere('email', 'like', '%' . $search . '%');
-                  });
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%');
+                    });
             });
         }
 
@@ -76,7 +76,7 @@ class OrderController extends Controller
     {
         $users = User::orderBy('first_name')->get();
         $products = Product::where('is_active', true)->orderBy('name')->get();
-        
+
         return view('admin.orders.create', compact('users', 'products'));
     }
 
@@ -107,9 +107,9 @@ class OrderController extends Controller
                 $quantity = $item['quantity'];
                 $unitPrice = $product->price;
                 $totalPrice = $unitPrice * $quantity;
-                
+
                 $subtotal += $totalPrice;
-                
+
                 $orderItems[] = [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
@@ -133,7 +133,7 @@ class OrderController extends Controller
             // Create order
             $order = Order::create([
                 'user_id' => $validated['user_id'],
-                'order_number' => 'ORD-' . strtoupper(uniqid()),
+                'order_number' => 'ORD-'.strtoupper(uniqid()),
                 'status' => 'pending',
                 'subtotal' => $subtotal,
                 'tax_amount' => $taxAmount,
@@ -170,7 +170,8 @@ class OrderController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Failed to create order: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Failed to create order: '.$e->getMessage()]);
         }
     }
 
@@ -180,6 +181,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load(['user', 'orderItems.product']);
+
         return view('admin.orders.show', compact('order'));
     }
 
@@ -190,7 +192,7 @@ class OrderController extends Controller
     {
         $order->load(['user', 'orderItems.product']);
         $users = User::orderBy('first_name')->get();
-        
+
         return view('admin.orders.edit', compact('order', 'users'));
     }
 
@@ -213,7 +215,7 @@ class OrderController extends Controller
         if ($validated['status'] === 'shipped' && $order->status !== 'shipped') {
             $validated['shipped_at'] = now();
         }
-        
+
         if ($validated['status'] === 'delivered' && $order->status !== 'delivered') {
             $validated['delivered_at'] = now();
         }
@@ -255,7 +257,8 @@ class OrderController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Failed to delete order: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Failed to delete order: '.$e->getMessage()]);
         }
     }
 
@@ -277,7 +280,7 @@ class OrderController extends Controller
         if ($newStatus === 'shipped' && $oldStatus !== 'shipped') {
             $updateData['shipped_at'] = now();
         }
-        
+
         if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
             $updateData['delivered_at'] = now();
         }
@@ -296,10 +299,10 @@ class OrderController extends Controller
     public function downloadInvoice(Order $order)
     {
         $order->load(['user', 'items.product']);
-        
+
         $pdf = Pdf::loadView('admin.orders.pdf.invoice-pdf', compact('order'));
-        
-        return $pdf->download('invoice-' . $order->order_number . '.pdf');
+
+        return $pdf->download('invoice-'.$order->order_number.'.pdf');
     }
 
     /**
@@ -308,10 +311,10 @@ class OrderController extends Controller
     public function downloadPackingSlip(Order $order)
     {
         $order->load(['user', 'items.product']);
-        
+
         $pdf = Pdf::loadView('admin.orders.pdf.packing-slip-pdf', compact('order'));
-        
-        return $pdf->download('packing-slip-' . $order->order_number . '.pdf');
+
+        return $pdf->download('packing-slip-'.$order->order_number.'.pdf');
     }
 
     /**
@@ -320,20 +323,20 @@ class OrderController extends Controller
     public function processRefund(Request $request, Order $order)
     {
         $request->validate([
-            'refund_amount' => 'required|numeric|min:0|max:' . $order->total_amount,
+            'refund_amount' => 'required|numeric|min:0|max:'.$order->total_amount,
             'refund_reason' => 'required|string|max:500',
         ]);
 
         // Here you would integrate with your payment processor
         // For now, we'll just update the order status
-        
+
         $order->update([
             'payment_status' => 'refunded',
             'status' => 'returned',
-            'notes' => ($order->notes ? $order->notes . "\n\n" : '') . 
-                      "Refund processed: ₱" . $request->refund_amount . 
-                      "\nReason: " . $request->refund_reason . 
-                      "\nProcessed at: " . now()->format('Y-m-d H:i:s'),
+            'notes' => ($order->notes ? $order->notes."\n\n" : '').
+                      'Refund processed: ₱'.$request->refund_amount.
+                      "\nReason: ".$request->refund_reason.
+                      "\nProcessed at: ".now()->format('Y-m-d H:i:s'),
         ]);
 
         return back()->with('success', 'Refund processed successfully.');
@@ -352,13 +355,13 @@ class OrderController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', '%' . $search . '%')
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('first_name', 'like', '%' . $search . '%')
-                               ->orWhere('last_name', 'like', '%' . $search . '%')
-                               ->orWhere('email', 'like', '%' . $search . '%');
-                  });
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%');
+                    });
             });
         }
 
@@ -393,7 +396,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order approved successfully'
+            'message' => 'Order approved successfully',
         ]);
     }
 
@@ -421,7 +424,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order rejected successfully'
+            'message' => 'Order rejected successfully',
         ]);
     }
 
@@ -449,7 +452,7 @@ class OrderController extends Controller
                 if ($newStatus === 'shipped' && $oldStatus !== 'shipped') {
                     $updateData['shipped_at'] = now();
                 }
-                
+
                 if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
                     $updateData['delivered_at'] = now();
                 }
@@ -461,7 +464,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => count($orderIds) . ' orders updated successfully'
+            'message' => count($orderIds).' orders updated successfully',
         ]);
     }
 
@@ -475,13 +478,13 @@ class OrderController extends Controller
         // Apply same filters as index
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', '%' . $search . '%')
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('first_name', 'like', '%' . $search . '%')
-                               ->orWhere('last_name', 'like', '%' . $search . '%')
-                               ->orWhere('email', 'like', '%' . $search . '%');
-                  });
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%');
+                    });
             });
         }
 
@@ -498,16 +501,16 @@ class OrderController extends Controller
 
         $orders = $query->get();
 
-        $filename = 'orders_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
-        
+        $filename = 'orders_export_'.now()->format('Y-m-d_H-i-s').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($orders) {
+        $callback = function () use ($orders) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV headers
             fputcsv($file, [
                 'Order Number',
@@ -518,21 +521,21 @@ class OrderController extends Controller
                 'Total Amount',
                 'Currency',
                 'Created At',
-                'Items Count'
+                'Items Count',
             ]);
 
             // CSV data
             foreach ($orders as $order) {
                 fputcsv($file, [
                     $order->order_number,
-                    $order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'Guest',
+                    $order->user ? $order->user->first_name.' '.$order->user->last_name : 'Guest',
                     $order->user ? $order->user->email : 'N/A',
                     $order->status,
                     $order->payment_status,
                     $order->total_amount,
                     $order->currency,
                     $order->created_at->format('Y-m-d H:i:s'),
-                    $order->orderItems->count()
+                    $order->orderItems->count(),
                 ]);
             }
 

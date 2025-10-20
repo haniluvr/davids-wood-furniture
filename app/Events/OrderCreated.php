@@ -3,9 +3,7 @@
 namespace App\Events;
 
 use App\Models\Order;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -60,7 +58,7 @@ class OrderCreated implements ShouldBroadcast
                 'status' => $this->order->status,
                 'created_at' => $this->order->created_at->toISOString(),
             ],
-            'message' => 'New order #' . $this->order->order_number . ' has been placed',
+            'message' => 'New order #'.$this->order->order_number.' has been placed',
             'type' => 'order',
             'priority' => 'high',
         ];

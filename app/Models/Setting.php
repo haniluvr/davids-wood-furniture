@@ -61,7 +61,7 @@ class Setting extends Model
     // Accessors & Mutators
     public function getValueAttribute($value)
     {
-        return match($this->type) {
+        return match ($this->type) {
             'boolean' => (bool) $value,
             'integer' => (int) $value,
             'float' => (float) $value,
@@ -72,7 +72,7 @@ class Setting extends Model
 
     public function setValueAttribute($value)
     {
-        $this->attributes['value'] = match($this->type) {
+        $this->attributes['value'] = match ($this->type) {
             'boolean' => $value ? '1' : '0',
             'json', 'array' => json_encode($value),
             default => (string) $value,
@@ -89,7 +89,7 @@ class Setting extends Model
         return $settings[$key] ?? $default;
     }
 
-    public static function set(string $key, $value, string $type = 'string', string $group = 'general', string $label = null, string $description = null, bool $isPublic = false): self
+    public static function set(string $key, $value, string $type = 'string', string $group = 'general', ?string $label = null, ?string $description = null, bool $isPublic = false): self
     {
         $setting = self::updateOrCreate(
             ['key' => $key],

@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\AuditLog;
 use App\Models\User;
-use App\Models\Product;
-use App\Models\Order;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AuditController extends Controller
@@ -41,10 +39,10 @@ class AuditController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('event', 'like', "%{$search}%")
-                  ->orWhere('old_values', 'like', "%{$search}%")
-                  ->orWhere('new_values', 'like', "%{$search}%")
-                  ->orWhere('ip_address', 'like', "%{$search}%")
-                  ->orWhere('user_agent', 'like', "%{$search}%");
+                    ->orWhere('old_values', 'like', "%{$search}%")
+                    ->orWhere('new_values', 'like', "%{$search}%")
+                    ->orWhere('ip_address', 'like', "%{$search}%")
+                    ->orWhere('user_agent', 'like', "%{$search}%");
             });
         }
 
@@ -71,11 +69,11 @@ class AuditController extends Controller
             ->get();
 
         return view('admin.audit.index', compact(
-            'auditLogs', 
-            'users', 
-            'events', 
-            'auditableTypes', 
-            'stats', 
+            'auditLogs',
+            'users',
+            'events',
+            'auditableTypes',
+            'stats',
             'activitySummary'
         ));
     }
@@ -109,25 +107,25 @@ class AuditController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('event', 'like', "%{$search}%")
-                  ->orWhere('old_values', 'like', "%{$search}%")
-                  ->orWhere('new_values', 'like', "%{$search}%")
-                  ->orWhere('ip_address', 'like', "%{$search}%")
-                  ->orWhere('user_agent', 'like', "%{$search}%");
+                    ->orWhere('old_values', 'like', "%{$search}%")
+                    ->orWhere('new_values', 'like', "%{$search}%")
+                    ->orWhere('ip_address', 'like', "%{$search}%")
+                    ->orWhere('user_agent', 'like', "%{$search}%");
             });
         }
 
         $auditLogs = $query->orderBy('created_at', 'desc')->get();
 
-        $filename = 'audit_logs_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $filename = 'audit_logs_'.now()->format('Y-m-d_H-i-s').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
         $callback = function () use ($auditLogs) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV headers
             fputcsv($file, [
                 'ID',
@@ -139,7 +137,7 @@ class AuditController extends Controller
                 'New Values',
                 'IP Address',
                 'User Agent',
-                'Created At'
+                'Created At',
             ]);
 
             // CSV data
@@ -154,7 +152,7 @@ class AuditController extends Controller
                     json_encode($log->new_values),
                     $log->ip_address,
                     $log->user_agent,
-                    $log->created_at->format('Y-m-d H:i:s')
+                    $log->created_at->format('Y-m-d H:i:s'),
                 ]);
             }
 

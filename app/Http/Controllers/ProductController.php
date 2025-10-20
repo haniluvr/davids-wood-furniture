@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -22,9 +22,9 @@ class ProductController extends Controller
         // Search
         if ($request->has('search') && $request->search) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%')
-                  ->orWhere('sku', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%')
+                    ->orWhere('sku', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -46,11 +46,11 @@ class ProductController extends Controller
                 $query->addSelect([
                     'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
                         ->whereColumn('product_id', 'products.id')
-                        ->where('is_approved', true)
+                        ->where('is_approved', true),
                 ])
-                ->orderBy('avg_rating', 'desc')
-                ->orderBy('sort_order', 'asc')
-                ->orderBy('created_at', 'desc');
+                    ->orderBy('avg_rating', 'desc')
+                    ->orderBy('sort_order', 'asc')
+                    ->orderBy('created_at', 'desc');
                 break;
         }
 
@@ -63,7 +63,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $sessionIdAtStart = session()->getId();
-        
+
         \Log::info('Product show method called', [
             'product_id' => $product->id,
             'product_slug' => $product->slug,
@@ -72,16 +72,16 @@ class ProductController extends Controller
             'user_id' => \Auth::id(),
             'url' => request()->url(),
             'referer' => request()->header('referer'),
-            'route_parameters' => request()->route()->parameters()
+            'route_parameters' => request()->route()->parameters(),
         ]);
-        
+
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)
             ->addSelect([
                 'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
                     ->whereColumn('product_id', 'products.id')
-                    ->where('is_approved', true)
+                    ->where('is_approved', true),
             ])
             ->orderBy('avg_rating', 'desc')
             ->orderBy('sort_order', 'asc')
@@ -105,14 +105,14 @@ class ProductController extends Controller
         ];
 
         $sessionIdAtEnd = session()->getId();
-        
+
         \Log::info('Product show method completed', [
             'product_id' => $product->id,
             'session_id_at_start' => $sessionIdAtStart,
             'session_id_at_end' => $sessionIdAtEnd,
             'session_changed' => $sessionIdAtStart !== $sessionIdAtEnd,
             'auth_check' => \Auth::check(),
-            'user_id' => \Auth::id()
+            'user_id' => \Auth::id(),
         ]);
 
         return view('product.show', compact('product', 'relatedProducts', 'reviews', 'ratingDistribution'));

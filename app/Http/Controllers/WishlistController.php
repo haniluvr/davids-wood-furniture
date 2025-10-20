@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\WishlistItem;
-use App\Models\Product;
 use App\Models\GuestSession;
+use App\Models\Product;
+use App\Models\WishlistItem;
 use App\Services\SessionWishlistService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class WishlistController extends Controller
 {
@@ -18,19 +16,20 @@ class WishlistController extends Controller
     {
         $this->sessionWishlistService = $sessionWishlistService;
     }
+
     /**
      * Get or create guest session
      */
     private function getOrCreateGuestSession(string $sessionId): GuestSession
     {
         $guestSession = GuestSession::findOrCreateSession($sessionId);
-        
+
         // Ensure session is saved after creating guest session
         session()->save();
-        
+
         return $guestSession;
     }
-    
+
     /**
      * Ensure session persistence for guest operations
      */
@@ -38,13 +37,13 @@ class WishlistController extends Controller
     {
         // Force session save
         session()->save();
-        
+
         // Additional persistence check
         if (session()->driver() instanceof \Illuminate\Session\Store) {
             session()->driver()->save();
         }
     }
-    
+
     /**
      * Preserve guest wishlist data before session loss
      */
@@ -54,47 +53,47 @@ class WishlistController extends Controller
             ->whereNull('user_id')
             ->with('product')
             ->get();
-            
+
         \Log::info('Preserving guest wishlist data', [
             'session_id' => $sessionId,
             'items_count' => $guestItems->count(),
-            'product_ids' => $guestItems->pluck('product_id')->toArray()
+            'product_ids' => $guestItems->pluck('product_id')->toArray(),
         ]);
-        
+
         return $guestItems->toArray();
     }
-    
+
     /**
      * Restore guest wishlist data from preserved data
      */
     public function restoreGuestWishlistData($userId, array $preservedData): int
     {
         $restoredCount = 0;
-        
+
         foreach ($preservedData as $item) {
             $productId = $item['product_id'];
-            
+
             // Check if user already has this product
             $existingItem = WishlistItem::where('user_id', $userId)
                 ->where('product_id', $productId)
                 ->first();
-                
-            if (!$existingItem) {
+
+            if (! $existingItem) {
                 WishlistItem::create([
                     'user_id' => $userId,
                     'session_id' => null,
-                    'product_id' => $productId
+                    'product_id' => $productId,
                 ]);
                 $restoredCount++;
             }
         }
-        
+
         \Log::info('Restored guest wishlist data', [
             'user_id' => $userId,
             'restored_count' => $restoredCount,
-            'total_preserved' => count($preservedData)
+            'total_preserved' => count($preservedData),
         ]);
-        
+
         return $restoredCount;
     }
 
@@ -110,7 +109,7 @@ class WishlistController extends Controller
             \Log::info('Fetching wishlist items from Redis', [
                 'user_id' => $userId,
                 'session_id' => $sessionId,
-                'authenticated' => \Auth::check()
+                'authenticated' => \Auth::check(),
             ]);
 
             // Use session service to get wishlist items
@@ -118,19 +117,20 @@ class WishlistController extends Controller
 
             \Log::info('Wishlist items found', [
                 'count' => $items->count(),
-                'items' => $items->pluck('id')->toArray()
+                'items' => $items->pluck('id')->toArray(),
             ]);
 
             return response()->json($items);
         } catch (\Exception $e) {
             \Log::error('Error fetching wishlist', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching wishlist',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -144,13 +144,13 @@ class WishlistController extends Controller
             \Log::info('Wishlist add method called', [
                 'request_data' => $request->all(),
                 'session_id' => session()->getId(),
-                'user_id' => \Auth::id()
+                'user_id' => \Auth::id(),
             ]);
 
             $request->validate([
-                'product_id' => 'required|integer|exists:products,id'
+                'product_id' => 'required|integer|exists:products,id',
             ]);
-            
+
             $sessionId = session()->getId();
             $userId = \Auth::id();
             $productId = $request->product_id;
@@ -158,21 +158,21 @@ class WishlistController extends Controller
             \Log::info('Processing wishlist add with Redis', [
                 'session_id' => $sessionId,
                 'user_id' => $userId,
-                'product_id' => $productId
+                'product_id' => $productId,
             ]);
 
             // Check if already in wishlist using session service
             $exists = $this->sessionWishlistService->isInWishlist($productId, $userId, $sessionId);
 
             \Log::info('Wishlist item exists check', [
-                'exists' => $exists
+                'exists' => $exists,
             ]);
 
-            if (!$exists) {
+            if (! $exists) {
                 // Create guest session if needed for guests
-                if (!$userId) {
+                if (! $userId) {
                     \Log::info('Creating guest session for wishlist', [
-                        'session_id' => $sessionId
+                        'session_id' => $sessionId,
                     ]);
                     $guestSession = $this->getOrCreateGuestSession($sessionId);
                 }
@@ -181,19 +181,19 @@ class WishlistController extends Controller
                 \Log::info('Calling sessionWishlistService->addToWishlist', [
                     'product_id' => $productId,
                     'user_id' => $userId,
-                    'session_id' => $sessionId
+                    'session_id' => $sessionId,
                 ]);
-                
+
                 $result = $this->sessionWishlistService->addToWishlist($productId, $userId, $sessionId);
-                
+
                 \Log::info('SessionWishlistService->addToWishlist result', [
                     'result' => $result,
                     'user_id' => $userId,
                     'session_id' => $sessionId,
-                    'product_id' => $productId
+                    'product_id' => $productId,
                 ]);
             }
-            
+
             // Ensure session persistence
             $this->ensureSessionPersistence();
 
@@ -201,12 +201,13 @@ class WishlistController extends Controller
         } catch (\Exception $e) {
             \Log::error('Wishlist add error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error adding to wishlist',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -218,9 +219,9 @@ class WishlistController extends Controller
     {
         try {
             $request->validate([
-                'product_id' => 'required|integer|exists:products,id'
+                'product_id' => 'required|integer|exists:products,id',
             ]);
-            
+
             $sessionId = session()->getId();
             $userId = \Auth::id();
             $productId = $request->product_id;
@@ -233,7 +234,7 @@ class WishlistController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error removing from wishlist',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -254,7 +255,7 @@ class WishlistController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error checking wishlist',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -268,13 +269,13 @@ class WishlistController extends Controller
             \Log::info('Wishlist toggle method called', [
                 'request_data' => $request->all(),
                 'session_id' => session()->getId(),
-                'user_id' => \Auth::id()
+                'user_id' => \Auth::id(),
             ]);
 
             $request->validate([
-                'product_id' => 'required|integer|exists:products,id'
+                'product_id' => 'required|integer|exists:products,id',
             ]);
-            
+
             $sessionId = session()->getId();
             $userId = \Auth::id();
             $productId = $request->product_id;
@@ -282,14 +283,14 @@ class WishlistController extends Controller
             \Log::info('Processing wishlist toggle', [
                 'session_id' => $sessionId,
                 'user_id' => $userId,
-                'product_id' => $productId
+                'product_id' => $productId,
             ]);
 
             // Check if item exists using database service
             $itemExists = $this->sessionWishlistService->isInWishlist($productId, $userId, $sessionId);
 
             \Log::info('Wishlist item exists check', [
-                'item_exists' => $itemExists
+                'item_exists' => $itemExists,
             ]);
 
             $wasAdded = false;
@@ -297,48 +298,48 @@ class WishlistController extends Controller
                 \Log::info('Removing wishlist item from database', [
                     'user_id' => $userId,
                     'session_id' => $sessionId,
-                    'product_id' => $productId
+                    'product_id' => $productId,
                 ]);
                 $this->sessionWishlistService->removeFromWishlist($productId, $userId, $sessionId);
             } else {
                 \Log::info('Adding wishlist item to database', [
                     'user_id' => $userId,
                     'session_id' => $sessionId,
-                    'product_id' => $productId
+                    'product_id' => $productId,
                 ]);
-                
+
                 // Create guest session if needed for guests
-                if (!$userId) {
+                if (! $userId) {
                     \Log::info('Creating guest session for toggle', [
-                        'session_id' => $sessionId
+                        'session_id' => $sessionId,
                     ]);
                     $guestSession = $this->getOrCreateGuestSession($sessionId);
                     \Log::info('Guest session created/found', [
                         'session_id' => $guestSession->session_id,
                         'created_at' => $guestSession->created_at,
-                        'expires_at' => $guestSession->expires_at
+                        'expires_at' => $guestSession->expires_at,
                     ]);
                 }
 
                 try {
                     // Add to database wishlist
                     $this->sessionWishlistService->addToWishlist($productId, $userId, $sessionId);
-                    
+
                     \Log::info('Wishlist item added to database in toggle', [
                         'user_id' => $userId,
                         'session_id' => $sessionId,
-                        'product_id' => $productId
+                        'product_id' => $productId,
                     ]);
                 } catch (\Exception $e) {
                     \Log::error('Failed to add wishlist item to database', [
                         'error' => $e->getMessage(),
                         'user_id' => $userId,
                         'session_id' => $sessionId,
-                        'product_id' => $productId
+                        'product_id' => $productId,
                     ]);
                     throw $e;
                 }
-                
+
                 $wasAdded = true;
             }
 
@@ -349,12 +350,13 @@ class WishlistController extends Controller
         } catch (\Exception $e) {
             \Log::error('Wishlist toggle error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error toggling wishlist',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -373,17 +375,16 @@ class WishlistController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Wishlist cleared successfully'
+                'message' => 'Wishlist cleared successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error clearing wishlist',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     /**
      * Manual migration endpoint for frontend to trigger wishlist migration
@@ -392,35 +393,36 @@ class WishlistController extends Controller
     {
         try {
             $user = auth()->user();
-            if (!$user) {
+            if (! $user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Authentication required'
+                    'message' => 'Authentication required',
                 ], 401);
             }
-            
+
             $sessionId = session()->getId();
-            
+
             \Log::info('Manual wishlist migration triggered', [
                 'user_id' => $user->id,
-                'session_id' => $sessionId
+                'session_id' => $sessionId,
             ]);
-            
+
             $this->migrateWishlistToUser($user->id, $sessionId);
-            
+
             return response()->json([
                 'success' => true,
-                'message' => 'Wishlist migration completed'
+                'message' => 'Wishlist migration completed',
             ]);
         } catch (\Exception $e) {
             \Log::error('Manual wishlist migration failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Migration failed',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -433,7 +435,7 @@ class WishlistController extends Controller
         try {
             \Log::info('Starting database wishlist migration', [
                 'user_id' => $userId,
-                'session_id' => $sessionId
+                'session_id' => $sessionId,
             ]);
 
             // Use database service to migrate guest wishlist to user
@@ -442,7 +444,7 @@ class WishlistController extends Controller
             \Log::info('Database wishlist migration completed', [
                 'user_id' => $userId,
                 'session_id' => $sessionId,
-                'migrated_count' => $migratedCount
+                'migrated_count' => $migratedCount,
             ]);
 
         } catch (\Exception $e) {
@@ -450,7 +452,7 @@ class WishlistController extends Controller
                 'user_id' => $userId,
                 'session_id' => $sessionId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
             throw $e; // Re-throw to ensure the error is visible
         }

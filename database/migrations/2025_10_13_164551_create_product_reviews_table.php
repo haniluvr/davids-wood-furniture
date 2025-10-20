@@ -23,7 +23,7 @@ return new class extends Migration
             $table->boolean('is_approved')->default(false); // For moderation
             $table->integer('helpful_count')->default(0);
             $table->timestamps();
-            
+
             // Ensure one review per user per product per order
             $table->unique(['user_id', 'product_id', 'order_id']);
         });

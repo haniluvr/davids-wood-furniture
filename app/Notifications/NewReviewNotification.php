@@ -2,11 +2,10 @@
 
 namespace App\Notifications;
 
+use App\Models\ProductReview;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\ProductReview;
 
 class NewReviewNotification extends Notification
 {
@@ -27,9 +26,9 @@ class NewReviewNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('New Product Review - ' . $this->review->product->name)
+            ->subject('New Product Review - '.$this->review->product->name)
             ->view('emails.reviews.new-review', [
-                'review' => $this->review
+                'review' => $this->review,
             ]);
     }
 

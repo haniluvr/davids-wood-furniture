@@ -16,7 +16,7 @@ return new class extends Migration
             if (Schema::hasColumn('products', 'room_category')) {
                 $table->dropColumn('room_category');
             }
-            
+
             // Add room_category as JSON column
             $table->json('room_category')->nullable()->after('subcategory_id');
         });

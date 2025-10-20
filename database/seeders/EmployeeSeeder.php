@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Employee;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class EmployeeSeeder extends Seeder
@@ -40,7 +40,7 @@ class EmployeeSeeder extends Seeder
                 'status' => 'active',
                 'email_verified_at' => now(),
             ],
-            
+
             // Admin
             [
                 'first_name' => 'Sarah',
@@ -61,7 +61,7 @@ class EmployeeSeeder extends Seeder
                 'status' => 'active',
                 'email_verified_at' => now(),
             ],
-            
+
             // Manager
             [
                 'first_name' => 'Michael',
@@ -81,7 +81,7 @@ class EmployeeSeeder extends Seeder
                 'status' => 'active',
                 'email_verified_at' => now(),
             ],
-            
+
             // Manager
             [
                 'first_name' => 'Maria',
@@ -99,7 +99,7 @@ class EmployeeSeeder extends Seeder
                 'status' => 'active',
                 'email_verified_at' => now(),
             ],
-            
+
             // Employee
             [
                 'first_name' => 'John',
@@ -117,7 +117,7 @@ class EmployeeSeeder extends Seeder
                 'status' => 'active',
                 'email_verified_at' => now(),
             ],
-            
+
             // Employee
             [
                 'first_name' => 'Lisa',
@@ -134,7 +134,7 @@ class EmployeeSeeder extends Seeder
                 'status' => 'active',
                 'email_verified_at' => now(),
             ],
-            
+
             // Employee
             [
                 'first_name' => 'Robert',
@@ -150,7 +150,7 @@ class EmployeeSeeder extends Seeder
                 'status' => 'active',
                 'email_verified_at' => now(),
             ],
-            
+
             // Employee
             [
                 'first_name' => 'Jennifer',
@@ -175,6 +175,6 @@ class EmployeeSeeder extends Seeder
         }
 
         $this->command->info('Employees seeded successfully!');
-        $this->command->info('Created ' . count($employees) . ' employees with @dwatelier.co email addresses.');
+        $this->command->info('Created '.count($employees).' employees with @dwatelier.co email addresses.');
     }
 }

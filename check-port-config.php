@@ -1,22 +1,22 @@
 <?php
+
 /**
  * Quick diagnostic script to check port 8080 configuration
  * Run this with: php check-port-config.php
  */
-
 echo "=== David's Wood Furniture - Port 8080 Configuration Check ===\n\n";
 
 // Check 1: .env file exists
 echo "1. Checking .env file...\n";
 if (file_exists('.env')) {
     echo "   ✓ .env file exists\n";
-    
+
     // Read .env and check APP_URL
     $envContent = file_get_contents('.env');
     if (preg_match('/APP_URL=(.+)/', $envContent, $matches)) {
         $appUrl = trim($matches[1]);
         echo "   Current APP_URL: $appUrl\n";
-        
+
         if (strpos($appUrl, ':8080') !== false) {
             echo "   ✓ APP_URL is configured for port 8080\n";
         } else {
@@ -39,13 +39,13 @@ $vhostsPath = 'C:\\xampp\\apache\\conf\\extra\\httpd-vhosts.conf';
 if (file_exists($vhostsPath)) {
     echo "   ✓ Found Apache vhosts config\n";
     $vhostsContent = file_get_contents($vhostsPath);
-    
+
     $port80Count = substr_count($vhostsContent, '<VirtualHost *:80>');
     $port8080Count = substr_count($vhostsContent, '<VirtualHost *:8080>');
-    
+
     echo "   VirtualHost entries on port 80: $port80Count\n";
     echo "   VirtualHost entries on port 8080: $port8080Count\n";
-    
+
     if ($port8080Count >= 2) {
         echo "   ✓ Virtual hosts configured for port 8080\n";
     } else {
@@ -62,7 +62,7 @@ $httpdPath = 'C:\\xampp\\apache\\conf\\httpd.conf';
 if (file_exists($httpdPath)) {
     echo "   ✓ Found Apache main config\n";
     $httpdContent = file_get_contents($httpdPath);
-    
+
     if (preg_match('/^Listen\s+8080/m', $httpdContent)) {
         echo "   ✓ Apache is configured to Listen on port 8080\n";
     } elseif (preg_match('/^Listen\s+80/m', $httpdContent)) {
@@ -78,14 +78,14 @@ $hostsPath = 'C:\\Windows\\System32\\drivers\\etc\\hosts';
 if (file_exists($hostsPath)) {
     echo "   ✓ Found hosts file\n";
     $hostsContent = file_get_contents($hostsPath);
-    
+
     $requiredHosts = [
         'davidswood.test',
-        'admin.davidswood.test'
+        'admin.davidswood.test',
     ];
-    
+
     foreach ($requiredHosts as $host) {
-        if (preg_match('/127\.0\.0\.1\s+' . preg_quote($host, '/') . '/m', $hostsContent)) {
+        if (preg_match('/127\.0\.0\.1\s+'.preg_quote($host, '/').'/m', $hostsContent)) {
             echo "   ✓ $host is configured\n";
         } else {
             echo "   ✗ $host is NOT configured\n";
@@ -166,7 +166,3 @@ echo "3. Update .env: APP_URL=http://davidswood.test:8080\n";
 echo "4. Update hosts file: 127.0.0.1 davidswood.test and admin.davidswood.test\n";
 echo "5. Restart Apache\n";
 echo "6. Access: http://davidswood.test:8080\n\n";
-
-
-
-

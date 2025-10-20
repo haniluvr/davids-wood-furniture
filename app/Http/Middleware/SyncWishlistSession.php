@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\SessionWishlistService;
 use Closure;
 use Illuminate\Http\Request;
-use App\Services\SessionWishlistService;
 
 class SyncWishlistSession
 {
@@ -18,41 +18,40 @@ class SyncWishlistSession
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function handle(Request $request, Closure $next)
     {
         $sessionIdBefore = session()->getId();
-        
+
         \Log::info('SyncWishlistSession: Middleware called', [
             'middleware' => 'SyncWishlistSession',
             'session_id_before' => $sessionIdBefore,
             'url' => $request->url(),
             'method' => $request->method(),
             'auth_check' => auth()->check(),
-            'user_id' => auth()->id()
+            'user_id' => auth()->id(),
         ]);
-        
+
         // Only sync for guest users (not authenticated users)
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             $sessionId = session()->getId();
-            
+
             // Sync session wishlist with database
             $this->sessionWishlistService->syncSessionWithDatabase($sessionId);
         }
 
         $response = $next($request);
-        
+
         $sessionIdAfter = session()->getId();
-        
+
         \Log::info('SyncWishlistSession: Middleware completed', [
             'middleware' => 'SyncWishlistSession',
             'session_id_before' => $sessionIdBefore,
             'session_id_after' => $sessionIdAfter,
             'session_changed' => $sessionIdBefore !== $sessionIdAfter,
-            'url' => $request->url()
+            'url' => $request->url(),
         ]);
 
         return $response;

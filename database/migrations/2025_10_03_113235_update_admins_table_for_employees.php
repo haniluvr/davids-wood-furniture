@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('admins', function (Blueprint $table) {
             // Update role enum to include employee roles
             $table->enum('role', ['super_admin', 'admin', 'manager', 'employee'])->default('employee')->change();
-            
+
             // Add employee-specific fields
             $table->string('employee_id')->unique()->after('id');
             $table->string('department')->nullable()->after('role');
@@ -33,7 +33,7 @@ return new class extends Migration
         Schema::table('admins', function (Blueprint $table) {
             // Revert role enum
             $table->enum('role', ['super_admin', 'admin', 'manager', 'staff'])->default('admin')->change();
-            
+
             // Remove employee-specific fields
             $table->dropColumn([
                 'employee_id',
@@ -41,7 +41,7 @@ return new class extends Migration
                 'position',
                 'hire_date',
                 'salary',
-                'employment_status'
+                'employment_status',
             ]);
         });
     }

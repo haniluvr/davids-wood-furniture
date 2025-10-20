@@ -3,9 +3,7 @@
 namespace App\Events;
 
 use App\Models\ProductReview;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -61,7 +59,7 @@ class NewReview implements ShouldBroadcast
                 'status' => $this->review->status,
                 'created_at' => $this->review->created_at->toISOString(),
             ],
-            'message' => 'New review for ' . $this->review->product->name . ' by ' . $this->review->user->name,
+            'message' => 'New review for '.$this->review->product->name.' by '.$this->review->user->name,
             'type' => 'review',
             'priority' => 'medium',
         ];

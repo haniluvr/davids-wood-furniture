@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Notification;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class TestNotificationsSeeder extends Seeder
 {
@@ -15,11 +15,12 @@ class TestNotificationsSeeder extends Seeder
     public function run(): void
     {
         $userId = 76;
-        
+
         // Check if user exists
         $user = User::find($userId);
-        if (!$user) {
+        if (! $user) {
             $this->command->error("User with ID {$userId} not found!");
+
             return;
         }
 
@@ -146,9 +147,8 @@ class TestNotificationsSeeder extends Seeder
             Notification::create($notification);
         }
 
-        $this->command->info("Successfully created " . count($notifications) . " test notifications for user {$userId}!");
-        $this->command->info("Unread notifications: " . collect($notifications)->where('status', 'sent')->count());
-        $this->command->info("Read notifications: " . collect($notifications)->where('status', 'read')->count());
+        $this->command->info('Successfully created '.count($notifications)." test notifications for user {$userId}!");
+        $this->command->info('Unread notifications: '.collect($notifications)->where('status', 'sent')->count());
+        $this->command->info('Read notifications: '.collect($notifications)->where('status', 'read')->count());
     }
 }
-

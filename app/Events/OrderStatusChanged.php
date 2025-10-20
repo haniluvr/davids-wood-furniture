@@ -3,9 +3,7 @@
 namespace App\Events;
 
 use App\Models\Order;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -16,7 +14,9 @@ class OrderStatusChanged implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $order;
+
     public $oldStatus;
+
     public $newStatus;
 
     /**
@@ -39,7 +39,7 @@ class OrderStatusChanged implements ShouldBroadcast
         return [
             new PrivateChannel('admin.orders'),
             new PrivateChannel('admin.notifications'),
-            new PrivateChannel('user.' . $this->order->user_id),
+            new PrivateChannel('user.'.$this->order->user_id),
         ];
     }
 
@@ -69,7 +69,7 @@ class OrderStatusChanged implements ShouldBroadcast
                 'from' => $this->oldStatus,
                 'to' => $this->newStatus,
             ],
-            'message' => 'Order #' . $this->order->order_number . ' status changed from ' . ucfirst($this->oldStatus) . ' to ' . ucfirst($this->newStatus),
+            'message' => 'Order #'.$this->order->order_number.' status changed from '.ucfirst($this->oldStatus).' to '.ucfirst($this->newStatus),
             'type' => 'order_status',
             'priority' => 'medium',
         ];

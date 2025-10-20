@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Dynamically set APP_URL based on the request domain
         $host = request()->getHost();
-        
+
         if ($host === 'admin.davidswood.test') {
             config(['app.url' => 'https://admin.davidswood.test:8443']);
         } elseif ($host === 'davidswood.test') {

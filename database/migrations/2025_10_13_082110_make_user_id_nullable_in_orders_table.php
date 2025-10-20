@@ -14,15 +14,15 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             // Drop the existing foreign key constraint
             $table->dropForeign(['user_id']);
-            
+
             // Make user_id nullable
             $table->foreignId('user_id')->nullable()->change();
-            
+
             // Add new foreign key with SET NULL on delete
             $table->foreign('user_id')
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('set null');
+                ->references('id')
+                ->on('users')
+                ->onDelete('set null');
         });
     }
 
@@ -34,15 +34,15 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             // Drop the SET NULL foreign key
             $table->dropForeign(['user_id']);
-            
+
             // Make user_id not nullable again
             $table->foreignId('user_id')->nullable(false)->change();
-            
+
             // Restore original CASCADE foreign key
             $table->foreign('user_id')
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
         });
     }
 };

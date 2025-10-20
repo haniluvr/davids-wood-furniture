@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification as NotificationModel;
+use App\Models\Order;
+use App\Models\User;
+use App\Notifications\LowStockNotification;
+use App\Notifications\NewReviewNotification;
+use App\Notifications\OrderCreatedNotification;
+use App\Notifications\OrderStatusChangedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
-use App\Models\Notification as NotificationModel;
-use App\Models\User;
-use App\Models\Order;
-use App\Notifications\OrderCreatedNotification;
-use App\Notifications\OrderStatusChangedNotification;
-use App\Notifications\LowStockNotification;
-use App\Notifications\NewReviewNotification;
 
 class NotificationController extends Controller
 {
@@ -38,33 +38,33 @@ class NotificationController extends Controller
             'order_created' => [
                 'name' => 'Order Created',
                 'subject' => 'Order Confirmation - #{{order_number}}',
-                'description' => 'Sent when a new order is placed'
+                'description' => 'Sent when a new order is placed',
             ],
             'order_status_changed' => [
                 'name' => 'Order Status Changed',
                 'subject' => 'Order Update - #{{order_number}}',
-                'description' => 'Sent when order status changes'
+                'description' => 'Sent when order status changes',
             ],
             'low_stock' => [
                 'name' => 'Low Stock Alert',
                 'subject' => 'Low Stock Alert - {{product_name}}',
-                'description' => 'Sent when product stock is low'
+                'description' => 'Sent when product stock is low',
             ],
             'new_review' => [
                 'name' => 'New Review',
                 'subject' => 'New Product Review - {{product_name}}',
-                'description' => 'Sent when a new review is submitted'
+                'description' => 'Sent when a new review is submitted',
             ],
             'welcome' => [
                 'name' => 'Welcome Email',
                 'subject' => 'Welcome to {{site_name}}!',
-                'description' => 'Sent to new users after registration'
+                'description' => 'Sent to new users after registration',
             ],
             'password_reset' => [
                 'name' => 'Password Reset',
                 'subject' => 'Reset Your Password',
-                'description' => 'Sent when user requests password reset'
-            ]
+                'description' => 'Sent when user requests password reset',
+            ],
         ];
 
         return view('admin.notifications.templates', compact('templates'));
@@ -75,7 +75,7 @@ class NotificationController extends Controller
         $request->validate([
             'subject' => 'required|string|max:255',
             'body' => 'required|string',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
         ]);
 
         // Update template in settings or database
@@ -102,7 +102,7 @@ class NotificationController extends Controller
             'recipients' => 'required|array',
             'recipients.*' => 'required|email',
             'subject' => 'required|string|max:255',
-            'body' => 'required|string'
+            'body' => 'required|string',
         ]);
 
         $recipients = $request->recipients;
@@ -112,7 +112,7 @@ class NotificationController extends Controller
         try {
             foreach ($recipients as $email) {
                 $user = User::where('email', $email)->first();
-                
+
                 if ($user) {
                     // Send notification to user
                     $user->notify(new \App\Notifications\CustomNotification($subject, $body));
@@ -126,7 +126,7 @@ class NotificationController extends Controller
 
             return redirect()->back()->with('success', 'Notifications sent successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to send notifications: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to send notifications: '.$e->getMessage());
         }
     }
 
@@ -134,13 +134,13 @@ class NotificationController extends Controller
     {
         $request->validate([
             'type' => 'required|in:order_created,order_status_changed,low_stock,new_review,welcome,password_reset',
-            'email' => 'required|email'
+            'email' => 'required|email',
         ]);
 
         try {
             $user = User::where('email', $request->email)->first();
-            
-            if (!$user) {
+
+            if (! $user) {
                 return redirect()->back()->with('error', 'User not found with that email address.');
             }
 
@@ -174,7 +174,7 @@ class NotificationController extends Controller
 
             return redirect()->back()->with('success', 'Test notification sent successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to send test notification: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to send test notification: '.$e->getMessage());
         }
     }
 }

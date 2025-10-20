@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ReturnRepair;
 use App\Models\Order;
+use App\Models\ReturnRepair;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -32,14 +32,14 @@ class ReturnsRepairsController extends Controller
     public function show(ReturnRepair $returnRepair)
     {
         $returnRepair->load(['order.user', 'order.orderItems.product', 'processedBy']);
-        
+
         return view('admin.orders.returns-repairs-detail', compact('returnRepair'));
     }
 
     public function create()
     {
         $orders = Order::with('user')->where('status', 'delivered')->orderBy('created_at', 'desc')->get();
-        
+
         return view('admin.orders.returns-repairs-create', compact('orders'));
     }
 
@@ -107,7 +107,7 @@ class ReturnsRepairsController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Return/Repair request approved successfully'
+            'message' => 'Return/Repair request approved successfully',
         ]);
     }
 
@@ -127,7 +127,7 @@ class ReturnsRepairsController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Return/Repair request rejected'
+            'message' => 'Return/Repair request rejected',
         ]);
     }
 
@@ -148,7 +148,7 @@ class ReturnsRepairsController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Return/Repair marked as received'
+            'message' => 'Return/Repair marked as received',
         ]);
     }
 
@@ -173,7 +173,7 @@ class ReturnsRepairsController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Refund processed successfully'
+            'message' => 'Refund processed successfully',
         ]);
     }
 
@@ -194,7 +194,7 @@ class ReturnsRepairsController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Return/Repair marked as completed'
+            'message' => 'Return/Repair marked as completed',
         ]);
     }
 
@@ -210,7 +210,7 @@ class ReturnsRepairsController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Notes updated successfully'
+            'message' => 'Notes updated successfully',
         ]);
     }
 
@@ -222,7 +222,7 @@ class ReturnsRepairsController extends Controller
         ]);
 
         $photoPaths = $returnRepair->photos ?? [];
-        
+
         foreach ($request->file('photos') as $photo) {
             $path = $photo->store('returns-photos', 'public');
             $photoPaths[] = $path;
@@ -233,7 +233,7 @@ class ReturnsRepairsController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Photos uploaded successfully',
-            'photos' => $photoPaths
+            'photos' => $photoPaths,
         ]);
     }
 
@@ -245,21 +245,21 @@ class ReturnsRepairsController extends Controller
 
         $photos = $returnRepair->photos ?? [];
         $photoIndex = array_search($request->photo_path, $photos);
-        
+
         if ($photoIndex !== false) {
             // Delete file from storage
             Storage::disk('public')->delete($request->photo_path);
-            
+
             // Remove from array
             unset($photos[$photoIndex]);
             $photos = array_values($photos); // Re-index array
-            
+
             $returnRepair->update(['photos' => $photos]);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Photo deleted successfully'
+            'message' => 'Photo deleted successfully',
         ]);
     }
 }

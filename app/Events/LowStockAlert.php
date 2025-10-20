@@ -3,9 +3,7 @@
 namespace App\Events;
 
 use App\Models\Product;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -16,7 +14,9 @@ class LowStockAlert implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $product;
+
     public $currentStock;
+
     public $threshold;
 
     /**
@@ -63,7 +63,7 @@ class LowStockAlert implements ShouldBroadcast
                 'current_stock' => $this->currentStock,
                 'threshold' => $this->threshold,
             ],
-            'message' => 'Low stock alert: ' . $this->product->name . ' has only ' . $this->currentStock . ' units remaining',
+            'message' => 'Low stock alert: '.$this->product->name.' has only '.$this->currentStock.' units remaining',
             'type' => 'inventory',
             'priority' => 'high',
             'action_required' => true,

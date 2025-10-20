@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+
 // use Intervention\Image\Facades\Image; // Will be enabled when package is installed
 
 class ImageUploadController extends Controller
@@ -17,13 +18,13 @@ class ImageUploadController extends Controller
             'images' => 'required|array|max:10',
             'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
             'type' => 'required|in:product,user,general',
-            'product_id' => 'nullable|exists:products,id'
+            'product_id' => 'nullable|exists:products,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -35,33 +36,33 @@ class ImageUploadController extends Controller
             foreach ($request->file('images') as $image) {
                 $filename = $this->generateFilename($image, $type);
                 $path = $this->getStoragePath($type, $productId);
-                
+
                 // Store original image
                 $originalPath = $image->storeAs($path, $filename, 'public');
-                
+
                 // Generate thumbnails
                 $thumbnails = $this->generateThumbnails($image, $path, $filename);
-                
+
                 $uploadedImages[] = [
                     'filename' => $filename,
                     'path' => $originalPath,
                     'url' => Storage::url($originalPath),
                     'thumbnails' => $thumbnails,
                     'size' => $image->getSize(),
-                    'mime_type' => $image->getMimeType()
+                    'mime_type' => $image->getMimeType(),
                 ];
             }
 
             return response()->json([
                 'success' => true,
                 'images' => $uploadedImages,
-                'message' => count($uploadedImages) . ' image(s) uploaded successfully.'
+                'message' => count($uploadedImages).' image(s) uploaded successfully.',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Upload failed: ' . $e->getMessage()
+                'message' => 'Upload failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -69,29 +70,29 @@ class ImageUploadController extends Controller
     public function delete(Request $request, $image)
     {
         try {
-            $imagePath = 'images/' . $image;
-            
+            $imagePath = 'images/'.$image;
+
             if (Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
-                
+
                 // Delete thumbnails
                 $this->deleteThumbnails($imagePath);
-                
+
                 return response()->json([
                     'success' => true,
-                    'message' => 'Image deleted successfully.'
+                    'message' => 'Image deleted successfully.',
                 ]);
             }
 
             return response()->json([
                 'success' => false,
-                'message' => 'Image not found.'
+                'message' => 'Image not found.',
             ], 404);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Delete failed: ' . $e->getMessage()
+                'message' => 'Delete failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -101,29 +102,29 @@ class ImageUploadController extends Controller
         $validator = Validator::make($request->all(), [
             'images' => 'required|array',
             'images.*.id' => 'required|string',
-            'images.*.order' => 'required|integer|min:0'
+            'images.*.order' => 'required|integer|min:0',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         try {
             // Update image order in database if needed
             // This would typically update a sort_order field in your images table
-            
+
             return response()->json([
                 'success' => true,
-                'message' => 'Image order updated successfully.'
+                'message' => 'Image order updated successfully.',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Reorder failed: ' . $e->getMessage()
+                'message' => 'Reorder failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -133,18 +134,18 @@ class ImageUploadController extends Controller
         $extension = $image->getClientOriginalExtension();
         $timestamp = now()->format('Y-m-d_H-i-s');
         $random = Str::random(8);
-        
+
         return "{$type}_{$timestamp}_{$random}.{$extension}";
     }
 
     private function getStoragePath($type, $productId = null)
     {
         $basePath = "images/{$type}";
-        
+
         if ($productId) {
             $basePath .= "/product_{$productId}";
         }
-        
+
         return $basePath;
     }
 
@@ -154,7 +155,7 @@ class ImageUploadController extends Controller
         $sizes = [
             'small' => [150, 150],
             'medium' => [300, 300],
-            'large' => [600, 600]
+            'large' => [600, 600],
         ];
 
         try {
@@ -162,32 +163,32 @@ class ImageUploadController extends Controller
             // This will be enhanced when Intervention Image is installed
             foreach ($sizes as $size => $dimensions) {
                 $thumbnailFilename = $this->getThumbnailFilename($filename, $size);
-                $thumbnailPath = $path . '/thumbnails/' . $thumbnailFilename;
-                
+                $thumbnailPath = $path.'/thumbnails/'.$thumbnailFilename;
+
                 // Create thumbnails directory if it doesn't exist
-                $thumbnailDir = storage_path('app/public/' . $path . '/thumbnails');
-                if (!file_exists($thumbnailDir)) {
+                $thumbnailDir = storage_path('app/public/'.$path.'/thumbnails');
+                if (! file_exists($thumbnailDir)) {
                     mkdir($thumbnailDir, 0755, true);
                 }
-                
+
                 // Copy original image as thumbnail for now
-                $originalPath = storage_path('app/public/' . $path . '/' . $filename);
-                $thumbnailFullPath = storage_path('app/public/' . $thumbnailPath);
-                
+                $originalPath = storage_path('app/public/'.$path.'/'.$filename);
+                $thumbnailFullPath = storage_path('app/public/'.$thumbnailPath);
+
                 if (file_exists($originalPath)) {
                     copy($originalPath, $thumbnailFullPath);
                 }
-                
+
                 $thumbnails[$size] = [
                     'path' => $thumbnailPath,
                     'url' => Storage::url($thumbnailPath),
                     'width' => $dimensions[0],
-                    'height' => $dimensions[1]
+                    'height' => $dimensions[1],
                 ];
             }
 
         } catch (\Exception $e) {
-            \Log::error('Thumbnail generation failed: ' . $e->getMessage());
+            \Log::error('Thumbnail generation failed: '.$e->getMessage());
         }
 
         return $thumbnails;
@@ -196,20 +197,21 @@ class ImageUploadController extends Controller
     private function getThumbnailFilename($filename, $size)
     {
         $pathInfo = pathinfo($filename);
-        return $pathInfo['filename'] . "_{$size}." . $pathInfo['extension'];
+
+        return $pathInfo['filename']."_{$size}.".$pathInfo['extension'];
     }
 
     private function deleteThumbnails($imagePath)
     {
         $pathInfo = pathinfo($imagePath);
-        $thumbnailDir = $pathInfo['dirname'] . '/thumbnails/';
+        $thumbnailDir = $pathInfo['dirname'].'/thumbnails/';
         $filename = $pathInfo['filename'];
         $extension = $pathInfo['extension'];
-        
+
         $sizes = ['small', 'medium', 'large'];
-        
+
         foreach ($sizes as $size) {
-            $thumbnailPath = $thumbnailDir . $filename . "_{$size}.{$extension}";
+            $thumbnailPath = $thumbnailDir.$filename."_{$size}.{$extension}";
             if (Storage::disk('public')->exists($thumbnailPath)) {
                 Storage::disk('public')->delete($thumbnailPath);
             }

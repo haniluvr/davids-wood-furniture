@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProductReview;
 use App\Models\AuditLog;
+use App\Models\ProductReview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Events\NewReview;
 
 class ReviewController extends Controller
 {
@@ -20,17 +19,17 @@ class ReviewController extends Controller
 
         // Search functionality
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('review', 'like', '%' . $request->search . '%')
-                  ->orWhereHas('product', function($productQuery) use ($request) {
-                      $productQuery->where('name', 'like', '%' . $request->search . '%');
-                  })
-                  ->orWhereHas('user', function($userQuery) use ($request) {
-                      $userQuery->where('first_name', 'like', '%' . $request->search . '%')
-                               ->orWhere('last_name', 'like', '%' . $request->search . '%')
-                               ->orWhere('email', 'like', '%' . $request->search . '%');
-                  });
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('review', 'like', '%'.$request->search.'%')
+                    ->orWhereHas('product', function ($productQuery) use ($request) {
+                        $productQuery->where('name', 'like', '%'.$request->search.'%');
+                    })
+                    ->orWhereHas('user', function ($userQuery) use ($request) {
+                        $userQuery->where('first_name', 'like', '%'.$request->search.'%')
+                            ->orWhere('last_name', 'like', '%'.$request->search.'%')
+                            ->orWhere('email', 'like', '%'.$request->search.'%');
+                    });
             });
         }
 
@@ -91,7 +90,7 @@ class ReviewController extends Controller
     public function show(ProductReview $review)
     {
         $review->load(['product', 'user', 'order', 'respondedBy']);
-        
+
         return view('admin.reviews.show', compact('review'));
     }
 
@@ -101,14 +100,14 @@ class ReviewController extends Controller
     public function approve(ProductReview $review)
     {
         $oldValues = $review->toArray();
-        
+
         $review->update([
             'is_approved' => true,
         ]);
-        
+
         // Log the action
         AuditLog::logUpdate(Auth::guard('admin')->user(), $review, $oldValues);
-        
+
         return redirect()->back()
             ->with('success', 'Review approved successfully.');
     }
@@ -119,14 +118,14 @@ class ReviewController extends Controller
     public function reject(ProductReview $review)
     {
         $oldValues = $review->toArray();
-        
+
         $review->update([
             'is_approved' => false,
         ]);
-        
+
         // Log the action
         AuditLog::logUpdate(Auth::guard('admin')->user(), $review, $oldValues);
-        
+
         return redirect()->back()
             ->with('success', 'Review rejected successfully.');
     }
@@ -141,16 +140,16 @@ class ReviewController extends Controller
         ]);
 
         $oldValues = $review->toArray();
-        
+
         $review->update([
             'admin_response' => $validated['admin_response'],
             'responded_by' => Auth::guard('admin')->id(),
             'responded_at' => now(),
         ]);
-        
+
         // Log the action
         AuditLog::logUpdate(Auth::guard('admin')->user(), $review, $oldValues);
-        
+
         return redirect()->back()
             ->with('success', 'Response added successfully.');
     }
@@ -165,16 +164,16 @@ class ReviewController extends Controller
         ]);
 
         $oldValues = $review->toArray();
-        
+
         $review->update([
             'admin_response' => $validated['admin_response'],
             'responded_by' => Auth::guard('admin')->id(),
             'responded_at' => now(),
         ]);
-        
+
         // Log the action
         AuditLog::logUpdate(Auth::guard('admin')->user(), $review, $oldValues);
-        
+
         return redirect()->back()
             ->with('success', 'Response updated successfully.');
     }
@@ -185,16 +184,16 @@ class ReviewController extends Controller
     public function removeResponse(ProductReview $review)
     {
         $oldValues = $review->toArray();
-        
+
         $review->update([
             'admin_response' => null,
             'responded_by' => null,
             'responded_at' => null,
         ]);
-        
+
         // Log the action
         AuditLog::logUpdate(Auth::guard('admin')->user(), $review, $oldValues);
-        
+
         return redirect()->back()
             ->with('success', 'Response removed successfully.');
     }
@@ -206,7 +205,7 @@ class ReviewController extends Controller
     {
         // Log the action before deletion
         AuditLog::logDelete(Auth::guard('admin')->user(), $review);
-        
+
         $review->delete();
 
         return redirect()->route('admin.reviews.index')
@@ -224,7 +223,7 @@ class ReviewController extends Controller
         ]);
 
         $reviews = ProductReview::whereIn('id', $validated['review_ids'])->get();
-        
+
         foreach ($reviews as $review) {
             $oldValues = $review->toArray();
             $review->update(['is_approved' => true]);
@@ -232,7 +231,7 @@ class ReviewController extends Controller
         }
 
         return redirect()->back()
-            ->with('success', count($reviews) . ' reviews approved successfully.');
+            ->with('success', count($reviews).' reviews approved successfully.');
     }
 
     /**
@@ -246,7 +245,7 @@ class ReviewController extends Controller
         ]);
 
         $reviews = ProductReview::whereIn('id', $validated['review_ids'])->get();
-        
+
         foreach ($reviews as $review) {
             $oldValues = $review->toArray();
             $review->update(['is_approved' => false]);
@@ -254,7 +253,7 @@ class ReviewController extends Controller
         }
 
         return redirect()->back()
-            ->with('success', count($reviews) . ' reviews rejected successfully.');
+            ->with('success', count($reviews).' reviews rejected successfully.');
     }
 
     /**
@@ -268,14 +267,14 @@ class ReviewController extends Controller
         ]);
 
         $reviews = ProductReview::whereIn('id', $validated['review_ids'])->get();
-        
+
         foreach ($reviews as $review) {
             AuditLog::logDelete(Auth::guard('admin')->user(), $review);
             $review->delete();
         }
 
         return redirect()->back()
-            ->with('success', count($reviews) . ' reviews deleted successfully.');
+            ->with('success', count($reviews).' reviews deleted successfully.');
     }
 
     /**
@@ -287,12 +286,12 @@ class ReviewController extends Controller
 
         // Apply same filters as index
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('review', 'like', '%' . $request->search . '%')
-                  ->orWhereHas('product', function($productQuery) use ($request) {
-                      $productQuery->where('name', 'like', '%' . $request->search . '%');
-                  });
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('review', 'like', '%'.$request->search.'%')
+                    ->orWhereHas('product', function ($productQuery) use ($request) {
+                        $productQuery->where('name', 'like', '%'.$request->search.'%');
+                    });
             });
         }
 
@@ -313,21 +312,21 @@ class ReviewController extends Controller
 
         $reviews = $query->get();
 
-        $filename = 'reviews-export-' . now()->format('Y-m-d-H-i-s') . '.csv';
-        
+        $filename = 'reviews-export-'.now()->format('Y-m-d-H-i-s').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($reviews) {
+        $callback = function () use ($reviews) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV headers
             fputcsv($file, [
-                'ID', 'Product', 'Customer', 'Rating', 'Title', 'Review', 
-                'Verified Purchase', 'Approved', 'Helpful Count', 'Admin Response', 
-                'Created At', 'Updated At'
+                'ID', 'Product', 'Customer', 'Rating', 'Title', 'Review',
+                'Verified Purchase', 'Approved', 'Helpful Count', 'Admin Response',
+                'Created At', 'Updated At',
             ]);
 
             // CSV data
@@ -335,7 +334,7 @@ class ReviewController extends Controller
                 fputcsv($file, [
                     $review->id,
                     $review->product->name,
-                    $review->user ? $review->user->first_name . ' ' . $review->user->last_name : 'Guest',
+                    $review->user ? $review->user->first_name.' '.$review->user->last_name : 'Guest',
                     $review->rating,
                     $review->title,
                     $review->review,

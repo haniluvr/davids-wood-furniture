@@ -39,11 +39,11 @@ class PaymentMethod extends Model
     public function getDisplayName(): string
     {
         if ($this->type === 'card') {
-            return $this->card_type . ' •••• ' . $this->card_last_four;
+            return $this->card_type.' •••• '.$this->card_last_four;
         } elseif ($this->type === 'gcash') {
-            return 'GCash •••• ' . substr($this->gcash_number, -4);
+            return 'GCash •••• '.substr($this->gcash_number, -4);
         }
-        
+
         return 'Unknown Payment Method';
     }
 
@@ -53,11 +53,11 @@ class PaymentMethod extends Model
     public function getMaskedNumber(): string
     {
         if ($this->type === 'card') {
-            return '•••• •••• •••• ' . $this->card_last_four;
+            return '•••• •••• •••• '.$this->card_last_four;
         } elseif ($this->type === 'gcash') {
-            return '•••• •••• ' . substr($this->gcash_number, -4);
+            return '•••• •••• '.substr($this->gcash_number, -4);
         }
-        
+
         return '•••• •••• •••• ••••';
     }
 
@@ -85,7 +85,7 @@ class PaymentMethod extends Model
         if ($this->isCard() && $this->card_expiry_month && $this->card_expiry_year) {
             return sprintf('%02d/%d', $this->card_expiry_month, $this->card_expiry_year);
         }
-        
+
         return '';
     }
 
@@ -94,14 +94,14 @@ class PaymentMethod extends Model
      */
     public function isExpired(): bool
     {
-        if (!$this->isCard() || !$this->card_expiry_month || !$this->card_expiry_year) {
+        if (! $this->isCard() || ! $this->card_expiry_month || ! $this->card_expiry_year) {
             return false;
         }
 
         $currentYear = (int) date('Y');
         $currentMonth = (int) date('n');
-        
-        return $this->card_expiry_year < $currentYear || 
+
+        return $this->card_expiry_year < $currentYear ||
                ($this->card_expiry_year == $currentYear && $this->card_expiry_month < $currentMonth);
     }
 }

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\LowStockAlert;
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\InventoryMovement;
 use App\Models\Category;
+use App\Models\InventoryMovement;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Events\LowStockAlert;
 
 class InventoryController extends Controller
 {
@@ -18,22 +18,22 @@ class InventoryController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'inventoryMovements' => function($q) {
+        $query = Product::with(['category', 'inventoryMovements' => function ($q) {
             $q->latest()->take(5);
         }])->where('is_active', true);
 
         // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('sku', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('sku', 'like', '%'.$search.'%');
             });
         }
 
         // Category filter
         if ($request->has('category') && $request->category !== 'all') {
-            $query->whereHas('category', function($q) use ($request) {
+            $query->whereHas('category', function ($q) use ($request) {
                 $q->where('slug', $request->category);
             });
         }
@@ -168,7 +168,7 @@ class InventoryController extends Controller
     public function removeStock(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'quantity' => 'required|integer|min:1|max:' . $product->stock_quantity,
+            'quantity' => 'required|integer|min:1|max:'.$product->stock_quantity,
             'reason' => 'required|string|max:255',
             'notes' => 'nullable|string|max:1000',
         ]);
@@ -192,7 +192,7 @@ class InventoryController extends Controller
     public function lowStockAlerts(Request $request)
     {
         $threshold = $request->get('threshold', 10);
-        
+
         $products = Product::with('category')
             ->lowStock($threshold)
             ->where('is_active', true)
@@ -248,13 +248,13 @@ class InventoryController extends Controller
     public function export(Request $request)
     {
         $format = $request->get('format', 'csv');
-        
+
         $products = Product::with('category')
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
-        $filename = 'inventory-report-' . now()->format('Y-m-d-H-i-s');
+        $filename = 'inventory-report-'.now()->format('Y-m-d-H-i-s');
 
         if ($format === 'csv') {
             return $this->exportCsv($products, $filename);
@@ -271,12 +271,12 @@ class InventoryController extends Controller
     {
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '.csv"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'.csv"',
         ];
 
-        $callback = function() use ($products) {
+        $callback = function () use ($products) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV headers
             fputcsv($file, [
                 'Product Name',
@@ -286,7 +286,7 @@ class InventoryController extends Controller
                 'Stock Status',
                 'Price',
                 'Stock Value',
-                'Last Updated'
+                'Last Updated',
             ]);
 
             foreach ($products as $product) {
@@ -296,9 +296,9 @@ class InventoryController extends Controller
                     $product->category->name ?? 'N/A',
                     $product->stock_quantity,
                     ucfirst(str_replace('_', ' ', $product->stock_status)),
-                    '$' . number_format($product->price, 2),
-                    '$' . number_format($product->stock_quantity * $product->price, 2),
-                    $product->updated_at->format('Y-m-d H:i:s')
+                    '$'.number_format($product->price, 2),
+                    '$'.number_format($product->stock_quantity * $product->price, 2),
+                    $product->updated_at->format('Y-m-d H:i:s'),
                 ]);
             }
 
@@ -326,7 +326,7 @@ class InventoryController extends Controller
             foreach ($validated['products'] as $productData) {
                 $product = Product::findOrFail($productData['id']);
                 $newStock = $productData['stock_quantity'];
-                
+
                 if ($product->stock_quantity != $newStock) {
                     InventoryMovement::recordStockAdjustment(
                         $product->id,
@@ -339,11 +339,13 @@ class InventoryController extends Controller
             }
 
             DB::commit();
+
             return back()->with('success', 'Bulk stock update completed successfully.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Bulk update failed: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Bulk update failed: '.$e->getMessage()]);
         }
     }
 
@@ -360,9 +362,9 @@ class InventoryController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('sku', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('sku', 'like', '%'.$search.'%');
             });
         }
 
@@ -426,14 +428,15 @@ class InventoryController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Restocked {$quantity} units for " . count($productIds) . ' products'
+                'message' => "Restocked {$quantity} units for ".count($productIds).' products',
             ]);
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Bulk restock failed: ' . $e->getMessage()
+                'message' => 'Bulk restock failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -463,7 +466,7 @@ class InventoryController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Reorder point updated successfully'
+            'message' => 'Reorder point updated successfully',
         ]);
     }
 }

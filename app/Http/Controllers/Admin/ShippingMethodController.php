@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ShippingMethod;
 use App\Models\AuditLog;
+use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -20,7 +20,7 @@ class ShippingMethodController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -142,7 +142,7 @@ class ShippingMethodController extends Controller
     public function destroy(ShippingMethod $shippingMethod)
     {
         $oldValues = $shippingMethod->toArray();
-        
+
         // Log the action
         AuditLog::create([
             'admin_id' => Auth::id(),
@@ -164,7 +164,7 @@ class ShippingMethodController extends Controller
     public function toggleStatus(ShippingMethod $shippingMethod)
     {
         $oldStatus = $shippingMethod->is_active;
-        $shippingMethod->update(['is_active' => !$shippingMethod->is_active]);
+        $shippingMethod->update(['is_active' => ! $shippingMethod->is_active]);
 
         // Log the action
         AuditLog::create([
@@ -181,7 +181,7 @@ class ShippingMethodController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Shipping method status updated successfully.',
-            'is_active' => $shippingMethod->is_active
+            'is_active' => $shippingMethod->is_active,
         ]);
     }
 
@@ -212,7 +212,7 @@ class ShippingMethodController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Shipping methods reordered successfully.'
+            'message' => 'Shipping methods reordered successfully.',
         ]);
     }
 }

@@ -17,7 +17,7 @@ class CmsPageRequest extends FormRequest
 
         return [
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:cms_pages,slug,' . $pageId,
+            'slug' => 'required|string|max:255|unique:cms_pages,slug,'.$pageId,
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
             'meta_title' => 'nullable|string|max:60',
@@ -30,7 +30,7 @@ class CmsPageRequest extends FormRequest
             'template' => 'nullable|string|max:100',
             'sort_order' => 'nullable|integer|min:0',
             'published_at' => 'nullable|date',
-            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120'
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ];
     }
 
@@ -53,7 +53,7 @@ class CmsPageRequest extends FormRequest
             'published_at.date' => 'Please enter a valid publication date.',
             'featured_image.image' => 'Featured image must be an image file.',
             'featured_image.mimes' => 'Featured image must be in JPEG, PNG, JPG, GIF, or WebP format.',
-            'featured_image.max' => 'Featured image cannot exceed 5MB.'
+            'featured_image.max' => 'Featured image cannot exceed 5MB.',
         ];
     }
 
@@ -74,7 +74,7 @@ class CmsPageRequest extends FormRequest
             'template' => 'page template',
             'sort_order' => 'sort order',
             'published_at' => 'publication date',
-            'featured_image' => 'featured image'
+            'featured_image' => 'featured image',
         ];
     }
 }

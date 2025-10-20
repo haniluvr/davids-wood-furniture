@@ -16,23 +16,23 @@ class AdminAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::guard('admin')->check()) {
+        if (! Auth::guard('admin')->check()) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
-            
+
             return redirect()->route('admin.login');
         }
 
         $admin = Auth::guard('admin')->user();
-        
-        if (!$admin->isActive()) {
+
+        if (! $admin->isActive()) {
             Auth::guard('admin')->logout();
-            
+
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Account suspended.'], 403);
             }
-            
+
             return redirect()->route('admin.login')
                 ->with('error', 'Your account has been suspended. Please contact the administrator.');
         }

@@ -29,7 +29,7 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('employees')->onDelete('set null');
             $table->foreignId('updated_by')->nullable()->constrained('employees')->onDelete('set null');
             $table->timestamps();
-            
+
             $table->index(['slug', 'is_active']);
             $table->index(['type', 'is_active']);
             $table->index(['published_at', 'is_active']);

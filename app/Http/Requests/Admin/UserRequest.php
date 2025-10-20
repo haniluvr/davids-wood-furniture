@@ -16,8 +16,8 @@ class UserRequest extends FormRequest
         $userId = $this->route('user') ? $this->route('user')->id : null;
 
         return [
-            'username' => 'required|string|max:50|unique:users,username,' . $userId,
-            'email' => 'required|email|max:255|unique:users,email,' . $userId,
+            'username' => 'required|string|max:50|unique:users,username,'.$userId,
+            'email' => 'required|email|max:255|unique:users,email,'.$userId,
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
@@ -34,7 +34,7 @@ class UserRequest extends FormRequest
             'password_confirmation' => $userId ? 'nullable|string|min:8' : 'required|string|min:8',
             'newsletter_subscribed' => 'boolean',
             'marketing_emails' => 'boolean',
-            'sms_notifications' => 'boolean'
+            'sms_notifications' => 'boolean',
         ];
     }
 
@@ -66,7 +66,7 @@ class UserRequest extends FormRequest
             'password.min' => 'Password must be at least 8 characters.',
             'password.confirmed' => 'Password confirmation does not match.',
             'password_confirmation.required' => 'Password confirmation is required.',
-            'password_confirmation.min' => 'Password confirmation must be at least 8 characters.'
+            'password_confirmation.min' => 'Password confirmation must be at least 8 characters.',
         ];
     }
 
@@ -91,7 +91,7 @@ class UserRequest extends FormRequest
             'password_confirmation' => 'password confirmation',
             'newsletter_subscribed' => 'newsletter subscription',
             'marketing_emails' => 'marketing emails',
-            'sms_notifications' => 'SMS notifications'
+            'sms_notifications' => 'SMS notifications',
         ];
     }
 }

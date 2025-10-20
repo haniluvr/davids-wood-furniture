@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class AdminPermission extends Model
 {
@@ -40,8 +40,8 @@ class AdminPermission extends Model
     public static function hasPermission(string $role, string $permission): bool
     {
         $permission = static::where('role', $role)
-                           ->where('permission', $permission)
-                           ->first();
+            ->where('permission', $permission)
+            ->first();
 
         return $permission ? $permission->granted : false;
     }
@@ -65,8 +65,8 @@ class AdminPermission extends Model
     public static function getRolePermissions(string $role): array
     {
         return static::where('role', $role)
-                    ->pluck('granted', 'permission')
-                    ->toArray();
+            ->pluck('granted', 'permission')
+            ->toArray();
     }
 
     public static function getAllPermissions(): array
@@ -107,7 +107,6 @@ class AdminPermission extends Model
             'admins.create',
             'admins.edit',
             'admins.delete',
-
 
             // Shipping
             'shipping.view',

@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\PaymentMethod;
-use App\Models\Product;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class CheckoutController extends Controller
 {
-
     /**
      * Show shipping information step
      */
@@ -33,7 +31,7 @@ class CheckoutController extends Controller
         $shippingCost = $this->calculateShipping($user->region, $subtotal);
         $taxAmount = $this->calculateTax($subtotal);
         $total = $subtotal + $shippingCost + $taxAmount;
-        
+
         // Check if default address is complete
         $isDefaultAddressComplete = $this->isDefaultAddressComplete($user);
 
@@ -46,16 +44,16 @@ class CheckoutController extends Controller
     public function validateShipping(Request $request)
     {
         $addressOption = $request->input('address_option', 'default');
-        
+
         if ($addressOption === 'default') {
             // Use user's default address
             $user = auth()->user();
-            
+
             // Check if default address is complete
-            if (!$this->isDefaultAddressComplete($user)) {
+            if (! $this->isDefaultAddressComplete($user)) {
                 return redirect()->back()->with('error', 'Your default address is incomplete. Please provide a complete address or use a different address for shipping.');
             }
-            
+
             $shippingData = [
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
@@ -68,7 +66,7 @@ class CheckoutController extends Controller
                 'region' => $user->region,
                 'barangay' => $user->barangay,
                 'zip_code' => $user->zip_code,
-                'address_option' => 'default'
+                'address_option' => 'default',
             ];
         } else {
             // Validate custom address
@@ -85,7 +83,7 @@ class CheckoutController extends Controller
                 'barangay' => 'required|string|max:255',
                 'zip_code' => 'required|string|max:10',
             ]);
-            
+
             $shippingData = $request->all();
         }
 
@@ -100,13 +98,13 @@ class CheckoutController extends Controller
      */
     public function showPayment()
     {
-        if (!Session::has('checkout.shipping')) {
+        if (! Session::has('checkout.shipping')) {
             return redirect()->route('checkout.index');
         }
 
         $user = Auth::user();
         $paymentMethods = $user->paymentMethods()->orderBy('is_default', 'desc')->get();
-        
+
         $cartItems = CartItem::forUser($user->id)
             ->with('product')
             ->get();
@@ -140,7 +138,7 @@ class CheckoutController extends Controller
                     'card_number' => 'required|string|min:13|max:19',
                     'card_holder_name' => 'required|string|max:255',
                     'card_expiry_month' => 'required|integer|min:1|max:12',
-                    'card_expiry_year' => 'required|integer|min:' . date('Y'),
+                    'card_expiry_year' => 'required|integer|min:'.date('Y'),
                     'card_cvv' => 'required|string|min:3|max:4',
                     'billing_address' => 'required|array',
                     'billing_address.address_line_1' => 'required|string|max:255',
@@ -168,7 +166,7 @@ class CheckoutController extends Controller
      */
     public function showReview()
     {
-        if (!Session::has('checkout.shipping') || !Session::has('checkout.payment')) {
+        if (! Session::has('checkout.shipping') || ! Session::has('checkout.payment')) {
             return redirect()->route('checkout.index');
         }
 
@@ -179,7 +177,7 @@ class CheckoutController extends Controller
 
         $shippingInfo = Session::get('checkout.shipping');
         $paymentInfo = Session::get('checkout.payment');
-        
+
         $subtotal = $cartItems->sum('total_price');
         $shippingCost = $this->calculateShipping($shippingInfo['region'], $subtotal);
         $taxAmount = $this->calculateTax($subtotal);
@@ -201,7 +199,7 @@ class CheckoutController extends Controller
      */
     public function processOrder(Request $request)
     {
-        if (!Session::has('checkout.shipping') || !Session::has('checkout.payment')) {
+        if (! Session::has('checkout.shipping') || ! Session::has('checkout.payment')) {
             return redirect()->route('checkout.index');
         }
 
@@ -281,6 +279,7 @@ class CheckoutController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()->with('error', 'There was an error processing your order. Please try again.');
         }
     }
@@ -334,6 +333,7 @@ class CheckoutController extends Controller
                 return 'Cash on Delivery';
             case 'existing':
                 $paymentMethod = PaymentMethod::find($paymentInfo['payment_method_id']);
+
                 return $paymentMethod ? $paymentMethod->getDisplayName() : 'Unknown Payment Method';
             case 'new':
                 return $paymentInfo['new_payment_type'] === 'card' ? 'Credit/Debit Card' : 'GCash';
@@ -378,7 +378,7 @@ class CheckoutController extends Controller
     private function detectCardType($cardNumber)
     {
         $cardNumber = preg_replace('/\D/', '', $cardNumber);
-        
+
         if (preg_match('/^4/', $cardNumber)) {
             return 'Visa';
         } elseif (preg_match('/^5[1-5]/', $cardNumber)) {
@@ -388,7 +388,7 @@ class CheckoutController extends Controller
         } elseif (preg_match('/^6/', $cardNumber)) {
             return 'Discover';
         }
-        
+
         return 'Unknown';
     }
 
@@ -404,7 +404,7 @@ class CheckoutController extends Controller
             'barangay',
             'city',
             'region',
-            'zip_code'
+            'zip_code',
         ];
 
         foreach ($requiredFields as $field) {

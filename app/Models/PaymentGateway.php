@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Crypt;
 
 class PaymentGateway extends Model
@@ -49,17 +49,17 @@ class PaymentGateway extends Model
 
     public function scopeForCurrency(Builder $query, string $currency): Builder
     {
-        return $query->where(function($q) use ($currency) {
+        return $query->where(function ($q) use ($currency) {
             $q->whereNull('supported_currencies')
-              ->orWhereJsonContains('supported_currencies', $currency);
+                ->orWhereJsonContains('supported_currencies', $currency);
         });
     }
 
     public function scopeForCountry(Builder $query, string $country): Builder
     {
-        return $query->where(function($q) use ($country) {
+        return $query->where(function ($q) use ($country) {
             $q->whereNull('supported_countries')
-              ->orWhereJsonContains('supported_countries', $country);
+                ->orWhereJsonContains('supported_countries', $country);
         });
     }
 
@@ -67,6 +67,7 @@ class PaymentGateway extends Model
     public function getConfigValue(string $key, $default = null)
     {
         $config = $this->config ?? [];
+
         return $config[$key] ?? $default;
     }
 
@@ -87,6 +88,7 @@ class PaymentGateway extends Model
                 return $default;
             }
         }
+
         return $default;
     }
 
@@ -99,22 +101,23 @@ class PaymentGateway extends Model
     public function calculateTransactionFee($amount): float
     {
         $percentageFee = ($amount * $this->transaction_fee_percentage) / 100;
+
         return $percentageFee + $this->transaction_fee_fixed;
     }
 
     public function isAvailableFor($currency = 'USD', $country = 'US'): bool
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return false;
         }
 
         // Check currency support
-        if ($this->supported_currencies && !in_array($currency, $this->supported_currencies)) {
+        if ($this->supported_currencies && ! in_array($currency, $this->supported_currencies)) {
             return false;
         }
 
         // Check country support
-        if ($this->supported_countries && !in_array($country, $this->supported_countries)) {
+        if ($this->supported_countries && ! in_array($country, $this->supported_countries)) {
             return false;
         }
 

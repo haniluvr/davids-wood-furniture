@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\ShippingMethod;
+use Illuminate\Database\Seeder;
 
 class ShippingMethodSeeder extends Seeder
 {
@@ -80,7 +80,7 @@ class ShippingMethodSeeder extends Seeder
                 'is_active' => true,
                 'sort_order' => 5,
                 'zones' => [
-                    'local' => ['radius' => 25, 'unit' => 'miles']
+                    'local' => ['radius' => 25, 'unit' => 'miles'],
                 ],
             ],
         ];

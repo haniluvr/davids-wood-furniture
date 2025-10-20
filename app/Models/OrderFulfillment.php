@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class OrderFulfillment extends Model
 {
     protected $table = 'order_fulfillment';
-    
+
     protected $fillable = [
         'order_id',
         'items_packed',
@@ -55,9 +55,15 @@ class OrderFulfillment extends Model
         $steps = 0;
         $total = 3; // items_packed, label_printed, shipped
 
-        if ($this->items_packed) $steps++;
-        if ($this->label_printed) $steps++;
-        if ($this->shipped) $steps++;
+        if ($this->items_packed) {
+            $steps++;
+        }
+        if ($this->label_printed) {
+            $steps++;
+        }
+        if ($this->shipped) {
+            $steps++;
+        }
 
         return round(($steps / $total) * 100);
     }
@@ -67,9 +73,16 @@ class OrderFulfillment extends Model
      */
     public function getStatusAttribute(): string
     {
-        if ($this->shipped) return 'shipped';
-        if ($this->label_printed) return 'ready_to_ship';
-        if ($this->items_packed) return 'packed';
+        if ($this->shipped) {
+            return 'shipped';
+        }
+        if ($this->label_printed) {
+            return 'ready_to_ship';
+        }
+        if ($this->items_packed) {
+            return 'packed';
+        }
+
         return 'pending';
     }
 }

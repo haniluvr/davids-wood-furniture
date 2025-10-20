@@ -2,11 +2,10 @@
 
 namespace App\Notifications;
 
+use App\Models\Product;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\Product;
 
 class LowStockNotification extends Notification
 {
@@ -27,9 +26,9 @@ class LowStockNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Low Stock Alert - ' . $this->product->name)
+            ->subject('Low Stock Alert - '.$this->product->name)
             ->view('emails.inventory.low-stock', [
-                'product' => $this->product
+                'product' => $this->product,
             ]);
     }
 

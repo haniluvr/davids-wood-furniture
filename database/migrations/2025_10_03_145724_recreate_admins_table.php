@@ -13,7 +13,7 @@ return new class extends Migration
     {
         // Drop the table if it exists (in case of partial creation)
         Schema::dropIfExists('admins');
-        
+
         // Create the admins table with all required fields
         Schema::create('admins', function (Blueprint $table) {
             $table->id();

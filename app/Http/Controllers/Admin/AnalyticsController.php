@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\User;
 use App\Models\ProductReview;
-use App\Models\Category;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AnalyticsController extends Controller
 {
@@ -24,7 +23,7 @@ class AnalyticsController extends Controller
         $dateRange = $request->get('date_range', '30');
         $startDate = $request->get('start_date') ? Carbon::parse($request->get('start_date')) : Carbon::now()->subDays($dateRange);
         $endDate = $request->get('end_date') ? Carbon::parse($request->get('end_date')) : Carbon::now();
-        
+
         // Ensure end date is not in the future
         if ($endDate->isFuture()) {
             $endDate = Carbon::now();
@@ -36,7 +35,7 @@ class AnalyticsController extends Controller
         $orderStats = $this->getOrderStats($startDate, $endDate);
         $productStats = $this->getProductStats($startDate, $endDate);
         $customerStats = $this->getCustomerStats($startDate, $endDate);
-        
+
         // Enhanced metrics
         $conversionMetrics = $this->getConversionMetrics($startDate, $endDate);
         $trafficSources = $this->getTrafficSources($startDate, $endDate);
@@ -45,8 +44,8 @@ class AnalyticsController extends Controller
         $profitabilityAnalysis = $this->getProfitabilityAnalysis($startDate, $endDate);
 
         return view('admin.analytics.dashboard', compact(
-            'salesData', 'revenueData', 'orderStats', 'productStats', 'customerStats', 
-            'conversionMetrics', 'trafficSources', 'geographicData', 'seasonalTrends', 
+            'salesData', 'revenueData', 'orderStats', 'productStats', 'customerStats',
+            'conversionMetrics', 'trafficSources', 'geographicData', 'seasonalTrends',
             'profitabilityAnalysis', 'dateRange', 'startDate', 'endDate'
         ));
     }
@@ -66,13 +65,13 @@ class AnalyticsController extends Controller
         $topProducts = $this->getTopProducts($startDate, $endDate);
         $salesByCategory = $this->getSalesByCategory($startDate, $endDate);
         $orderStats = $this->getOrderStats($startDate, $endDate);
-        
+
         // Calculate metrics for the view
         $totalSales = $orderStats['total_orders'] ?? 0;
         $totalRevenue = $revenueData['total_revenue'] ?? 0;
         $averageOrderValue = $totalSales > 0 ? $totalRevenue / $totalSales : 0;
         $conversionRate = $this->calculateConversionRate($startDate, $endDate);
-        
+
         // Generate chart data
         $dailyRevenue = $this->generateDailyRevenueData($startDate, $endDate);
         $dailyOrders = $this->generateDailyOrdersData($startDate, $endDate);
@@ -104,11 +103,11 @@ class AnalyticsController extends Controller
         $newCustomersCount = User::whereBetween('created_at', [$startDate, $endDate])->count();
         $averageLifetimeValue = $this->calculateAverageLifetimeValue();
         $repeatPurchaseRate = $this->calculateRepeatPurchaseRate($startDate, $endDate);
-        
+
         // Generate chart data
         $dailyNewCustomers = $this->generateDailyNewCustomersData($startDate, $endDate);
         $chartLabels = $this->generateChartLabels($startDate, $endDate);
-        
+
         // Customer segments
         $highValueCustomers = 25; // Placeholder
         $mediumValueCustomers = 45; // Placeholder
@@ -137,18 +136,18 @@ class AnalyticsController extends Controller
 
         // Calculate metrics for the view
         $totalProducts = Product::count();
-        $totalUnitsSold = OrderItem::whereHas('order', function($query) use ($startDate, $endDate) {
+        $totalUnitsSold = OrderItem::whereHas('order', function ($query) use ($startDate, $endDate) {
             $query->whereBetween('created_at', [$startDate, $endDate])
-                  ->where('status', '!=', 'cancelled');
+                ->where('status', '!=', 'cancelled');
         })->sum('quantity');
-        
-        $totalProductRevenue = OrderItem::whereHas('order', function($query) use ($startDate, $endDate) {
+
+        $totalProductRevenue = OrderItem::whereHas('order', function ($query) use ($startDate, $endDate) {
             $query->whereBetween('created_at', [$startDate, $endDate])
-                  ->where('status', '!=', 'cancelled');
+                ->where('status', '!=', 'cancelled');
         })->sum('total_price');
-        
+
         $averageProductPrice = Product::avg('price');
-        
+
         // Category sales data
         $categorySales = $this->getSalesByCategory($startDate, $endDate);
 
@@ -176,14 +175,14 @@ class AnalyticsController extends Controller
         $totalRevenue = $revenueData['total_revenue'] ?? 0;
         $revenueGrowth = $this->calculateRevenueGrowth($startDate, $endDate);
         $revenuePerCustomer = $this->calculateRevenuePerCustomer($startDate, $endDate);
-        
+
         // Generate chart data
         $dailyRevenue = $this->generateDailyRevenueData($startDate, $endDate);
         $chartLabels = $this->generateChartLabels($startDate, $endDate);
-        
+
         // Revenue by category
         $revenueByCategory = $this->getSalesByCategory($startDate, $endDate);
-        
+
         // Previous period comparison
         $previousStartDate = $startDate->copy()->subDays($dateRange);
         $previousEndDate = $startDate->copy();
@@ -209,16 +208,16 @@ class AnalyticsController extends Controller
         $startDate = Carbon::now()->subDays($dateRange);
         $endDate = Carbon::now();
 
-        $filename = $type . '-analytics-' . now()->format('Y-m-d-H-i-s') . '.csv';
-        
+        $filename = $type.'-analytics-'.now()->format('Y-m-d-H-i-s').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($type, $startDate, $endDate) {
+        $callback = function () use ($type, $startDate, $endDate) {
             $file = fopen('php://output', 'w');
-            
+
             switch ($type) {
                 case 'sales':
                     $this->exportSalesData($file, $startDate, $endDate);
@@ -294,10 +293,10 @@ class AnalyticsController extends Controller
         return [
             'total_customers' => User::count(),
             'new_customers' => User::whereBetween('created_at', [$startDate, $endDate])->count(),
-            'active_customers' => User::whereHas('orders', function($query) use ($startDate, $endDate) {
+            'active_customers' => User::whereHas('orders', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('created_at', [$startDate, $endDate]);
             })->count(),
-            'average_customer_value' => User::with('orders')->get()->map(function($user) {
+            'average_customer_value' => User::with('orders')->get()->map(function ($user) {
                 return $user->orders->sum('total_amount');
             })->avg(),
         ];
@@ -305,33 +304,33 @@ class AnalyticsController extends Controller
 
     private function getTopProducts($startDate, $endDate)
     {
-        return Product::withCount(['orderItems as total_sold' => function($query) use ($startDate, $endDate) {
-            $query->whereHas('order', function($orderQuery) use ($startDate, $endDate) {
+        return Product::withCount(['orderItems as total_sold' => function ($query) use ($startDate, $endDate) {
+            $query->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
                 $orderQuery->whereBetween('created_at', [$startDate, $endDate])
-                          ->where('status', '!=', 'cancelled');
+                    ->where('status', '!=', 'cancelled');
             });
         }])
-        ->withSum(['orderItems as total_revenue' => function($query) use ($startDate, $endDate) {
-            $query->whereHas('order', function($orderQuery) use ($startDate, $endDate) {
-                $orderQuery->whereBetween('created_at', [$startDate, $endDate])
-                          ->where('status', '!=', 'cancelled');
-            });
-        }], 'total_price')
-        ->orderBy('total_sold', 'desc')
-        ->take(10)
-        ->get();
+            ->withSum(['orderItems as total_revenue' => function ($query) use ($startDate, $endDate) {
+                $query->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
+                    $orderQuery->whereBetween('created_at', [$startDate, $endDate])
+                        ->where('status', '!=', 'cancelled');
+                });
+            }], 'total_price')
+            ->orderBy('total_sold', 'desc')
+            ->take(10)
+            ->get();
     }
 
     private function getSalesByCategory($startDate, $endDate)
     {
-        return Category::withCount(['products as total_sold' => function($query) use ($startDate, $endDate) {
-            $query->whereHas('orderItems.order', function($orderQuery) use ($startDate, $endDate) {
+        return Category::withCount(['products as total_sold' => function ($query) use ($startDate, $endDate) {
+            $query->whereHas('orderItems.order', function ($orderQuery) use ($startDate, $endDate) {
                 $orderQuery->whereBetween('created_at', [$startDate, $endDate])
-                          ->where('status', '!=', 'cancelled');
+                    ->where('status', '!=', 'cancelled');
             });
         }])
-        ->orderBy('total_sold', 'desc')
-        ->get();
+            ->orderBy('total_sold', 'desc')
+            ->get();
     }
 
     private function getNewCustomers($startDate, $endDate)
@@ -344,27 +343,27 @@ class AnalyticsController extends Controller
 
     private function getTopCustomers($startDate, $endDate)
     {
-        return User::withSum(['orders as total_spent' => function($query) use ($startDate, $endDate) {
+        return User::withSum(['orders as total_spent' => function ($query) use ($startDate, $endDate) {
             $query->whereBetween('created_at', [$startDate, $endDate])
-                  ->where('status', '!=', 'cancelled');
+                ->where('status', '!=', 'cancelled');
         }], 'total_amount')
-        ->withCount(['orders as total_orders' => function($query) use ($startDate, $endDate) {
-            $query->whereBetween('created_at', [$startDate, $endDate])
-                  ->where('status', '!=', 'cancelled');
-        }])
-        ->orderBy('total_spent', 'desc')
-        ->take(10)
-        ->get();
+            ->withCount(['orders as total_orders' => function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate])
+                    ->where('status', '!=', 'cancelled');
+            }])
+            ->orderBy('total_spent', 'desc')
+            ->take(10)
+            ->get();
     }
 
     private function getCustomerSegments()
     {
         return [
             'new_customers' => User::where('created_at', '>=', Carbon::now()->subDays(30))->count(),
-            'returning_customers' => User::whereHas('orders', function($query) {
+            'returning_customers' => User::whereHas('orders', function ($query) {
                 $query->where('created_at', '>=', Carbon::now()->subDays(30));
             })->count(),
-            'vip_customers' => User::whereHas('orders', function($query) {
+            'vip_customers' => User::whereHas('orders', function ($query) {
                 $query->where('total_amount', '>=', 1000);
             })->count(),
         ];
@@ -418,14 +417,14 @@ class AnalyticsController extends Controller
     {
         $totalVisitors = 1000; // This would come from analytics service
         $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])->count();
-        
+
         return $totalVisitors > 0 ? ($totalOrders / $totalVisitors) * 100 : 0;
     }
 
     private function exportSalesData($file, $startDate, $endDate)
     {
         fputcsv($file, ['Date', 'Orders', 'Revenue', 'Average Order Value']);
-        
+
         $salesData = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
             ->selectRaw('DATE(created_at) as date, COUNT(*) as orders, SUM(total_amount) as revenue, AVG(total_amount) as avg_order_value')
@@ -446,7 +445,7 @@ class AnalyticsController extends Controller
     private function exportCustomerData($file, $startDate, $endDate)
     {
         fputcsv($file, ['Customer ID', 'Name', 'Email', 'Total Orders', 'Total Spent', 'Last Order Date']);
-        
+
         $customers = User::withSum('orders as total_spent', 'total_amount')
             ->withCount('orders as total_orders')
             ->withMax('orders as last_order_date', 'created_at')
@@ -455,7 +454,7 @@ class AnalyticsController extends Controller
         foreach ($customers as $customer) {
             fputcsv($file, [
                 $customer->id,
-                $customer->first_name . ' ' . $customer->last_name,
+                $customer->first_name.' '.$customer->last_name,
                 $customer->email,
                 $customer->total_orders,
                 $customer->total_spent,
@@ -467,20 +466,20 @@ class AnalyticsController extends Controller
     private function exportProductData($file, $startDate, $endDate)
     {
         fputcsv($file, ['Product ID', 'Name', 'SKU', 'Price', 'Stock', 'Total Sold', 'Revenue']);
-        
-        $products = Product::withCount(['orderItems as total_sold' => function($query) use ($startDate, $endDate) {
-            $query->whereHas('order', function($orderQuery) use ($startDate, $endDate) {
+
+        $products = Product::withCount(['orderItems as total_sold' => function ($query) use ($startDate, $endDate) {
+            $query->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
                 $orderQuery->whereBetween('created_at', [$startDate, $endDate])
-                          ->where('status', '!=', 'cancelled');
+                    ->where('status', '!=', 'cancelled');
             });
         }])
-        ->withSum(['orderItems as total_revenue' => function($query) use ($startDate, $endDate) {
-            $query->whereHas('order', function($orderQuery) use ($startDate, $endDate) {
-                $orderQuery->whereBetween('created_at', [$startDate, $endDate])
-                          ->where('status', '!=', 'cancelled');
-            });
-        }], 'total_price')
-        ->get();
+            ->withSum(['orderItems as total_revenue' => function ($query) use ($startDate, $endDate) {
+                $query->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
+                    $orderQuery->whereBetween('created_at', [$startDate, $endDate])
+                        ->where('status', '!=', 'cancelled');
+                });
+            }], 'total_price')
+            ->get();
 
         foreach ($products as $product) {
             fputcsv($file, [
@@ -498,7 +497,7 @@ class AnalyticsController extends Controller
     private function exportRevenueData($file, $startDate, $endDate)
     {
         fputcsv($file, ['Date', 'Revenue', 'Orders', 'Average Order Value']);
-        
+
         $revenueData = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
             ->selectRaw('DATE(created_at) as date, SUM(total_amount) as revenue, COUNT(*) as orders, AVG(total_amount) as avg_order_value')
@@ -523,16 +522,16 @@ class AnalyticsController extends Controller
     {
         $data = [];
         $current = $startDate->copy();
-        
+
         while ($current->lte($endDate)) {
             $dayRevenue = Order::whereDate('created_at', $current->format('Y-m-d'))
                 ->where('status', '!=', 'cancelled')
                 ->sum('total_amount');
-            
+
             $data[] = (float) $dayRevenue;
             $current->addDay();
         }
-        
+
         return $data;
     }
 
@@ -543,16 +542,16 @@ class AnalyticsController extends Controller
     {
         $data = [];
         $current = $startDate->copy();
-        
+
         while ($current->lte($endDate)) {
             $dayOrders = Order::whereDate('created_at', $current->format('Y-m-d'))
                 ->where('status', '!=', 'cancelled')
                 ->count();
-            
+
             $data[] = $dayOrders;
             $current->addDay();
         }
-        
+
         return $data;
     }
 
@@ -563,12 +562,12 @@ class AnalyticsController extends Controller
     {
         $labels = [];
         $current = $startDate->copy();
-        
+
         while ($current->lte($endDate)) {
             $labels[] = $current->format('M d');
             $current->addDay();
         }
-        
+
         return $labels;
     }
 
@@ -579,13 +578,13 @@ class AnalyticsController extends Controller
     {
         $data = [];
         $current = $startDate->copy();
-        
+
         while ($current->lte($endDate)) {
             $dayNewCustomers = User::whereDate('created_at', $current->format('Y-m-d'))->count();
             $data[] = $dayNewCustomers;
             $current->addDay();
         }
-        
+
         return $data;
     }
 
@@ -596,7 +595,7 @@ class AnalyticsController extends Controller
     {
         $totalRevenue = Order::where('status', '!=', 'cancelled')->sum('total_amount');
         $totalCustomers = User::count();
-        
+
         return $totalCustomers > 0 ? $totalRevenue / $totalCustomers : 0;
     }
 
@@ -607,7 +606,7 @@ class AnalyticsController extends Controller
     {
         $totalCustomers = User::count();
         $repeatCustomers = User::has('orders', '>', 1)->count();
-        
+
         return $totalCustomers > 0 ? ($repeatCustomers / $totalCustomers) * 100 : 0;
     }
 
@@ -619,18 +618,18 @@ class AnalyticsController extends Controller
         $currentRevenue = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
             ->sum('total_amount');
-        
+
         $previousStartDate = $startDate->copy()->subDays($startDate->diffInDays($endDate));
         $previousEndDate = $startDate->copy();
-        
+
         $previousRevenue = Order::whereBetween('created_at', [$previousStartDate, $previousEndDate])
             ->where('status', '!=', 'cancelled')
             ->sum('total_amount');
-        
+
         if ($previousRevenue == 0) {
             return $currentRevenue > 0 ? 100 : 0;
         }
-        
+
         return (($currentRevenue - $previousRevenue) / $previousRevenue) * 100;
     }
 
@@ -642,12 +641,12 @@ class AnalyticsController extends Controller
         $totalRevenue = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
             ->sum('total_amount');
-        
+
         $uniqueCustomers = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
             ->distinct('user_id')
             ->count('user_id');
-        
+
         return $uniqueCustomers > 0 ? $totalRevenue / $uniqueCustomers : 0;
     }
 
@@ -660,7 +659,7 @@ class AnalyticsController extends Controller
         $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])->count();
         $paidOrders = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('payment_status', 'paid')->count();
-        
+
         return [
             'visitor_to_customer_rate' => $totalVisitors > 0 ? ($totalOrders / $totalVisitors) * 100 : 0,
             'order_conversion_rate' => $totalOrders > 0 ? ($paidOrders / $totalOrders) * 100 : 0,
@@ -698,7 +697,7 @@ class AnalyticsController extends Controller
             $address = $order->shipping_address;
             if (isset($address['city'])) {
                 $city = $address['city'];
-                if (!isset($geographicData[$city])) {
+                if (! isset($geographicData[$city])) {
                     $geographicData[$city] = 0;
                 }
                 $geographicData[$city]++;
@@ -706,6 +705,7 @@ class AnalyticsController extends Controller
         }
 
         arsort($geographicData);
+
         return array_slice($geographicData, 0, 10, true);
     }
 
@@ -716,28 +716,28 @@ class AnalyticsController extends Controller
     {
         $monthlyData = [];
         $current = $startDate->copy()->startOfMonth();
-        
+
         while ($current->lte($endDate)) {
             $monthStart = $current->copy();
             $monthEnd = $current->copy()->endOfMonth();
-            
+
             $revenue = Order::whereBetween('created_at', [$monthStart, $monthEnd])
                 ->where('payment_status', 'paid')
                 ->sum('total_amount');
-            
+
             $orders = Order::whereBetween('created_at', [$monthStart, $monthEnd])
                 ->where('payment_status', 'paid')
                 ->count();
-            
+
             $monthlyData[] = [
                 'month' => $current->format('M Y'),
                 'revenue' => $revenue,
                 'orders' => $orders,
             ];
-            
+
             $current->addMonth();
         }
-        
+
         return $monthlyData;
     }
 
@@ -793,12 +793,12 @@ class AnalyticsController extends Controller
         $startDate = Carbon::now()->subDays($dateRange);
         $endDate = Carbon::now();
 
-        $customers = User::whereHas('orders', function($q) use ($startDate, $endDate) {
+        $customers = User::whereHas('orders', function ($q) use ($startDate, $endDate) {
             $q->whereBetween('created_at', [$startDate, $endDate])
-              ->where('payment_status', 'paid');
-        })->with(['orders' => function($q) use ($startDate, $endDate) {
+                ->where('payment_status', 'paid');
+        })->with(['orders' => function ($q) use ($startDate, $endDate) {
             $q->whereBetween('created_at', [$startDate, $endDate])
-              ->where('payment_status', 'paid');
+                ->where('payment_status', 'paid');
         }])->get();
 
         $clvData = [];
@@ -807,10 +807,10 @@ class AnalyticsController extends Controller
             $orderCount = $customer->orders->count();
             $avgOrderValue = $orderCount > 0 ? $totalSpent / $orderCount : 0;
             $customerLifetime = $customer->created_at ? now()->diffInDays($customer->created_at) : 0;
-            
+
             $clvData[] = [
                 'customer_id' => $customer->id,
-                'name' => $customer->first_name . ' ' . $customer->last_name,
+                'name' => $customer->first_name.' '.$customer->last_name,
                 'email' => $customer->email,
                 'total_spent' => $totalSpent,
                 'order_count' => $orderCount,
@@ -821,7 +821,7 @@ class AnalyticsController extends Controller
         }
 
         // Sort by CLV
-        usort($clvData, function($a, $b) {
+        usort($clvData, function ($a, $b) {
             return $b['clv'] <=> $a['clv'];
         });
 
@@ -832,7 +832,7 @@ class AnalyticsController extends Controller
                 'total_customers' => count($clvData),
                 'avg_clv' => count($clvData) > 0 ? array_sum(array_column($clvData, 'clv')) / count($clvData) : 0,
                 'total_clv' => array_sum(array_column($clvData, 'clv')),
-            ]
+            ],
         ]);
     }
 
@@ -845,21 +845,21 @@ class AnalyticsController extends Controller
         $startDate = Carbon::now()->subDays($dateRange);
         $endDate = Carbon::now();
 
-        $products = Product::withCount(['orderItems' => function($q) use ($startDate, $endDate) {
-            $q->whereHas('order', function($orderQuery) use ($startDate, $endDate) {
+        $products = Product::withCount(['orderItems' => function ($q) use ($startDate, $endDate) {
+            $q->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
                 $orderQuery->whereBetween('created_at', [$startDate, $endDate])
-                          ->where('payment_status', 'paid');
+                    ->where('payment_status', 'paid');
             });
-        }])->withSum(['orderItems as total_revenue' => function($q) use ($startDate, $endDate) {
-            $q->whereHas('order', function($orderQuery) use ($startDate, $endDate) {
+        }])->withSum(['orderItems as total_revenue' => function ($q) use ($startDate, $endDate) {
+            $q->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
                 $orderQuery->whereBetween('created_at', [$startDate, $endDate])
-                          ->where('payment_status', 'paid');
+                    ->where('payment_status', 'paid');
             });
         }], 'total_price')->orderBy('total_revenue', 'desc')->take(20)->get();
 
         return response()->json([
             'success' => true,
-            'data' => $products->map(function($product) {
+            'data' => $products->map(function ($product) {
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
@@ -869,7 +869,7 @@ class AnalyticsController extends Controller
                     'revenue' => $product->total_revenue ?? 0,
                     'profit_margin' => $product->price > 0 ? (($product->price - ($product->price * 0.6)) / $product->price) * 100 : 0,
                 ];
-            })
+            }),
         ]);
     }
 }

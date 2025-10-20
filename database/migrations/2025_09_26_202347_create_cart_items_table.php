@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('product_sku')->nullable();
             $table->json('product_data')->nullable();
             $table->timestamps();
-            
+
             $table->foreign('cart_id')->references('id')->on('carts')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->index(['cart_id', 'product_id']);

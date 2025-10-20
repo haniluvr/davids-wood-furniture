@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AccountController;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ApiController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 // Admin subdomain routes (MUST BE FIRST!)
@@ -18,20 +18,21 @@ $adminRoutes = function () {
         Route::get('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
         Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink']);
     });
-    
+
     // Root admin route - redirect to login if not authenticated, dashboard if authenticated
     Route::get('/', function () {
         if (auth()->guard('admin')->check()) {
             return redirect()->route('admin.dashboard');
         }
+
         return redirect()->route('admin.login');
     })->name('index');
-    
+
     // Protected admin routes
     Route::middleware('admin')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::post('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
-        
+
         // Product Management
         Route::middleware('admin.permission:products.view')->group(function () {
             Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
@@ -42,50 +43,50 @@ $adminRoutes = function () {
             Route::post('products/bulk-restock', [App\Http\Controllers\Admin\ProductController::class, 'bulkRestock'])->name('products.bulk-restock');
             Route::get('products/export', [App\Http\Controllers\Admin\ProductController::class, 'export'])->name('products.export');
         });
-        
+
         // Order Management
         // Route::middleware('admin.permission:orders.view')->group(function () {
-            // IMPORTANT: Custom routes must come BEFORE resource routes to avoid conflicts
-            
-            // Pending Approval
-            Route::get('orders/pending-approval', [App\Http\Controllers\Admin\OrderController::class, 'pendingApproval'])->name('orders.pending-approval');
-            
-            // Fulfillment
-            Route::get('orders/fulfillment', [App\Http\Controllers\Admin\FulfillmentController::class, 'index'])->name('orders.fulfillment');
-            Route::get('orders/fulfillment/{order}', [App\Http\Controllers\Admin\FulfillmentController::class, 'show'])->name('orders.fulfillment.show');
-            Route::post('orders/fulfillment/{order}/packing', [App\Http\Controllers\Admin\FulfillmentController::class, 'updatePackingStatus'])->name('orders.fulfillment.packing');
-            Route::post('orders/fulfillment/{order}/shipping', [App\Http\Controllers\Admin\FulfillmentController::class, 'updateShippingStatus'])->name('orders.fulfillment.shipping');
-            Route::post('orders/fulfillment/bulk-ship', [App\Http\Controllers\Admin\FulfillmentController::class, 'bulkMarkShipped'])->name('orders.fulfillment.bulk-ship');
-            Route::get('orders/fulfillment/{order}/print-label', [App\Http\Controllers\Admin\FulfillmentController::class, 'printLabel'])->name('orders.fulfillment.print-label');
-            
-            // Returns & Repairs
-            Route::get('orders/returns-repairs', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'index'])->name('orders.returns-repairs.index');
-            Route::get('orders/returns-repairs/create', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'create'])->name('orders.returns-repairs.create');
-            Route::post('orders/returns-repairs', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'store'])->name('orders.returns-repairs.store');
-            Route::get('orders/returns-repairs/{returnRepair}', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'show'])->name('orders.returns-repairs.show');
-            Route::post('orders/returns-repairs/{returnRepair}/approve', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'approve'])->name('orders.returns-repairs.approve');
-            Route::post('orders/returns-repairs/{returnRepair}/reject', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'reject'])->name('orders.returns-repairs.reject');
-            Route::post('orders/returns-repairs/{returnRepair}/received', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'markReceived'])->name('orders.returns-repairs.received');
-            Route::post('orders/returns-repairs/{returnRepair}/refund', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'processRefund'])->name('orders.returns-repairs.refund');
-            Route::post('orders/returns-repairs/{returnRepair}/complete', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'markCompleted'])->name('orders.returns-repairs.complete');
-            Route::post('orders/returns-repairs/{returnRepair}/notes', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'updateNotes'])->name('orders.returns-repairs.notes');
-            Route::post('orders/returns-repairs/{returnRepair}/photos', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'uploadPhotos'])->name('orders.returns-repairs.photos');
-            Route::delete('orders/returns-repairs/{returnRepair}/photos', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'deletePhoto'])->name('orders.returns-repairs.delete-photo');
-            
-            // Bulk Actions & Export (before resource routes)
-            Route::post('orders/bulk-update-status', [App\Http\Controllers\Admin\OrderController::class, 'bulkUpdateStatus'])->name('orders.bulk-update-status');
-            Route::get('orders/export', [App\Http\Controllers\Admin\OrderController::class, 'export'])->name('orders.export');
-            
-            // Resource routes (must come AFTER custom routes)
-            Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
-            Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
-            Route::post('orders/{order}/refund', [App\Http\Controllers\Admin\OrderController::class, 'processRefund'])->name('orders.process-refund');
-            Route::get('orders/{order}/invoice', [App\Http\Controllers\Admin\OrderController::class, 'downloadInvoice'])->name('orders.download-invoice');
-            Route::get('orders/{order}/packing-slip', [App\Http\Controllers\Admin\OrderController::class, 'downloadPackingSlip'])->name('orders.download-packing-slip');
-            Route::post('orders/{order}/approve', [App\Http\Controllers\Admin\OrderController::class, 'approveOrder'])->name('orders.approve');
-            Route::post('orders/{order}/reject', [App\Http\Controllers\Admin\OrderController::class, 'rejectOrder'])->name('orders.reject');
+        // IMPORTANT: Custom routes must come BEFORE resource routes to avoid conflicts
+
+        // Pending Approval
+        Route::get('orders/pending-approval', [App\Http\Controllers\Admin\OrderController::class, 'pendingApproval'])->name('orders.pending-approval');
+
+        // Fulfillment
+        Route::get('orders/fulfillment', [App\Http\Controllers\Admin\FulfillmentController::class, 'index'])->name('orders.fulfillment');
+        Route::get('orders/fulfillment/{order}', [App\Http\Controllers\Admin\FulfillmentController::class, 'show'])->name('orders.fulfillment.show');
+        Route::post('orders/fulfillment/{order}/packing', [App\Http\Controllers\Admin\FulfillmentController::class, 'updatePackingStatus'])->name('orders.fulfillment.packing');
+        Route::post('orders/fulfillment/{order}/shipping', [App\Http\Controllers\Admin\FulfillmentController::class, 'updateShippingStatus'])->name('orders.fulfillment.shipping');
+        Route::post('orders/fulfillment/bulk-ship', [App\Http\Controllers\Admin\FulfillmentController::class, 'bulkMarkShipped'])->name('orders.fulfillment.bulk-ship');
+        Route::get('orders/fulfillment/{order}/print-label', [App\Http\Controllers\Admin\FulfillmentController::class, 'printLabel'])->name('orders.fulfillment.print-label');
+
+        // Returns & Repairs
+        Route::get('orders/returns-repairs', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'index'])->name('orders.returns-repairs.index');
+        Route::get('orders/returns-repairs/create', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'create'])->name('orders.returns-repairs.create');
+        Route::post('orders/returns-repairs', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'store'])->name('orders.returns-repairs.store');
+        Route::get('orders/returns-repairs/{returnRepair}', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'show'])->name('orders.returns-repairs.show');
+        Route::post('orders/returns-repairs/{returnRepair}/approve', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'approve'])->name('orders.returns-repairs.approve');
+        Route::post('orders/returns-repairs/{returnRepair}/reject', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'reject'])->name('orders.returns-repairs.reject');
+        Route::post('orders/returns-repairs/{returnRepair}/received', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'markReceived'])->name('orders.returns-repairs.received');
+        Route::post('orders/returns-repairs/{returnRepair}/refund', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'processRefund'])->name('orders.returns-repairs.refund');
+        Route::post('orders/returns-repairs/{returnRepair}/complete', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'markCompleted'])->name('orders.returns-repairs.complete');
+        Route::post('orders/returns-repairs/{returnRepair}/notes', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'updateNotes'])->name('orders.returns-repairs.notes');
+        Route::post('orders/returns-repairs/{returnRepair}/photos', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'uploadPhotos'])->name('orders.returns-repairs.photos');
+        Route::delete('orders/returns-repairs/{returnRepair}/photos', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'deletePhoto'])->name('orders.returns-repairs.delete-photo');
+
+        // Bulk Actions & Export (before resource routes)
+        Route::post('orders/bulk-update-status', [App\Http\Controllers\Admin\OrderController::class, 'bulkUpdateStatus'])->name('orders.bulk-update-status');
+        Route::get('orders/export', [App\Http\Controllers\Admin\OrderController::class, 'export'])->name('orders.export');
+
+        // Resource routes (must come AFTER custom routes)
+        Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
+        Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
+        Route::post('orders/{order}/refund', [App\Http\Controllers\Admin\OrderController::class, 'processRefund'])->name('orders.process-refund');
+        Route::get('orders/{order}/invoice', [App\Http\Controllers\Admin\OrderController::class, 'downloadInvoice'])->name('orders.download-invoice');
+        Route::get('orders/{order}/packing-slip', [App\Http\Controllers\Admin\OrderController::class, 'downloadPackingSlip'])->name('orders.download-packing-slip');
+        Route::post('orders/{order}/approve', [App\Http\Controllers\Admin\OrderController::class, 'approveOrder'])->name('orders.approve');
+        Route::post('orders/{order}/reject', [App\Http\Controllers\Admin\OrderController::class, 'rejectOrder'])->name('orders.reject');
         // });
-        
+
         // User Management
         Route::middleware('admin.permission:users.view')->group(function () {
             Route::resource('users', App\Http\Controllers\Admin\UserController::class);
@@ -102,7 +103,7 @@ $adminRoutes = function () {
             Route::post('users/bulk-update-tags', [App\Http\Controllers\Admin\UserController::class, 'bulkUpdateTags'])->name('users.bulk-update-tags');
             Route::get('users/group/{group}', [App\Http\Controllers\Admin\UserController::class, 'getByGroup'])->name('users.by-group');
         });
-        
+
         // Admin User Management
         Route::middleware('admin.permission:admins.view')->group(function () {
             Route::get('admins', [App\Http\Controllers\Admin\UserController::class, 'admins'])->name('users.admins');
@@ -110,7 +111,7 @@ $adminRoutes = function () {
             Route::post('admins', [App\Http\Controllers\Admin\UserController::class, 'storeAdmin'])->name('users.store-admin');
             Route::delete('admins/{admin}', [App\Http\Controllers\Admin\UserController::class, 'destroyAdmin'])->name('users.destroy-admin');
         });
-        
+
         // Inventory Management
         Route::middleware('admin.permission:inventory.view')->group(function () {
             Route::get('inventory', [App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');
@@ -126,7 +127,7 @@ $adminRoutes = function () {
             Route::post('inventory/bulk-restock', [App\Http\Controllers\Admin\InventoryController::class, 'bulkRestock'])->name('inventory.bulk-restock');
             Route::post('inventory/{product}/update-reorder-point', [App\Http\Controllers\Admin\InventoryController::class, 'updateReorderPoint'])->name('inventory.update-reorder-point');
         });
-        
+
         // Settings
         Route::middleware('admin.permission:settings.view')->group(function () {
             Route::resource('settings', App\Http\Controllers\Admin\SettingController::class)->only(['index']);
@@ -138,20 +139,19 @@ $adminRoutes = function () {
             Route::delete('settings/shipping-method/{shippingMethod}', [App\Http\Controllers\Admin\SettingController::class, 'deleteShippingMethod'])->name('settings.delete-shipping-method');
             Route::post('settings/test-email', [App\Http\Controllers\Admin\SettingController::class, 'testEmail'])->name('settings.test-email');
             Route::post('settings/clear-cache', [App\Http\Controllers\Admin\SettingController::class, 'clearCache'])->name('settings.clear-cache');
-            
+
             // Email preview routes
             Route::get('emails/preview', [App\Http\Controllers\Admin\EmailPreviewController::class, 'index'])->name('emails.preview');
             Route::get('emails/preview/{type}', [App\Http\Controllers\Admin\EmailPreviewController::class, 'preview'])->name('emails.preview.type');
         });
-        
-        
+
         // Shipping Methods
         Route::middleware('admin.permission:shipping.view')->group(function () {
             Route::resource('shipping-methods', App\Http\Controllers\Admin\ShippingMethodController::class);
             Route::post('shipping-methods/{shippingMethod}/toggle-status', [App\Http\Controllers\Admin\ShippingMethodController::class, 'toggleStatus'])->name('shipping-methods.toggle-status');
             Route::post('shipping-methods/reorder', [App\Http\Controllers\Admin\ShippingMethodController::class, 'reorder'])->name('shipping-methods.reorder');
         });
-        
+
         // Payment Gateways
         Route::middleware('admin.permission:payment_gateways.view')->group(function () {
             Route::resource('payment-gateways', App\Http\Controllers\Admin\PaymentGatewayController::class);
@@ -160,7 +160,7 @@ $adminRoutes = function () {
             Route::post('payment-gateways/{paymentGateway}/test-connection', [App\Http\Controllers\Admin\PaymentGatewayController::class, 'testConnection'])->name('payment-gateways.test-connection');
             Route::post('payment-gateways/reorder', [App\Http\Controllers\Admin\PaymentGatewayController::class, 'reorder'])->name('payment-gateways.reorder');
         });
-        
+
         // CMS Pages
         Route::middleware('admin.permission:cms.view')->group(function () {
             Route::resource('cms-pages', App\Http\Controllers\Admin\CmsPageController::class);
@@ -169,7 +169,7 @@ $adminRoutes = function () {
             Route::get('cms-pages/{cmsPage}/preview', [App\Http\Controllers\Admin\CmsPageController::class, 'preview'])->name('cms-pages.preview');
             Route::post('cms-pages/generate-slug', [App\Http\Controllers\Admin\CmsPageController::class, 'generateSlug'])->name('cms-pages.generate-slug');
         });
-        
+
         // Analytics
         Route::middleware('admin.permission:analytics.view')->group(function () {
             Route::get('analytics', [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
@@ -181,7 +181,7 @@ $adminRoutes = function () {
             Route::get('analytics/customer-lifetime-value', [App\Http\Controllers\Admin\AnalyticsController::class, 'customerLifetimeValue'])->name('analytics.customer-lifetime-value');
             Route::get('analytics/product-performance', [App\Http\Controllers\Admin\AnalyticsController::class, 'productPerformance'])->name('analytics.product-performance');
         });
-        
+
         // Reviews Management
         Route::middleware('admin.permission:reviews.view')->group(function () {
             Route::resource('reviews', App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'show', 'destroy']);
@@ -195,20 +195,20 @@ $adminRoutes = function () {
             Route::post('reviews/bulk-delete', [App\Http\Controllers\Admin\ReviewController::class, 'bulkDelete'])->name('reviews.bulk-delete');
             Route::get('reviews/export', [App\Http\Controllers\Admin\ReviewController::class, 'export'])->name('reviews.export');
         });
-        
+
         // Permissions Management (Super Admin only)
         Route::middleware('admin.permission:admins.edit')->group(function () {
             Route::get('permissions', [App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('permissions.index');
             Route::post('permissions', [App\Http\Controllers\Admin\PermissionController::class, 'update'])->name('permissions.update');
             Route::post('permissions/reset', [App\Http\Controllers\Admin\PermissionController::class, 'resetToDefaults'])->name('permissions.reset');
         });
-        
+
         // Audit Trail
         Route::middleware('admin.permission:audit_logs.view')->group(function () {
             Route::get('audit', [App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit.index');
             Route::get('audit/export', [App\Http\Controllers\Admin\AuditController::class, 'export'])->name('audit.export');
         });
-        
+
         // Notifications Management
         Route::middleware('admin.permission:notifications.view')->group(function () {
             Route::get('notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
@@ -217,7 +217,7 @@ $adminRoutes = function () {
             Route::post('notifications/send', [App\Http\Controllers\Admin\NotificationController::class, 'send'])->name('notifications.send');
             Route::post('notifications/test', [App\Http\Controllers\Admin\NotificationController::class, 'test'])->name('notifications.test');
         });
-        
+
         // Bulk Actions
         Route::middleware('admin.permission:products.bulk_actions')->group(function () {
             Route::post('bulk/products', [App\Http\Controllers\Admin\BulkActionController::class, 'products'])->name('bulk.products');
@@ -225,22 +225,22 @@ $adminRoutes = function () {
             Route::post('bulk/users', [App\Http\Controllers\Admin\BulkActionController::class, 'users'])->name('bulk.users');
             Route::post('bulk/reviews', [App\Http\Controllers\Admin\BulkActionController::class, 'reviews'])->name('bulk.reviews');
         });
-        
+
         // Image Upload
         Route::middleware('admin.permission:products.edit')->group(function () {
-            Route::get('images/upload', function() {
+            Route::get('images/upload', function () {
                 return view('admin.images.upload');
             })->name('images.upload-page');
             Route::post('images/upload', [App\Http\Controllers\Admin\ImageUploadController::class, 'upload'])->name('images.upload');
             Route::delete('images/{image}', [App\Http\Controllers\Admin\ImageUploadController::class, 'delete'])->name('images.delete');
             Route::post('images/reorder', [App\Http\Controllers\Admin\ImageUploadController::class, 'reorder'])->name('images.reorder');
         });
-            
-            // API Routes for image upload
-            Route::get('api/products', function() {
-                return \App\Models\Product::select('id', 'name')->get();
-            })->name('api.products');
-        
+
+        // API Routes for image upload
+        Route::get('api/products', function () {
+            return \App\Models\Product::select('id', 'name')->get();
+        })->name('api.products');
+
         // Messages (reorganized from contact-messages)
         Route::get('messages', [App\Http\Controllers\Admin\MessageController::class, 'index'])->name('messages.index');
         Route::get('messages/{message}', [App\Http\Controllers\Admin\MessageController::class, 'show'])->name('messages.show');
@@ -262,15 +262,16 @@ Route::domain('admin.localhost')->name('admin.')->group($adminRoutes);
 // Public routes - but check for admin subdomain first
 Route::get('/', function () {
     $host = request()->getHost();
-    
+
     // If this is an admin subdomain, redirect to admin login
     if ($host === 'admin.localhost' || $host === 'admin.davidswood.test') {
         if (auth()->guard('admin')->check()) {
             return redirect()->route('admin.dashboard');
         }
+
         return redirect()->route('admin.login');
     }
-    
+
     // Otherwise, show the normal homepage
     return app(HomeController::class)->index();
 })->name('home');
@@ -325,10 +326,10 @@ Route::get('/api/products', function (Illuminate\Http\Request $request) {
     try {
         $query = \App\Models\Product::where('is_active', true)
             ->with(['category', 'approvedReviews']);
-            
+
         // Handle filtering
         if ($request->has('category') && $request->get('category') !== 'all') {
-            $query->whereHas('category', function($q) use ($request) {
+            $query->whereHas('category', function ($q) use ($request) {
                 $q->where('slug', $request->get('category'));
             });
         }
@@ -350,11 +351,11 @@ Route::get('/api/products', function (Illuminate\Http\Request $request) {
                 $query->addSelect([
                     'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
                         ->whereColumn('product_id', 'products.id')
-                        ->where('is_approved', true)
+                        ->where('is_approved', true),
                 ])
-                ->orderBy('avg_rating', 'desc')
-                ->orderBy('sort_order', 'asc')
-                ->orderBy('created_at', 'desc');
+                    ->orderBy('avg_rating', 'desc')
+                    ->orderBy('sort_order', 'asc')
+                    ->orderBy('created_at', 'desc');
                 break;
         }
 
@@ -370,14 +371,14 @@ Route::get('/api/products', function (Illuminate\Http\Request $request) {
                 'total' => $products->total(),
                 'per_page' => $products->perPage(),
                 'last_page' => $products->lastPage(),
-            ]
+            ],
         ]);
 
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Error fetching products',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ], 500);
     }
 });
@@ -388,7 +389,7 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
     Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
     Route::get('/account/wishlist', [AccountController::class, 'wishlist'])->name('account.wishlist');
     Route::get('/account/profile', [AccountController::class, 'profile'])->name('account.profile');
-    
+
     // Account API routes
     Route::post('/api/account/profile/update', [AccountController::class, 'updateProfile']);
     Route::post('/api/account/password/change', [AccountController::class, 'changePassword']);
@@ -402,7 +403,7 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
     Route::post('/api/account/logout', [AccountController::class, 'logout']);
     Route::get('/api/account/orders', [AccountController::class, 'getOrders']);
     Route::get('/account/receipt/{orderNumber}', [AccountController::class, 'viewReceipt'])->name('account.receipt');
-    
+
     // Notification routes
     Route::get('/api/notifications', [NotificationController::class, 'getUserNotifications']);
     Route::get('/api/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
@@ -410,10 +411,10 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
     Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
     Route::delete('/api/notifications/{id}', [NotificationController::class, 'deleteNotification']);
     Route::delete('/api/notifications/clear-all', [NotificationController::class, 'clearAll']);
-    
+
     // Product Reviews
     Route::post('/api/reviews/submit', [App\Http\Controllers\ProductReviewController::class, 'store'])->name('reviews.store');
-    
+
     // Checkout routes
     Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/validate-shipping', [App\Http\Controllers\CheckoutController::class, 'validateShipping'])->name('checkout.validate-shipping');
@@ -422,7 +423,7 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
     Route::get('/checkout/review', [App\Http\Controllers\CheckoutController::class, 'showReview'])->name('checkout.review');
     Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processOrder'])->name('checkout.process');
     Route::get('/checkout/confirmation/{order}', [App\Http\Controllers\CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
-    
+
     // Payment Methods API routes
     Route::get('/api/payment-methods', [App\Http\Controllers\PaymentMethodController::class, 'index'])->name('payment-methods.index');
     Route::post('/api/payment-methods', [App\Http\Controllers\PaymentMethodController::class, 'store'])->name('payment-methods.store');
@@ -440,7 +441,7 @@ Route::get('/test-route', function () {
         'status' => 'ok',
         'message' => 'Laravel route is working',
         'timestamp' => now(),
-        'app_name' => config('app.name')
+        'app_name' => config('app.name'),
     ]);
 });
 
@@ -451,12 +452,12 @@ Route::get('/health', function () {
             'status' => 'ok',
             'timestamp' => date('Y-m-d H:i:s'),
             'service' => 'davids-wood-furniture',
-            'php_version' => PHP_VERSION
+            'php_version' => PHP_VERSION,
         ], 200);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
-            'message' => $e->getMessage()
+            'message' => $e->getMessage(),
         ], 500);
     }
 });
@@ -469,16 +470,16 @@ Route::get('/api/user/check', function () {
         'user_id' => Auth::id(),
         'url' => request()->url(),
         'referer' => request()->header('referer'),
-        'user_agent' => request()->header('user-agent')
+        'user_agent' => request()->header('user-agent'),
     ]);
-    
+
     if (Auth::check()) {
         $user = Auth::user();
         \Log::info('Auth check - user authenticated', [
             'user_id' => $user->id,
-            'username' => $user->username
+            'username' => $user->username,
         ]);
-        
+
         return response()->json([
             'authenticated' => true,
             'user_id' => $user->id,
@@ -489,31 +490,32 @@ Route::get('/api/user/check', function () {
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
                 'name' => $user->name,
-                'provider' => $user->provider
-            ]
+                'provider' => $user->provider,
+            ],
         ]);
     }
-    
+
     \Log::info('Auth check - user not authenticated', [
         'session_id' => session()->getId(),
-        'session_data' => session()->all()
+        'session_data' => session()->all(),
     ]);
-    
+
     return response()->json([
         'authenticated' => false,
         'user_id' => null,
-        'user' => null
+        'user' => null,
     ]);
 });
 
 // Test username availability endpoint
 Route::get('/test-username-check/{username}', function ($username) {
     $exists = \App\Models\User::where('username', $username)->exists();
+
     return response()->json([
         'username' => $username,
         'exists' => $exists,
-        'available' => !$exists,
-        'message' => $exists ? 'Username is already taken' : 'Username is available'
+        'available' => ! $exists,
+        'message' => $exists ? 'Username is already taken' : 'Username is available',
     ]);
 });
 
@@ -525,53 +527,57 @@ Route::get('/test-register-form', function () {
 // Debug routes for testing
 Route::get('/debug-profile-update', function () {
     $user = \App\Models\User::first();
-    if (!$user) {
+    if (! $user) {
         return response()->json(['error' => 'No users found']);
     }
-    
+
     return response()->json([
         'user_id' => $user->id,
-        'current_name' => $user->first_name . ' ' . $user->last_name,
+        'current_name' => $user->first_name.' '.$user->last_name,
         'current_email' => $user->email,
         'current_street' => $user->street,
         'current_city' => $user->city,
-        'database_connected' => true
+        'database_connected' => true,
     ]);
 });
 
 Route::get('/debug-wishlist', function () {
     $sessionId = 'hEfLeGvKEGL6kyywstnX7ndrlRuGMIfBMPigi4gz';
     $items = \App\Models\WishlistItem::where('session_id', $sessionId)->get();
+
     return response()->json([
         'session_id' => $sessionId,
         'count' => $items->count(),
-        'items' => $items->toArray()
+        'items' => $items->toArray(),
     ]);
 });
 
 Route::get('/debug-all-wishlist', function () {
     $allItems = \App\Models\WishlistItem::all();
+
     return response()->json([
         'total_count' => $allItems->count(),
-        'items' => $allItems->toArray()
+        'items' => $allItems->toArray(),
     ]);
 });
 
 Route::get('/debug-wishlist-session/{sessionId}', function ($sessionId) {
     $items = \App\Models\WishlistItem::where('session_id', $sessionId)->get();
+
     return response()->json([
         'session_id' => $sessionId,
         'count' => $items->count(),
-        'items' => $items->toArray()
+        'items' => $items->toArray(),
     ]);
 });
 
 Route::get('/debug-guest-session/{sessionId}', function ($sessionId) {
     $guestSession = \App\Models\GuestSession::find($sessionId);
+
     return response()->json([
         'session_id' => $sessionId,
         'guest_session_exists' => $guestSession ? true : false,
-        'guest_session' => $guestSession ? $guestSession->toArray() : null
+        'guest_session' => $guestSession ? $guestSession->toArray() : null,
     ]);
 });
 
@@ -579,7 +585,7 @@ Route::get('/debug-guest-session/{sessionId}', function ($sessionId) {
 Route::get('/debug-products-count', function () {
     $totalProducts = \App\Models\Product::where('is_active', true)->count();
     $productsPage1 = \App\Models\Product::where('is_active', true)->paginate(28);
-    
+
     return response()->json([
         'total_active_products' => $totalProducts,
         'per_page' => 28,
@@ -590,45 +596,47 @@ Route::get('/debug-products-count', function () {
             'per_page' => $productsPage1->perPage(),
             'last_page' => $productsPage1->lastPage(),
         ],
-        'message' => $totalProducts > 28 ? 'Pagination should work' : 'Not enough products for pagination (need more than 28)'
+        'message' => $totalProducts > 28 ? 'Pagination should work' : 'Not enough products for pagination (need more than 28)',
     ]);
 });
 
 Route::get('/debug-wishlist-migration/{userId}/{sessionId}', function ($userId, $sessionId) {
-    $wishlistController = new \App\Http\Controllers\WishlistController();
+    $wishlistController = new \App\Http\Controllers\WishlistController;
     try {
         $wishlistController->migrateWishlistToUser($userId, $sessionId);
+
         return response()->json([
             'success' => true,
             'message' => 'Migration completed',
             'user_id' => $userId,
-            'session_id' => $sessionId
+            'session_id' => $sessionId,
         ]);
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Migration failed',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ]);
     }
 });
 
 Route::get('/debug-preserve-wishlist/{sessionId}', function ($sessionId) {
-    $wishlistController = new \App\Http\Controllers\WishlistController();
+    $wishlistController = new \App\Http\Controllers\WishlistController;
     try {
         $preservedData = $wishlistController->preserveGuestWishlistData($sessionId);
+
         return response()->json([
             'success' => true,
             'message' => 'Data preserved',
             'session_id' => $sessionId,
             'preserved_count' => count($preservedData),
-            'preserved_data' => $preservedData
+            'preserved_data' => $preservedData,
         ]);
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Preservation failed',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ]);
     }
 });
@@ -637,6 +645,6 @@ Route::get('/test-logout', function () {
     return response()->json([
         'message' => 'Test logout route works',
         'user_authenticated' => \Auth::check(),
-        'user_id' => \Auth::id()
+        'user_id' => \Auth::id(),
     ]);
 });

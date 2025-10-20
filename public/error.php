@@ -1,4 +1,5 @@
 <?php
+
 // Simple error page for debugging
 header('Content-Type: application/json');
 
@@ -12,16 +13,15 @@ $error = [
         'APP_DEBUG' => $_ENV['APP_DEBUG'] ?? 'not set',
         'APP_KEY' => isset($_ENV['APP_KEY']) ? 'set' : 'not set',
         'DB_CONNECTION' => $_ENV['DB_CONNECTION'] ?? 'not set',
-        'PORT' => $_ENV['PORT'] ?? 'not set'
+        'PORT' => $_ENV['PORT'] ?? 'not set',
     ],
     'directories' => [
-        'storage_writable' => is_writable(__DIR__ . '/../storage'),
-        'bootstrap_cache_writable' => is_writable(__DIR__ . '/../bootstrap/cache'),
-        'storage_exists' => file_exists(__DIR__ . '/../storage'),
-        'bootstrap_cache_exists' => file_exists(__DIR__ . '/../bootstrap/cache')
-    ]
+        'storage_writable' => is_writable(__DIR__.'/../storage'),
+        'bootstrap_cache_writable' => is_writable(__DIR__.'/../bootstrap/cache'),
+        'storage_exists' => file_exists(__DIR__.'/../storage'),
+        'bootstrap_cache_exists' => file_exists(__DIR__.'/../bootstrap/cache'),
+    ],
 ];
 
 http_response_code(500);
 echo json_encode($error, JSON_PRETTY_PRINT);
-?>

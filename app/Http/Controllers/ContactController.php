@@ -62,7 +62,7 @@ class ContactController extends Controller
     {
         // For now, allow all admin users to view contact messages
         // TODO: Add proper authorization policy
-        
+
         $query = ContactMessage::with('user')->latest();
 
         // Filter by status if provided

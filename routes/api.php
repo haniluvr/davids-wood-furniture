@@ -1,11 +1,8 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\CartController;
 use App\Http\Controllers\WishlistController;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 // API routes for frontend JavaScript
 
@@ -17,7 +14,7 @@ Route::get('/products', function (Request $request) {
 
         // Handle filtering
         if ($request->has('category') && $request->get('category') !== 'all') {
-            $query->whereHas('category', function($q) use ($request) {
+            $query->whereHas('category', function ($q) use ($request) {
                 $q->where('slug', $request->get('category'));
             });
         }
@@ -52,14 +49,14 @@ Route::get('/products', function (Request $request) {
                 'total' => $products->total(),
                 'per_page' => $products->perPage(),
                 'last_page' => $products->lastPage(),
-            ]
+            ],
         ]);
 
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Error fetching products',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ], 500);
     }
 });
@@ -72,23 +69,23 @@ Route::get('/product/{id}', function ($id) {
             ->with(['category'])
             ->first();
 
-        if (!$product) {
+        if (! $product) {
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found'
+                'message' => 'Product not found',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $product
+            'data' => $product,
         ]);
 
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Error fetching product',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ], 500);
     }
 });
@@ -101,10 +98,10 @@ Route::get('/products/id/{id}', function ($id) {
             ->with(['category', 'approvedReviews'])
             ->first();
 
-        if (!$product) {
+        if (! $product) {
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found'
+                'message' => 'Product not found',
             ], 404);
         }
 
@@ -131,14 +128,14 @@ Route::get('/products/id/{id}', function ($id) {
                 'review_count' => $reviewCount,
                 'rating' => round($averageRating, 1), // For compatibility
                 'review_rating' => round($averageRating, 1), // For compatibility
-            ]
+            ],
         ]);
 
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Error fetching product',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ], 500);
     }
 });
@@ -151,23 +148,23 @@ Route::get('/products/{slug}', function ($slug) {
             ->with(['category'])
             ->first();
 
-        if (!$product) {
+        if (! $product) {
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found'
+                'message' => 'Product not found',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $product
+            'data' => $product,
         ]);
 
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Error fetching product',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ], 500);
     }
 });
@@ -182,14 +179,14 @@ Route::get('/categories', function () {
 
         return response()->json([
             'success' => true,
-            'data' => $categories
+            'data' => $categories,
         ]);
 
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Error fetching categories',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ], 500);
     }
 });
@@ -201,15 +198,15 @@ Route::get('/search', function (Request $request) {
             ->with(['category']);
 
         // Search functionality
-        if ($request->has('q') && !empty(trim($request->get('q')))) {
+        if ($request->has('q') && ! empty(trim($request->get('q')))) {
             $searchTerm = trim($request->get('q'));
-            
+
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('description', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('short_description', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('material', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('sku', 'like', '%' . $searchTerm . '%');
+                $q->where('name', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('description', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('short_description', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('material', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('sku', 'like', '%'.$searchTerm.'%');
             });
         }
 
@@ -219,53 +216,53 @@ Route::get('/search', function (Request $request) {
         return response()->json([
             'success' => true,
             'data' => $products,
-            'total' => $products->count()
+            'total' => $products->count(),
         ]);
 
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Error searching products',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ], 500);
     }
 });
 
-// Debug route to test API connectivity 
-Route::get('/test-cart', function() {
+// Debug route to test API connectivity
+Route::get('/test-cart', function () {
     return response()->json([
         'success' => true,
         'message' => 'Cart API is accessible',
-        'timestamp' => now()
+        'timestamp' => now(),
     ]);
 });
 
 // Cart routes moved to web.php for proper authentication
 
 // Cart migration endpoint for testing
-Route::post('/cart/migrate', function(Request $request) {
+Route::post('/cart/migrate', function (Request $request) {
     try {
         $userId = auth()->id();
         $sessionId = session()->getId();
-        
-        if (!$userId) {
+
+        if (! $userId) {
             return response()->json([
                 'success' => false,
-                'message' => 'User must be authenticated to migrate cart'
+                'message' => 'User must be authenticated to migrate cart',
             ], 401);
         }
-        
-        $cartController = new \App\Http\Controllers\CartController();
+
+        $cartController = new \App\Http\Controllers\CartController;
         $cartController->migrateCartToUser($userId, $sessionId);
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Cart migration completed'
+            'message' => 'Cart migration completed',
         ]);
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
-            'message' => 'Cart migration failed: ' . $e->getMessage()
+            'message' => 'Cart migration failed: '.$e->getMessage(),
         ], 500);
     }
 })->middleware('auth');
@@ -276,29 +273,29 @@ Route::post('/cart/migrate', function(Request $request) {
 Route::post('/wishlist/migrate', [WishlistController::class, 'migrate'])->middleware('auth');
 
 // Cleanup old guest carts (for testing/debugging)
-Route::post('/cart/cleanup', function(Request $request) {
+Route::post('/cart/cleanup', function (Request $request) {
     try {
         // Clear all guest carts (carts with user_id = null)
         $deletedCarts = \App\Models\Cart::whereNull('user_id')->delete();
-        
+
         // Clear all cart items from deleted carts
-        $deletedItems = \App\Models\CartItem::whereNotExists(function($query) {
+        $deletedItems = \App\Models\CartItem::whereNotExists(function ($query) {
             $query->select(\DB::raw(1))
-                  ->from('carts')
-                  ->whereRaw('carts.id = cart_items.cart_id');
+                ->from('carts')
+                ->whereRaw('carts.id = cart_items.cart_id');
         })->delete();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Cleanup completed',
             'deleted_carts' => $deletedCarts,
-            'deleted_items' => $deletedItems
+            'deleted_items' => $deletedItems,
         ]);
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Cleanup failed',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ], 500);
     }
 });

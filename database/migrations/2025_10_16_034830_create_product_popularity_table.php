@@ -21,7 +21,7 @@ return new class extends Migration
             $table->integer('total_popularity_score')->default(0)->comment('Combined score for ranking (wishlist_count + cart_count)');
             $table->timestamp('last_updated')->nullable()->comment('When popularity was last calculated');
             $table->timestamps();
-            
+
             // Indexes for performance
             $table->index('total_popularity_score');
             $table->index('last_updated');

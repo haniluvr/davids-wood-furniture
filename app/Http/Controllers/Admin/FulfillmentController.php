@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\OrderFulfillment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -33,7 +32,7 @@ class FulfillmentController extends Controller
     public function show(Order $order)
     {
         $order->load(['user', 'orderItems.product', 'fulfillment']);
-        
+
         // Get or create fulfillment record
         $fulfillment = $order->fulfillment()->firstOrCreate([]);
 
@@ -48,7 +47,7 @@ class FulfillmentController extends Controller
         ]);
 
         $fulfillment = $order->fulfillment()->firstOrCreate([]);
-        
+
         $fulfillment->update([
             'items_packed' => $request->items_packed,
             'packing_notes' => $request->packing_notes,
@@ -64,7 +63,7 @@ class FulfillmentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Packing status updated successfully',
-            'fulfillment' => $fulfillment->fresh()
+            'fulfillment' => $fulfillment->fresh(),
         ]);
     }
 
@@ -79,7 +78,7 @@ class FulfillmentController extends Controller
         ]);
 
         $fulfillment = $order->fulfillment()->firstOrCreate([]);
-        
+
         $updateData = [
             'label_printed' => $request->label_printed,
             'shipped' => $request->shipped,
@@ -91,7 +90,7 @@ class FulfillmentController extends Controller
             $updateData['shipped_by'] = auth('admin')->id();
             $updateData['carrier'] = $request->carrier;
             $updateData['tracking_number'] = $request->tracking_number;
-            
+
             // Update order status and fulfillment status
             $order->update([
                 'status' => 'shipped',
@@ -107,7 +106,7 @@ class FulfillmentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Shipping status updated successfully',
-            'fulfillment' => $fulfillment->fresh()
+            'fulfillment' => $fulfillment->fresh(),
         ]);
     }
 
@@ -132,7 +131,7 @@ class FulfillmentController extends Controller
 
                 if ($trackingNumber) {
                     $fulfillment = $order->fulfillment()->firstOrCreate([]);
-                    
+
                     $fulfillment->update([
                         'shipped' => true,
                         'shipped_at' => now(),
@@ -154,16 +153,16 @@ class FulfillmentController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => count($orderIds) . ' orders marked as shipped successfully'
+            'message' => count($orderIds).' orders marked as shipped successfully',
         ]);
     }
 
     public function printLabel(Order $order)
     {
         $order->load(['user', 'orderItems.product']);
-        
+
         // Generate tracking number if not exists
-        if (!$order->tracking_number) {
+        if (! $order->tracking_number) {
             $order->update(['tracking_number' => $order->generateTrackingNumber()]);
         }
 

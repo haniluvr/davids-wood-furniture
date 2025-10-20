@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('permission'); // products.create, orders.update, etc.
             $table->boolean('granted')->default(true);
             $table->timestamps();
-            
+
             $table->unique(['role', 'permission']);
             $table->index('role');
         });

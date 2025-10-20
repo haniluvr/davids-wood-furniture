@@ -74,8 +74,8 @@ class Order extends Model
     public function coupons()
     {
         return $this->belongsToMany(Coupon::class, 'coupon_usage')
-                    ->withPivot('discount_amount', 'used_at')
-                    ->withTimestamps();
+            ->withPivot('discount_amount', 'used_at')
+            ->withTimestamps();
     }
 
     public function paymentGateway(): BelongsTo
@@ -107,21 +107,22 @@ class Order extends Model
     {
         $year = date('Y');
         $maxAttempts = 100;
-        
+
         for ($i = 0; $i < $maxAttempts; $i++) {
             // Generate 4-character alphanumeric code (uppercase letters and numbers)
             $code = strtoupper(substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), 0, 4));
             $orderNumber = "ORD-{$year}-{$code}";
-            
+
             // Check if this order number already exists
-            if (!self::where('order_number', $orderNumber)->exists()) {
+            if (! self::where('order_number', $orderNumber)->exists()) {
                 return $orderNumber;
             }
         }
-        
+
         // Fallback: if somehow we can't generate unique after 100 attempts,
         // use timestamp-based code (this should never happen in practice)
         $code = strtoupper(substr(base_convert(time(), 10, 36), -4));
+
         return "ORD-{$year}-{$code}";
     }
 
@@ -136,8 +137,8 @@ class Order extends Model
     public function generateTrackingNumber(): string
     {
         $user = $this->user;
-        
-        if (!$user) {
+
+        if (! $user) {
             return 'N/A';
         }
 
@@ -157,7 +158,7 @@ class Order extends Model
         $zipCode = str_pad(substr(preg_replace('/\D/', '', $user->zip_code ?? '0000'), 0, 4), 4, '0', STR_PAD_LEFT);
 
         // RRPCC-ZZZZ-NNNN
-        return $regionCode . $provinceCode . $cityCode . '-' . $zipCode . '-' . $orderCode;
+        return $regionCode.$provinceCode.$cityCode.'-'.$zipCode.'-'.$orderCode;
     }
 
     /**
@@ -200,6 +201,7 @@ class Order extends Model
 
         // Generate a hash-based code from province name (1-9)
         $hash = crc32(strtolower($province ?? ''));
+
         return (string) (($hash % 9) + 1);
     }
 
@@ -216,15 +218,16 @@ class Order extends Model
         $city = strtoupper(preg_replace('/[^A-Z]/', '', $city));
         $first = ord(substr($city, 0, 1)) - 64; // A=1, B=2, etc.
         $second = strlen($city) > 1 ? ord(substr($city, 1, 1)) - 64 : 0;
-        
+
         // Combine into 2-digit code (mod 10 to keep single digits)
-        $code = ($first % 10) . ($second % 10);
+        $code = ($first % 10).($second % 10);
+
         return str_pad($code, 2, '0', STR_PAD_LEFT);
     }
 
     /**
      * Scope for ordering orders by proper status priority and date
-     * 
+     *
      * Customer view order priority logic:
      * 1. pending (new orders waiting to be processed)
      * 2. processing (orders being worked on)
@@ -254,7 +257,7 @@ class Order extends Model
      */
     public function getStatusPriority(): int
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 1,
             'processing' => 2,
             'shipped' => 3,

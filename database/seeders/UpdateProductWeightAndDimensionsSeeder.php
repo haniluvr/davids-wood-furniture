@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Product;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 
 class UpdateProductWeightAndDimensionsSeeder extends Seeder
@@ -16,13 +15,14 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
     {
         // Read IKEA data
         $jsonPath = base_path('ikea_data.json');
-        if (!File::exists($jsonPath)) {
+        if (! File::exists($jsonPath)) {
             $this->command->error('IKEA data file not found!');
+
             return;
         }
 
         $ikeaData = json_decode(File::get($jsonPath), true);
-        $this->command->info('Loaded ' . count($ikeaData) . ' IKEA products');
+        $this->command->info('Loaded '.count($ikeaData).' IKEA products');
 
         // Create a mapping of product names to IKEA data
         $ikeaMapping = $this->createIkeaMapping($ikeaData);
@@ -33,13 +33,13 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
 
         foreach ($products as $product) {
             $weightAndDimensions = $this->getWeightAndDimensions($product, $ikeaMapping);
-            
+
             if ($weightAndDimensions) {
                 $product->weight = $weightAndDimensions['weight'];
                 $product->dimensions = $weightAndDimensions['dimensions'];
                 $product->save();
                 $updated++;
-                
+
                 $this->command->info("Updated: {$product->name} - {$weightAndDimensions['dimensions']} - {$weightAndDimensions['weight']}kg");
             }
         }
@@ -53,22 +53,22 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
     private function createIkeaMapping($ikeaData)
     {
         $mapping = [];
-        
+
         foreach ($ikeaData as $item) {
             $name = $item['Notranslate'] ?? '';
             $description = $item['Description'] ?? $item['Plp-image Description'] ?? '';
-            
+
             if ($name && $description) {
-                if (!isset($mapping[$name])) {
+                if (! isset($mapping[$name])) {
                     $mapping[$name] = [];
                 }
                 $mapping[$name][] = [
                     'description' => $description,
-                    'dimensions' => $this->extractDimensions($description)
+                    'dimensions' => $this->extractDimensions($description),
                 ];
             }
         }
-        
+
         return $mapping;
     }
 
@@ -79,14 +79,14 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
     {
         // Pattern to match dimensions like "140x60 cm" or "40x28x202 cm"
         if (preg_match('/(\d+x\d+(?:x\d+)?)\s*cm/', $description, $matches)) {
-            return $matches[1] . ' cm';
+            return $matches[1].' cm';
         }
-        
+
         // Pattern for single dimension like "55 cm"
         if (preg_match('/(\d+)\s*cm/', $description, $matches)) {
-            return $matches[1] . ' cm';
+            return $matches[1].' cm';
         }
-        
+
         return null;
     }
 
@@ -97,20 +97,21 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
     {
         // Try to find in IKEA data first
         $productName = strtoupper($product->name);
-        
+
         // Extract potential IKEA name from product name
         $ikeaName = $this->extractIkeaName($productName);
-        
+
         if ($ikeaName && isset($ikeaMapping[$ikeaName])) {
             $ikeaProducts = $ikeaMapping[$ikeaName];
-            
+
             // Find best match based on product description or type
             foreach ($ikeaProducts as $ikeaProduct) {
                 if ($ikeaProduct['dimensions']) {
                     $weight = $this->calculateWeight($product, $ikeaProduct['dimensions']);
+
                     return [
                         'dimensions' => $ikeaProduct['dimensions'],
-                        'weight' => $weight
+                        'weight' => $weight,
                     ];
                 }
             }
@@ -132,7 +133,7 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
             'KALLAX', 'HEMNES', 'PAX', 'MALM', 'EKTORP', 'KIVIK', 'POÄNG',
             'LISABO', 'NORDEN', 'EKEDALEN', 'JÄRVFJÄLLET', 'MARKUS',
             'STEFAN', 'INGOLF', 'BERNHARD', 'NORDVIKEN', 'HAVSTA',
-            'BRIMNES', 'SONGESAND', 'IDANÄS', 'HAUGA', 'FLOTTEBO'
+            'BRIMNES', 'SONGESAND', 'IDANÄS', 'HAUGA', 'FLOTTEBO',
         ];
 
         foreach ($ikeaNames as $name) {
@@ -151,7 +152,7 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
     {
         // Parse dimensions
         $dims = explode('x', str_replace(' cm', '', $dimensions));
-        
+
         $categoryName = strtolower($product->category->name ?? '');
         $productName = strtolower($product->name);
 

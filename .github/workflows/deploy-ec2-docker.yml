@@ -44,15 +44,15 @@ jobs:
     - run: php artisan key:generate
     - run: chmod -R 777 storage bootstrap/cache
     - run: mkdir -p database && touch database/database.sqlite
-    - name: Remove duplicate sessions migration (CI only)
+    - name: Remove problematic migrations for SQLite (CI only)
       run: |
-        if [ -f database/migrations/2025_01_27_190400_create_sessions_table.php ]; then
-          rm database/migrations/2025_01_27_190400_create_sessions_table.php
-        fi
-        # Remove early 2025_01_27 migrations that alter tables not yet created in chronological order
+        # Remove migrations that use MySQL-specific syntax not supported in SQLite
+        rm -f database/migrations/2025_01_27_190400_create_sessions_table.php
         rm -f database/migrations/2025_01_27_200002_update_orders_table_for_fulfillment_returns.php
         rm -f database/migrations/2025_01_27_200003_update_contact_messages_for_messages_system.php
         rm -f database/migrations/2025_01_27_200004_update_orders_currency_to_php.php
+        rm -f database/migrations/2025_09_25_212133_fix_subcategory_id_position.php
+        rm -f database/migrations/2025_10_19_152620_fix_room_category_column_in_products_table.php
     - name: Run migrations (sqlite)
       env:
         DB_CONNECTION: sqlite
@@ -105,6 +105,8 @@ jobs:
       run: |
         echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
         chmod 600 key.pem
+        # Ensure proper line endings for SSH key
+        sed -i 's/\r$//' key.pem
     - uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}

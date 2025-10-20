@@ -2,18 +2,19 @@
 
 namespace App\Notifications;
 
+use App\Models\Order;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\Order;
 
 class OrderStatusChangedNotification extends Notification
 {
     use Queueable;
 
     protected $order;
+
     protected $newStatus;
+
     protected $oldStatus;
 
     public function __construct(Order $order, $newStatus, $oldStatus = null)
@@ -31,12 +32,12 @@ class OrderStatusChangedNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Order Update - #' . $this->order->order_number)
+            ->subject('Order Update - #'.$this->order->order_number)
             ->view('emails.orders.status-changed', [
                 'order' => $this->order,
                 'user' => $notifiable,
                 'newStatus' => $this->newStatus,
-                'oldStatus' => $this->oldStatus
+                'oldStatus' => $this->oldStatus,
             ]);
     }
 

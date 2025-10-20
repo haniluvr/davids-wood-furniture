@@ -70,11 +70,11 @@ class Notification extends Model
     public function scopeByRecipient($query, $recipientType, $recipientId = null)
     {
         $query->where('recipient_type', $recipientType);
-        
+
         if ($recipientId) {
             $query->where('recipient_id', $recipientId);
         }
-        
+
         return $query;
     }
 
@@ -86,7 +86,7 @@ class Notification extends Model
     // Accessors
     public function getStatusColorAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'text-yellow-600 bg-yellow-100',
             'sent' => 'text-green-600 bg-green-100',
             'failed' => 'text-red-600 bg-red-100',
@@ -139,7 +139,7 @@ class Notification extends Model
         ]);
     }
 
-    public function markAsFailed(string $errorMessage = null): bool
+    public function markAsFailed(?string $errorMessage = null): bool
     {
         return $this->update([
             'status' => 'failed',
@@ -229,7 +229,7 @@ class Notification extends Model
         self::createForUser(
             $order->user,
             'Order Status Update',
-            "Your order #{$order->order_number} status has been updated to: " . ucfirst($order->status),
+            "Your order #{$order->order_number} status has been updated to: ".ucfirst($order->status),
             'email',
             ['order_id' => $order->id, 'order_number' => $order->order_number, 'status' => $order->status]
         );

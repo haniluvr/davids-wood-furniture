@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Order;
 use App\Models\Admin;
+use App\Models\Order;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -25,10 +24,10 @@ class UserController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('first_name', 'like', '%' . $search . '%')
-                  ->orWhere('last_name', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', '%'.$search.'%')
+                    ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%');
             });
         }
 
@@ -72,7 +71,7 @@ class UserController extends Controller
             'recent_registrations' => User::where('created_at', '>=', now()->subDays(30))->count(),
             'total_customer_value' => Order::where('payment_status', 'paid')->sum('total_amount'),
             'average_order_value' => Order::where('payment_status', 'paid')->avg('total_amount'),
-            'repeat_customers' => User::whereHas('orders', function($q) {
+            'repeat_customers' => User::whereHas('orders', function ($q) {
                 $q->where('payment_status', 'paid');
             }, '>=', 2)->count(),
         ];
@@ -122,7 +121,7 @@ class UserController extends Controller
         $userData = $validated;
         $userData['password'] = Hash::make($validated['password']);
         $userData['email_verified_at'] = $validated['email_verified'] ? now() : null;
-        
+
         // Remove the checkbox field that's not in the database
         unset($userData['email_verified']);
 
@@ -138,7 +137,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load(['orders.orderItems', 'wishlists']);
-        
+
         // Get user statistics
         $stats = [
             'total_orders' => $user->orders->count(),
@@ -207,7 +206,7 @@ class UserController extends Controller
 
         // Delete user's wishlist items
         $user->wishlists()->delete();
-        
+
         // Delete the user
         $user->delete();
 
@@ -221,7 +220,7 @@ class UserController extends Controller
     public function suspend(User $user)
     {
         $user->update(['is_suspended' => true]);
-        
+
         return back()->with('success', 'User account suspended successfully.');
     }
 
@@ -231,7 +230,7 @@ class UserController extends Controller
     public function unsuspend(User $user)
     {
         $user->update(['is_suspended' => false]);
-        
+
         return back()->with('success', 'User account unsuspended successfully.');
     }
 
@@ -241,7 +240,7 @@ class UserController extends Controller
     public function verifyEmail(User $user)
     {
         $user->update(['email_verified_at' => now()]);
-        
+
         return back()->with('success', 'User email verified successfully.');
     }
 
@@ -251,7 +250,7 @@ class UserController extends Controller
     public function unverifyEmail(User $user)
     {
         $user->update(['email_verified_at' => null]);
-        
+
         return back()->with('success', 'User email verification removed.');
     }
 
@@ -281,10 +280,10 @@ class UserController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('first_name', 'like', '%' . $search . '%')
-                  ->orWhere('last_name', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', '%'.$search.'%')
+                    ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%');
             });
         }
 
@@ -355,12 +354,12 @@ class UserController extends Controller
     public function export(Request $request)
     {
         $format = $request->get('format', 'csv');
-        
+
         $users = User::with('orders')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $filename = 'users-export-' . now()->format('Y-m-d-H-i-s');
+        $filename = 'users-export-'.now()->format('Y-m-d-H-i-s');
 
         if ($format === 'csv') {
             return $this->exportCsv($users, $filename);
@@ -376,12 +375,12 @@ class UserController extends Controller
     {
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '.csv"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'.csv"',
         ];
 
-        $callback = function() use ($users) {
+        $callback = function () use ($users) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV headers
             fputcsv($file, [
                 'ID',
@@ -395,7 +394,7 @@ class UserController extends Controller
                 'Total Orders',
                 'Total Spent',
                 'Registered Date',
-                'Last Login'
+                'Last Login',
             ]);
 
             foreach ($users as $user) {
@@ -409,9 +408,9 @@ class UserController extends Controller
                     $user->email_verified_at ? 'Yes' : 'No',
                     $user->is_suspended ? 'Suspended' : 'Active',
                     $user->orders->count(),
-                    '$' . number_format($user->orders->where('payment_status', 'paid')->sum('total_amount'), 2),
+                    '$'.number_format($user->orders->where('payment_status', 'paid')->sum('total_amount'), 2),
                     $user->created_at->format('Y-m-d H:i:s'),
-                    $user->last_login_at ? $user->last_login_at->format('Y-m-d H:i:s') : 'Never'
+                    $user->last_login_at ? $user->last_login_at->format('Y-m-d H:i:s') : 'Never',
                 ]);
             }
 
@@ -433,12 +432,12 @@ class UserController extends Controller
 
         $currentTags = $user->tags ?? [];
         $newTags = array_unique(array_merge($currentTags, $request->tags));
-        
+
         $user->update(['tags' => $newTags]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Tags added successfully'
+            'message' => 'Tags added successfully',
         ]);
     }
 
@@ -452,15 +451,15 @@ class UserController extends Controller
         ]);
 
         $currentTags = $user->tags ?? [];
-        $newTags = array_values(array_filter($currentTags, function($tag) use ($request) {
+        $newTags = array_values(array_filter($currentTags, function ($tag) use ($request) {
             return $tag !== $request->tag;
         }));
-        
+
         $user->update(['tags' => $newTags]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Tag removed successfully'
+            'message' => 'Tag removed successfully',
         ]);
     }
 
@@ -477,7 +476,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Notes updated successfully'
+            'message' => 'Notes updated successfully',
         ]);
     }
 
@@ -487,7 +486,7 @@ class UserController extends Controller
     public function getCustomerAnalytics(User $user)
     {
         $orders = $user->orders()->where('payment_status', 'paid')->get();
-        
+
         $analytics = [
             'total_orders' => $orders->count(),
             'total_spent' => $orders->sum('total_amount'),
@@ -496,14 +495,14 @@ class UserController extends Controller
             'last_order_date' => $orders->max('created_at'),
             'days_since_last_order' => $orders->max('created_at') ? now()->diffInDays($orders->max('created_at')) : null,
             'customer_lifetime_days' => $user->created_at ? now()->diffInDays($user->created_at) : 0,
-            'order_frequency' => $orders->count() > 0 && $user->created_at ? 
+            'order_frequency' => $orders->count() > 0 && $user->created_at ?
                 $orders->count() / max(1, now()->diffInDays($user->created_at) / 30) : 0,
             'customer_group' => $this->getCustomerGroup($orders->count()),
         ];
 
         return response()->json([
             'success' => true,
-            'analytics' => $analytics
+            'analytics' => $analytics,
         ]);
     }
 
@@ -512,10 +511,19 @@ class UserController extends Controller
      */
     private function getCustomerGroup($orderCount)
     {
-        if ($orderCount == 0) return 'Prospect';
-        if ($orderCount <= 1) return 'New Customer';
-        if ($orderCount <= 5) return 'Regular Customer';
-        if ($orderCount <= 15) return 'Loyal Customer';
+        if ($orderCount == 0) {
+            return 'Prospect';
+        }
+        if ($orderCount <= 1) {
+            return 'New Customer';
+        }
+        if ($orderCount <= 5) {
+            return 'Regular Customer';
+        }
+        if ($orderCount <= 15) {
+            return 'Loyal Customer';
+        }
+
         return 'VIP Customer';
     }
 
@@ -540,27 +548,27 @@ class UserController extends Controller
 
         foreach ($users as $user) {
             $currentTags = $user->tags ?? [];
-            
+
             switch ($action) {
                 case 'add':
                     $updatedTags = array_unique(array_merge($currentTags, $newTags));
                     break;
                 case 'remove':
-                    $updatedTags = array_values(array_filter($currentTags, function($tag) use ($newTags) {
-                        return !in_array($tag, $newTags);
+                    $updatedTags = array_values(array_filter($currentTags, function ($tag) use ($newTags) {
+                        return ! in_array($tag, $newTags);
                     }));
                     break;
                 case 'replace':
                     $updatedTags = $newTags;
                     break;
             }
-            
+
             $user->update(['tags' => $updatedTags]);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Tags updated for ' . count($userIds) . ' customers'
+            'message' => 'Tags updated for '.count($userIds).' customers',
         ]);
     }
 
@@ -569,7 +577,7 @@ class UserController extends Controller
      */
     public function getByGroup($group)
     {
-        $query = User::withCount(['orders' => function($q) {
+        $query = User::withCount(['orders' => function ($q) {
             $q->where('payment_status', 'paid');
         }]);
 
@@ -598,7 +606,7 @@ class UserController extends Controller
                 'last_page' => $users->lastPage(),
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
-            ]
+            ],
         ]);
     }
 }

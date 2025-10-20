@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class OrderActivity extends Model
 {
@@ -95,7 +95,7 @@ class OrderActivity extends Model
             'action' => 'refund_processed',
             'old_value' => $order->payment_status,
             'new_value' => 'refunded',
-            'notes' => "Refund of $" . number_format($amount, 2) . " processed. Reason: " . $reason,
+            'notes' => 'Refund of $'.number_format($amount, 2).' processed. Reason: '.$reason,
             'metadata' => [
                 'order_number' => $order->order_number,
                 'customer_name' => $order->user?->name ?? 'Guest',
@@ -127,7 +127,7 @@ class OrderActivity extends Model
             'order_id' => $order->id,
             'admin_id' => $admin?->id,
             'action' => 'order_created',
-            'notes' => 'Order created' . ($admin ? ' by admin' : ' by customer'),
+            'notes' => 'Order created'.($admin ? ' by admin' : ' by customer'),
             'metadata' => [
                 'order_number' => $order->order_number,
                 'customer_name' => $order->user?->name ?? 'Guest',
@@ -154,9 +154,9 @@ class OrderActivity extends Model
     // Accessors
     public function getActionDescriptionAttribute(): string
     {
-        return match($this->action) {
-            'status_changed' => 'Order status changed from ' . ucfirst($this->old_value) . ' to ' . ucfirst($this->new_value),
-            'payment_status_changed' => 'Payment status changed from ' . ucfirst($this->old_value) . ' to ' . ucfirst($this->new_value),
+        return match ($this->action) {
+            'status_changed' => 'Order status changed from '.ucfirst($this->old_value).' to '.ucfirst($this->new_value),
+            'payment_status_changed' => 'Payment status changed from '.ucfirst($this->old_value).' to '.ucfirst($this->new_value),
             'note_added' => 'Note added',
             'refund_processed' => 'Refund processed',
             'order_created' => 'Order created',
@@ -167,7 +167,7 @@ class OrderActivity extends Model
 
     public function getAdminNameAttribute(): string
     {
-        return $this->admin ? $this->admin->first_name . ' ' . $this->admin->last_name : 'System';
+        return $this->admin ? $this->admin->first_name.' '.$this->admin->last_name : 'System';
     }
 
     public function getFormattedCreatedAtAttribute(): string
