@@ -149,13 +149,40 @@ jobs:
         
         # Kill any non-Docker process using port 80
         sudo fuser -k 80/tcp || echo "No processes to kill on port 80"
+        
+        # Ensure MySQL is installed and running
+        echo "Checking MySQL installation..."
+        if ! command -v mysql &> /dev/null; then
+          echo "MySQL not found, installing..."
+          sudo apt-get update
+          sudo apt-get install -y mysql-server
+        fi
+        
+        echo "Checking MySQL status..."
+        sudo systemctl status mysql || echo "MySQL service not found"
+        sudo systemctl start mysql || echo "Could not start MySQL"
+        sudo systemctl enable mysql || echo "Could not enable MySQL"
+        
+        # Test MySQL connection
+        mysql -h localhost -u davidswood_user -p'${{ secrets.DB_PASSWORD }}' -e "SELECT 1;" davidswood_furniture || {
+          echo "MySQL connection failed, creating database and user..."
+          mysql -u root -e "CREATE DATABASE IF NOT EXISTS davidswood_furniture;"
+          mysql -u root -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';"
+          mysql -u root -e "GRANT ALL PRIVILEGES ON davidswood_furniture.* TO 'davidswood_user'@'%';"
+          mysql -u root -e "FLUSH PRIVILEGES;"
+        }
+        
+        # Ensure MySQL is listening on all interfaces (not just localhost)
+        echo "Configuring MySQL to accept connections from Docker..."
+        sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf || echo "Could not update MySQL config"
+        sudo systemctl restart mysql || echo "Could not restart MySQL"
         docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         # Try port 80 first, fallback to 8080 if needed
         if ! docker run -d --name $CONTAINER_NAME --restart unless-stopped -p $APP_PORT:80 \
           --add-host=host.docker.internal:host-gateway \
           -e PORT=80 \
           -e APP_ENV=production -e APP_DEBUG=false \
-          -e DB_CONNECTION=mysql -e DB_HOST=host.docker.internal -e DB_PORT=3306 \
+          -e DB_CONNECTION=mysql -e DB_HOST=172.17.0.1 -e DB_PORT=3306 \
           -e DB_DATABASE=davidswood_furniture -e DB_USERNAME=davidswood_user \
           -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
           -e REDIS_HOST=localhost -e REDIS_PORT=6379 \
@@ -172,7 +199,7 @@ jobs:
             --add-host=host.docker.internal:host-gateway \
             -e PORT=80 \
             -e APP_ENV=production -e APP_DEBUG=false \
-            -e DB_CONNECTION=mysql -e DB_HOST=host.docker.internal -e DB_PORT=3306 \
+            -e DB_CONNECTION=mysql -e DB_HOST=172.17.0.1 -e DB_PORT=3306 \
             -e DB_DATABASE=davidswood_furniture -e DB_USERNAME=davidswood_user \
             -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
             -e REDIS_HOST=localhost -e REDIS_PORT=6379 \
@@ -183,13 +210,23 @@ jobs:
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "Container started on port 8080"
         fi
-        # Health check - try both ports
+        # Health check - try both ports and test database
+        echo "Waiting for container to start..."
+        sleep 10
+        
         for i in {1..30}; do
           if curl -fsS http://localhost/health.php >/dev/null; then 
-            echo "Health OK on port 80"; break
+            echo "Health OK on port 80"
+            # Test database connection from container
+            docker exec $CONTAINER_NAME php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection OK';" || echo "Database connection failed"
+            break
           elif curl -fsS http://localhost:8080/health.php >/dev/null; then
-            echo "Health OK on port 8080"; break
+            echo "Health OK on port 8080"
+            # Test database connection from container
+            docker exec $CONTAINER_NAME php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection OK';" || echo "Database connection failed"
+            break
           fi
+          echo "Attempt $i/30: Waiting for health check..."
           sleep 2
         done
         docker image prune -f
