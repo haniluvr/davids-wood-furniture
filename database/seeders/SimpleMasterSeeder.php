@@ -80,3 +80,4 @@ class SimpleMasterSeeder extends Seeder
     }
 }
 
+

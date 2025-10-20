@@ -203,3 +203,4 @@ sudo systemctl status mysql
 **Total Setup Time: 30-45 minutes**
 
 Once completed, your Laravel application will automatically deploy to AWS EC2 whenever you push to the main branch!
+

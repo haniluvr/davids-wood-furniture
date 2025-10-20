@@ -420,3 +420,4 @@ class SimpleRealisticDataSeeder extends Seeder
     }
 }
 
+

@@ -284,3 +284,4 @@ trap 'rollback; exit 1' ERR
 
 # Run main function
 main "$@"
+
