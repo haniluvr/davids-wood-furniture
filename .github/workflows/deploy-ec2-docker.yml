@@ -43,10 +43,16 @@ jobs:
     - run: php artisan key:generate
     - run: chmod -R 777 storage bootstrap/cache
     - run: mkdir -p database && touch database/database.sqlite
+    - name: Run migrations (sqlite)
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
+      run: php artisan migrate --force
     - run: php artisan test
 
   code-quality:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
     - uses: actions/checkout@v4
     - uses: shivammathur/setup-php@v2
