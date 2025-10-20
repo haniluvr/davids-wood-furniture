@@ -142,6 +142,9 @@ jobs:
         # Force remove any container with our name (in case it's stuck)
         docker rm -f $CONTAINER_NAME || true
         
+        # Install net-tools if missing
+        sudo apt-get update && sudo apt-get install -y net-tools
+        
         # Check what's using port 80 and kill it if it's not Docker
         echo "Checking what's using port 80..."
         sudo netstat -tlnp | grep :80 || echo "Nothing found on port 80"
@@ -166,10 +169,22 @@ jobs:
         # Test MySQL connection
         mysql -h localhost -u davidswood_user -p'${{ secrets.DB_PASSWORD }}' -e "SELECT 1;" davidswood_furniture || {
           echo "MySQL connection failed, creating database and user..."
-          mysql -u root -e "CREATE DATABASE IF NOT EXISTS davidswood_furniture;"
-          mysql -u root -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';"
-          mysql -u root -e "GRANT ALL PRIVILEGES ON davidswood_furniture.* TO 'davidswood_user'@'%';"
-          mysql -u root -e "FLUSH PRIVILEGES;"
+          # Try sudo mysql first (no password required on Ubuntu)
+          if sudo mysql -e "CREATE DATABASE IF NOT EXISTS davidswood_furniture;"; then
+            echo "Using sudo mysql for database creation"
+            sudo mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';"
+            sudo mysql -e "GRANT ALL PRIVILEGES ON davidswood_furniture.* TO 'davidswood_user'@'%';"
+            sudo mysql -e "FLUSH PRIVILEGES;"
+          else
+            echo "sudo mysql failed, trying with root password..."
+            # Set root password and try again
+            sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${{ secrets.DB_PASSWORD }}';"
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "CREATE DATABASE IF NOT EXISTS davidswood_furniture;"
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';"
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "GRANT ALL PRIVILEGES ON davidswood_furniture.* TO 'davidswood_user'@'%';"
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "FLUSH PRIVILEGES;"
+          fi
+          echo "Database and user created successfully"
         }
         
         # Ensure MySQL is listening on all interfaces (not just localhost)
@@ -182,6 +197,7 @@ jobs:
           --add-host=host.docker.internal:host-gateway \
           -e PORT=80 \
           -e APP_ENV=production -e APP_DEBUG=false \
+          -e APP_URL='${{ secrets.APP_URL }}' \
           -e DB_CONNECTION=mysql -e DB_HOST=172.17.0.1 -e DB_PORT=3306 \
           -e DB_DATABASE=davidswood_furniture -e DB_USERNAME=davidswood_user \
           -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
@@ -199,6 +215,7 @@ jobs:
             --add-host=host.docker.internal:host-gateway \
             -e PORT=80 \
             -e APP_ENV=production -e APP_DEBUG=false \
+          -e APP_URL='${{ secrets.APP_URL }}' \
             -e DB_CONNECTION=mysql -e DB_HOST=172.17.0.1 -e DB_PORT=3306 \
             -e DB_DATABASE=davidswood_furniture -e DB_USERNAME=davidswood_user \
             -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
