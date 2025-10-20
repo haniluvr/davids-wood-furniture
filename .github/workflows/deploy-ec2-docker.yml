@@ -227,6 +227,10 @@ jobs:
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "Container started on port 8080"
         fi
+        # Run database migrations
+        echo "Running database migrations..."
+        docker exec $CONTAINER_NAME php artisan migrate --force || echo "Migrations failed, but continuing..."
+        
         # Health check - try both ports and test database
         echo "Waiting for container to start..."
         sleep 10
