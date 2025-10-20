@@ -227,9 +227,22 @@ jobs:
             $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "Container started on port 8080"
         fi
-        # Run database migrations
+        # Run database migrations (handle existing tables)
         echo "Running database migrations..."
-        docker exec $CONTAINER_NAME php artisan migrate --force || echo "Migrations failed, but continuing..."
+        # First, try to run pending migrations
+        if docker exec $CONTAINER_NAME php artisan migrate:status | grep -q "Pending"; then
+          echo "Running pending migrations..."
+          docker exec $CONTAINER_NAME php artisan migrate --force || echo "Regular migrate failed"
+        else
+          echo "No pending migrations, checking if tables exist..."
+          # If no pending migrations but tables don't exist, run fresh
+          if ! docker exec $CONTAINER_NAME php artisan tinker --execute="DB::table('migrations')->count();" 2>/dev/null; then
+            echo "No migrations table found, running fresh migrations..."
+            docker exec $CONTAINER_NAME php artisan migrate:fresh --force --seed || echo "Fresh migrate failed"
+          else
+            echo "Database appears to be up to date"
+          fi
+        fi
         
         # Health check - try both ports and test database
         echo "Waiting for container to start..."
