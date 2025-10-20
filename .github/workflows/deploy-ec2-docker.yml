@@ -139,6 +139,9 @@ jobs:
         if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then docker stop $CONTAINER_NAME; fi
         if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then docker rm $CONTAINER_NAME; fi
         
+        # Force remove any container with our name (in case it's stuck)
+        docker rm -f $CONTAINER_NAME || true
+        
         # Check what's using port 80 and kill it if it's not Docker
         echo "Checking what's using port 80..."
         sudo netstat -tlnp | grep :80 || echo "Nothing found on port 80"
@@ -164,7 +167,7 @@ jobs:
           echo "Container started on port 80"
         else
           echo "Port 80 failed, trying port 8080..."
-          docker rm $CONTAINER_NAME || true
+          docker rm -f $CONTAINER_NAME || true
           docker run -d --name $CONTAINER_NAME --restart unless-stopped -p 8080:80 \
             --add-host=host.docker.internal:host-gateway \
             -e PORT=80 \
