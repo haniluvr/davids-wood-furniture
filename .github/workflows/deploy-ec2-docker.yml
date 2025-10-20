@@ -199,4 +199,14 @@ jobs:
     - name: Post-deploy health check
       run: |
         sleep 20
-        curl -f ${{ secrets.APP_URL }}/health.php
+        # Try both port 80 and 8080
+        if curl -f http://${{ secrets.EC2_HOST }}/health.php; then
+          echo "Health check passed on port 80"
+        elif curl -f http://${{ secrets.EC2_HOST }}:8080/health.php; then
+          echo "Health check passed on port 8080"
+        else
+          echo "Health check failed on both ports"
+          # Check what's actually running
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "docker ps && docker logs davids-wood-furniture"
+          exit 1
+        fi
