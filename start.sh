@@ -54,7 +54,7 @@ APP_NAME="David's Wood Furniture"
 APP_ENV=production
 APP_DEBUG=false
 APP_KEY=
-APP_URL=http://localhost
+APP_URL=http://13.211.143.224:8080
 
 LOG_CHANNEL=stack
 LOG_LEVEL=debug
