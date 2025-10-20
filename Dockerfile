@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PHP_VERSION=8.2
 
-# Install system dependencies
+# Install system dependencies including Apache
 RUN apt-get update && apt-get install -y \
     software-properties-common \
     curl \
@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     zip \
+    apache2 \
+    libapache2-mod-php8.2 \
     && add-apt-repository ppa:ondrej/php \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get update \
@@ -30,6 +32,9 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Enable Apache modules
+RUN a2enmod rewrite headers ssl
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -49,15 +54,23 @@ RUN npm install --legacy-peer-deps --verbose
 # Build frontend assets
 RUN npm run build
 
-# Laravel optimizations (skip config cache to avoid APP_KEY issues)
-RUN php artisan view:cache
+# Configure Apache
+RUN echo '<VirtualHost *:80>\n\
+    DocumentRoot /var/www/html/public\n\
+    <Directory /var/www/html/public>\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html && \
     chmod -R 775 storage bootstrap/cache
 
-# Expose port (Railway will set the PORT environment variable)
+# Expose port
 EXPOSE 80
 
 # Copy and make startup script executable

@@ -8,6 +8,9 @@ export APP_ENV=production
 export APP_DEBUG=false
 export DB_CONNECTION=mysql
 
+# Set default PORT if not provided
+export PORT=${PORT:-80}
+
 # Debug all environment variables first
 echo "--- All environment variables ---"
 printenv | grep -E "(MYSQL|DB_)" | head -10
@@ -36,10 +39,10 @@ else
     echo "DB_PASSWORD: ${DB_PASSWORD:-not set}"
     
     # Fallback to individual variables
-    export DB_HOST=${DB_HOST:-mysql}
+    export DB_HOST=${DB_HOST:-host.docker.internal}
     export DB_PORT=${DB_PORT:-3306}
     export DB_DATABASE=${DB_DATABASE:-davidswood_furniture}
-    export DB_USERNAME=${DB_USERNAME:-root}
+    export DB_USERNAME=${DB_USERNAME:-davidswood_user}
     export DB_PASSWORD=${DB_PASSWORD:-}
     echo "Using fallback values:"
     echo "Fallback DB_HOST: $DB_HOST"
@@ -54,7 +57,7 @@ APP_NAME="David's Wood Furniture"
 APP_ENV=production
 APP_DEBUG=false
 APP_KEY=
-APP_URL=http://13.211.143.224:8080
+APP_URL=http://13.211.143.224:$PORT
 
 LOG_CHANNEL=stack
 LOG_LEVEL=debug
@@ -80,26 +83,12 @@ MAIL_FROM_NAME="David's Wood Furniture"
 VITE_APP_NAME="David's Wood Furniture"
 EOF
 
-# Generate APP_KEY
+# Generate APP_KEY - simplified approach
 echo "Generating APP_KEY..."
-php artisan key:generate --force
-
-# Verify APP_KEY was generated and reload it
-echo "Verifying APP_KEY..."
-if grep -q "APP_KEY=" .env && ! grep -q "APP_KEY=$" .env; then
-    echo "APP_KEY generated successfully"
-    # Extract the APP_KEY from .env and export it
-    APP_KEY_VALUE=$(grep "APP_KEY=" .env | cut -d'=' -f2)
-    export APP_KEY="$APP_KEY_VALUE"
-    echo "Exported APP_KEY: $APP_KEY"
-else
-    echo "APP_KEY generation failed, creating manually..."
-    # Generate a 32-character random key manually
-    APP_KEY_VALUE="base64:$(openssl rand -base64 32)"
-    sed -i "s/APP_KEY=/APP_KEY=$APP_KEY_VALUE/" .env
-    export APP_KEY="$APP_KEY_VALUE"
-    echo "Manually created APP_KEY: $APP_KEY"
-fi
+APP_KEY_VALUE="base64:$(openssl rand -base64 32)"
+sed -i "s/APP_KEY=/APP_KEY=$APP_KEY_VALUE/" .env
+export APP_KEY="$APP_KEY_VALUE"
+echo "Generated APP_KEY: $APP_KEY"
 
 # Clear Laravel config cache to ensure APP_KEY is loaded
 echo "Clearing Laravel config cache..."
@@ -172,7 +161,15 @@ echo "DB_HOST: $DB_HOST"
 echo "DB_DATABASE: $DB_DATABASE"
 echo "--- End environment variables ---"
 
-# Start the application
-echo "Starting PHP server on port $PORT..."
+# Configure Apache for the correct port
+echo "Configuring Apache for port $PORT..."
+if [ "$PORT" != "80" ]; then
+    # Update Apache configuration for custom port
+    sed -i "s/Listen 80/Listen $PORT/" /etc/apache2/ports.conf
+    sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$PORT>/" /etc/apache2/sites-available/000-default.conf
+fi
+
+# Start Apache
+echo "Starting Apache on port $PORT..."
 echo "Server will be available at: http://0.0.0.0:$PORT"
-php artisan serve --host=0.0.0.0 --port=$PORT --verbose
+apache2ctl -D FOREGROUND
