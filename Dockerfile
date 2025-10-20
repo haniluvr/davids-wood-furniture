@@ -13,12 +13,23 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     zip \
+    ca-certificates \
+    gnupg \
+    lsb-release
+
+# Add PHP repository
+RUN add-apt-repository ppa:ondrej/php -y
+
+# Add Node.js repository
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+
+# Update package list after adding repositories
+RUN apt-get update
+
+# Install Apache and PHP
+RUN apt-get install -y \
     apache2 \
     libapache2-mod-php8.2 \
-    && add-apt-repository ppa:ondrej/php \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get update \
-    && apt-get install -y \
     php8.2 \
     php8.2-cli \
     php8.2-mysql \
@@ -29,9 +40,13 @@ RUN apt-get update && apt-get install -y \
     php8.2-zip \
     php8.2-bcmath \
     php8.2-intl \
-    nodejs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    php8.2-common
+
+# Install Node.js
+RUN apt-get install -y nodejs
+
+# Clean up
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache modules
 RUN a2enmod rewrite headers ssl

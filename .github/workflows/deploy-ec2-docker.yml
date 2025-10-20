@@ -89,9 +89,18 @@ jobs:
       env:
         IMAGE_NAME: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}
       run: |
-        docker build -t $IMAGE_NAME:${IMAGE_TAG} .
+        echo "Building Docker image: $IMAGE_NAME:${IMAGE_TAG}"
+        docker build -t $IMAGE_NAME:${IMAGE_TAG} . --no-cache
+        echo "Build completed successfully"
+        
+        echo "Pushing image to ECR..."
         docker push $IMAGE_NAME:${IMAGE_TAG}
         echo "Pushed image: $IMAGE_NAME:${IMAGE_TAG}"
+        
+        # Also tag as latest for fallback
+        docker tag $IMAGE_NAME:${IMAGE_TAG} $IMAGE_NAME:latest
+        docker push $IMAGE_NAME:latest
+        echo "Also pushed as latest tag"
 
   deploy:
     needs: [build-and-push]
@@ -167,33 +176,40 @@ jobs:
         sudo systemctl enable mysql || echo "Could not enable MySQL"
         
         # Test MySQL connection
-        mysql -h localhost -u davidswood_user -p'${{ secrets.DB_PASSWORD }}' -e "SELECT 1;" davidswood_furniture || {
+        mysql -h localhost -u davidswood_user -p'${{ secrets.DB_PASSWORD }}' -e "SELECT 1;" davidswood_furniture 2>/dev/null || {
           echo "MySQL connection failed, creating database and user..."
           # Try sudo mysql first (no password required on Ubuntu)
-          if sudo mysql -e "CREATE DATABASE IF NOT EXISTS davidswood_furniture;"; then
+          if sudo mysql -e "CREATE DATABASE IF NOT EXISTS davidswood_furniture;" 2>/dev/null; then
             echo "Using sudo mysql for database creation"
-            sudo mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';"
-            sudo mysql -e "GRANT ALL PRIVILEGES ON davidswood_furniture.* TO 'davidswood_user'@'%';"
-            sudo mysql -e "FLUSH PRIVILEGES;"
+            sudo mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" 2>/dev/null
+            sudo mysql -e "GRANT ALL PRIVILEGES ON davidswood_furniture.* TO 'davidswood_user'@'%';" 2>/dev/null
+            sudo mysql -e "FLUSH PRIVILEGES;" 2>/dev/null
+            echo "Database and user created successfully with sudo"
           else
             echo "sudo mysql failed, trying with root password..."
             # Set root password and try again
-            sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${{ secrets.DB_PASSWORD }}';"
-            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "CREATE DATABASE IF NOT EXISTS davidswood_furniture;"
-            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';"
-            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "GRANT ALL PRIVILEGES ON davidswood_furniture.* TO 'davidswood_user'@'%';"
-            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "FLUSH PRIVILEGES;"
+            sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${{ secrets.DB_PASSWORD }}';" 2>/dev/null || echo "Root password already set"
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "CREATE DATABASE IF NOT EXISTS davidswood_furniture;" 2>/dev/null
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" 2>/dev/null
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "GRANT ALL PRIVILEGES ON davidswood_furniture.* TO 'davidswood_user'@'%';" 2>/dev/null
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "FLUSH PRIVILEGES;" 2>/dev/null
+            echo "Database and user created successfully with root"
           fi
-          echo "Database and user created successfully"
         }
         
         # Ensure MySQL is listening on all interfaces (not just localhost)
         echo "Configuring MySQL to accept connections from Docker..."
         sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf || echo "Could not update MySQL config"
         sudo systemctl restart mysql || echo "Could not restart MySQL"
-        docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        # Try to pull the specific image tag, fallback to latest if not found
+        if ! docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG; then
+          echo "Specific tag not found, trying latest..."
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          IMAGE_TAG="latest"
+        fi
         # Try port 80 first, fallback to 8080 if needed
-        if ! docker run -d --name $CONTAINER_NAME --restart unless-stopped -p $APP_PORT:80 \
+        echo "Starting container on port 80..."
+        if docker run -d --name $CONTAINER_NAME --restart unless-stopped -p $APP_PORT:80 \
           --add-host=host.docker.internal:host-gateway \
           -e PORT=80 \
           -e APP_ENV=production -e APP_DEBUG=false \
@@ -207,15 +223,15 @@ jobs:
           -e MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}' -e MAIL_ENCRYPTION=tls \
           -e MAIL_FROM_ADDRESS='${{ secrets.MAIL_FROM_ADDRESS }}' -e MAIL_FROM_NAME='${{ secrets.MAIL_FROM_NAME }}' \
           $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG; then
-          echo "Container started on port 80"
+          echo "Container started successfully on port 80"
         else
           echo "Port 80 failed, trying port 8080..."
           docker rm -f $CONTAINER_NAME || true
-          docker run -d --name $CONTAINER_NAME --restart unless-stopped -p 8080:80 \
+          if docker run -d --name $CONTAINER_NAME --restart unless-stopped -p 8080:80 \
             --add-host=host.docker.internal:host-gateway \
             -e PORT=80 \
             -e APP_ENV=production -e APP_DEBUG=false \
-          -e APP_URL='${{ secrets.APP_URL }}' \
+            -e APP_URL='${{ secrets.APP_URL }}' \
             -e DB_CONNECTION=mysql -e DB_HOST=host.docker.internal -e DB_PORT=3306 \
             -e DB_DATABASE=davidswood_furniture -e DB_USERNAME=davidswood_user \
             -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
@@ -224,8 +240,13 @@ jobs:
             -e MAIL_PORT='${{ secrets.MAIL_PORT }}' -e MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}' \
             -e MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}' -e MAIL_ENCRYPTION=tls \
             -e MAIL_FROM_ADDRESS='${{ secrets.MAIL_FROM_ADDRESS }}' -e MAIL_FROM_NAME='${{ secrets.MAIL_FROM_NAME }}' \
-            $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "Container started on port 8080"
+            $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG; then
+            echo "Container started successfully on port 8080"
+          else
+            echo "Failed to start container on both ports"
+            docker logs $CONTAINER_NAME || echo "No logs available"
+            exit 1
+          fi
         fi
         # Run database migrations (handle existing tables)
         echo "Running database migrations..."
