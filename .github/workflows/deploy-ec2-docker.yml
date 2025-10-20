@@ -1,0 +1,129 @@
+name: Deploy to AWS EC2 with Docker
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options: [production, staging]
+
+env:
+  AWS_REGION: ap-southeast-2
+  ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
+  ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: [ "6379:6379" ]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    strategy:
+      matrix:
+        php-version: [8.2, 8.3]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, redis
+        coverage: none
+    - run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+    - run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+    - run: php artisan key:generate
+    - run: chmod -R 777 storage bootstrap/cache
+    - run: mkdir -p database && touch database/database.sqlite
+    - run: php artisan test
+
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.2
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, redis
+    - run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+    - run: ./vendor/bin/pint --test
+
+  build-and-push:
+    needs: [test, code-quality]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    - id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+    - name: Build, tag, and push
+      env:
+        IMAGE_NAME: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}
+      run: |
+        docker build -t $IMAGE_NAME:${IMAGE_TAG} .
+        docker tag $IMAGE_NAME:${IMAGE_TAG} $IMAGE_NAME:latest
+        docker push $IMAGE_NAME:${IMAGE_TAG}
+        docker push $IMAGE_NAME:latest
+
+  deploy:
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    steps:
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    - name: Deploy to EC2
+      run: |
+        cat > deploy-docker.sh << 'EOF'
+        #!/bin/bash
+        set -e
+        ECR_REGISTRY="${{ env.ECR_REGISTRY }}"
+        ECR_REPOSITORY="${{ env.ECR_REPOSITORY }}"
+        IMAGE_TAG="${{ env.IMAGE_TAG }}"
+        CONTAINER_NAME="davids-wood-furniture"
+        APP_PORT=80
+        aws ecr get-login-password --region ${{ env.AWS_REGION }} \
+          | docker login --username AWS --password-stdin $ECR_REGISTRY
+        if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then docker stop $CONTAINER_NAME; fi
+        if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then docker rm $CONTAINER_NAME; fi
+        docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker run -d --name $CONTAINER_NAME --restart unless-stopped -p $APP_PORT:80 \
+          -e APP_ENV=production -e APP_DEBUG=false \
+          -e DB_CONNECTION=mysql -e DB_HOST=localhost -e DB_PORT=3306 \
+          -e DB_DATABASE=davidswood_furniture -e DB_USERNAME=davidswood_user \
+          -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
+          -e REDIS_HOST=localhost -e REDIS_PORT=6379 \
+          -e MAIL_MAILER=smtp -e MAIL_HOST='${{ secrets.MAIL_HOST }}' \
+          -e MAIL_PORT='${{ secrets.MAIL_PORT }}' -e MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}' \
+          -e MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}' -e MAIL_ENCRYPTION=tls \
+          -e MAIL_FROM_ADDRESS='${{ secrets.MAIL_FROM_ADDRESS }}' -e MAIL_FROM_NAME='${{ secrets.MAIL_FROM_NAME }}' \
+          $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        for i in {1..30}; do
+          if curl -fsS http://localhost/health.php >/dev/null; then echo "Health OK"; break; fi
+          sleep 2
+        done
+        docker image prune -f
+        EOF
+        scp -o StrictHostKeyChecking=no -i ${{ secrets.EC2_SSH_KEY }} deploy-docker.sh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
+        ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_SSH_KEY }} ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod +x /tmp/deploy-docker.sh && /tmp/deploy-docker.sh"
+    - name: Post-deploy health check
+      run: |
+        sleep 20
+        curl -f ${{ secrets.APP_URL }}/health.php
