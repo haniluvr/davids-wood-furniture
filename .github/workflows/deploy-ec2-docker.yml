@@ -209,19 +209,33 @@ jobs:
           # Try sudo mysql first (no password required on Ubuntu)
           if sudo mysql -e "CREATE DATABASE IF NOT EXISTS davids_wood;" 2>/dev/null; then
             echo "Using sudo mysql for database creation"
+            # Create user for localhost access
+            sudo mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'localhost' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" 2>/dev/null
+            sudo mysql -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'localhost';" 2>/dev/null
+            # Create user for Docker network access (from any host)
             sudo mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" 2>/dev/null
             sudo mysql -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'%';" 2>/dev/null
+            # Create user specifically for Docker bridge network
+            sudo mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'172.17.%.%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" 2>/dev/null
+            sudo mysql -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'172.17.%.%';" 2>/dev/null
             sudo mysql -e "FLUSH PRIVILEGES;" 2>/dev/null
-            echo "Database and user created successfully with sudo"
+            echo "Database and user created successfully with sudo (multiple host permissions)"
           else
             echo "sudo mysql failed, trying with root password..."
             # Set root password and try again
             sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${{ secrets.DB_PASSWORD }}';" 2>/dev/null || echo "Root password already set"
             mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "CREATE DATABASE IF NOT EXISTS davids_wood;" 2>/dev/null
+            # Create user for localhost access
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'localhost' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" 2>/dev/null
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'localhost';" 2>/dev/null
+            # Create user for Docker network access (from any host)
             mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" 2>/dev/null
             mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'%';" 2>/dev/null
+            # Create user specifically for Docker bridge network
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'172.17.%.%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" 2>/dev/null
+            mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'172.17.%.%';" 2>/dev/null
             mysql -u root -p'${{ secrets.DB_PASSWORD }}' -e "FLUSH PRIVILEGES;" 2>/dev/null
-            echo "Database and user created successfully with root"
+            echo "Database and user created successfully with root (multiple host permissions)"
           fi
         }
         

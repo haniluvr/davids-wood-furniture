@@ -86,13 +86,22 @@ MAIL_FROM_NAME="David's Wood Furniture"
 VITE_APP_NAME="David's Wood Furniture"
 EOF
 
-# Generate APP_KEY - simplified approach
+# Generate APP_KEY - more robust approach
 echo "Generating APP_KEY..."
 APP_KEY_VALUE="base64:$(openssl rand -base64 32)"
-# Use a more robust method to update APP_KEY
-sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY_VALUE/" .env
+echo "Generated APP_KEY value: $APP_KEY_VALUE"
+
+# Update .env file with the generated APP_KEY
+echo "Updating .env file with APP_KEY..."
+# Create a temporary file with the updated APP_KEY
+sed "s/^APP_KEY=.*/APP_KEY=$APP_KEY_VALUE/" .env > .env.tmp && mv .env.tmp .env
+
+# Verify the APP_KEY was set correctly
+echo "Verifying APP_KEY in .env file:"
+grep "APP_KEY=" .env
+
 export APP_KEY="$APP_KEY_VALUE"
-echo "Generated APP_KEY: $APP_KEY"
+echo "APP_KEY exported: $APP_KEY"
 
 # Clear Laravel config cache to ensure APP_KEY is loaded
 echo "Clearing Laravel config cache..."
