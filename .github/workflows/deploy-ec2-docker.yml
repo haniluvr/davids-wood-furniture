@@ -234,9 +234,27 @@ jobs:
         IMAGE_TAG=$IMAGE_TAG
         EOF
         
+        # Check if docker compose is available (newer syntax)
+        if docker compose version &> /dev/null; then
+          echo "Using 'docker compose' (newer syntax)"
+          COMPOSE_CMD="docker compose"
+        elif command -v docker-compose &> /dev/null; then
+          echo "Using 'docker-compose' (legacy syntax)"
+          COMPOSE_CMD="docker-compose"
+        else
+          echo "Installing docker-compose..."
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+          COMPOSE_CMD="docker-compose"
+        fi
+        
+        # Verify compose command
+        $COMPOSE_CMD --version
+        
         # Stop existing containers
         echo "Stopping existing containers..."
-        docker-compose -f docker-compose.prod.yml --env-file .env.production down || true
+        $COMPOSE_CMD -f docker-compose.prod.yml --env-file .env.production down || true
         
         # Stop any containers with our name
         if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
@@ -257,7 +275,7 @@ jobs:
         
         # Start services with docker-compose
         echo "Starting services with docker-compose..."
-        docker-compose -f docker-compose.prod.yml --env-file .env.production up -d
+        $COMPOSE_CMD -f docker-compose.prod.yml --env-file .env.production up -d
         
         # Wait for services to be healthy
         echo "Waiting for services to be healthy..."
@@ -266,7 +284,7 @@ jobs:
         echo "Waiting for MySQL to be ready..."
         timeout=60
         counter=0
-        until docker-compose -f docker-compose.prod.yml --env-file .env.production exec -T mysql mysqladmin ping -h localhost -u davidswood_user -p'${{ secrets.DB_PASSWORD }}' 2>/dev/null; do
+        until $COMPOSE_CMD -f docker-compose.prod.yml --env-file .env.production exec -T mysql mysqladmin ping -h localhost -u davidswood_user -p'${{ secrets.DB_PASSWORD }}' 2>/dev/null; do
           echo "MySQL is unavailable - sleeping ($counter/$timeout)"
           sleep 2
           counter=$((counter + 2))
@@ -281,7 +299,7 @@ jobs:
         echo "Waiting for Redis to be ready..."
         timeout=30
         counter=0
-        until docker-compose -f docker-compose.prod.yml --env-file .env.production exec -T redis redis-cli ping 2>/dev/null; do
+        until $COMPOSE_CMD -f docker-compose.prod.yml --env-file .env.production exec -T redis redis-cli ping 2>/dev/null; do
           echo "Redis is unavailable - sleeping ($counter/$timeout)"
           sleep 2
           counter=$((counter + 2))
@@ -309,17 +327,17 @@ jobs:
         
         # Run database migrations
         echo "Running database migrations..."
-        if docker-compose -f docker-compose.prod.yml --env-file .env.production exec -T app php artisan tinker --execute="DB::table('migrations')->count();" 2>/dev/null; then
+        if $COMPOSE_CMD -f docker-compose.prod.yml --env-file .env.production exec -T app php artisan tinker --execute="DB::table('migrations')->count();" 2>/dev/null; then
           echo "Database already initialized, running pending migrations..."
-          docker-compose -f docker-compose.prod.yml --env-file .env.production exec -T app php artisan migrate --force || echo "Some migrations may have failed"
+          $COMPOSE_CMD -f docker-compose.prod.yml --env-file .env.production exec -T app php artisan migrate --force || echo "Some migrations may have failed"
         else
           echo "Fresh database detected, running fresh migrations..."
-          docker-compose -f docker-compose.prod.yml --env-file .env.production exec -T app php artisan migrate:fresh --force --seed || echo "Fresh migrations failed"
+          $COMPOSE_CMD -f docker-compose.prod.yml --env-file .env.production exec -T app php artisan migrate:fresh --force --seed || echo "Fresh migrations failed"
         fi
         
         # Verify deployment
         echo "Verifying deployment..."
-        docker-compose -f docker-compose.prod.yml --env-file .env.production ps
+        $COMPOSE_CMD -f docker-compose.prod.yml --env-file .env.production ps
         
         # Test endpoints
         echo "Testing endpoints..."
@@ -364,6 +382,7 @@ jobs:
         else
           echo "Health check failed on port 8080"
           # Check what's actually running and container logs
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "docker-compose -f /tmp/docker-compose.prod.yml --env-file /tmp/.env.production ps && echo '=== Container Logs ===' && docker logs davids-wood-furniture --tail 50"
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "docker compose -f /tmp/docker-compose.prod.yml --env-file /tmp/.env.production ps && echo '=== Container Logs ===' && docker logs davids-wood-furniture --tail 50"
           exit 1
         fi
+        
