@@ -89,19 +89,27 @@ $adminRoutes = function () {
 
         // User Management
         Route::middleware('admin.permission:users.view')->group(function () {
-            Route::resource('users', App\Http\Controllers\Admin\UserController::class);
-            Route::post('users/{user}/suspend', [App\Http\Controllers\Admin\UserController::class, 'suspend'])->name('users.suspend');
-            Route::post('users/{user}/unsuspend', [App\Http\Controllers\Admin\UserController::class, 'unsuspend'])->name('users.unsuspend');
-            Route::post('users/{user}/verify-email', [App\Http\Controllers\Admin\UserController::class, 'verifyEmail'])->name('users.verify-email');
-            Route::post('users/{user}/unverify-email', [App\Http\Controllers\Admin\UserController::class, 'unverifyEmail'])->name('users.unverify-email');
-            Route::post('users/{user}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
-            Route::get('users-export', [App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
-            Route::post('users/{user}/tags', [App\Http\Controllers\Admin\UserController::class, 'addTags'])->name('users.add-tags');
-            Route::post('users/{user}/remove-tag', [App\Http\Controllers\Admin\UserController::class, 'removeTag'])->name('users.remove-tag');
-            Route::post('users/{user}/notes', [App\Http\Controllers\Admin\UserController::class, 'updateNotes'])->name('users.update-notes');
-            Route::get('users/{user}/analytics', [App\Http\Controllers\Admin\UserController::class, 'getCustomerAnalytics'])->name('users.analytics');
-            Route::post('users/bulk-update-tags', [App\Http\Controllers\Admin\UserController::class, 'bulkUpdateTags'])->name('users.bulk-update-tags');
-            Route::get('users/group/{group}', [App\Http\Controllers\Admin\UserController::class, 'getByGroup'])->name('users.by-group');
+            Route::resource('all-customers', App\Http\Controllers\Admin\UserController::class)->names([
+                'index' => 'users.index',
+                'create' => 'users.create',
+                'store' => 'users.store',
+                'show' => 'users.show',
+                'edit' => 'users.edit',
+                'update' => 'users.update',
+                'destroy' => 'users.destroy'
+            ]);
+            Route::post('all-customers/{user}/suspend', [App\Http\Controllers\Admin\UserController::class, 'suspend'])->name('users.suspend');
+            Route::post('all-customers/{user}/unsuspend', [App\Http\Controllers\Admin\UserController::class, 'unsuspend'])->name('users.unsuspend');
+            Route::post('all-customers/{user}/verify-email', [App\Http\Controllers\Admin\UserController::class, 'verifyEmail'])->name('users.verify-email');
+            Route::post('all-customers/{user}/unverify-email', [App\Http\Controllers\Admin\UserController::class, 'unverifyEmail'])->name('users.unverify-email');
+            Route::post('all-customers/{user}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
+            Route::get('all-customers-export', [App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
+            Route::post('all-customers/{user}/tags', [App\Http\Controllers\Admin\UserController::class, 'addTags'])->name('users.add-tags');
+            Route::post('all-customers/{user}/remove-tag', [App\Http\Controllers\Admin\UserController::class, 'removeTag'])->name('users.remove-tag');
+            Route::post('all-customers/{user}/notes', [App\Http\Controllers\Admin\UserController::class, 'updateNotes'])->name('users.update-notes');
+            Route::get('all-customers/{user}/analytics', [App\Http\Controllers\Admin\UserController::class, 'getCustomerAnalytics'])->name('users.analytics');
+            Route::post('all-customers/bulk-update-tags', [App\Http\Controllers\Admin\UserController::class, 'bulkUpdateTags'])->name('users.bulk-update-tags');
+            Route::get('all-customers/group/{group}', [App\Http\Controllers\Admin\UserController::class, 'getByGroup'])->name('users.by-group');
         });
 
         // Admin User Management

@@ -78,8 +78,33 @@ jobs:
       run: |
         timeout 120 ./vendor/bin/pint --test || echo "Code quality check timed out or failed"
 
+  frontend-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build assets
+      run: npm run build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: public/build/
+
   build-and-push:
-    needs: [test, code-quality]
+    needs: [test, code-quality, frontend-build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}

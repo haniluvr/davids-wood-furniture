@@ -44,6 +44,7 @@ class User extends Authenticatable
         'newsletter_product_updates',
         'newsletter_special_offers',
         'marketing_emails',
+        'is_suspended',
     ];
 
     /**
@@ -71,6 +72,7 @@ class User extends Authenticatable
             'newsletter_product_updates' => 'boolean',
             'newsletter_special_offers' => 'boolean',
             'marketing_emails' => 'boolean',
+            'is_suspended' => 'boolean',
         ];
     }
 
