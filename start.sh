@@ -169,7 +169,30 @@ if [ "$PORT" != "80" ]; then
     sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$PORT>/" /etc/apache2/sites-available/000-default.conf
 fi
 
-# Start Apache
+# Test Apache configuration
+echo "Testing Apache configuration..."
+apache2ctl configtest
+
+# Start Apache in background first to check if it starts
 echo "Starting Apache on port $PORT..."
-echo "Server will be available at: http://0.0.0.0:$PORT"
-apache2ctl -D FOREGROUND
+apache2ctl start
+
+# Wait a moment and check if Apache is running
+sleep 3
+if pgrep apache2 > /dev/null; then
+    echo "Apache started successfully"
+    echo "Server is available at: http://0.0.0.0:$PORT"
+    echo "Debug endpoint: http://0.0.0.0:$PORT/debug.php"
+    echo "Health endpoint: http://0.0.0.0:$PORT/health.php"
+    
+    # Show Apache status
+    apache2ctl status
+    
+    # Keep Apache running in foreground
+    apache2ctl -D FOREGROUND
+else
+    echo "Apache failed to start"
+    echo "Checking Apache error logs..."
+    tail -20 /var/log/apache2/error.log
+    exit 1
+fi

@@ -79,3 +79,4 @@ class SimpleMasterSeeder extends Seeder
         $this->command->info('================================================');
     }
 }
+

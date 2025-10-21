@@ -425,3 +425,4 @@ class SimpleRealisticDataSeeder extends Seeder
         $this->command->info("✅ Created {$reviewCount} product reviews for delivered orders");
     }
 }
+
