@@ -155,11 +155,17 @@ jobs:
         aws-region: ${{ env.AWS_REGION }}
     - name: Deploy to EC2 with Docker Compose
       run: |
-        cat > deploy-compose.sh << 'EOF'
+        # Copy files to EC2 first
+        scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+          docker-compose.prod.yml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
+        
+        # Execute deployment script directly on EC2
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
         #!/bin/bash
         set -e
         
-        echo "🚀 Starting Docker Compose deployment..."
+        echo "🚀 Starting Docker Compose deployment on EC2..."
         
         # Configuration
         ECR_REGISTRY="${{ env.ECR_REGISTRY }}"
@@ -173,9 +179,9 @@ jobs:
         aws ecr get-login-password --region ${{ env.AWS_REGION }} \
           | docker login --username AWS --password-stdin $ECR_REGISTRY
         
-        # Create production environment file in /tmp directory
+        # Create production environment file
         echo "Creating production environment file..."
-        cat > /tmp/.env.production << EOF
+        cat > /tmp/.env.production << 'ENVEOF'
         # Production Environment Configuration
         APP_NAME="David's Wood Furniture"
         APP_ENV=production
@@ -232,7 +238,7 @@ jobs:
         ECR_REGISTRY=$ECR_REGISTRY
         ECR_REPOSITORY=$ECR_REPOSITORY
         IMAGE_TAG=$IMAGE_TAG
-        EOF
+        ENVEOF
         
         # Check if docker compose is available (newer syntax)
         if docker compose version &> /dev/null; then
@@ -363,16 +369,6 @@ jobs:
         echo "Application is available at: http://localhost:$APP_PORT"
         echo "Health check: http://localhost:$APP_PORT/health"
         EOF
-        
-        # Copy files to EC2
-        scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          docker-compose.prod.yml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
-        scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          deploy-compose.sh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
-        
-        # Execute deployment on EC2 with proper environment setup
-        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod +x /tmp/deploy-compose.sh && cd /tmp && /tmp/deploy-compose.sh"
     - name: Post-deploy health check
       run: |
         sleep 30
