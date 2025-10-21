@@ -296,7 +296,10 @@ jobs:
           docker ps -a | grep $CONTAINER_NAME
           exit 1
         fi
+        # Clean up Docker to free space
+        docker system prune -f
         docker image prune -f
+        docker volume prune -f
         EOF
         scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem deploy-docker.sh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod +x /tmp/deploy-docker.sh && /tmp/deploy-docker.sh"
