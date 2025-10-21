@@ -240,8 +240,48 @@ jobs:
         
         # Ensure MySQL is listening on all interfaces (not just localhost)
         echo "Configuring MySQL to accept connections from Docker..."
+        
+        # Update MySQL configuration to accept connections from all interfaces
         sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf || echo "Could not update MySQL config"
+        
+        # Also update the main MySQL config file
+        sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf || echo "Could not update main MySQL config"
+        
+        # Ensure MySQL is configured to accept remote connections
+        echo "Updating MySQL configuration for Docker access..."
+        sudo mysql -e "SET GLOBAL bind_address = '0.0.0.0';" 2>/dev/null || echo "Could not set global bind_address"
+        
+        # Restart MySQL to apply configuration changes
         sudo systemctl restart mysql || echo "Could not restart MySQL"
+        
+        # Wait for MySQL to be ready
+        echo "Waiting for MySQL to be ready..."
+        for i in {1..30}; do
+          if sudo mysql -e "SELECT 1;" 2>/dev/null; then
+            echo "MySQL is ready"
+            break
+          fi
+          echo "Waiting for MySQL... ($i/30)"
+          sleep 2
+        done
+        
+        # Verify MySQL is listening on all interfaces
+        echo "Checking MySQL network configuration..."
+        sudo netstat -tlnp | grep :3306 || echo "MySQL not listening on port 3306"
+        sudo ss -tlnp | grep :3306 || echo "MySQL not listening on port 3306"
+        
+        # Test MySQL connection from Docker network perspective
+        echo "Testing MySQL connection from Docker network..."
+        # Get the Docker bridge IP
+        DOCKER_BRIDGE_IP=$(docker network inspect bridge | grep -o '"Gateway": "[^"]*"' | cut -d'"' -f4)
+        echo "Docker bridge IP: $DOCKER_BRIDGE_IP"
+        
+        # Test connection from the bridge IP perspective
+        if mysql -h $DOCKER_BRIDGE_IP -u davidswood_user -p'${{ secrets.DB_PASSWORD }}' -e "SELECT 1;" davids_wood 2>/dev/null; then
+          echo "MySQL connection from Docker bridge successful"
+        else
+          echo "MySQL connection from Docker bridge failed - this may cause container issues"
+        fi
         # Pull the specific image tag
         echo "Pulling image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
         docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
