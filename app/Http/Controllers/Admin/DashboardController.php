@@ -71,7 +71,7 @@ class DashboardController extends Controller
                 'title' => 'New Message',
                 'message' => "Message from {$message->name}",
                 'timestamp' => $message->created_at,
-                'url' => route('admin.contact-messages.show', $message),
+                'url' => route('admin.messages.show', $message),
             ];
         });
 
