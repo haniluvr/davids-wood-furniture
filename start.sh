@@ -41,7 +41,7 @@ else
     # Fallback to individual variables
     export DB_HOST=${DB_HOST:-host.docker.internal}
     export DB_PORT=${DB_PORT:-3306}
-    export DB_DATABASE=${DB_DATABASE:-davidswood_furniture}
+    export DB_DATABASE=${DB_DATABASE:-davids_wood}
     export DB_USERNAME=${DB_USERNAME:-davidswood_user}
     export DB_PASSWORD=${DB_PASSWORD:-}
     echo "Using fallback values:"
