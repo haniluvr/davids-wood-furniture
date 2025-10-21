@@ -301,15 +301,15 @@ jobs:
           echo "Attempt $i/30: Testing endpoints..."
           
           # Test simple test endpoint first
-          if curl -fsS http://localhost/test.php >/dev/null 2>&1; then 
+          if curl -fsS http://localhost/test-route >/dev/null 2>&1; then 
             echo "Test endpoint OK on port 80"
-            curl -fsS http://localhost/health.php >/dev/null && echo "Health endpoint OK on port 80"
+            curl -fsS http://localhost/health >/dev/null && echo "Health endpoint OK on port 80"
             # Test database connection from container
             docker exec $CONTAINER_NAME php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection OK';" 2>/dev/null || echo "Database connection failed"
             break
-          elif curl -fsS http://localhost:8080/test.php >/dev/null 2>&1; then
+          elif curl -fsS http://localhost:8080/test-route >/dev/null 2>&1; then
             echo "Test endpoint OK on port 8080"
-            curl -fsS http://localhost:8080/health.php >/dev/null && echo "Health endpoint OK on port 8080"
+            curl -fsS http://localhost:8080/health >/dev/null && echo "Health endpoint OK on port 8080"
             # Test database connection from container
             docker exec $CONTAINER_NAME php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection OK';" 2>/dev/null || echo "Database connection failed"
             break
@@ -320,7 +320,7 @@ jobs:
         done
         
         # Final check
-        if ! curl -fsS http://localhost/test.php >/dev/null 2>&1 && ! curl -fsS http://localhost:8080/test.php >/dev/null 2>&1; then
+        if ! curl -fsS http://localhost/test-route >/dev/null 2>&1 && ! curl -fsS http://localhost:8080/test-route >/dev/null 2>&1; then
           echo "All endpoints failed after 30 attempts"
           echo "Container logs:"
           docker logs $CONTAINER_NAME --tail 50
@@ -339,9 +339,9 @@ jobs:
       run: |
         sleep 30
         # Try both port 80 and 8080
-        if curl -f http://${{ secrets.EC2_HOST }}/health.php; then
+        if curl -f http://${{ secrets.EC2_HOST }}/health; then
           echo "Health check passed on port 80"
-        elif curl -f http://${{ secrets.EC2_HOST }}:8080/health.php; then
+        elif curl -f http://${{ secrets.EC2_HOST }}:8080/health; then
           echo "Health check passed on port 8080"
         else
           echo "Health check failed on both ports"
