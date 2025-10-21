@@ -453,19 +453,67 @@ Route::get('/test-route', function () {
     ]);
 });
 
-// Health check endpoint for Railway - simple version that doesn't depend on Laravel
+// Enhanced health check endpoint for Docker Compose
 Route::get('/health', function () {
     try {
+        $checks = [
+            'app' => true,
+            'database' => false,
+            'redis' => false,
+            'storage' => false,
+        ];
+        
+        $errors = [];
+        
+        // Check database connection
+        try {
+            \DB::connection()->getPdo();
+            $checks['database'] = true;
+        } catch (\Exception $e) {
+            $errors[] = 'Database connection failed: ' . $e->getMessage();
+        }
+        
+        // Check Redis connection
+        try {
+            \Redis::ping();
+            $checks['redis'] = true;
+        } catch (\Exception $e) {
+            $errors[] = 'Redis connection failed: ' . $e->getMessage();
+        }
+        
+        // Check storage directories
+        try {
+            $storageWritable = is_writable(storage_path());
+            $bootstrapWritable = is_writable(base_path('bootstrap/cache'));
+            $checks['storage'] = $storageWritable && $bootstrapWritable;
+            
+            if (!$storageWritable) {
+                $errors[] = 'Storage directory not writable';
+            }
+            if (!$bootstrapWritable) {
+                $errors[] = 'Bootstrap cache directory not writable';
+            }
+        } catch (\Exception $e) {
+            $errors[] = 'Storage check failed: ' . $e->getMessage();
+        }
+        
+        $allHealthy = $checks['app'] && $checks['database'] && $checks['redis'] && $checks['storage'];
+        
         return response()->json([
-            'status' => 'ok',
+            'status' => $allHealthy ? 'healthy' : 'unhealthy',
             'timestamp' => date('Y-m-d H:i:s'),
             'service' => 'davids-wood-furniture',
             'php_version' => PHP_VERSION,
-        ], 200);
+            'checks' => $checks,
+            'errors' => $errors,
+            'environment' => app()->environment(),
+        ], $allHealthy ? 200 : 503);
+        
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
             'message' => $e->getMessage(),
+            'timestamp' => date('Y-m-d H:i:s'),
         ], 500);
     }
 });

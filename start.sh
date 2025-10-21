@@ -1,122 +1,60 @@
 #!/bin/bash
 
-# Railway startup script for Laravel
+# Simplified Laravel startup script for Docker Compose
 echo "Starting Laravel application..."
-
-# Set basic environment variables from Docker environment
-export APP_ENV=${APP_ENV:-production}
-export APP_DEBUG=${APP_DEBUG:-false}
-export DB_CONNECTION=${DB_CONNECTION:-mysql}
 
 # Set default PORT if not provided
 export PORT=${PORT:-80}
 
-# Load all environment variables from Docker
-export $(printenv | grep -E "^(APP_|DB_|REDIS_|MAIL_|LOG_)" | xargs)
-
-# Debug all environment variables first
-echo "--- All environment variables ---"
-printenv | grep -E "(MYSQL|DB_)" | head -10
-echo "--- End environment variables ---"
-
-# Parse MYSQL_URL if provided (Railway format)
-if [ -n "$MYSQL_URL" ]; then
-    echo "Parsing MYSQL_URL..."
-    echo "MYSQL_URL: $MYSQL_URL"
-    # MYSQL_URL format: mysql://username:password@host:port/database
-    export DB_HOST=$(echo $MYSQL_URL | sed 's/.*@\([^:]*\):.*/\1/')
-    export DB_PORT=$(echo $MYSQL_URL | sed 's/.*:\([0-9]*\)\/.*/\1/')
-    export DB_DATABASE=$(echo $MYSQL_URL | sed 's/.*\/\([^?]*\).*/\1/')
-    export DB_USERNAME=$(echo $MYSQL_URL | sed 's/mysql:\/\/\([^:]*\):.*/\1/')
-    export DB_PASSWORD=$(echo $MYSQL_URL | sed 's/mysql:\/\/[^:]*:\([^@]*\)@.*/\1/')
-    echo "Parsed DB_HOST: $DB_HOST"
-    echo "Parsed DB_PORT: $DB_PORT"
-    echo "Parsed DB_DATABASE: $DB_DATABASE"
-    echo "Parsed DB_USERNAME: $DB_USERNAME"
-else
-    echo "MYSQL_URL not found, checking individual variables..."
-    echo "DB_HOST: ${DB_HOST:-not set}"
-    echo "DB_PORT: ${DB_PORT:-not set}"
-    echo "DB_DATABASE: ${DB_DATABASE:-not set}"
-    echo "DB_USERNAME: ${DB_USERNAME:-not set}"
-    echo "DB_PASSWORD: ${DB_PASSWORD:-not set}"
-    
-    # Fallback to individual variables
-    export DB_HOST=${DB_HOST:-host.docker.internal}
-    export DB_PORT=${DB_PORT:-3306}
-    export DB_DATABASE=${DB_DATABASE:-davids_wood}
-    export DB_USERNAME=${DB_USERNAME:-davidswood_user}
-    export DB_PASSWORD=${DB_PASSWORD:-}
-    echo "Using fallback values:"
-    echo "Fallback DB_HOST: $DB_HOST"
-    echo "Fallback DB_PORT: $DB_PORT"
-    echo "Fallback DB_DATABASE: $DB_DATABASE"
-fi
-
-# Create .env file with actual environment variables
+# Create .env file with environment variables from Docker Compose
 echo "Creating .env file..."
 cat > .env << EOF
 APP_NAME="David's Wood Furniture"
-APP_ENV=$APP_ENV
-APP_DEBUG=$APP_DEBUG
+APP_ENV=${APP_ENV:-production}
+APP_DEBUG=${APP_DEBUG:-false}
 APP_KEY=
-APP_URL=$APP_URL
+APP_URL=${APP_URL:-http://localhost:$PORT}
 
 LOG_CHANNEL=stack
-LOG_LEVEL=debug
+LOG_LEVEL=${LOG_LEVEL:-error}
 
-DB_CONNECTION=$DB_CONNECTION
-DB_HOST=$DB_HOST
-DB_PORT=$DB_PORT
-DB_DATABASE=$DB_DATABASE
-DB_USERNAME=$DB_USERNAME
-DB_PASSWORD=$DB_PASSWORD
+DB_CONNECTION=${DB_CONNECTION:-mysql}
+DB_HOST=${DB_HOST:-mysql}
+DB_PORT=${DB_PORT:-3306}
+DB_DATABASE=${DB_DATABASE:-davids_wood}
+DB_USERNAME=${DB_USERNAME:-davidswood_user}
+DB_PASSWORD=${DB_PASSWORD}
 
 BROADCAST_DRIVER=log
-CACHE_DRIVER=file
+CACHE_DRIVER=${CACHE_DRIVER:-redis}
 FILESYSTEM_DISK=local
-QUEUE_CONNECTION=sync
-SESSION_DRIVER=database
+QUEUE_CONNECTION=${QUEUE_CONNECTION:-redis}
+SESSION_DRIVER=${SESSION_DRIVER:-redis}
 SESSION_LIFETIME=120
 
-MAIL_MAILER=log
-MAIL_FROM_ADDRESS="noreply@davidswood.test"
-MAIL_FROM_NAME="David's Wood Furniture"
+REDIS_HOST=${REDIS_HOST:-redis}
+REDIS_PASSWORD=${REDIS_PASSWORD}
+REDIS_PORT=${REDIS_PORT:-6379}
+
+MAIL_MAILER=${MAIL_MAILER:-smtp}
+MAIL_HOST=${MAIL_HOST}
+MAIL_PORT=${MAIL_PORT}
+MAIL_USERNAME=${MAIL_USERNAME}
+MAIL_PASSWORD=${MAIL_PASSWORD}
+MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+MAIL_FROM_NAME=${MAIL_FROM_NAME:-"David's Wood Furniture"}
 
 VITE_APP_NAME="David's Wood Furniture"
 EOF
 
-# Generate APP_KEY - more robust approach
+# Generate APP_KEY
 echo "Generating APP_KEY..."
 APP_KEY_VALUE="base64:$(openssl rand -base64 32)"
 echo "Generated APP_KEY value: $APP_KEY_VALUE"
 
-# Update .env file with the generated APP_KEY using multiple methods
-echo "Updating .env file with APP_KEY..."
-
-# Method 1: Use sed with proper escaping
-if sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY_VALUE/" .env 2>/dev/null; then
-  echo "APP_KEY updated using sed method"
-else
-  echo "sed method failed, trying alternative approach..."
-  
-  # Method 2: Use awk
-  if awk -v key="$APP_KEY_VALUE" '/^APP_KEY=/ { print "APP_KEY=" key; next } { print }' .env > .env.tmp && mv .env.tmp .env; then
-    echo "APP_KEY updated using awk method"
-  else
-    echo "awk method failed, trying direct replacement..."
-    
-    # Method 3: Direct replacement
-    if grep -q "^APP_KEY=" .env; then
-      # Replace existing line
-      sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY_VALUE/" .env
-    else
-      # Add new line
-      echo "APP_KEY=$APP_KEY_VALUE" >> .env
-    fi
-    echo "APP_KEY updated using direct replacement"
-  fi
-fi
+# Update .env file with the generated APP_KEY
+sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY_VALUE/" .env
 
 # Verify the APP_KEY was set correctly
 echo "Verifying APP_KEY in .env file:"
@@ -124,25 +62,15 @@ if grep "APP_KEY=" .env; then
   echo "APP_KEY verification successful"
 else
   echo "ERROR: APP_KEY verification failed!"
-  echo "Contents of .env file:"
-  cat .env | grep -E "(APP_KEY|APP_)" || echo "No APP_ variables found"
+  exit 1
 fi
 
 export APP_KEY="$APP_KEY_VALUE"
 echo "APP_KEY exported: $APP_KEY"
 
-# Clear Laravel config cache to ensure APP_KEY is loaded
+# Clear Laravel config cache
 echo "Clearing Laravel config cache..."
 php artisan config:clear
-
-# Force reload environment variables
-echo "Reloading environment variables..."
-if [ -f .env ]; then
-    export $(cat .env | grep -v '^#' | xargs)
-    echo "Environment variables reloaded"
-else
-    echo "Warning: .env file not found"
-fi
 
 # Create necessary directories
 echo "Creating directories..."
@@ -155,27 +83,24 @@ mkdir -p bootstrap/cache
 # Set permissions
 chmod -R 775 storage bootstrap/cache
 
-# Wait for MySQL to be ready (with timeout)
-echo "Waiting for MySQL connection..."
-timeout=30
+# Wait for database to be ready (Docker Compose handles this with depends_on)
+echo "Waiting for database connection..."
+timeout=60
 counter=0
 until php artisan tinker --execute="DB::connection()->getPdo();" 2>/dev/null; do
-    echo "MySQL is unavailable - sleeping ($counter/$timeout)"
+    echo "Database is unavailable - sleeping ($counter/$timeout)"
     sleep 2
     counter=$((counter + 2))
     if [ $counter -ge $timeout ]; then
-        echo "MySQL connection timeout - continuing with file sessions"
-        # Switch to file sessions if MySQL is not available
-        sed -i 's/SESSION_DRIVER=database/SESSION_DRIVER=file/' .env
+        echo "Database connection timeout - continuing anyway"
         break
     fi
 done
 
 if [ $counter -lt $timeout ]; then
-    echo "MySQL is ready!"
-    # Run migrations only if MySQL is connected
+    echo "Database is ready!"
+    # Run migrations
     echo "Running migrations..."
-    # Check if migrations table exists (indicates if DB is initialized)
     if php artisan tinker --execute="DB::table('migrations')->count();" 2>/dev/null; then
         echo "Database already initialized, running pending migrations..."
         php artisan migrate --force || echo "Some migrations may have failed, but continuing..."
@@ -184,7 +109,7 @@ if [ $counter -lt $timeout ]; then
         php artisan migrate:fresh --force --seed || echo "Fresh migrations failed, but continuing..."
     fi
 else
-    echo "Skipping migrations due to MySQL connection issues"
+    echo "Skipping migrations due to database connection issues"
 fi
 
 # Test Laravel configuration
@@ -192,29 +117,9 @@ echo "Testing Laravel configuration..."
 php artisan config:show app.name
 php artisan config:show app.key
 
-# Final APP_KEY verification
-echo "Final APP_KEY verification..."
-if [ -n "$APP_KEY" ] && [ "$APP_KEY" != "" ]; then
-    echo "APP_KEY is properly set: $APP_KEY"
-else
-    echo "ERROR: APP_KEY is still not set!"
-    echo "Contents of .env APP_KEY line:"
-    grep "APP_KEY=" .env
-    exit 1
-fi
-
-# Debug environment variables
-echo "--- Environment variables before starting PHP server ---"
-echo "PORT: $PORT"
-echo "APP_ENV: $APP_ENV"
-echo "DB_HOST: $DB_HOST"
-echo "DB_DATABASE: $DB_DATABASE"
-echo "--- End environment variables ---"
-
 # Configure Apache for the correct port
 echo "Configuring Apache for port $PORT..."
 if [ "$PORT" != "80" ]; then
-    # Update Apache configuration for custom port
     sed -i "s/Listen 80/Listen $PORT/" /etc/apache2/ports.conf
     sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$PORT>/" /etc/apache2/sites-available/000-default.conf
 fi
@@ -223,7 +128,7 @@ fi
 echo "Testing Apache configuration..."
 apache2ctl configtest
 
-# Start Apache in background first to check if it starts
+# Start Apache
 echo "Starting Apache on port $PORT..."
 apache2ctl start
 
@@ -232,11 +137,7 @@ sleep 3
 if pgrep apache2 > /dev/null; then
     echo "Apache started successfully"
     echo "Server is available at: http://0.0.0.0:$PORT"
-    echo "Debug endpoint: http://0.0.0.0:$PORT/debug.php"
-    echo "Health endpoint: http://0.0.0.0:$PORT/health.php"
-    
-    # Show Apache status
-    apache2ctl status
+    echo "Health endpoint: http://0.0.0.0:$PORT/health"
     
     # Keep Apache running in foreground
     apache2ctl -D FOREGROUND

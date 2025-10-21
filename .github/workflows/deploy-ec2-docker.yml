@@ -1,4 +1,4 @@
-name: Deploy to AWS EC2 with Docker
+name: Deploy to AWS EC2 with Docker Compose
 
 on:
   push:
@@ -128,7 +128,6 @@ jobs:
         echo "Pushing image to ECR..."
         docker push $IMAGE_NAME:${IMAGE_TAG}
         echo "Pushed image: $IMAGE_NAME:${IMAGE_TAG}"
-        # Note: Not pushing 'latest' tag due to ECR immutability settings
 
   deploy:
     needs: [build-and-push]
@@ -154,287 +153,217 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
-    - name: Deploy to EC2
+    - name: Deploy to EC2 with Docker Compose
       run: |
-        cat > deploy-docker.sh << 'EOF'
+        cat > deploy-compose.sh << 'EOF'
         #!/bin/bash
         set -e
+        
+        echo "🚀 Starting Docker Compose deployment..."
+        
+        # Configuration
         ECR_REGISTRY="${{ env.ECR_REGISTRY }}"
         ECR_REPOSITORY="${{ env.ECR_REPOSITORY }}"
         IMAGE_TAG="${{ env.IMAGE_TAG }}"
         CONTAINER_NAME="davids-wood-furniture"
-        APP_PORT=80
-        # Note: Ensure the EC2 instance has an instance role with ECR read permissions (AmazonEC2ContainerRegistryReadOnly),
-        # or AWS credentials configured for aws ecr login to work.
+        APP_PORT=8080
+        
+        # Login to ECR
+        echo "Logging in to ECR..."
         aws ecr get-login-password --region ${{ env.AWS_REGION }} \
           | docker login --username AWS --password-stdin $ECR_REGISTRY
-        # Stop any container using port 80
-        docker ps -q --filter "publish=80" | xargs -r docker stop || true
-        docker ps -aq --filter "publish=80" | xargs -r docker rm || true
         
-        # Also stop our specific container if it exists
-        if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then docker stop $CONTAINER_NAME; fi
-        if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then docker rm $CONTAINER_NAME; fi
+        # Create production environment file
+        echo "Creating production environment file..."
+        cat > .env.production << EOF
+        # Production Environment Configuration
+        APP_NAME="David's Wood Furniture"
+        APP_ENV=production
+        APP_DEBUG=false
+        APP_KEY=
+        APP_URL=${{ secrets.APP_URL }}
         
-        # Force remove any container with our name (in case it's stuck)
-        docker rm -f $CONTAINER_NAME || true
+        # Database
+        DB_CONNECTION=mysql
+        DB_HOST=mysql
+        DB_PORT=3306
+        DB_DATABASE=davids_wood
+        DB_USERNAME=davidswood_user
+        DB_PASSWORD=${{ secrets.DB_PASSWORD }}
         
-        # Install net-tools if missing
-        sudo apt-get update && sudo apt-get install -y net-tools
+        # MySQL Root
+        MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}_root
         
-        # Check what's using port 80 and kill it if it's not Docker
-        echo "Checking what's using port 80..."
-        sudo netstat -tlnp | grep :80 || echo "Nothing found on port 80"
-        sudo lsof -i :80 || echo "No processes found on port 80"
+        # Redis
+        REDIS_HOST=redis
+        REDIS_PORT=6379
+        REDIS_PASSWORD=
         
-        # Kill any non-Docker process using port 80
-        sudo fuser -k 80/tcp || echo "No processes to kill on port 80"
+        # Cache & Sessions
+        CACHE_DRIVER=redis
+        SESSION_DRIVER=redis
+        SESSION_LIFETIME=120
+        QUEUE_CONNECTION=redis
         
-        # Ensure MySQL is installed and running
-        echo "Checking MySQL installation..."
-        if ! command -v mysql &> /dev/null; then
-          echo "MySQL not found, installing..."
-          sudo apt-get update
-          sudo apt-get install -y mysql-server
+        # Mail Configuration
+        MAIL_MAILER=smtp
+        MAIL_HOST=${{ secrets.MAIL_HOST }}
+        MAIL_PORT=${{ secrets.MAIL_PORT }}
+        MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+        MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+        MAIL_ENCRYPTION=tls
+        MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
+        MAIL_FROM_NAME=${{ secrets.MAIL_FROM_NAME }}
+        
+        # Logging
+        LOG_CHANNEL=stack
+        LOG_LEVEL=error
+        
+        # Broadcasting
+        BROADCAST_DRIVER=log
+        
+        # Filesystem
+        FILESYSTEM_DISK=local
+        
+        # Vite
+        VITE_APP_NAME="David's Wood Furniture"
+        
+        # ECR Configuration
+        ECR_REGISTRY=$ECR_REGISTRY
+        ECR_REPOSITORY=$ECR_REPOSITORY
+        IMAGE_TAG=$IMAGE_TAG
+        EOF
+        
+        # Stop existing containers
+        echo "Stopping existing containers..."
+        docker-compose -f docker-compose.prod.yml --env-file .env.production down || true
+        
+        # Stop any containers with our name
+        if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+          echo "Stopping existing container: $CONTAINER_NAME"
+          docker stop $CONTAINER_NAME || true
         fi
         
-        echo "Checking MySQL status..."
-        sudo systemctl status mysql || echo "MySQL service not found"
-        sudo systemctl start mysql || echo "Could not start MySQL"
-        sudo systemctl enable mysql || echo "Could not enable MySQL"
-        
-        # Test MySQL connection
-        mysql -h localhost -u davidswood_user -p'${{ secrets.DB_PASSWORD }}' -e "SELECT 1;" davids_wood 2>/dev/null || {
-          echo "MySQL connection failed, creating database and user..."
-          
-          # First, ensure MySQL is running and accessible
-          sudo systemctl start mysql
-          sudo systemctl enable mysql
-          
-          # Try to create database and user with more robust approach
-          echo "Creating database and user with comprehensive permissions..."
-          
-          # Create database and user with direct commands
-          echo "Creating database and user with direct MySQL commands..."
-          
-          # Create database
-          sudo mysql -e "CREATE DATABASE IF NOT EXISTS davids_wood;" || echo "Database creation failed"
-          
-          # Create users for different network access patterns
-          sudo mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'localhost' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" || echo "localhost user creation failed"
-          sudo mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" || echo "wildcard user creation failed"
-          sudo mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'172.17.%.%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" || echo "Docker bridge user creation failed"
-          sudo mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'172.31.%.%' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" || echo "EC2 internal user creation failed"
-          
-          # Grant permissions
-          sudo mysql -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'localhost';" || echo "localhost permissions failed"
-          sudo mysql -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'%';" || echo "wildcard permissions failed"
-          sudo mysql -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'172.17.%.%';" || echo "Docker bridge permissions failed"
-          sudo mysql -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'172.31.%.%';" || echo "EC2 internal permissions failed"
-          
-          # Flush privileges
-          sudo mysql -e "FLUSH PRIVILEGES;" || echo "Privilege flush failed"
-          
-          echo "Database and user setup completed with comprehensive permissions"
-        }
-        
-        # Ensure MySQL is listening on all interfaces (not just localhost)
-        echo "Configuring MySQL to accept connections from Docker..."
-        
-        # Update MySQL configuration to accept connections from all interfaces
-        sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf || echo "Could not update MySQL config"
-        
-        # Also update the main MySQL config file
-        sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf || echo "Could not update main MySQL config"
-        
-        # Ensure MySQL is configured to accept remote connections
-        echo "Updating MySQL configuration for Docker access..."
-        sudo mysql -e "SET GLOBAL bind_address = '0.0.0.0';" 2>/dev/null || echo "Could not set global bind_address"
-        
-        # Restart MySQL to apply configuration changes
-        sudo systemctl restart mysql || echo "Could not restart MySQL"
-        
-        # Wait for MySQL to be ready
-        echo "Waiting for MySQL to be ready..."
-        for i in {1..30}; do
-          if sudo mysql -e "SELECT 1;" 2>/dev/null; then
-            echo "MySQL is ready"
-            break
-          fi
-          echo "Waiting for MySQL... ($i/30)"
-          sleep 2
-        done
-        
-        # Verify MySQL is listening on all interfaces
-        echo "Checking MySQL network configuration..."
-        sudo netstat -tlnp | grep :3306 || echo "MySQL not listening on port 3306"
-        sudo ss -tlnp | grep :3306 || echo "MySQL not listening on port 3306"
-        
-        # Test MySQL connection from Docker network perspective
-        echo "Testing MySQL connection from Docker network..."
-        # Get the Docker bridge IP
-        DOCKER_BRIDGE_IP=$(docker network inspect bridge | grep -o '"Gateway": "[^"]*"' | cut -d'"' -f4)
-        echo "Docker bridge IP: $DOCKER_BRIDGE_IP"
-        
-        # Test connection from the bridge IP perspective
-        if mysql -h $DOCKER_BRIDGE_IP -u davidswood_user -p'${{ secrets.DB_PASSWORD }}' -e "SELECT 1;" davids_wood 2>/dev/null; then
-          echo "MySQL connection from Docker bridge successful"
-        else
-          echo "MySQL connection from Docker bridge failed - this may cause container issues"
+        if [ "$(docker ps -aq -f name=$CONTAINER_NAME)" ]; then
+          echo "Removing existing container: $CONTAINER_NAME"
+          docker rm $CONTAINER_NAME || true
         fi
         
-        # CRITICAL: Force MySQL to accept connections from Docker networks
-        echo "CRITICAL: Forcing MySQL to accept Docker connections..."
-        
-        # Stop MySQL completely
-        sudo systemctl stop mysql
-        
-        # Create a new MySQL configuration that definitely allows Docker access
-        echo "[mysqld]" | sudo tee /etc/mysql/mysql.conf.d/docker.cnf > /dev/null
-        echo "bind-address = 0.0.0.0" | sudo tee -a /etc/mysql/mysql.conf.d/docker.cnf > /dev/null
-        echo "skip-networking = false" | sudo tee -a /etc/mysql/mysql.conf.d/docker.cnf > /dev/null
-        echo "skip-name-resolve = true" | sudo tee -a /etc/mysql/mysql.conf.d/docker.cnf > /dev/null
-        
-        # Also update the main config
-        sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf
-        sudo sed -i 's/skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
-        
-        # Start MySQL
-        sudo systemctl start mysql
-        
-        # Wait for MySQL to be ready
-        echo "Waiting for MySQL to be ready after configuration..."
-        for i in {1..30}; do
-          if sudo mysql -e "SELECT 1;" 2>/dev/null; then
-            echo "MySQL is ready after configuration"
-            break
-          fi
-          echo "Waiting for MySQL after config... ($i/30)"
-          sleep 2
-        done
-        
-        # Verify the configuration took effect
-        echo "Verifying MySQL configuration..."
-        sudo netstat -tlnp | grep :3306
-        sudo ss -tlnp | grep :3306
-        # Pull the specific image tag
-        echo "Pulling image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        # Pull latest images
+        echo "Pulling latest images..."
         docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        # Try port 80 first, fallback to 8080 if needed
-        echo "Starting container on port 8080..."
-        if docker run -d --name $CONTAINER_NAME --restart unless-stopped -p 8080:80 \
-          --add-host=host.docker.internal:host-gateway \
-          -e PORT=80 \
-          -e APP_ENV=production -e APP_DEBUG=false \
-          -e APP_URL='${{ secrets.APP_URL }}' \
-          -e DB_CONNECTION=mysql -e DB_HOST=host.docker.internal -e DB_PORT=3306 \
-          -e DB_DATABASE=davids_wood -e DB_USERNAME=davidswood_user \
-          -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
-          -e REDIS_HOST=localhost -e REDIS_PORT=6379 \
-          -e MAIL_MAILER=smtp -e MAIL_HOST='${{ secrets.MAIL_HOST }}' \
-          -e MAIL_PORT='${{ secrets.MAIL_PORT }}' -e MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}' \
-          -e MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}' -e MAIL_ENCRYPTION=tls \
-          -e MAIL_FROM_ADDRESS='${{ secrets.MAIL_FROM_ADDRESS }}' -e MAIL_FROM_NAME='${{ secrets.MAIL_FROM_NAME }}' \
-          $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG; then
-          echo "Container started successfully on port 8080"
-        else
-          echo "Port 80 failed, trying port 8080..."
-          docker rm -f $CONTAINER_NAME || true
-          if docker run -d --name $CONTAINER_NAME --restart unless-stopped -p 8080:80 \
-            --add-host=host.docker.internal:host-gateway \
-            -e PORT=80 \
-            -e APP_ENV=production -e APP_DEBUG=false \
-            -e APP_URL='${{ secrets.APP_URL }}' \
-            -e DB_CONNECTION=mysql -e DB_HOST=host.docker.internal -e DB_PORT=3306 \
-            -e DB_DATABASE=davids_wood -e DB_USERNAME=davidswood_user \
-            -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
-            -e REDIS_HOST=localhost -e REDIS_PORT=6379 \
-            -e MAIL_MAILER=smtp -e MAIL_HOST='${{ secrets.MAIL_HOST }}' \
-            -e MAIL_PORT='${{ secrets.MAIL_PORT }}' -e MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}' \
-            -e MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}' -e MAIL_ENCRYPTION=tls \
-            -e MAIL_FROM_ADDRESS='${{ secrets.MAIL_FROM_ADDRESS }}' -e MAIL_FROM_NAME='${{ secrets.MAIL_FROM_NAME }}' \
-            $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG; then
-            echo "Container started successfully on port 8080"
-          else
-            echo "Failed to start container on both ports"
-            docker logs $CONTAINER_NAME || echo "No logs available"
+        docker pull mysql:8.0
+        docker pull redis:7-alpine
+        
+        # Start services with docker-compose
+        echo "Starting services with docker-compose..."
+        docker-compose -f docker-compose.prod.yml --env-file .env.production up -d
+        
+        # Wait for services to be healthy
+        echo "Waiting for services to be healthy..."
+        
+        # Wait for MySQL
+        echo "Waiting for MySQL to be ready..."
+        timeout=60
+        counter=0
+        until docker-compose -f docker-compose.prod.yml --env-file .env.production exec -T mysql mysqladmin ping -h localhost -u davidswood_user -p'${{ secrets.DB_PASSWORD }}' 2>/dev/null; do
+          echo "MySQL is unavailable - sleeping ($counter/$timeout)"
+          sleep 2
+          counter=$((counter + 2))
+          if [ $counter -ge $timeout ]; then
+            echo "MySQL health check timeout"
             exit 1
           fi
-        fi
-        # Run database migrations (handle existing tables)
-        echo "Running database migrations..."
-        # Check if migrations table exists
-        if docker exec $CONTAINER_NAME php artisan tinker --execute="DB::table('migrations')->count();" 2>/dev/null; then
-          echo "Migrations table exists, running pending migrations..."
-          docker exec $CONTAINER_NAME php artisan migrate --force || echo "Some migrations may have failed, but continuing..."
-        else
-          echo "No migrations table found, running fresh migrations..."
-          docker exec $CONTAINER_NAME php artisan migrate:fresh --force --seed || echo "Fresh migrate failed, but continuing..."
-        fi
-        
-        # Health check - try both ports and test database
-        echo "Waiting for container to start..."
-        sleep 15
-        
-        # Check if container is running
-        if ! docker ps | grep -q $CONTAINER_NAME; then
-          echo "Container is not running!"
-          docker logs $CONTAINER_NAME --tail 50
-          exit 1
-        fi
-        
-        echo "Container is running, testing endpoints..."
-        
-        for i in {1..30}; do
-          echo "Attempt $i/30: Testing endpoints..."
-          
-          # Test simple test endpoint first
-          if curl -fsS http://localhost/test-route >/dev/null 2>&1; then 
-            echo "Test endpoint OK on port 80"
-            curl -fsS http://localhost/health >/dev/null && echo "Health endpoint OK on port 80"
-            # Test database connection from container
-            docker exec $CONTAINER_NAME php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection OK';" 2>/dev/null || echo "Database connection failed"
-            break
-          elif curl -fsS http://localhost:8080/test-route >/dev/null 2>&1; then
-            echo "Test endpoint OK on port 8080"
-            curl -fsS http://localhost:8080/health >/dev/null && echo "Health endpoint OK on port 8080"
-            # Test database connection from container
-            docker exec $CONTAINER_NAME php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection OK';" 2>/dev/null || echo "Database connection failed"
-            break
-          fi
-          
-          echo "Endpoints not responding, waiting..."
-          sleep 3
         done
+        echo "MySQL is ready"
         
-        # Final check
-        if ! curl -fsS http://localhost/test-route >/dev/null 2>&1 && ! curl -fsS http://localhost:8080/test-route >/dev/null 2>&1; then
-          echo "All endpoints failed after 30 attempts"
-          echo "Container logs:"
-          docker logs $CONTAINER_NAME --tail 50
-          echo "Container status:"
-          docker ps -a | grep $CONTAINER_NAME
+        # Wait for Redis
+        echo "Waiting for Redis to be ready..."
+        timeout=30
+        counter=0
+        until docker-compose -f docker-compose.prod.yml --env-file .env.production exec -T redis redis-cli ping 2>/dev/null; do
+          echo "Redis is unavailable - sleeping ($counter/$timeout)"
+          sleep 2
+          counter=$((counter + 2))
+          if [ $counter -ge $timeout ]; then
+            echo "Redis health check timeout"
+            exit 1
+          fi
+        done
+        echo "Redis is ready"
+        
+        # Wait for app
+        echo "Waiting for app to be ready..."
+        timeout=60
+        counter=0
+        until curl -f "http://localhost:$APP_PORT/health" >/dev/null 2>&1; do
+          echo "App is unavailable - sleeping ($counter/$timeout)"
+          sleep 3
+          counter=$((counter + 3))
+          if [ $counter -ge $timeout ]; then
+            echo "App health check timeout"
+            exit 1
+          fi
+        done
+        echo "App is ready"
+        
+        # Run database migrations
+        echo "Running database migrations..."
+        if docker-compose -f docker-compose.prod.yml --env-file .env.production exec -T app php artisan tinker --execute="DB::table('migrations')->count();" 2>/dev/null; then
+          echo "Database already initialized, running pending migrations..."
+          docker-compose -f docker-compose.prod.yml --env-file .env.production exec -T app php artisan migrate --force || echo "Some migrations may have failed"
+        else
+          echo "Fresh database detected, running fresh migrations..."
+          docker-compose -f docker-compose.prod.yml --env-file .env.production exec -T app php artisan migrate:fresh --force --seed || echo "Fresh migrations failed"
+        fi
+        
+        # Verify deployment
+        echo "Verifying deployment..."
+        docker-compose -f docker-compose.prod.yml --env-file .env.production ps
+        
+        # Test endpoints
+        echo "Testing endpoints..."
+        if curl -f "http://localhost:$APP_PORT/health" >/dev/null 2>&1; then
+          echo "Health endpoint: ✅ OK"
+        else
+          echo "Health endpoint: ❌ FAILED"
           exit 1
         fi
-        # Clean up Docker to free space
-        docker system prune -f
-        docker image prune -f
-        docker volume prune -f
+        
+        if curl -f "http://localhost:$APP_PORT/test-route" >/dev/null 2>&1; then
+          echo "Test route endpoint: ✅ OK"
+        else
+          echo "Test route endpoint: ❌ FAILED"
+          exit 1
+        fi
+        
+        # Clean up old images
+        echo "Cleaning up old Docker images..."
+        docker image prune -f || true
+        
+        echo "🎉 Deployment completed successfully!"
+        echo "Application is available at: http://localhost:$APP_PORT"
+        echo "Health check: http://localhost:$APP_PORT/health"
         EOF
-        scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem deploy-docker.sh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
-        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod +x /tmp/deploy-docker.sh && /tmp/deploy-docker.sh"
+        
+        # Copy files to EC2
+        scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+          docker-compose.prod.yml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
+        scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+          deploy-compose.sh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/
+        
+        # Execute deployment on EC2
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod +x /tmp/deploy-compose.sh && /tmp/deploy-compose.sh"
     - name: Post-deploy health check
       run: |
         sleep 30
-        # Try both port 80 and 8080
-        if curl -f http://${{ secrets.EC2_HOST }}/health; then
-          echo "Health check passed on port 80"
-        elif curl -f http://${{ secrets.EC2_HOST }}:8080/health; then
+        # Test the application endpoints
+        if curl -f http://${{ secrets.EC2_HOST }}:8080/health; then
           echo "Health check passed on port 8080"
         else
-          echo "Health check failed on both ports"
+          echo "Health check failed on port 8080"
           # Check what's actually running and container logs
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "docker ps && echo '=== Container Logs ===' && docker logs davids-wood-furniture --tail 50"
-          # Don't exit with error if it's just a migration issue - the app might still be working
-          echo "Health check failed, but deployment may still be successful"
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "docker-compose -f /tmp/docker-compose.prod.yml --env-file /tmp/.env.production ps && echo '=== Container Logs ===' && docker logs davids-wood-furniture --tail 50"
+          exit 1
         fi
