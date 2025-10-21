@@ -282,6 +282,43 @@ jobs:
         else
           echo "MySQL connection from Docker bridge failed - this may cause container issues"
         fi
+        
+        # CRITICAL: Force MySQL to accept connections from Docker networks
+        echo "CRITICAL: Forcing MySQL to accept Docker connections..."
+        
+        # Stop MySQL completely
+        sudo systemctl stop mysql
+        
+        # Create a new MySQL configuration that definitely allows Docker access
+        sudo tee /etc/mysql/mysql.conf.d/docker.cnf > /dev/null << 'EOF'
+[mysqld]
+bind-address = 0.0.0.0
+skip-networking = false
+skip-name-resolve = true
+EOF
+        
+        # Also update the main config
+        sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf
+        sudo sed -i 's/skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
+        
+        # Start MySQL
+        sudo systemctl start mysql
+        
+        # Wait for MySQL to be ready
+        echo "Waiting for MySQL to be ready after configuration..."
+        for i in {1..30}; do
+          if sudo mysql -e "SELECT 1;" 2>/dev/null; then
+            echo "MySQL is ready after configuration"
+            break
+          fi
+          echo "Waiting for MySQL after config... ($i/30)"
+          sleep 2
+        done
+        
+        # Verify the configuration took effect
+        echo "Verifying MySQL configuration..."
+        sudo netstat -tlnp | grep :3306
+        sudo ss -tlnp | grep :3306
         # Pull the specific image tag
         echo "Pulling image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
         docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
