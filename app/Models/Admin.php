@@ -26,7 +26,6 @@ class Admin extends Authenticatable
         'position',
         'hire_date',
         'salary',
-        'employment_status',
         'permissions',
         'status',
         'last_login_at',
@@ -96,7 +95,7 @@ class Admin extends Authenticatable
 
     public function isActive(): bool
     {
-        return $this->status === 'active' && $this->employment_status === 'active';
+        return $this->status === 'active';
     }
 
     // Relationships
@@ -138,7 +137,7 @@ class Admin extends Authenticatable
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('status', 'active')->where('employment_status', 'active');
+        return $query->where('status', 'active');
     }
 
     public function scopeByRole($query, $role)
@@ -153,7 +152,7 @@ class Admin extends Authenticatable
 
     public function scopeByEmploymentStatus($query, $status)
     {
-        return $query->where('employment_status', $status);
+        return $query->where('status', $status);
     }
 
     // Methods

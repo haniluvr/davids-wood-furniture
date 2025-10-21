@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 $adminRoutes = function () {
     // Guest routes (login, forgot password, etc.)
     Route::middleware('guest:admin')->group(function () {
-        Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('admin.login');
+        Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
         Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login']);
         Route::get('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
         Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink']);

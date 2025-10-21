@@ -56,6 +56,7 @@ return new class extends Migration
             $table->json('new_values')->nullable();
             $table->string('ip_address')->nullable();
             $table->text('user_agent')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
 
@@ -290,6 +291,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->string('sku')->unique();
             $table->integer('stock_quantity')->default(0);
+            $table->integer('low_stock_threshold')->default(10);
             $table->boolean('manage_stock')->default(true);
             $table->boolean('in_stock')->default(true);
             $table->string('material')->nullable();

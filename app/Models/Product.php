@@ -29,6 +29,7 @@ class Product extends Model
         'sale_price',
         'sku',
         'stock_quantity',
+        'low_stock_threshold',
         'manage_stock',
         'in_stock',
         'weight',
@@ -175,8 +176,9 @@ class Product extends Model
     }
 
     // Inventory helper methods
-    public function isLowStock($threshold = 10): bool
+    public function isLowStock($threshold = null): bool
     {
+        $threshold = $threshold ?? $this->low_stock_threshold;
         return $this->stock_quantity <= $threshold && $this->stock_quantity > 0;
     }
 
@@ -217,8 +219,11 @@ class Product extends Model
     }
 
     // Scopes for inventory management
-    public function scopeLowStock($query, $threshold = 10)
+    public function scopeLowStock($query, $threshold = null)
     {
+        if ($threshold === null) {
+            return $query->whereRaw('stock_quantity <= low_stock_threshold')->where('stock_quantity', '>', 0);
+        }
         return $query->where('stock_quantity', '<=', $threshold)->where('stock_quantity', '>', 0);
     }
 
