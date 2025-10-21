@@ -290,12 +290,10 @@ jobs:
         sudo systemctl stop mysql
         
         # Create a new MySQL configuration that definitely allows Docker access
-        sudo tee /etc/mysql/mysql.conf.d/docker.cnf > /dev/null << 'EOF'
-[mysqld]
-bind-address = 0.0.0.0
-skip-networking = false
-skip-name-resolve = true
-EOF
+        echo "[mysqld]" | sudo tee /etc/mysql/mysql.conf.d/docker.cnf > /dev/null
+        echo "bind-address = 0.0.0.0" | sudo tee -a /etc/mysql/mysql.conf.d/docker.cnf > /dev/null
+        echo "skip-networking = false" | sudo tee -a /etc/mysql/mysql.conf.d/docker.cnf > /dev/null
+        echo "skip-name-resolve = true" | sudo tee -a /etc/mysql/mysql.conf.d/docker.cnf > /dev/null
         
         # Also update the main config
         sudo sed -i 's/bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf
