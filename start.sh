@@ -57,7 +57,7 @@ APP_NAME="David's Wood Furniture"
 APP_ENV=production
 APP_DEBUG=false
 APP_KEY=
-APP_URL=http://13.211.143.224:$PORT
+APP_URL=http://13.211.143.224:8080
 
 LOG_CHANNEL=stack
 LOG_LEVEL=debug
@@ -86,13 +86,23 @@ EOF
 # Generate APP_KEY - simplified approach
 echo "Generating APP_KEY..."
 APP_KEY_VALUE="base64:$(openssl rand -base64 32)"
-sed -i "s/APP_KEY=/APP_KEY=$APP_KEY_VALUE/" .env
+# Use a more robust method to update APP_KEY
+sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY_VALUE/" .env
 export APP_KEY="$APP_KEY_VALUE"
 echo "Generated APP_KEY: $APP_KEY"
 
 # Clear Laravel config cache to ensure APP_KEY is loaded
 echo "Clearing Laravel config cache..."
 php artisan config:clear
+
+# Force reload environment variables
+echo "Reloading environment variables..."
+if [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+    echo "Environment variables reloaded"
+else
+    echo "Warning: .env file not found"
+fi
 
 # Create necessary directories
 echo "Creating directories..."
