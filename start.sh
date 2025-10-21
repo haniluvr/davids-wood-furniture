@@ -3,13 +3,16 @@
 # Railway startup script for Laravel
 echo "Starting Laravel application..."
 
-# Set basic environment variables
-export APP_ENV=production
-export APP_DEBUG=false
-export DB_CONNECTION=mysql
+# Set basic environment variables from Docker environment
+export APP_ENV=${APP_ENV:-production}
+export APP_DEBUG=${APP_DEBUG:-false}
+export DB_CONNECTION=${DB_CONNECTION:-mysql}
 
 # Set default PORT if not provided
 export PORT=${PORT:-80}
+
+# Load all environment variables from Docker
+export $(printenv | grep -E "^(APP_|DB_|REDIS_|MAIL_|LOG_)" | xargs)
 
 # Debug all environment variables first
 echo "--- All environment variables ---"
@@ -50,19 +53,19 @@ else
     echo "Fallback DB_DATABASE: $DB_DATABASE"
 fi
 
-# Create .env file with basic configuration
+# Create .env file with actual environment variables
 echo "Creating .env file..."
 cat > .env << EOF
 APP_NAME="David's Wood Furniture"
-APP_ENV=production
-APP_DEBUG=false
+APP_ENV=$APP_ENV
+APP_DEBUG=$APP_DEBUG
 APP_KEY=
-APP_URL=http://13.211.143.224:8080
+APP_URL=$APP_URL
 
 LOG_CHANNEL=stack
 LOG_LEVEL=debug
 
-DB_CONNECTION=mysql
+DB_CONNECTION=$DB_CONNECTION
 DB_HOST=$DB_HOST
 DB_PORT=$DB_PORT
 DB_DATABASE=$DB_DATABASE
