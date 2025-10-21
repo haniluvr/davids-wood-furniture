@@ -91,14 +91,42 @@ echo "Generating APP_KEY..."
 APP_KEY_VALUE="base64:$(openssl rand -base64 32)"
 echo "Generated APP_KEY value: $APP_KEY_VALUE"
 
-# Update .env file with the generated APP_KEY
+# Update .env file with the generated APP_KEY using multiple methods
 echo "Updating .env file with APP_KEY..."
-# Create a temporary file with the updated APP_KEY
-sed "s/^APP_KEY=.*/APP_KEY=$APP_KEY_VALUE/" .env > .env.tmp && mv .env.tmp .env
+
+# Method 1: Use sed with proper escaping
+if sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY_VALUE/" .env 2>/dev/null; then
+  echo "APP_KEY updated using sed method"
+else
+  echo "sed method failed, trying alternative approach..."
+  
+  # Method 2: Use awk
+  if awk -v key="$APP_KEY_VALUE" '/^APP_KEY=/ { print "APP_KEY=" key; next } { print }' .env > .env.tmp && mv .env.tmp .env; then
+    echo "APP_KEY updated using awk method"
+  else
+    echo "awk method failed, trying direct replacement..."
+    
+    # Method 3: Direct replacement
+    if grep -q "^APP_KEY=" .env; then
+      # Replace existing line
+      sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY_VALUE/" .env
+    else
+      # Add new line
+      echo "APP_KEY=$APP_KEY_VALUE" >> .env
+    fi
+    echo "APP_KEY updated using direct replacement"
+  fi
+fi
 
 # Verify the APP_KEY was set correctly
 echo "Verifying APP_KEY in .env file:"
-grep "APP_KEY=" .env
+if grep "APP_KEY=" .env; then
+  echo "APP_KEY verification successful"
+else
+  echo "ERROR: APP_KEY verification failed!"
+  echo "Contents of .env file:"
+  cat .env | grep -E "(APP_KEY|APP_)" || echo "No APP_ variables found"
+fi
 
 export APP_KEY="$APP_KEY_VALUE"
 echo "APP_KEY exported: $APP_KEY"
