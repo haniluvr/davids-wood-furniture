@@ -351,7 +351,7 @@
                 <div class="address-block">
                     <h4>Ship To</h4>
                     @if($order->shipping_address)
-                        <p><strong>{{ $order->user->first_name }} {{ $order->user->last_name }}</strong></p>
+                        <p><strong>{{ $order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'Guest User' }}</strong></p>
                         @if($order->shipping_address['address_line_1'])
                             <p>{{ $order->shipping_address['address_line_1'] }}</p>
                         @endif
@@ -365,14 +365,14 @@
                         </p>
                         <p>{{ $order->shipping_address['country'] }}</p>
                     @else
-                        <p><strong>{{ $order->user->first_name }} {{ $order->user->last_name }}</strong></p>
-                        <p>{{ $order->user->email }}</p>
+                        <p><strong>{{ $order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'Guest User' }}</strong></p>
+                        <p>{{ $order->user ? $order->user->email : 'No email available' }}</p>
                     @endif
                 </div>
                 <div class="address-block">
                     <h4>Contact</h4>
-                    <p>{{ $order->user->email }}</p>
-                    @if($order->user->phone)
+                    <p>{{ $order->user ? $order->user->email : 'No email available' }}</p>
+                    @if($order->user && $order->user->phone)
                         <p>{{ $order->user->phone }}</p>
                     @endif
                 </div>

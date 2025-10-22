@@ -34,77 +34,88 @@
                 </h3>
             </div>
             <div class="p-6.5">
-                <div class="flex flex-wrap items-center gap-4 mb-4">
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium text-black dark:text-white">Status:</span>
-                        <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium
-                            @switch($order->status)
-                                @case('pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 @break
-                                @case('processing') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 @break
-                                @case('shipped') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 @break
-                                @case('delivered') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 @break
-                                @case('cancelled') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 @break
-                                @case('returned') bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300 @break
-                                @default bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300
-                            @endswitch
-                        ">
-                            {{ ucfirst($order->status) }}
-                        </span>
+                <!-- Status Display and Update Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Current Status Display -->
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Current Status</h4>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium text-black dark:text-white">Status:</span>
+                            <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium
+                                @switch($order->status)
+                                    @case('pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 @break
+                                    @case('processing') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 @break
+                                    @case('shipped') bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 @break
+                                    @case('delivered') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 @break
+                                    @case('cancelled') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 @break
+                                    @case('returned') bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300 @break
+                                    @default bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300
+                                @endswitch
+                            ">
+                                {{ ucfirst($order->status) }}
+                            </span>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium text-black dark:text-white">Payment:</span>
+                            <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium
+                                @switch($order->payment_status)
+                                    @case('pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 @break
+                                    @case('paid') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 @break
+                                    @case('refunded') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 @break
+                                    @case('failed') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 @break
+                                    @default bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300
+                                @endswitch
+                            ">
+                                {{ ucfirst($order->payment_status) }}
+                            </span>
+                        </div>
                     </div>
-                    
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium text-black dark:text-white">Payment:</span>
-                        <span class="inline-flex rounded-full px-3 py-1 text-sm font-medium
-                            @switch($order->payment_status)
-                                @case('pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 @break
-                                @case('paid') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 @break
-                                @case('refunded') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 @break
-                                @case('failed') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 @break
-                                @default bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300
-                            @endswitch
-                        ">
-                            {{ ucfirst($order->payment_status) }}
-                        </span>
-                    </div>
-                </div>
 
-                <!-- Quick Status Update -->
-                <div class="mb-4">
-                    <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" class="flex items-center gap-4">
-                        @csrf
-                        @method('PATCH')
-                        <select name="status" class="rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary">
-                            <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="processing" {{ $order->status === 'processing' ? 'selected' : '' }}>Processing</option>
-                            <option value="shipped" {{ $order->status === 'shipped' ? 'selected' : '' }}>Shipped</option>
-                            <option value="delivered" {{ $order->status === 'delivered' ? 'selected' : '' }}>Delivered</option>
-                            <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                            <option value="returned" {{ $order->status === 'returned' ? 'selected' : '' }}>Returned</option>
-                        </select>
-                        <button type="submit" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-center font-medium text-white hover:bg-opacity-90">
-                            Update Status
-                        </button>
-                    </form>
+                    <!-- Status Update Form -->
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Update Status</h4>
+                        <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" class="flex items-end gap-3">
+                            @csrf
+                            @method('PATCH')
+                            <div class="flex-1">
+                                <select name="status" class="w-full rounded border-[1.5px] border-stroke bg-transparent px-4 py-2.5 font-normal text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary">
+                                    <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="processing" {{ $order->status === 'processing' ? 'selected' : '' }}>Processing</option>
+                                    <option value="shipped" {{ $order->status === 'shipped' ? 'selected' : '' }}>Shipped</option>
+                                    <option value="delivered" {{ $order->status === 'delivered' ? 'selected' : '' }}>Delivered</option>
+                                    <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                    <option value="returned" {{ $order->status === 'returned' ? 'selected' : '' }}>Returned</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2.5 text-center font-medium text-white hover:bg-opacity-90 whitespace-nowrap">
+                                Update Status
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex flex-wrap gap-3">
-                    <a href="{{ route('admin.orders.edit', $order) }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90">
-                        <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
-                        Edit Order
-                    </a>
-                    
-                    <button onclick="window.print()" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-2 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
-                        <i data-lucide="printer" class="w-4 h-4 mr-2"></i>
-                        Print Invoice
-                    </button>
-                    
-                    @if($order->payment_status === 'paid' && in_array($order->status, ['delivered', 'cancelled']))
-                    <button onclick="openRefundModal()" class="inline-flex items-center justify-center rounded-md border border-red-300 px-4 py-2 text-center font-medium text-red-600 hover:bg-red-50 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20">
-                        <i data-lucide="credit-card" class="w-4 h-4 mr-2"></i>
-                        Process Refund
-                    </button>
-                    @endif
+                <div class="border-t border-stroke pt-6 dark:border-strokedark">
+                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Actions</h4>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="{{ route('admin.orders.edit', $order) }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90">
+                            <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
+                            Edit Order
+                        </a>
+                        
+                        <a href="{{ route('admin.orders.download-invoice', $order) }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-2 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
+                            <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                            Download Invoice
+                        </a>
+                        
+                        @if($order->payment_status === 'paid' && in_array($order->status, ['delivered', 'cancelled']))
+                        <button onclick="openRefundModal()" class="inline-flex items-center justify-center rounded-md border border-red-300 px-4 py-2 text-center font-medium text-red-600 hover:bg-red-50 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20">
+                            <i data-lucide="credit-card" class="w-4 h-4 mr-2"></i>
+                            Process Refund
+                        </button>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -276,21 +287,42 @@
                 <div class="flex items-center gap-3 mb-4">
                     <div class="h-12 w-12 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
                         <span class="text-gray-600 dark:text-gray-300 font-medium">
-                            {{ substr($order->user->first_name, 0, 1) }}{{ substr($order->user->last_name, 0, 1) }}
+                            @if($order->user)
+                                {{ substr($order->user->first_name, 0, 1) }}{{ substr($order->user->last_name, 0, 1) }}
+                            @else
+                                GU
+                            @endif
                         </span>
                     </div>
                     <div>
                         <h4 class="font-medium text-black dark:text-white">
-                            {{ $order->user->first_name }} {{ $order->user->last_name }}
+                            @if($order->user)
+                                {{ $order->user->first_name }} {{ $order->user->last_name }}
+                            @else
+                                Guest User
+                            @endif
                         </h4>
-                        <p class="text-sm text-gray-500">{{ $order->user->email }}</p>
+                        <p class="text-sm text-gray-500">
+                            @if($order->user)
+                                {{ $order->user->email }}
+                            @else
+                                No email available
+                            @endif
+                        </p>
                     </div>
                 </div>
                 
-                <a href="{{ route('admin.users.show', $order->user) }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90 w-full">
-                    <i data-lucide="user" class="w-4 h-4 mr-2"></i>
-                    View Customer
-                </a>
+                @if($order->user)
+                    <a href="{{ route('admin.users.show', $order->user) }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90 w-full">
+                        <i data-lucide="user" class="w-4 h-4 mr-2"></i>
+                        View Customer
+                    </a>
+                @else
+                    <div class="inline-flex items-center justify-center rounded-md border border-gray-300 px-4 py-2 text-center font-medium text-gray-500 w-full cursor-not-allowed">
+                        <i data-lucide="user-x" class="w-4 h-4 mr-2"></i>
+                        Guest Order
+                    </div>
+                @endif
             </div>
         </div>
 

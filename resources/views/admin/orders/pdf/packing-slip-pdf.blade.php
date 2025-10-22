@@ -148,6 +148,7 @@
             font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         .status-pending { background-color: #fff3cd; color: #856404; }
@@ -211,11 +212,7 @@
                 <h3>Order Information:</h3>
                 <p><strong>Order Number:</strong> {{ $order->order_number }}</p>
                 <p><strong>Order Date:</strong> {{ $order->created_at->format('M d, Y H:i') }}</p>
-                <p><strong>Status:</strong> 
-                    <span class="status-badge status-{{ $order->status }}">
-                        {{ ucfirst($order->status) }}
-                    </span>
-                </p>
+                <p><strong>Status:</strong> {{ ucfirst($order->status) }}</p>
                 @if($order->shipping_method)
                     <p><strong>Shipping Method:</strong> {{ $order->shipping_method }}</p>
                 @endif

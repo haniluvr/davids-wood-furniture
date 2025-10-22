@@ -118,19 +118,19 @@
     <div class="mb-6">
         <div class="border-b border-stone-200 dark:border-strokedark">
             <nav class="-mb-px flex space-x-8">
-                <button class="status-tab border-b-2 border-primary py-2 px-1 text-sm font-medium text-primary" data-status="all">
+                <button class="status-tab {{ !request('status') || request('status') === 'all' ? 'border-b-2 border-primary py-2 px-1 text-sm font-medium text-primary' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300' }}" data-status="all">
                     All Messages
                     <span class="ml-2 rounded-full bg-primary px-2.5 py-0.5 text-xs text-white">{{ $stats['total_messages'] }}</span>
                 </button>
-                <button class="status-tab border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300" data-status="new">
+                <button class="status-tab {{ request('status') === 'new' ? 'border-b-2 border-primary py-2 px-1 text-sm font-medium text-primary' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300' }}" data-status="new">
                     New
                     <span class="ml-2 rounded-full bg-red-100 px-2.5 py-0.5 text-xs text-red-800 dark:bg-red-900/30 dark:text-red-400">{{ $stats['new_messages'] }}</span>
                 </button>
-                <button class="status-tab border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300" data-status="read">
+                <button class="status-tab {{ request('status') === 'read' ? 'border-b-2 border-primary py-2 px-1 text-sm font-medium text-primary' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300' }}" data-status="read">
                     Read
                     <span class="ml-2 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">{{ $stats['read_messages'] }}</span>
                 </button>
-                <button class="status-tab border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300" data-status="responded">
+                <button class="status-tab {{ request('status') === 'responded' ? 'border-b-2 border-primary py-2 px-1 text-sm font-medium text-primary' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300' }}" data-status="responded">
                     Responded
                     <span class="ml-2 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">{{ $stats['responded_messages'] }}</span>
                 </button>

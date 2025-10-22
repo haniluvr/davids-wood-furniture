@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice #{{ $order->order_number }}</title>
     <style>
@@ -12,7 +13,7 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'DejaVu Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
             background: #fff;
@@ -144,6 +145,7 @@
             font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
+            font-family: 'DejaVu Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         .status-pending { background-color: #fff3cd; color: #856404; }
@@ -171,18 +173,43 @@
         <div class="billing-info">
             <div class="info-section">
                 <h3>Bill To:</h3>
-                <p><strong>{{ $order->billing_address['first_name'] }} {{ $order->billing_address['last_name'] }}</strong></p>
-                @if($order->billing_address['company'])
-                    <p>{{ $order->billing_address['company'] }}</p>
-                @endif
-                <p>{{ $order->billing_address['address_line_1'] }}</p>
-                @if($order->billing_address['address_line_2'])
-                    <p>{{ $order->billing_address['address_line_2'] }}</p>
-                @endif
-                <p>{{ $order->billing_address['city'] }}, {{ $order->billing_address['state'] }} {{ $order->billing_address['postal_code'] }}</p>
-                <p>{{ $order->billing_address['country'] }}</p>
-                @if($order->billing_address['phone'])
-                    <p>Phone: {{ $order->billing_address['phone'] }}</p>
+                @if($order->billing_address)
+                    <p><strong>{{ $order->billing_address['name'] ?? ($order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'Guest User') }}</strong></p>
+                    @if(isset($order->billing_address['company']) && $order->billing_address['company'])
+                        <p>{{ $order->billing_address['company'] }}</p>
+                    @endif
+                    <p>{{ $order->billing_address['address_line_1'] ?? '' }}</p>
+                    @if(isset($order->billing_address['address_line_2']) && $order->billing_address['address_line_2'])
+                        <p>{{ $order->billing_address['address_line_2'] }}</p>
+                    @endif
+                    <p>{{ $order->billing_address['city'] ?? '' }}, {{ $order->billing_address['state'] ?? '' }} {{ $order->billing_address['postal_code'] ?? '' }}</p>
+                    <p>{{ $order->billing_address['country'] ?? '' }}</p>
+                    @if(isset($order->billing_address['phone']) && $order->billing_address['phone'])
+                        <p>Phone: {{ $order->billing_address['phone'] }}</p>
+                    @endif
+                @else
+                    <p><strong>{{ $order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'Guest User' }}</strong></p>
+                    @if($order->user)
+                        @php
+                            $addressParts = [];
+                            if($order->user->address_line_1) $addressParts[] = $order->user->address_line_1;
+                            if($order->user->address_line_2) $addressParts[] = $order->user->address_line_2;
+                            if($order->user->street) $addressParts[] = $order->user->street;
+                            if($order->user->barangay) $addressParts[] = $order->user->barangay;
+                            if($order->user->city) $addressParts[] = $order->user->city;
+                            if($order->user->province) $addressParts[] = $order->user->province;
+                            if($order->user->state) $addressParts[] = $order->user->state;
+                            if($order->user->postal_code) $addressParts[] = $order->user->postal_code;
+                            if($order->user->zip_code) $addressParts[] = $order->user->zip_code;
+                            if($order->user->country) $addressParts[] = $order->user->country;
+                            $fullAddress = implode(', ', $addressParts);
+                        @endphp
+                        <p>{{ $fullAddress ?: 'N/A' }}</p>
+                        <p>Phone: {{ $order->user->phone ?: 'N/A' }}</p>
+                    @else
+                        <p>N/A</p>
+                        <p>Phone: N/A</p>
+                    @endif
                 @endif
             </div>
             
@@ -190,11 +217,7 @@
                 <h3>Order Information:</h3>
                 <p><strong>Order Number:</strong> {{ $order->order_number }}</p>
                 <p><strong>Order Date:</strong> {{ $order->created_at->format('M d, Y H:i') }}</p>
-                <p><strong>Status:</strong> 
-                    <span class="status-badge status-{{ $order->status }}">
-                        {{ ucfirst($order->status) }}
-                    </span>
-                </p>
+                <p><strong>Status:</strong> {{ ucfirst($order->status) }}</p>
                 @if($order->payment_status)
                     <p><strong>Payment Status:</strong> {{ ucfirst(str_replace('_', ' ', $order->payment_status)) }}</p>
                 @endif
@@ -209,25 +232,22 @@
             <thead>
                 <tr>
                     <th>Item</th>
-                    <th>Description</th>
+                    <th>SKU</th>
                     <th class="text-right">Qty</th>
-                    <th class="text-right">Price</th>
+                    <th class="text-right">Unit Price</th>
                     <th class="text-right">Total</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($order->items as $item)
+                @foreach($order->orderItems as $item)
                 <tr>
                     <td>
-                        <strong>{{ $item->product->name }}</strong>
-                        @if($item->product->sku)
-                            <br><small>SKU: {{ $item->product->sku }}</small>
-                        @endif
+                        <strong>{{ $item->product_name }}</strong>
                     </td>
-                    <td>{{ Str::limit($item->product->description, 100) }}</td>
+                    <td>{{ $item->product_sku ?: 'N/A' }}</td>
                     <td class="text-right">{{ $item->quantity }}</td>
-                    <td class="text-right">${{ number_format($item->price, 2) }}</td>
-                    <td class="text-right">${{ number_format($item->total_price, 2) }}</td>
+                    <td class="text-right">₱{{ number_format($item->unit_price, 2) }}</td>
+                    <td class="text-right">₱{{ number_format($item->total_price, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -238,29 +258,29 @@
             <table class="totals-table">
                 <tr>
                     <td>Subtotal:</td>
-                    <td class="text-right">${{ number_format($order->subtotal, 2) }}</td>
+                    <td class="text-right">₱{{ number_format($order->subtotal, 2) }}</td>
                 </tr>
                 @if($order->tax_amount > 0)
                 <tr>
                     <td>Tax:</td>
-                    <td class="text-right">${{ number_format($order->tax_amount, 2) }}</td>
+                    <td class="text-right">₱{{ number_format($order->tax_amount, 2) }}</td>
                 </tr>
                 @endif
-                @if($order->shipping_amount > 0)
+                @if(($order->shipping_cost ?? 0) > 0)
                 <tr>
                     <td>Shipping:</td>
-                    <td class="text-right">${{ number_format($order->shipping_amount, 2) }}</td>
+                    <td class="text-right">₱{{ number_format($order->shipping_cost, 2) }}</td>
                 </tr>
                 @endif
-                @if($order->discount_amount > 0)
+                @if(($order->discount_amount ?? 0) > 0)
                 <tr>
                     <td>Discount:</td>
-                    <td class="text-right">-${{ number_format($order->discount_amount, 2) }}</td>
+                    <td class="text-right">-₱{{ number_format($order->discount_amount, 2) }}</td>
                 </tr>
                 @endif
                 <tr class="total-row">
                     <td>Total:</td>
-                    <td class="text-right">${{ number_format($order->total_amount, 2) }}</td>
+                    <td class="text-right">₱{{ number_format($order->total_amount, 2) }}</td>
                 </tr>
             </table>
         </div>

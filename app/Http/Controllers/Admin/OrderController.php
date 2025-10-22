@@ -300,7 +300,14 @@ class OrderController extends Controller
     {
         $order->load(['user', 'items.product']);
 
-        $pdf = Pdf::loadView('admin.orders.pdf.invoice-pdf', compact('order'));
+        $pdf = Pdf::loadView('admin.orders.pdf.invoice-pdf', compact('order'))
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'defaultFont' => 'DejaVu Sans',
+                'isRemoteEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+                'isPhpEnabled' => true,
+            ]);
 
         return $pdf->download('invoice-'.$order->order_number.'.pdf');
     }
@@ -312,7 +319,14 @@ class OrderController extends Controller
     {
         $order->load(['user', 'items.product']);
 
-        $pdf = Pdf::loadView('admin.orders.pdf.packing-slip-pdf', compact('order'));
+        $pdf = Pdf::loadView('admin.orders.pdf.packing-slip-pdf', compact('order'))
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'defaultFont' => 'DejaVu Sans',
+                'isRemoteEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+                'isPhpEnabled' => true,
+            ]);
 
         return $pdf->download('packing-slip-'.$order->order_number.'.pdf');
     }

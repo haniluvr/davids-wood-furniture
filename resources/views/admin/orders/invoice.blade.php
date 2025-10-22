@@ -320,7 +320,7 @@
             <div class="address">
                 <h3>Bill To</h3>
                 @if($order->billing_address)
-                    <p><strong>{{ $order->user->first_name }} {{ $order->user->last_name }}</strong></p>
+                    <p><strong>{{ $order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'Guest User' }}</strong></p>
                     @if($order->billing_address['address_line_1'])
                         <p>{{ $order->billing_address['address_line_1'] }}</p>
                     @endif
@@ -334,14 +334,14 @@
                     </p>
                     <p>{{ $order->billing_address['country'] }}</p>
                 @else
-                    <p>{{ $order->user->first_name }} {{ $order->user->last_name }}</p>
-                    <p>{{ $order->user->email }}</p>
+                    <p>{{ $order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'Guest User' }}</p>
+                    <p>{{ $order->user ? $order->user->email : 'No email available' }}</p>
                 @endif
             </div>
             <div class="address">
                 <h3>Ship To</h3>
                 @if($order->shipping_address)
-                    <p><strong>{{ $order->user->first_name }} {{ $order->user->last_name }}</strong></p>
+                    <p><strong>{{ $order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'Guest User' }}</strong></p>
                     @if($order->shipping_address['address_line_1'])
                         <p>{{ $order->shipping_address['address_line_1'] }}</p>
                     @endif

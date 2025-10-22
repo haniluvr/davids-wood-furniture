@@ -87,34 +87,18 @@
 <!-- Users Table -->
 <div class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
     <div class="px-4 py-6 md:px-6 xl:px-7.5">
-        <div class="flex items-center justify-between mb-4">
-            <h4 class="text-xl font-semibold text-black dark:text-white">
+        <div class="mb-6">
+            <h4 class="text-xl font-semibold text-black dark:text-white mb-4">
                 All Users
             </h4>
-            <div class="flex gap-2">
-                <a href="{{ route('admin.users.admins') }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90">
-                    <i data-lucide="shield" class="w-4 h-4 mr-2"></i>
-                    Manage Admins
-                </a>
-                <a href="{{ route('admin.users.create') }}" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-center font-medium text-white hover:bg-opacity-90">
-                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
-                    Add User
-                </a>
-                <button onclick="openExportModal()" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-2 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
-                    <i data-lucide="download" class="w-4 h-4 mr-2"></i>
-                    Export
-                </button>
-            </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-4 mb-6">
-            <form method="GET" class="contents">
-                <div>
+            
+            <!-- Combined Filters and Actions -->
+            <form method="GET" class="flex flex-wrap items-center gap-4">
+                <div class="flex-1 min-w-[200px]">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search users..." class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary">
                 </div>
                 
-                <div>
+                <div class="min-w-[150px]">
                     <select name="status" class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary">
                         <option value="all">All Status</option>
                         <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
@@ -123,7 +107,7 @@
                     </select>
                 </div>
                 
-                <div>
+                <div class="min-w-[150px]">
                     <select name="registration_method" class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary">
                         <option value="all">All Methods</option>
                         <option value="email" {{ request('registration_method') === 'email' ? 'selected' : '' }}>Email</option>
@@ -140,6 +124,17 @@
                         <i data-lucide="x" class="w-4 h-4 mr-2"></i>
                         Clear
                     </a>
+                </div>
+                
+                <div class="flex gap-2 ml-auto">
+                    <a href="{{ route('admin.users.create') }}" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-3 text-center font-medium text-white hover:bg-opacity-90">
+                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                        Add User
+                    </a>
+                    <button onclick="openExportModal()" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-3 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
+                        <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                        Export
+                    </button>
                 </div>
             </form>
         </div>

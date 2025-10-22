@@ -275,14 +275,28 @@
                     <div class="flex items-center gap-3">
                         <div class="h-12 w-12 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
                             <span class="text-gray-600 dark:text-gray-300 font-medium">
-                                {{ substr($order->user->first_name, 0, 1) }}{{ substr($order->user->last_name, 0, 1) }}
+                                @if($order->user)
+                                    {{ substr($order->user->first_name, 0, 1) }}{{ substr($order->user->last_name, 0, 1) }}
+                                @else
+                                    GU
+                                @endif
                             </span>
                         </div>
                         <div>
                             <h4 class="font-medium text-black dark:text-white">
-                                {{ $order->user->first_name }} {{ $order->user->last_name }}
+                                @if($order->user)
+                                    {{ $order->user->first_name }} {{ $order->user->last_name }}
+                                @else
+                                    Guest User
+                                @endif
                             </h4>
-                            <p class="text-sm text-gray-500">{{ $order->user->email }}</p>
+                            <p class="text-sm text-gray-500">
+                                @if($order->user)
+                                    {{ $order->user->email }}
+                                @else
+                                    No email available
+                                @endif
+                            </p>
                         </div>
                     </div>
                 </div>
