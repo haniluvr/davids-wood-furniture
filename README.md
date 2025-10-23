@@ -1,4 +1,4 @@
-# David's Wood Furniture - E-Commerce Platform
+# David's Wood Furniture - S3 Storage Enabled - E-Commerce Platform
 
 <p align="center">
   <img src="https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12.0">
@@ -570,7 +570,7 @@ Access the application:
 
 ### Using the Admin Panel
 
-1. Navigate to `https://admin.davidswood.test:8443/login`
+1. Navigate to `stilhttps://admin.davidswood.test:8443/login`
 2. Login with admin credentials (see [Demo](#-demo) section)
 3. Access available features:
    - **Dashboard**: View statistics and recent activity

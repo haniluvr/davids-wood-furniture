@@ -29,6 +29,14 @@ services:
       - MAIL_ENCRYPTION=tls
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - FILESYSTEM_DISK=s3
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - AWS_BUCKET=${AWS_BUCKET}
+      - AWS_URL=${AWS_URL}
+      - AWS_ENDPOINT=${AWS_ENDPOINT}
+      - AWS_USE_PATH_STYLE_ENDPOINT=${AWS_USE_PATH_STYLE_ENDPOINT}
     depends_on:
       mysql:
         condition: service_healthy
@@ -92,4 +100,5 @@ volumes:
 networks:
   app_network:
     driver: bridge
+
 

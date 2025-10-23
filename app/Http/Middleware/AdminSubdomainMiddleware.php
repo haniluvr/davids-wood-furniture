@@ -36,8 +36,8 @@ class AdminSubdomainMiddleware
         $host = $request->getHost();
         $port = $request->getPort();
 
-        // Handle admin.localhost:8080 or admin.davidswood.test
-        if ($host === 'admin.localhost' || $host === 'admin.davidswood.test') {
+        // Handle admin.localhost:8080, admin.davidswood.test, or admin.davidswood.shop
+        if ($host === 'admin.localhost' || $host === 'admin.davidswood.test' || $host === 'admin.davidswood.shop') {
             // Set the admin guard for this request
             $request->attributes->set('admin_subdomain', true);
 
