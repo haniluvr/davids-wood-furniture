@@ -172,10 +172,20 @@ jobs:
         echo "Stopping Apache..."
         sudo systemctl stop apache2
         
+        # Check if files were copied to /tmp
+        echo "Checking if files were copied to /tmp..."
+        ls -la "$DEPLOY_DIR" || echo "No files found in /tmp/davids-wood-furniture-deploy"
+        echo "File count in /tmp:"
+        find "$DEPLOY_DIR" -type f | wc -l || echo "Could not count files"
+        
         # Update application files
         echo "Updating application files..."
         sudo rm -rf "$APP_DIR"
         sudo mv "$DEPLOY_DIR" "$APP_DIR"
+        
+        # Verify files were moved
+        echo "Verifying files were moved to application directory..."
+        ls -la "$APP_DIR" || echo "Application directory is empty after move"
         
         # Set proper ownership and permissions
         echo "Setting file permissions..."
