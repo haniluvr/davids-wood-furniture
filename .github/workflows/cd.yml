@@ -207,6 +207,15 @@ jobs:
         echo "Building frontend assets..."
         sudo -u www-data bash -c 'export NPM_CONFIG_CACHE=/tmp/.npm && export NPM_CONFIG_PREFIX=/tmp/.npm-global && npm run build'
         
+        # Ensure MySQL is running
+        echo "Checking MySQL status..."
+        sudo systemctl status mysql || echo "MySQL status check failed"
+        sudo systemctl start mysql || echo "MySQL start failed"
+        
+        # Check current .env file on server
+        echo "Current .env file database settings:"
+        grep "DB_" .env || echo "No DB_ settings found in .env"
+        
         # Fix file permissions for Laravel
         echo "Fixing Laravel file permissions..."
         sudo chown -R www-data:www-data /var/www/.config || echo "Config directory fix attempted"
@@ -214,6 +223,19 @@ jobs:
         
         # Check database connection before running Laravel commands
         echo "Checking database connection..."
+        echo "Database config:"
+        sudo -u www-data php artisan tinker --execute="echo 'DB_HOST: ' . config('database.connections.mysql.host'); echo 'DB_DATABASE: ' . config('database.connections.mysql.database'); echo 'DB_USERNAME: ' . config('database.connections.mysql.username');"
+        
+        echo "Testing MySQL connection directly..."
+        mysql -h 127.0.0.1 -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "SELECT 1;" || echo "Direct MySQL connection failed"
+        
+        echo "Checking if database exists..."
+        mysql -h 127.0.0.1 -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "SHOW DATABASES;" || echo "Cannot list databases"
+        
+        echo "Checking if user can access the specific database..."
+        mysql -h 127.0.0.1 -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "USE davids_wood; SHOW TABLES;" || echo "Cannot access davids_wood database"
+        
+        echo "Testing Laravel database connection..."
         sudo -u www-data php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection successful';" || echo "Database connection failed, but continuing..."
         
         # Run Laravel commands with error handling
