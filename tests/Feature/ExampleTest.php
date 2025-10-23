@@ -30,7 +30,7 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson([
-            'status' => 'ok',
+            'status' => 'healthy',
         ]);
     }
 }
