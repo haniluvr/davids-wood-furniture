@@ -69,7 +69,7 @@ jobs:
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts || echo "Warning: Could not add host to known_hosts"
 
     - name: Deploy to EC2
-      timeout-minutes: 10
+      timeout-minutes: 5
       run: |
         # Create .env file from secrets
         cat > .env << 'EOF'
@@ -131,10 +131,25 @@ jobs:
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
           -o ConnectTimeout=15 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p /tmp/davids-wood-furniture-deploy"
         
-        # Copy files with compression and faster settings
-        echo "Copying files to EC2..."
-        scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          -o ConnectTimeout=15 -C -r . ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/davids-wood-furniture-deploy/
+        # Copy source code and essential assets (exclude heavy directories)
+        echo "Copying source code to EC2..."
+        rsync -avz --progress \
+          --exclude='node_modules' \
+          --exclude='vendor' \
+          --exclude='.git' \
+          --exclude='storage/logs' \
+          --exclude='storage/framework/cache' \
+          --exclude='storage/framework/sessions' \
+          --exclude='storage/framework/views' \
+          --exclude='database/*.sqlite' \
+          --exclude='database/*.sql' \
+          --exclude='public/build' \
+          --include='public/admin/**' \
+          --include='database/migrations/**' \
+          --include='database/seeders/**' \
+          --include='database/factories/**' \
+          -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem -o ConnectTimeout=15" \
+          ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/davids-wood-furniture-deploy/
 
         # Execute deployment on EC2
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
@@ -176,7 +191,7 @@ jobs:
         
         # Install Node dependencies and build assets
         echo "Installing Node dependencies..."
-        npm ci
+        npm ci --production
         
         echo "Building frontend assets..."
         npm run build
