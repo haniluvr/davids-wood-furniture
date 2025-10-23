@@ -388,6 +388,49 @@ jobs:
         echo "Checking main website..."
         curl -I "http://localhost" || echo "Main website check failed"
         
+        # Check Apache configuration and document root
+        echo "Checking Apache configuration..."
+        sudo apache2ctl -S || echo "Apache config check failed"
+        
+        # Check if Apache is serving the right directory
+        echo "Checking Apache document root..."
+        sudo grep -r "DocumentRoot" /etc/apache2/ || echo "No DocumentRoot found"
+        
+        # Check if Laravel files are accessible
+        echo "Checking Laravel files accessibility..."
+        ls -la /var/www/html/davids-wood-furniture/public/ || echo "Laravel public directory not found"
+        
+        # Check PHP configuration
+        echo "Checking PHP configuration..."
+        php -v || echo "PHP version check failed"
+        php -m | grep -i mysql || echo "MySQL extension not found"
+        
+        # Check if we need to configure Apache virtual host for Laravel
+        echo "Checking if Apache virtual host is configured..."
+        if [ ! -f /etc/apache2/sites-available/davids-wood-furniture.conf ]; then
+          echo "Creating Apache virtual host configuration..."
+          sudo tee /etc/apache2/sites-available/davids-wood-furniture.conf > /dev/null << 'EOF'
+<VirtualHost *:80>
+    ServerName davidswood.shop
+    ServerAlias www.davidswood.shop admin.davidswood.shop
+    DocumentRoot /var/www/html/davids-wood-furniture/public
+    
+    <Directory /var/www/html/davids-wood-furniture/public>
+        AllowOverride All
+        Require all granted
+    </Directory>
+    
+    ErrorLog ${APACHE_LOG_DIR}/davids-wood-furniture_error.log
+    CustomLog ${APACHE_LOG_DIR}/davids-wood-furniture_access.log combined
+</VirtualHost>
+EOF
+          sudo a2ensite davids-wood-furniture.conf || echo "Site enable failed"
+          sudo a2enmod rewrite || echo "Rewrite module enable failed"
+          sudo systemctl reload apache2 || echo "Apache reload failed"
+        else
+          echo "Apache virtual host already configured"
+        fi
+        
         # Check Laravel logs for errors
         echo "Checking Laravel logs for errors..."
         sudo tail -20 /var/www/html/davids-wood-furniture/storage/logs/laravel.log || echo "No Laravel logs found"
