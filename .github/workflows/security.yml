@@ -12,6 +12,10 @@ jobs:
   security:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
     
     steps:
     - name: Checkout code
@@ -36,10 +40,11 @@ jobs:
         composer require --dev friendsofphp/php-cs-fixer --no-interaction
         ./vendor/bin/php-cs-fixer fix --dry-run --diff --rules=@Security || echo "CS Fixer security check completed"
 
-    - name: Run CodeQL Analysis
+    - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: php
+        queries: security-and-quality
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3

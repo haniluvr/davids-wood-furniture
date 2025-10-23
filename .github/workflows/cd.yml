@@ -194,6 +194,15 @@ jobs:
         cd "$APP_DIR"
         sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
         
+        # Fix npm cache permissions and configure npm
+        echo "Fixing npm cache permissions..."
+        sudo chown -R www-data:www-data /var/www/.npm || echo "NPM cache fix attempted"
+        
+        # Configure npm for www-data user
+        echo "Configuring npm..."
+        sudo -u www-data npm config set cache /tmp/.npm
+        sudo -u www-data npm config set prefix /tmp/.npm-global
+        
         # Install Node dependencies and build assets
         echo "Installing Node dependencies (including dev dependencies for build)..."
         sudo -u www-data npm ci
