@@ -409,7 +409,7 @@ jobs:
         echo "Checking if Apache virtual host is configured..."
         if [ ! -f /etc/apache2/sites-available/davids-wood-furniture.conf ]; then
           echo "Creating Apache virtual host configuration..."
-          sudo tee /etc/apache2/sites-available/davids-wood-furniture.conf > /dev/null << 'EOF'
+          sudo bash -c 'cat > /etc/apache2/sites-available/davids-wood-furniture.conf << "EOF"
 <VirtualHost *:80>
     ServerName davidswood.shop
     ServerAlias www.davidswood.shop admin.davidswood.shop
@@ -423,7 +423,7 @@ jobs:
     ErrorLog ${APACHE_LOG_DIR}/davids-wood-furniture_error.log
     CustomLog ${APACHE_LOG_DIR}/davids-wood-furniture_access.log combined
 </VirtualHost>
-EOF
+EOF'
           sudo a2ensite davids-wood-furniture.conf || echo "Site enable failed"
           sudo a2enmod rewrite || echo "Rewrite module enable failed"
           sudo systemctl reload apache2 || echo "Apache reload failed"
