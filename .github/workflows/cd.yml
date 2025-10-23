@@ -396,9 +396,33 @@ jobs:
         echo "Checking Apache document root..."
         sudo grep -r "DocumentRoot" /etc/apache2/ || echo "No DocumentRoot found"
         
-        # Check if Laravel files are accessible
-        echo "Checking Laravel files accessibility..."
+        # Check if Laravel files are accessible and directory structure exists
+        echo "Checking Laravel directory structure..."
+        echo "Current working directory:"
+        pwd
+        echo "Laravel application directory contents:"
+        ls -la /var/www/html/davids-wood-furniture/ || echo "Laravel application directory not found"
+        echo "Laravel public directory:"
         ls -la /var/www/html/davids-wood-furniture/public/ || echo "Laravel public directory not found"
+        echo "Laravel storage directory:"
+        ls -la /var/www/html/davids-wood-furniture/storage/ || echo "Laravel storage directory not found"
+        echo "Laravel storage/logs directory:"
+        ls -la /var/www/html/davids-wood-furniture/storage/logs/ || echo "Laravel storage/logs directory not found"
+        
+        # Create missing Laravel storage directories if they don't exist
+        echo "Creating missing Laravel storage directories..."
+        sudo mkdir -p /var/www/html/davids-wood-furniture/storage/logs || echo "Storage logs directory creation failed"
+        sudo mkdir -p /var/www/html/davids-wood-furniture/storage/framework/cache || echo "Storage cache directory creation failed"
+        sudo mkdir -p /var/www/html/davids-wood-furniture/storage/framework/sessions || echo "Storage sessions directory creation failed"
+        sudo mkdir -p /var/www/html/davids-wood-furniture/storage/framework/views || echo "Storage views directory creation failed"
+        sudo mkdir -p /var/www/html/davids-wood-furniture/storage/app || echo "Storage app directory creation failed"
+        sudo mkdir -p /var/www/html/davids-wood-furniture/bootstrap/cache || echo "Bootstrap cache directory creation failed"
+        
+        # Set proper permissions for Laravel storage
+        sudo chown -R www-data:www-data /var/www/html/davids-wood-furniture/storage || echo "Storage ownership fix failed"
+        sudo chown -R www-data:www-data /var/www/html/davids-wood-furniture/bootstrap/cache || echo "Bootstrap cache ownership fix failed"
+        sudo chmod -R 775 /var/www/html/davids-wood-furniture/storage || echo "Storage permissions fix failed"
+        sudo chmod -R 775 /var/www/html/davids-wood-furniture/bootstrap/cache || echo "Bootstrap cache permissions fix failed"
         
         # Check PHP configuration
         echo "Checking PHP configuration..."
