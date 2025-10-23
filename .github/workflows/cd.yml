@@ -213,14 +213,18 @@ jobs:
         sudo systemctl start mysql || echo "MySQL start failed"
         
         # Create MySQL user for 127.0.0.1 (required for GitHub Actions environment)
-        echo "Creating MySQL user for 127.0.0.1..."
-        mysql -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'127.0.0.1' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" || echo "User creation failed, but continuing..."
-        mysql -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'127.0.0.1';" || echo "Grant privileges failed, but continuing..."
-        mysql -e "FLUSH PRIVILEGES;" || echo "Flush privileges failed, but continuing..."
+        echo "Creating MySQL user for 127.0.0.1 as root..."
+        mysql -u root -pRootPassword123! -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'127.0.0.1' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" || echo "User creation failed, but continuing..."
+        mysql -u root -pRootPassword123! -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'127.0.0.1';" || echo "Grant privileges failed, but continuing..."
+        mysql -u root -pRootPassword123! -e "FLUSH PRIVILEGES;" || echo "Flush privileges failed, but continuing..."
         
         # Also ensure the database exists
         echo "Creating database if it doesn't exist..."
-        mysql -e "CREATE DATABASE IF NOT EXISTS davids_wood CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || echo "Database creation failed, but continuing..."
+        mysql -u root -pRootPassword123! -e "CREATE DATABASE IF NOT EXISTS davids_wood CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || echo "Database creation failed, but continuing..."
+        
+        # Verify the user was created successfully
+        echo "Verifying MySQL user creation..."
+        mysql -u root -pRootPassword123! -e "SELECT User, Host FROM mysql.user WHERE User='davidswood_user';" || echo "User verification failed, but continuing..."
         
         # Check current .env file on server
         echo "Current .env file database settings:"
