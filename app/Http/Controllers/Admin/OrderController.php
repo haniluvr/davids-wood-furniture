@@ -269,6 +269,9 @@ class OrderController extends Controller
     {
         $request->validate([
             'status' => 'required|in:pending,processing,shipped,delivered,cancelled,returned',
+            'fulfillment_status' => 'nullable|in:pending,packed,shipped,delivered',
+            'tracking_number' => 'nullable|string|max:255',
+            'carrier' => 'nullable|string|max:255',
         ]);
 
         $oldStatus = $order->status;
@@ -277,12 +280,28 @@ class OrderController extends Controller
         // Handle status-specific logic
         $updateData = ['status' => $newStatus];
 
+        // Update fulfillment status if provided
+        if ($request->has('fulfillment_status')) {
+            $updateData['fulfillment_status'] = $request->fulfillment_status;
+        }
+
+        // Handle tracking information
+        if ($request->tracking_number) {
+            $updateData['tracking_number'] = $request->tracking_number;
+        }
+
+        if ($request->carrier) {
+            $updateData['carrier'] = $request->carrier;
+        }
+
         if ($newStatus === 'shipped' && $oldStatus !== 'shipped') {
             $updateData['shipped_at'] = now();
+            $updateData['fulfillment_status'] = 'shipped';
         }
 
         if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
             $updateData['delivered_at'] = now();
+            $updateData['fulfillment_status'] = 'delivered';
         }
 
         $order->update($updateData);
@@ -531,6 +550,7 @@ class OrderController extends Controller
                 'Customer Name',
                 'Customer Email',
                 'Status',
+                'Fulfillment Status',
                 'Payment Status',
                 'Total Amount',
                 'Currency',
@@ -545,6 +565,7 @@ class OrderController extends Controller
                     $order->user ? $order->user->first_name.' '.$order->user->last_name : 'Guest',
                     $order->user ? $order->user->email : 'N/A',
                     $order->status,
+                    $order->fulfillment_status,
                     $order->payment_status,
                     $order->total_amount,
                     $order->currency,
@@ -557,5 +578,127 @@ class OrderController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Update fulfillment status for an order
+     */
+    public function updateFulfillmentStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'fulfillment_status' => 'required|in:pending,packed,shipped,delivered',
+            'tracking_number' => 'nullable|string|max:255',
+            'carrier' => 'nullable|string|max:255',
+            'packing_notes' => 'nullable|string|max:1000',
+            'shipping_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $updateData = [
+            'fulfillment_status' => $request->fulfillment_status,
+        ];
+
+        // Update tracking information if provided
+        if ($request->tracking_number) {
+            $updateData['tracking_number'] = $request->tracking_number;
+        }
+
+        if ($request->carrier) {
+            $updateData['carrier'] = $request->carrier;
+        }
+
+        // Handle status transitions
+        if ($request->fulfillment_status === 'shipped' && $order->fulfillment_status !== 'shipped') {
+            $updateData['shipped_at'] = now();
+            $updateData['status'] = 'shipped';
+        }
+
+        if ($request->fulfillment_status === 'delivered' && $order->fulfillment_status !== 'delivered') {
+            $updateData['delivered_at'] = now();
+            $updateData['status'] = 'delivered';
+        }
+
+        $order->update($updateData);
+
+        // Create or update fulfillment record
+        $fulfillment = $order->fulfillment()->firstOrCreate([]);
+        $fulfillment->update([
+            'items_packed' => $request->fulfillment_status === 'packed' || $request->fulfillment_status === 'shipped' || $request->fulfillment_status === 'delivered',
+            'shipped' => $request->fulfillment_status === 'shipped' || $request->fulfillment_status === 'delivered',
+            'packed_at' => $request->fulfillment_status === 'packed' ? now() : $fulfillment->packed_at,
+            'shipped_at' => $request->fulfillment_status === 'shipped' ? now() : $fulfillment->shipped_at,
+            'packing_notes' => $request->packing_notes,
+            'shipping_notes' => $request->shipping_notes,
+            'packed_by' => $request->fulfillment_status === 'packed' ? auth('admin')->id() : $fulfillment->packed_by,
+            'shipped_by' => $request->fulfillment_status === 'shipped' ? auth('admin')->id() : $fulfillment->shipped_by,
+        ]);
+
+        return back()->with('success', 'Fulfillment status updated successfully.');
+    }
+
+    /**
+     * Generate tracking number for an order
+     */
+    public function generateTrackingNumber(Order $order)
+    {
+        if ($order->tracking_number) {
+            return back()->with('info', 'Order already has a tracking number: ' . $order->tracking_number);
+        }
+
+        $trackingNumber = $order->generateTrackingNumber();
+        $order->update(['tracking_number' => $trackingNumber]);
+
+        return back()->with('success', 'Tracking number generated: ' . $trackingNumber);
+    }
+
+    /**
+     * Mark order as packed
+     */
+    public function markAsPacked(Request $request, Order $order)
+    {
+        $request->validate([
+            'packing_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $order->update(['fulfillment_status' => 'packed']);
+
+        $fulfillment = $order->fulfillment()->firstOrCreate([]);
+        $fulfillment->update([
+            'items_packed' => true,
+            'packed_at' => now(),
+            'packing_notes' => $request->packing_notes,
+            'packed_by' => auth('admin')->id(),
+        ]);
+
+        return back()->with('success', 'Order marked as packed.');
+    }
+
+    /**
+     * Mark order as shipped
+     */
+    public function markAsShipped(Request $request, Order $order)
+    {
+        $request->validate([
+            'tracking_number' => 'required|string|max:255',
+            'carrier' => 'required|string|max:255',
+            'shipping_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $order->update([
+            'status' => 'shipped',
+            'fulfillment_status' => 'shipped',
+            'shipped_at' => now(),
+            'tracking_number' => $request->tracking_number,
+            'carrier' => $request->carrier,
+        ]);
+
+        $fulfillment = $order->fulfillment()->firstOrCreate([]);
+        $fulfillment->update([
+            'shipped' => true,
+            'shipped_at' => now(),
+            'shipping_notes' => $request->shipping_notes,
+            'shipped_by' => auth('admin')->id(),
+        ]);
+
+        return back()->with('success', 'Order marked as shipped.');
     }
 }

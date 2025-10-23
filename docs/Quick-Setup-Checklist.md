@@ -1,206 +1,334 @@
-# Quick Setup Checklist: GitHub Actions + AWS EC2
+# Quick Setup Checklist
 
-## Pre-Setup Checklist
+Use this checklist to quickly set up your Laravel deployment on EC2.
 
-- [ ] AWS account with EC2 access
-- [ ] GitHub repository with your Laravel application
-- [ ] Domain name (optional but recommended)
-- [ ] SSH client installed on your local machine
+## Pre-Deployment Checklist
 
-## AWS EC2 Setup (15-20 minutes)
+### ✅ EC2 Instance Setup
+- [ ] Ubuntu 22.04 LTS instance running
+- [ ] Security groups configured (ports 22, 80, 443 open)
+- [ ] SSH key pair downloaded and accessible
+- [ ] Public IP address noted
 
-### 1. Launch EC2 Instance
-- [ ] Launch Ubuntu 22.04 LTS instance
-- [ ] Choose t3.medium or larger instance type
-- [ ] Configure security group (SSH, HTTP, HTTPS)
-- [ ] Create/download key pair (.pem file)
-- [ ] Note down public IP address
+### ✅ GitHub Repository
+- [ ] Code pushed to GitHub repository
+- [ ] GitHub Actions enabled
+- [ ] Repository is public or has proper access
 
-### 2. Connect and Setup Server
+### ✅ Local Development
+- [ ] Laravel application working locally
+- [ ] Tests passing locally
+- [ ] Frontend assets building successfully
+- [ ] APP_KEY generated: `php artisan key:generate --show`
+
+## EC2 Server Setup (One-time)
+
+### ✅ Basic Server Setup
 ```bash
-# Connect to instance
+# SSH to your EC2 instance
 ssh -i your-key.pem ubuntu@your-ec2-ip
 
-# Upload and run setup script
-scp -i your-key.pem scripts/setup-ec2-server.sh ubuntu@your-ec2-ip:/tmp/
-ssh -i your-key.pem ubuntu@your-ec2-ip
-sudo /tmp/setup-ec2-server.sh
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install essential packages
+sudo apt install -y curl wget git unzip software-properties-common
 ```
 
-### 3. Configure Database
+### ✅ Install Apache
 ```bash
+# Install Apache
+sudo apt install -y apache2
+
+# Enable modules
+sudo a2enmod rewrite headers ssl
+
+# Start Apache
+sudo systemctl start apache2
+sudo systemctl enable apache2
+```
+
+### ✅ Install PHP 8.2
+```bash
+# Add PHP repository
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt update
+
+# Install PHP and extensions
+sudo apt install -y php8.2 php8.2-cli php8.2-common php8.2-mysql php8.2-zip php8.2-gd php8.2-mbstring php8.2-curl php8.2-xml php8.2-bcmath php8.2-intl php8.2-soap php8.2-redis php8.2-imagick libapache2-mod-php8.2
+
+# Restart Apache
+sudo systemctl restart apache2
+```
+
+### ✅ Install Composer
+```bash
+# Install Composer
+curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer
+sudo chmod +x /usr/local/bin/composer
+```
+
+### ✅ Install Node.js 18
+```bash
+# Add NodeSource repository
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+
+# Install Node.js
+sudo apt install -y nodejs
+```
+
+### ✅ Install MySQL
+```bash
+# Install MySQL
+sudo apt install -y mysql-server
+
+# Secure MySQL
+sudo mysql_secure_installation
+
+# Create database and user
 sudo mysql -u root -p
-# Run these SQL commands:
-CREATE DATABASE davidswood_furniture;
-CREATE USER 'davidswood_user'@'localhost' IDENTIFIED BY 'secure_password';
-GRANT ALL PRIVILEGES ON davidswood_furniture.* TO 'davidswood_user'@'localhost';
+```
+
+In MySQL prompt:
+```sql
+CREATE DATABASE davids_wood;
+CREATE USER 'davidswood_user'@'localhost' IDENTIFIED BY 'your_secure_password';
+GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
 
-## GitHub Actions Setup (10-15 minutes)
-
-### 1. Create AWS IAM User
-- [ ] Go to AWS IAM Console
-- [ ] Create user: `github-actions-deploy`
-- [ ] Attach policy: `AmazonEC2FullAccess`
-- [ ] Create access keys
-- [ ] Save access key ID and secret
-
-### 2. Generate SSH Key for Deployment
+### ✅ Configure Apache Virtual Host
 ```bash
-ssh-keygen -t rsa -b 4096 -C "github-actions-deploy"
-# Save as: github-deploy-key
+# Create application directory
+sudo mkdir -p /var/www/html/davids-wood-furniture
+sudo chown -R ubuntu:ubuntu /var/www/html/davids-wood-furniture
+
+# Copy virtual host configuration
+sudo cp /var/www/html/davids-wood-furniture/.apache/davidswood.conf /etc/apache2/sites-available/
+
+# Enable site
+sudo a2ensite davidswood.conf
+sudo a2dissite 000-default
+sudo systemctl reload apache2
 ```
 
-### 3. Add SSH Key to EC2
+### ✅ Clone Repository
 ```bash
-ssh-copy-id -i github-deploy-key.pub ubuntu@your-ec2-ip
+# Clone repository
+cd /var/www/html
+sudo git clone https://github.com/yourusername/davids-wood-furniture.git
+sudo chown -R www-data:www-data davids-wood-furniture
 ```
 
-### 4. Configure GitHub Secrets
-Go to: Repository → Settings → Secrets and variables → Actions
+## GitHub Secrets Configuration
 
-Add these secrets:
-- [ ] `AWS_ACCESS_KEY_ID` = your AWS access key
-- [ ] `AWS_SECRET_ACCESS_KEY` = your AWS secret key
-- [ ] `EC2_INSTANCE_ID` = i-1234567890abcdef0 (from EC2 console)
-- [ ] `EC2_HOST` = your EC2 public IP
-- [ ] `EC2_USER` = ubuntu
-- [ ] `EC2_SSH_KEY` = content of github-deploy-key (private key)
-- [ ] `APP_URL` = https://yourdomain.com (or http://your-ec2-ip)
+### ✅ Required Secrets
+Go to GitHub repository → Settings → Secrets and variables → Actions
 
-### 5. Upload Deployment Script
+| Secret Name | Value | How to Get |
+|-------------|-------|------------|
+| `EC2_HOST` | Your EC2 public IP | AWS Console → EC2 → Instances |
+| `EC2_USER` | `ubuntu` | Default for Ubuntu instances |
+| `EC2_SSH_KEY` | Content of your `.pem` file | Download from AWS Console |
+| `APP_KEY` | Generated key | Run `php artisan key:generate --show` locally |
+| `DB_HOST` | `127.0.0.1` | Local MySQL on same server |
+| `DB_DATABASE` | `davids_wood` | Database name you created |
+| `DB_USERNAME` | `davidswood_user` | Database user you created |
+| `DB_PASSWORD` | Your database password | Password you set in MySQL |
+| `APP_URL` | `http://your-ec2-ip` | Your EC2 public IP or domain |
+
+### ✅ Optional Secrets
+| Secret Name | Value | Description |
+|-------------|-------|-------------|
+| `APP_ENV` | `production` | Application environment |
+| `APP_DEBUG` | `false` | Debug mode |
+| `MAIL_HOST` | `smtp.gmail.com` | SMTP server |
+| `MAIL_PORT` | `587` | SMTP port |
+| `MAIL_USERNAME` | `your-email@gmail.com` | Your email |
+| `MAIL_PASSWORD` | `your-app-password` | App password for Gmail |
+| `MAIL_FROM_ADDRESS` | `noreply@yourdomain.com` | From email |
+| `MAIL_FROM_NAME` | `David's Wood Furniture` | From name |
+
+## Test Deployment
+
+### ✅ First Deployment
+1. **Push to main branch**:
+   ```bash
+   git add .
+   git commit -m "Initial deployment setup"
+   git push origin main
+   ```
+
+2. **Check GitHub Actions**:
+   - Go to GitHub → Actions tab
+   - Watch the deployment workflow
+   - Check for any errors
+
+3. **Test Application**:
+   - Visit `http://your-ec2-ip`
+   - Check health endpoint: `http://your-ec2-ip/health`
+   - Verify database connection
+
+### ✅ Verify Deployment
 ```bash
-scp -i your-key.pem deploy.sh ubuntu@your-ec2-ip:/home/ubuntu/
+# SSH to EC2 and check
 ssh -i your-key.pem ubuntu@your-ec2-ip
-chmod +x /home/ubuntu/deploy.sh
+
+# Check Apache status
+sudo systemctl status apache2
+
+# Check application logs
+tail -f /var/www/html/davids-wood-furniture/storage/logs/laravel.log
+
+# Test database connection
+mysql -u davidswood_user -p -e "SELECT 1;"
 ```
 
-## Domain and SSL Setup (Optional - 10 minutes)
+## Post-Deployment Setup
 
-### 1. Configure Domain
-- [ ] Point domain A record to EC2 public IP
-- [ ] Wait for DNS propagation (up to 48 hours)
-
-### 2. Install SSL Certificate
+### ✅ SSL Certificate (Production)
 ```bash
-sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+# Install Certbot
+sudo apt install -y certbot python3-certbot-apache
+
+# Get SSL certificate
+sudo certbot --apache -d yourdomain.com -d www.yourdomain.com
 ```
 
-## Test Deployment (5 minutes)
-
-### 1. Push to Main Branch
+### ✅ Security Hardening
 ```bash
-git add .
-git commit -m "Setup CI/CD pipeline"
-git push origin main
+# Configure firewall
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow 'Apache Full'
+sudo ufw enable
+
+# Install fail2ban
+sudo apt install -y fail2ban
+sudo systemctl start fail2ban
+sudo systemctl enable fail2ban
 ```
 
-### 2. Monitor Deployment
-- [ ] Go to GitHub Actions tab
-- [ ] Watch "Deploy to AWS EC2" workflow
-- [ ] Check for any errors
-
-### 3. Verify Application
-- [ ] Visit your application URL
-- [ ] Check health endpoint: `/health.php`
-- [ ] Test basic functionality
-
-## Post-Setup Verification
-
-### Server Health Check
+### ✅ Monitoring Setup
 ```bash
-# Check services
-sudo systemctl status nginx
-sudo systemctl status php8.2-fpm
-sudo systemctl status mysql
-sudo systemctl status redis-server
+# Install monitoring tools
+sudo apt install -y htop iotop nethogs
 
-# Check application
-curl http://localhost/health.php
+# Set up log rotation
+sudo nano /etc/logrotate.d/laravel
 ```
 
-### Application Verification
-- [ ] Homepage loads correctly
+Add:
+```
+/var/www/html/davids-wood-furniture/storage/logs/*.log {
+    daily
+    missingok
+    rotate 14
+    compress
+    notifempty
+    create 644 www-data www-data
+}
+```
+
+## Troubleshooting Checklist
+
+### ✅ Common Issues
+- [ ] **SSH Connection**: Test SSH key format and permissions
+- [ ] **Database Connection**: Verify MySQL user and password
+- [ ] **Apache Status**: Check if Apache is running
+- [ ] **File Permissions**: Ensure proper ownership and permissions
+- [ ] **PHP Extensions**: Verify all required extensions are installed
+- [ ] **Composer Dependencies**: Check if all packages are installed
+- [ ] **Node.js Build**: Verify frontend assets are building
+- [ ] **GitHub Actions**: Check workflow logs for errors
+
+### ✅ Health Checks
+- [ ] **Application**: `curl http://your-ec2-ip`
+- [ ] **Health Endpoint**: `curl http://your-ec2-ip/health`
+- [ ] **Database**: `mysql -u davidswood_user -p -e "SELECT 1;"`
+- [ ] **Apache**: `sudo systemctl status apache2`
+- [ ] **PHP**: `php -v`
+
+## Success Criteria
+
+### ✅ Deployment Success
+- [ ] GitHub Actions workflow completes successfully
+- [ ] Application loads without errors
+- [ ] Health check returns 200 status
 - [ ] Database connection works
-- [ ] User registration/login works
-- [ ] Admin panel accessible
-- [ ] File uploads work
-- [ ] Email functionality works
+- [ ] All pages load correctly
+- [ ] No errors in logs
 
-## Troubleshooting Quick Fixes
-
-### If deployment fails:
-```bash
-# Check deployment logs
-tail -f /var/log/deployment.log
-
-# Check service status
-sudo systemctl status nginx php8.2-fpm mysql
-```
-
-### If application doesn't load:
-```bash
-# Check Nginx configuration
-sudo nginx -t
-
-# Check file permissions
-sudo chown -R www-data:www-data /var/www/davids-wood-furniture
-sudo chmod -R 755 /var/www/davids-wood-furniture
-```
-
-### If database connection fails:
-```bash
-# Test connection
-mysql -u davidswood_user -p -h 127.0.0.1 davidswood_furniture
-
-# Check MySQL status
-sudo systemctl status mysql
-```
-
-## Security Checklist
-
-- [ ] Firewall configured (UFW enabled)
-- [ ] Fail2ban installed and running
-- [ ] SSH key authentication only
-- [ ] Strong database passwords
-- [ ] SSL certificate installed
-- [ ] Regular security updates enabled
-
-## Performance Optimization
-
-- [ ] OPcache enabled
-- [ ] Redis configured for sessions/cache
-- [ ] Nginx gzip compression enabled
-- [ ] Static file caching configured
-- [ ] Queue workers running
-
-## Monitoring Setup
-
-- [ ] Health check endpoint working
-- [ ] Log rotation configured
-- [ ] Backup strategy in place
-- [ ] Monitoring alerts set up (optional)
+### ✅ Performance Check
+- [ ] Page load times under 3 seconds
+- [ ] No memory errors
+- [ ] Apache serving requests efficiently
+- [ ] Database queries optimized
 
 ## Next Steps
 
-1. **Set up monitoring** (CloudWatch, New Relic, etc.)
-2. **Configure backups** (automated database backups)
-3. **Set up staging environment** (duplicate setup for testing)
-4. **Implement blue-green deployments** (advanced)
-5. **Set up load balancing** (if needed for high traffic)
+### ✅ Production Ready
+- [ ] SSL certificate installed
+- [ ] Domain name configured
+- [ ] Monitoring set up
+- [ ] Backups configured
+- [ ] Security hardened
+- [ ] Performance optimized
+
+### ✅ Maintenance
+- [ ] Regular updates scheduled
+- [ ] Log monitoring set up
+- [ ] Backup verification
+- [ ] Security scanning
+- [ ] Performance monitoring
 
 ## Support Resources
 
-- [Complete Setup Guide](./CI-CD-Setup-Guide.md)
-- [Laravel Deployment Docs](https://laravel.com/docs/deployment)
-- [GitHub Actions Docs](https://docs.github.com/en/actions)
-- [AWS EC2 Docs](https://docs.aws.amazon.com/ec2/)
+### ✅ Documentation
+- [ ] EC2 Setup Guide: `docs/EC2-Setup-Guide.md`
+- [ ] Deployment Guide: `docs/Deployment-Guide.md`
+- [ ] GitHub Secrets Setup: `docs/GitHub-Secrets-Setup.md`
 
----
+### ✅ Troubleshooting
+- [ ] Check Apache logs: `/var/log/apache2/error.log`
+- [ ] Check Laravel logs: `storage/logs/laravel.log`
+- [ ] Check GitHub Actions logs: GitHub → Actions tab
+- [ ] Test SSH connection: `ssh -i key.pem ubuntu@your-ec2-ip`
 
-**Total Setup Time: 30-45 minutes**
+Your Laravel application is now ready for production! 🚀
 
-Once completed, your Laravel application will automatically deploy to AWS EC2 whenever you push to the main branch!
+## Quick Commands Reference
 
+```bash
+# Check Apache status
+sudo systemctl status apache2
+
+# Restart Apache
+sudo systemctl restart apache2
+
+# Check PHP version
+php -v
+
+# Check Composer
+composer --version
+
+# Check Node.js
+node --version
+
+# Check MySQL
+sudo systemctl status mysql
+
+# Test database connection
+mysql -u davidswood_user -p -e "SELECT 1;"
+
+# Check application logs
+tail -f /var/www/html/davids-wood-furniture/storage/logs/laravel.log
+
+# Fix permissions
+sudo chown -R www-data:www-data /var/www/html/davids-wood-furniture
+sudo chmod -R 775 /var/www/html/davids-wood-furniture/storage
+sudo chmod -R 775 /var/www/html/davids-wood-furniture/bootstrap/cache
+```

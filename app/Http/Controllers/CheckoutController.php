@@ -228,11 +228,18 @@ class CheckoutController extends Controller
         try {
             DB::beginTransaction();
 
+            // Check if order requires approval (high value orders or special conditions)
+            $requiresApproval = $this->shouldRequireApproval($total, $user);
+            $approvalReason = $requiresApproval ? $this->getApprovalReason($total, $user) : null;
+
             // Create order
             $order = Order::create([
                 'user_id' => $user->id,
                 'order_number' => Order::generateOrderNumber(),
-                'status' => 'pending',
+                'status' => $requiresApproval ? 'pending' : 'processing',
+                'fulfillment_status' => 'pending',
+                'requires_approval' => $requiresApproval,
+                'approval_reason' => $approvalReason,
                 'subtotal' => $subtotal,
                 'tax_amount' => $taxAmount,
                 'shipping_amount' => $shippingCost,
@@ -414,5 +421,56 @@ class CheckoutController extends Controller
         }
 
         return true;
+    }
+
+    /**
+     * Determine if order requires approval
+     */
+    private function shouldRequireApproval($total, $user)
+    {
+        // Orders over ₱10,000 require approval
+        if ($total > 10000) {
+            return true;
+        }
+
+        // New users (less than 30 days old) with orders over ₱5,000 require approval
+        if ($user->created_at->diffInDays(now()) < 30 && $total > 5000) {
+            return true;
+        }
+
+        // Users with previous cancelled orders require approval for orders over ₱3,000
+        $hasCancelledOrders = Order::where('user_id', $user->id)
+            ->where('status', 'cancelled')
+            ->exists();
+        
+        if ($hasCancelledOrders && $total > 3000) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get approval reason for order
+     */
+    private function getApprovalReason($total, $user)
+    {
+        if ($total > 10000) {
+            return 'High value order (₱' . number_format($total, 2) . ') requires manager approval';
+        }
+
+        if ($user->created_at->diffInDays(now()) < 30 && $total > 5000) {
+            return 'New customer with order over ₱5,000 requires approval';
+        }
+
+        $hasCancelledOrders = Order::where('user_id', $user->id)
+            ->where('status', 'cancelled')
+            ->exists();
+        
+        if ($hasCancelledOrders && $total > 3000) {
+            return 'Customer with previous cancelled orders requires approval for orders over ₱3,000';
+        }
+
+        return 'Order requires approval';
     }
 }

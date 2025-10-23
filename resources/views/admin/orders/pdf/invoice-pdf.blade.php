@@ -191,17 +191,14 @@
                     <p><strong>{{ $order->user ? $order->user->first_name . ' ' . $order->user->last_name : 'Guest User' }}</strong></p>
                     @if($order->user)
                         @php
+                            // Philippine address format: street, barangay, city, province, region, zip_code
                             $addressParts = [];
-                            if($order->user->address_line_1) $addressParts[] = $order->user->address_line_1;
-                            if($order->user->address_line_2) $addressParts[] = $order->user->address_line_2;
                             if($order->user->street) $addressParts[] = $order->user->street;
                             if($order->user->barangay) $addressParts[] = $order->user->barangay;
                             if($order->user->city) $addressParts[] = $order->user->city;
                             if($order->user->province) $addressParts[] = $order->user->province;
-                            if($order->user->state) $addressParts[] = $order->user->state;
-                            if($order->user->postal_code) $addressParts[] = $order->user->postal_code;
+                            if($order->user->region) $addressParts[] = $order->user->region;
                             if($order->user->zip_code) $addressParts[] = $order->user->zip_code;
-                            if($order->user->country) $addressParts[] = $order->user->country;
                             $fullAddress = implode(', ', $addressParts);
                         @endphp
                         <p>{{ $fullAddress ?: 'N/A' }}</p>

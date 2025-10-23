@@ -309,6 +309,11 @@
                                 No email available
                             @endif
                         </p>
+                        @if($order->user && $order->user->phone)
+                        <p class="text-sm text-gray-500">
+                            Phone: {{ $order->user->phone }}
+                        </p>
+                        @endif
                     </div>
                 </div>
                 
@@ -388,14 +393,33 @@
                 <div class="mb-6">
                     <h4 class="font-medium text-black dark:text-white mb-2">Billing Address</h4>
                     <div class="text-sm text-gray-600 dark:text-gray-400">
-                        @if($order->billing_address)
-                        <p>{{ $order->billing_address['name'] ?? '' }}</p>
-                        <p>{{ $order->billing_address['address_line_1'] ?? '' }}</p>
-                        @if(isset($order->billing_address['address_line_2']) && $order->billing_address['address_line_2'])
-                        <p>{{ $order->billing_address['address_line_2'] }}</p>
-                        @endif
-                        <p>{{ $order->billing_address['city'] ?? '' }}, {{ $order->billing_address['state'] ?? '' }} {{ $order->billing_address['postal_code'] ?? '' }}</p>
-                        <p>{{ $order->billing_address['country'] ?? '' }}</p>
+                        @if($order->billing_address && !empty($order->billing_address))
+                            <p>{{ $order->billing_address['name'] ?? '' }}</p>
+                            <p>{{ $order->billing_address['address_line_1'] ?? '' }}</p>
+                            @if(isset($order->billing_address['address_line_2']) && $order->billing_address['address_line_2'])
+                            <p>{{ $order->billing_address['address_line_2'] }}</p>
+                            @endif
+                            <p>{{ $order->billing_address['city'] ?? '' }}, {{ $order->billing_address['state'] ?? '' }} {{ $order->billing_address['postal_code'] ?? '' }}</p>
+                            <p>{{ $order->billing_address['country'] ?? '' }}</p>
+                        @elseif($order->user)
+                            @php
+                                // Philippine address format: street, barangay, city, province, region, zip_code
+                                $addressParts = [];
+                                if($order->user->street) $addressParts[] = $order->user->street;
+                                if($order->user->barangay) $addressParts[] = $order->user->barangay;
+                                if($order->user->city) $addressParts[] = $order->user->city;
+                                if($order->user->province) $addressParts[] = $order->user->province;
+                                if($order->user->region) $addressParts[] = $order->user->region;
+                                if($order->user->zip_code) $addressParts[] = $order->user->zip_code;
+                                $fullAddress = implode(', ', $addressParts);
+                            @endphp
+                            <p><strong>{{ $order->user->first_name }} {{ $order->user->last_name }}</strong></p>
+                            <p>{{ $fullAddress ?: 'N/A' }}</p>
+                            @if($order->user->phone)
+                            <p>Phone: {{ $order->user->phone }}</p>
+                            @endif
+                        @else
+                            <p>N/A</p>
                         @endif
                     </div>
                 </div>
@@ -404,14 +428,33 @@
                 <div>
                     <h4 class="font-medium text-black dark:text-white mb-2">Shipping Address</h4>
                     <div class="text-sm text-gray-600 dark:text-gray-400">
-                        @if($order->shipping_address)
-                        <p>{{ $order->shipping_address['name'] ?? '' }}</p>
-                        <p>{{ $order->shipping_address['address_line_1'] ?? '' }}</p>
-                        @if(isset($order->shipping_address['address_line_2']) && $order->shipping_address['address_line_2'])
-                        <p>{{ $order->shipping_address['address_line_2'] }}</p>
-                        @endif
-                        <p>{{ $order->shipping_address['city'] ?? '' }}, {{ $order->shipping_address['state'] ?? '' }} {{ $order->shipping_address['postal_code'] ?? '' }}</p>
-                        <p>{{ $order->shipping_address['country'] ?? '' }}</p>
+                        @if($order->shipping_address && !empty($order->shipping_address))
+                            <p>{{ $order->shipping_address['name'] ?? '' }}</p>
+                            <p>{{ $order->shipping_address['street'] ?? '' }}</p>
+                            @if($order->shipping_address['barangay'])
+                            <p>{{ $order->shipping_address['barangay'] }}</p>
+                            @endif
+                            <p>{{ $order->shipping_address['city'] ?? '' }}, {{ $order->shipping_address['province'] ?? '' }}</p>
+                            <p>{{ $order->shipping_address['region'] ?? '' }} {{ $order->shipping_address['zip_code'] ?? '' }}</p>
+                        @elseif($order->user)
+                            @php
+                                // Philippine address format: street, barangay, city, province, region, zip_code
+                                $addressParts = [];
+                                if($order->user->street) $addressParts[] = $order->user->street;
+                                if($order->user->barangay) $addressParts[] = $order->user->barangay;
+                                if($order->user->city) $addressParts[] = $order->user->city;
+                                if($order->user->province) $addressParts[] = $order->user->province;
+                                if($order->user->region) $addressParts[] = $order->user->region;
+                                if($order->user->zip_code) $addressParts[] = $order->user->zip_code;
+                                $fullAddress = implode(', ', $addressParts);
+                            @endphp
+                            <p><strong>{{ $order->user->first_name }} {{ $order->user->last_name }}</strong></p>
+                            <p>{{ $fullAddress ?: 'N/A' }}</p>
+                            @if($order->user->phone)
+                            <p>Phone: {{ $order->user->phone }}</p>
+                            @endif
+                        @else
+                            <p>N/A</p>
                         @endif
                     </div>
                 </div>
