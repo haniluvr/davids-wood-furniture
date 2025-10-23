@@ -80,7 +80,7 @@ jobs:
         APP_URL=${{ secrets.APP_URL }}
 
         DB_CONNECTION=mysql
-        DB_HOST=127.0.0.1
+        DB_HOST=localhost
         DB_PORT=3306
         DB_DATABASE=davids_wood
         DB_USERNAME=davidswood_user
@@ -226,14 +226,17 @@ jobs:
         echo "Database config:"
         sudo -u www-data php artisan tinker --execute="echo 'DB_HOST: ' . config('database.connections.mysql.host'); echo 'DB_DATABASE: ' . config('database.connections.mysql.database'); echo 'DB_USERNAME: ' . config('database.connections.mysql.username');"
         
-        echo "Testing MySQL connection directly..."
-        mysql -h 127.0.0.1 -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "SELECT 1;" || echo "Direct MySQL connection failed"
+        echo "Testing MySQL connection with localhost..."
+        mysql -h localhost -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "SELECT 1;" || echo "Direct MySQL connection with localhost failed"
         
-        echo "Checking if database exists..."
-        mysql -h 127.0.0.1 -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "SHOW DATABASES;" || echo "Cannot list databases"
+        echo "Testing MySQL connection with 127.0.0.1..."
+        mysql -h 127.0.0.1 -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "SELECT 1;" || echo "Direct MySQL connection with 127.0.0.1 failed"
         
-        echo "Checking if user can access the specific database..."
-        mysql -h 127.0.0.1 -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "USE davids_wood; SHOW TABLES;" || echo "Cannot access davids_wood database"
+        echo "Checking if database exists with localhost..."
+        mysql -h localhost -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "SHOW DATABASES;" || echo "Cannot list databases with localhost"
+        
+        echo "Checking if user can access the specific database with localhost..."
+        mysql -h localhost -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "USE davids_wood; SHOW TABLES;" || echo "Cannot access davids_wood database with localhost"
         
         echo "Testing Laravel database connection..."
         sudo -u www-data php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection successful';" || echo "Database connection failed, but continuing..."
