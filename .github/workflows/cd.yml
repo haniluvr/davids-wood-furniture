@@ -405,31 +405,15 @@ jobs:
         php -v || echo "PHP version check failed"
         php -m | grep -i mysql || echo "MySQL extension not found"
         
-        # Check if we need to configure Apache virtual host for Laravel
-        echo "Checking if Apache virtual host is configured..."
-        if [ ! -f /etc/apache2/sites-available/davids-wood-furniture.conf ]; then
-          echo "Creating Apache virtual host configuration..."
-          sudo tee /etc/apache2/sites-available/davids-wood-furniture.conf > /dev/null << 'APACHE_EOF'
-<VirtualHost *:80>
-    ServerName davidswood.shop
-    ServerAlias www.davidswood.shop admin.davidswood.shop
-    DocumentRoot /var/www/html/davids-wood-furniture/public
-    
-    <Directory /var/www/html/davids-wood-furniture/public>
-        AllowOverride All
-        Require all granted
-    </Directory>
-    
-    ErrorLog ${APACHE_LOG_DIR}/davids-wood-furniture_error.log
-    CustomLog ${APACHE_LOG_DIR}/davids-wood-furniture_access.log combined
-</VirtualHost>
-APACHE_EOF
-          sudo a2ensite davids-wood-furniture.conf || echo "Site enable failed"
-          sudo a2enmod rewrite || echo "Rewrite module enable failed"
-          sudo systemctl reload apache2 || echo "Apache reload failed"
-        else
-          echo "Apache virtual host already configured"
-        fi
+        # Check Apache document root and ensure it points to Laravel public directory
+        echo "Checking Apache document root..."
+        sudo grep -r "DocumentRoot" /etc/apache2/ || echo "No DocumentRoot found"
+        
+        # Ensure Apache is serving from the correct directory
+        echo "Setting Apache document root to Laravel public directory..."
+        sudo sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/davids-wood-furniture/public|g' /etc/apache2/sites-available/000-default.conf || echo "DocumentRoot update failed"
+        sudo a2enmod rewrite || echo "Rewrite module enable failed"
+        sudo systemctl reload apache2 || echo "Apache reload failed"
         
         # Check Laravel logs for errors
         echo "Checking Laravel logs for errors..."
