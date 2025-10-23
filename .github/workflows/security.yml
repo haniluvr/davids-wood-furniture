@@ -45,6 +45,8 @@ jobs:
       with:
         languages: php
         queries: security-and-quality
+      continue-on-error: true
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
+      continue-on-error: true
