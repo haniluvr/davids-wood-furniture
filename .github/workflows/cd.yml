@@ -368,13 +368,34 @@ jobs:
         sudo -u www-data php artisan view:cache || echo "View cache failed, but continuing..."
         sudo -u www-data php artisan queue:restart || echo "Queue restart failed, but continuing..."
         
-        # Start Apache
-        echo "Starting Apache..."
-        sudo systemctl start apache2
+        # Restart all web services to ensure fresh configuration
+        echo "Restarting web services..."
+        sudo systemctl restart apache2 || echo "Apache restart failed, but continuing..."
+        sudo systemctl restart php8.1-fpm || echo "PHP-FPM restart failed, but continuing..."
+        sudo systemctl restart mysql || echo "MySQL restart failed, but continuing..."
         
-        # Test deployment
+        # Final Laravel cache clear after service restart
+        echo "Final Laravel cache clear..."
+        sudo -u www-data php artisan config:clear || echo "Final config clear failed, but continuing..."
+        sudo -u www-data php artisan cache:clear || echo "Final cache clear failed, but continuing..."
+        sudo -u www-data php artisan view:clear || echo "Final view clear failed, but continuing..."
+        
+        # Test deployment and check website
         echo "Testing deployment..."
         sleep 5
+        
+        # Check if the main website is working
+        echo "Checking main website..."
+        curl -I "http://localhost" || echo "Main website check failed"
+        
+        # Check Laravel logs for errors
+        echo "Checking Laravel logs for errors..."
+        sudo tail -20 /var/www/html/davids-wood-furniture/storage/logs/laravel.log || echo "No Laravel logs found"
+        
+        # Check Apache error logs
+        echo "Checking Apache error logs..."
+        sudo tail -10 /var/log/apache2/error.log || echo "No Apache error logs found"
+        
         if curl -f "http://localhost/health" >/dev/null 2>&1; then
           echo "✅ Health check passed"
         else
