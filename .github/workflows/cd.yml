@@ -216,10 +216,24 @@ jobs:
         echo "Current .env file database settings:"
         grep "DB_" .env || echo "No DB_ settings found in .env"
         
-        # Fix file permissions for Laravel
-        echo "Fixing Laravel file permissions..."
-        sudo chown -R www-data:www-data /var/www/.config || echo "Config directory fix attempted"
+        # Create and fix file permissions for Laravel
+        echo "Creating and fixing Laravel file permissions..."
+        sudo mkdir -p /var/www/.config/psysh || echo "Config directory creation attempted"
+        sudo chown -R www-data:www-data /var/www/.config || echo "Config directory ownership fix attempted"
         sudo chmod -R 755 /var/www/.config || echo "Config permissions fix attempted"
+        
+        # Also create Laravel storage directories
+        sudo mkdir -p /var/www/html/davids-wood-furniture/storage/logs || echo "Storage logs directory creation attempted"
+        sudo mkdir -p /var/www/html/davids-wood-furniture/storage/framework/cache || echo "Cache directory creation attempted"
+        sudo mkdir -p /var/www/html/davids-wood-furniture/storage/framework/sessions || echo "Sessions directory creation attempted"
+        sudo mkdir -p /var/www/html/davids-wood-furniture/storage/framework/views || echo "Views directory creation attempted"
+        sudo chown -R www-data:www-data /var/www/html/davids-wood-furniture/storage || echo "Storage ownership fix attempted"
+        sudo chmod -R 775 /var/www/html/davids-wood-furniture/storage || echo "Storage permissions fix attempted"
+        
+        # Fix application directory permissions
+        echo "Fixing application directory permissions..."
+        sudo chown -R www-data:www-data /var/www/html/davids-wood-furniture || echo "Application ownership fix attempted"
+        sudo chmod -R 755 /var/www/html/davids-wood-furniture || echo "Application permissions fix attempted"
         
         # Check database connection before running Laravel commands
         echo "Checking database connection..."
