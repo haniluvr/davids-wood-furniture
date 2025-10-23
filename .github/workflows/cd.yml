@@ -126,95 +126,95 @@ jobs:
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
           -o ConnectTimeout=15 -o ServerAliveInterval=5 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'EC2 connection successful'"
         
-        # Create target directory and copy files in one go
-        echo "Creating directory and copying files..."
-        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          -o ConnectTimeout=15 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p /tmp/davids-wood-furniture-deploy"
-        
-        # Copy source code and essential assets (exclude heavy directories)
-        echo "Copying source code to EC2..."
-        echo "Current directory contents before rsync:"
-        ls -la . | head -10
-        
-        rsync -avz --progress \
-          --exclude='node_modules' \
-          --exclude='vendor' \
-          --exclude='.git' \
-          --exclude='storage/logs' \
-          --exclude='storage/framework/cache' \
-          --exclude='storage/framework/sessions' \
-          --exclude='storage/framework/views' \
-          --exclude='database/*.sqlite' \
-          --exclude='database/*.sql' \
-          --exclude='public/build' \
-          --include='public/admin/**' \
-          --include='database/migrations/**' \
-          --include='database/seeders/**' \
-          --include='database/factories/**' \
-          -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem -o ConnectTimeout=15" \
-          ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/davids-wood-furniture-deploy/
-        
-        echo "Rsync completed. Checking if files were transferred..."
-        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          -o ConnectTimeout=15 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "ls -la /tmp/davids-wood-furniture-deploy/ | head -10"
+        # Deploy files using automated rsync action
+        - name: Deploy with rsync
+          uses: burnett01/rsync-deployments@v3.0.0
+          with:
+            switches: -avz --delete
+            path: ./
+            remote_path: /var/www/html/davids-wood-furniture/
+            remote_host: ${{ secrets.EC2_HOST }}
+            remote_user: ${{ secrets.EC2_USER }}
+            remote_key: ${{ secrets.EC2_SSH_KEY }}
+            exclude: |
+              .git
+              .github
+              node_modules
+              vendor
+              .env
+              .env.local
+              .env.example
+              storage/logs/*.log
+              storage/framework/cache/*
+              storage/framework/sessions/*
+              storage/framework/views/*
+              database/*.sqlite
+              database/*.sql
+              public/build
+              *.log
+              npm-debug.log
+              yarn-debug.log
+              .DS_Store
+              README.md
 
-        # Execute deployment on EC2
-        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'DEPLOY_EOF'
-        #!/bin/bash
-        set -e
+        # Set proper permissions after rsync deployment
+        - name: Set file permissions
+          run: |
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'PERMISSIONS_EOF'
+            #!/bin/bash
+            set -e
+            
+            echo "🚀 Setting file permissions on EC2..."
+            
+            APP_DIR="/var/www/html/davids-wood-furniture"
+            
+            # Set proper ownership and permissions
+            echo "Setting file permissions..."
+            sudo chown -R www-data:www-data "$APP_DIR"
+            sudo chmod -R 755 "$APP_DIR"
+            sudo chmod -R 775 "$APP_DIR/storage"
+            sudo chmod -R 775 "$APP_DIR/bootstrap/cache"
+            
+            # Create missing Laravel storage directories
+            echo "Creating missing Laravel storage directories..."
+            sudo mkdir -p "$APP_DIR/storage/logs" || echo "Storage logs directory creation failed"
+            sudo mkdir -p "$APP_DIR/storage/framework/cache" || echo "Storage cache directory creation failed"
+            sudo mkdir -p "$APP_DIR/storage/framework/sessions" || echo "Storage sessions directory creation failed"
+            sudo mkdir -p "$APP_DIR/storage/framework/views" || echo "Storage views directory creation failed"
+            sudo mkdir -p "$APP_DIR/storage/app" || echo "Storage app directory creation failed"
+            sudo mkdir -p "$APP_DIR/bootstrap/cache" || echo "Bootstrap cache directory creation failed"
+            
+            # Set permissions for storage directories
+            sudo chown -R www-data:www-data "$APP_DIR/storage" || echo "Storage ownership fix failed"
+            sudo chown -R www-data:www-data "$APP_DIR/bootstrap/cache" || echo "Bootstrap cache ownership fix failed"
+            sudo chmod -R 775 "$APP_DIR/storage" || echo "Storage permissions fix failed"
+            sudo chmod -R 775 "$APP_DIR/bootstrap/cache" || echo "Bootstrap cache permissions fix failed"
+            
+            echo "✅ File permissions set successfully"
+            PERMISSIONS_EOF
         
-        echo "🚀 Starting deployment on EC2..."
-        
-        APP_DIR="/var/www/html/davids-wood-furniture"
-        DEPLOY_DIR="/tmp/davids-wood-furniture-deploy"
-        
-        # Create backup
-        echo "Creating backup..."
-        if [ -d "$APP_DIR" ]; then
-          sudo cp -r "$APP_DIR" "${APP_DIR}_backup_$(date +%Y%m%d_%H%M%S)"
-        fi
-        
-        # Stop Apache temporarily
-        echo "Stopping Apache..."
-        sudo systemctl stop apache2
-        
-        # Check if files were copied to /tmp
-        echo "Checking if files were copied to /tmp..."
-        ls -la "$DEPLOY_DIR" || echo "No files found in /tmp/davids-wood-furniture-deploy"
-        echo "File count in /tmp:"
-        find "$DEPLOY_DIR" -type f | wc -l || echo "Could not count files"
-        
-        # Update application files
-        echo "Updating application files..."
-        sudo rm -rf "$APP_DIR"
-        sudo mv "$DEPLOY_DIR" "$APP_DIR"
-        
-        # Verify files were moved
-        echo "Verifying files were moved to application directory..."
-        ls -la "$APP_DIR" || echo "Application directory is empty after move"
-        
-        # Set proper ownership and permissions
-        echo "Setting file permissions..."
-        sudo chown -R www-data:www-data "$APP_DIR"
-        sudo chmod -R 755 "$APP_DIR"
-        sudo chmod -R 775 "$APP_DIR/storage"
-        sudo chmod -R 775 "$APP_DIR/bootstrap/cache"
-        
-        # Ensure composer can write to the directory
-        echo "Setting up composer permissions..."
-        sudo chmod -R 775 "$APP_DIR"
-        sudo chown -R www-data:www-data "$APP_DIR"
-        
-        # Install PHP dependencies
-        echo "Installing PHP dependencies..."
-        cd "$APP_DIR"
-        sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
-        
-        # Fix npm permissions and create clean environment
-        echo "Setting up npm environment..."
-        sudo rm -rf /var/www/.npm /var/www/.npmrc /tmp/.npm
-        sudo mkdir -p /tmp/.npm
+        # Install dependencies and run Laravel setup
+        - name: Install dependencies and setup Laravel
+          run: |
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'SETUP_EOF'
+            #!/bin/bash
+            set -e
+            
+            echo "🚀 Installing dependencies and setting up Laravel..."
+            
+            APP_DIR="/var/www/html/davids-wood-furniture"
+            cd "$APP_DIR"
+            
+            # Install PHP dependencies
+            echo "Installing PHP dependencies..."
+            sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
+            
+            # Fix npm permissions and create clean environment
+            echo "Setting up npm environment..."
+            sudo rm -rf /var/www/.npm /var/www/.npmrc /tmp/.npm
+            sudo mkdir -p /tmp/.npm
         sudo chown -R www-data:www-data /tmp/.npm
         
         # Set npm environment variables for www-data
