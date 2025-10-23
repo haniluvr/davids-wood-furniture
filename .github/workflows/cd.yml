@@ -311,12 +311,34 @@ jobs:
         echo 'DB_CONNECTION: ' . config('database.default');
         "
         
-        # Clear ALL Laravel caches first to ensure fresh configuration
-        echo "Clearing all Laravel caches..."
+        # Force complete configuration reset
+        echo "Forcing complete configuration reset..."
+        
+        # Remove all cached configuration files
+        sudo rm -rf /var/www/html/davids-wood-furniture/bootstrap/cache/config.php || echo "Config cache removal attempted"
+        sudo rm -rf /var/www/html/davids-wood-furniture/storage/framework/cache/data/* || echo "Cache data removal attempted"
+        sudo rm -rf /var/www/html/davids-wood-furniture/storage/framework/views/* || echo "View cache removal attempted"
+        
+        # Clear ALL Laravel caches
         sudo -u www-data php artisan config:clear || echo "Config clear failed, but continuing..."
         sudo -u www-data php artisan route:clear || echo "Route clear failed, but continuing..."
         sudo -u www-data php artisan view:clear || echo "View clear failed, but continuing..."
         sudo -u www-data php artisan cache:clear || echo "Cache clear failed, but continuing..."
+        
+        # Force reload .env file
+        echo "Forcing .env file reload..."
+        sudo -u www-data php artisan config:cache || echo "Config cache failed, but continuing..."
+        
+        # Verify the configuration is actually using localhost
+        echo "Verifying Laravel is using localhost for database..."
+        sudo -u www-data php artisan tinker --execute="
+        echo 'Final DB_HOST check: ' . config('database.connections.mysql.host');
+        if (config('database.connections.mysql.host') === 'localhost') {
+            echo 'SUCCESS: Laravel is using localhost';
+        } else {
+            echo 'ERROR: Laravel is still using: ' . config('database.connections.mysql.host');
+        }
+        "
         
         # Run Laravel commands with error handling
         echo "Running Laravel commands..."
