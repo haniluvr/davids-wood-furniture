@@ -126,30 +126,9 @@ jobs:
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
           -o ConnectTimeout=15 -o ServerAliveInterval=5 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'EC2 connection successful'"
         
-        # Create target directory and copy files in one go
-        echo "Creating directory and copying files..."
-        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          -o ConnectTimeout=15 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p /tmp/davids-wood-furniture-deploy"
-        
-        # Copy source code and essential assets (exclude heavy directories)
-        echo "Copying source code to EC2..."
-        rsync -avz --progress \
-          --exclude='node_modules' \
-          --exclude='vendor' \
-          --exclude='.git' \
-          --exclude='storage/logs' \
-          --exclude='storage/framework/cache' \
-          --exclude='storage/framework/sessions' \
-          --exclude='storage/framework/views' \
-          --exclude='database/*.sqlite' \
-          --exclude='database/*.sql' \
-          --exclude='public/build' \
-          --include='public/admin/**' \
-          --include='database/migrations/**' \
-          --include='database/seeders/**' \
-          --include='database/factories/**' \
-          -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem -o ConnectTimeout=15" \
-          ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/davids-wood-furniture-deploy/
+        # Prepare for Git-based deployment
+        echo "Preparing for Git-based deployment..."
+        echo "Repository: https://github.com/${{ github.repository }}.git"
 
         # Execute deployment on EC2
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
@@ -172,16 +151,35 @@ jobs:
         echo "Stopping Apache..."
         sudo systemctl stop apache2
         
-        # Check if files were copied to /tmp
-        echo "Checking if files were copied to /tmp..."
-        ls -la "$DEPLOY_DIR" || echo "No files found in /tmp/davids-wood-furniture-deploy"
-        echo "File count in /tmp:"
-        find "$DEPLOY_DIR" -type f | wc -l || echo "Could not count files"
+        # Clean up old deployment directory
+        echo "Cleaning up old deployment directory..."
+        sudo rm -rf "$DEPLOY_DIR" || echo "No old deployment directory to clean"
         
-        # Update application files
-        echo "Updating application files..."
-        sudo rm -rf "$APP_DIR"
-        sudo mv "$DEPLOY_DIR" "$APP_DIR"
+        # Update application files using Git
+        echo "Updating application files using Git..."
+        
+        # If the app directory doesn't exist, clone the repository
+        if [ ! -d "$APP_DIR" ]; then
+          echo "Cloning repository for the first time..."
+          sudo git clone https://github.com/${{ github.repository }}.git "$APP_DIR"
+          sudo chown -R www-data:www-data "$APP_DIR"
+        fi
+        
+        # Navigate to app directory and update from Git
+        cd "$APP_DIR"
+        sudo -u www-data git fetch origin
+        sudo -u www-data git reset --hard origin/main
+        sudo -u www-data git clean -fd
+        
+        # Install/update dependencies
+        echo "Installing PHP dependencies..."
+        sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
+        
+        echo "Installing Node dependencies..."
+        sudo -u www-data npm ci --production
+        
+        echo "Building frontend assets..."
+        sudo -u www-data npm run build
         
         # Verify files were moved
         echo "Verifying files were moved to application directory..."
