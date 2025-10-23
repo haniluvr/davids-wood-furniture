@@ -177,32 +177,37 @@ jobs:
         sudo rm -rf "$APP_DIR"
         sudo mv "$DEPLOY_DIR" "$APP_DIR"
         
-        # Set proper ownership
+        # Set proper ownership and permissions
         echo "Setting file permissions..."
         sudo chown -R www-data:www-data "$APP_DIR"
         sudo chmod -R 755 "$APP_DIR"
         sudo chmod -R 775 "$APP_DIR/storage"
         sudo chmod -R 775 "$APP_DIR/bootstrap/cache"
         
+        # Ensure composer can write to the directory
+        echo "Setting up composer permissions..."
+        sudo chmod -R 775 "$APP_DIR"
+        sudo chown -R www-data:www-data "$APP_DIR"
+        
         # Install PHP dependencies
         echo "Installing PHP dependencies..."
         cd "$APP_DIR"
-        composer install --no-dev --optimize-autoloader --no-interaction
+        sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
         
         # Install Node dependencies and build assets
         echo "Installing Node dependencies..."
-        npm ci --production
+        sudo -u www-data npm ci --production
         
         echo "Building frontend assets..."
-        npm run build
+        sudo -u www-data npm run build
         
         # Run Laravel commands
         echo "Running Laravel commands..."
-        php artisan migrate --force
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
-        php artisan queue:restart
+        sudo -u www-data php artisan migrate --force
+        sudo -u www-data php artisan config:cache
+        sudo -u www-data php artisan route:cache
+        sudo -u www-data php artisan view:cache
+        sudo -u www-data php artisan queue:restart
         
         # Start Apache
         echo "Starting Apache..."
