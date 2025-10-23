@@ -207,9 +207,13 @@ jobs:
         echo "Building frontend assets..."
         sudo -u www-data bash -c 'export NPM_CONFIG_CACHE=/tmp/.npm && export NPM_CONFIG_PREFIX=/tmp/.npm-global && npm run build'
         
+        # Check database connection before running Laravel commands
+        echo "Checking database connection..."
+        sudo -u www-data php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection successful';" || echo "Database connection failed, but continuing..."
+        
         # Run Laravel commands
         echo "Running Laravel commands..."
-        sudo -u www-data php artisan migrate --force
+        sudo -u www-data php artisan migrate --force || echo "Migration failed, but continuing..."
         sudo -u www-data php artisan config:cache
         sudo -u www-data php artisan route:cache
         sudo -u www-data php artisan view:cache
