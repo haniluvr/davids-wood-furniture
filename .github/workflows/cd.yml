@@ -116,8 +116,16 @@ jobs:
 
         # Test EC2 connection first
         echo "Testing EC2 connection..."
+        echo "EC2 Host: ${{ secrets.EC2_HOST }}"
+        echo "EC2 User: ${{ secrets.EC2_USER }}"
+        echo "Testing connectivity..."
+        
+        # Test basic connectivity first
+        ping -c 3 ${{ secrets.EC2_HOST }} || echo "Ping failed, but continuing..."
+        
+        # Test SSH connection
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          -o ConnectTimeout=30 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'EC2 connection successful'"
+          -o ConnectTimeout=30 -o ServerAliveInterval=10 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'EC2 connection successful'"
         
         # Copy files to EC2
         echo "Copying files to EC2..."

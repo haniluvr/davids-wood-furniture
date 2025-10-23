@@ -108,9 +108,9 @@ class NotificationController extends Controller
             ->orWhere('recipient_type', 'all')
             ->where('status', 'sent')
             ->update([
-            'status' => 'read',
-            'read_at' => now(),
-        ]);
+                'status' => 'read',
+                'read_at' => now(),
+            ]);
 
         return response()->json([
             'success' => true,
