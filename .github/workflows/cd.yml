@@ -195,8 +195,8 @@ jobs:
         sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
         
         # Install Node dependencies and build assets
-        echo "Installing Node dependencies..."
-        sudo -u www-data npm ci --production
+        echo "Installing Node dependencies (including dev dependencies for build)..."
+        sudo -u www-data npm ci
         
         echo "Building frontend assets..."
         sudo -u www-data npm run build
