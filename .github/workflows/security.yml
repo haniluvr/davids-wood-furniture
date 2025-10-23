@@ -3,10 +3,6 @@ name: Security Scan
 on:
   schedule:
     - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   security:
