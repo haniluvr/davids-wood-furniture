@@ -301,12 +301,29 @@ jobs:
         echo "Testing Laravel database connection..."
         sudo -u www-data php artisan tinker --execute="DB::connection()->getPdo(); echo 'Database connection successful';" || echo "Database connection failed, but continuing..."
         
+        # Additional database debugging
+        echo "Checking Laravel database configuration in detail..."
+        sudo -u www-data php artisan tinker --execute="
+        echo 'DB_HOST: ' . config('database.connections.mysql.host');
+        echo 'DB_DATABASE: ' . config('database.connections.mysql.database');
+        echo 'DB_USERNAME: ' . config('database.connections.mysql.username');
+        echo 'DB_PORT: ' . config('database.connections.mysql.port');
+        echo 'DB_CONNECTION: ' . config('database.default');
+        "
+        
+        # Clear ALL Laravel caches first to ensure fresh configuration
+        echo "Clearing all Laravel caches..."
+        sudo -u www-data php artisan config:clear || echo "Config clear failed, but continuing..."
+        sudo -u www-data php artisan route:clear || echo "Route clear failed, but continuing..."
+        sudo -u www-data php artisan view:clear || echo "View clear failed, but continuing..."
+        sudo -u www-data php artisan cache:clear || echo "Cache clear failed, but continuing..."
+        
         # Run Laravel commands with error handling
         echo "Running Laravel commands..."
         sudo -u www-data php artisan migrate --force || echo "Migration failed, but continuing..."
         sudo -u www-data php artisan config:cache || echo "Config cache failed, but continuing..."
-        sudo -u www-data php artisan route:clear || echo "Route clear failed, but continuing..."
-        sudo -u www-data php artisan route:cache || echo "Route cache failed, but continuing..."
+        # Skip route:cache for now due to subdomain route conflicts
+        echo "Skipping route:cache due to subdomain route conflicts..."
         sudo -u www-data php artisan view:cache || echo "View cache failed, but continuing..."
         sudo -u www-data php artisan queue:restart || echo "Queue restart failed, but continuing..."
         
