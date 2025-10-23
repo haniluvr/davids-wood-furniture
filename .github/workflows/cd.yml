@@ -69,6 +69,7 @@ jobs:
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts || echo "Warning: Could not add host to known_hosts"
 
     - name: Deploy to EC2
+      timeout-minutes: 10
       run: |
         # Create .env file from secrets
         cat > .env << 'EOF'
@@ -120,22 +121,20 @@ jobs:
         echo "EC2 User: ${{ secrets.EC2_USER }}"
         echo "Testing connectivity..."
         
-        # Test basic connectivity first
-        ping -c 3 ${{ secrets.EC2_HOST }} || echo "Ping failed, but continuing..."
-        
-        # Test SSH connection
+        # Test SSH connection (skip ping as it's often blocked)
+        echo "Testing SSH connection..."
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          -o ConnectTimeout=30 -o ServerAliveInterval=10 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'EC2 connection successful'"
+          -o ConnectTimeout=15 -o ServerAliveInterval=5 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'EC2 connection successful'"
         
-        # Create target directory on EC2
-        echo "Creating target directory on EC2..."
+        # Create target directory and copy files in one go
+        echo "Creating directory and copying files..."
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          -o ConnectTimeout=30 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p /tmp/davids-wood-furniture-deploy"
+          -o ConnectTimeout=15 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p /tmp/davids-wood-furniture-deploy"
         
-        # Copy files to EC2
+        # Copy files with compression and faster settings
         echo "Copying files to EC2..."
         scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          -o ConnectTimeout=30 -r . ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/davids-wood-furniture-deploy/
+          -o ConnectTimeout=15 -C -r . ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/davids-wood-furniture-deploy/
 
         # Execute deployment on EC2
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
