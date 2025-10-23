@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\CartItem;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\User;
@@ -63,6 +62,7 @@ class SafeRealisticDataSeeder extends Seeder
 
         if ($usersToCreate <= 0) {
             $this->command->info('✅ Sufficient users already exist, skipping user generation');
+
             return;
         }
 
@@ -102,6 +102,7 @@ class SafeRealisticDataSeeder extends Seeder
 
         if (! Schema::hasTable('cart_items')) {
             $this->command->warn('⚠️ Cart items table does not exist, skipping cart generation');
+
             return;
         }
 
@@ -110,6 +111,7 @@ class SafeRealisticDataSeeder extends Seeder
 
         if ($products->isEmpty()) {
             $this->command->warn('⚠️ No products found for cart generation');
+
             return;
         }
 
@@ -129,7 +131,7 @@ class SafeRealisticDataSeeder extends Seeder
                     ->where('product_id', $product->id)
                     ->first();
 
-                if (!$existingCartItem) {
+                if (! $existingCartItem) {
                     $quantity = rand(1, 3);
                     $unitPrice = $product->sale_price ?? $product->price;
                     $totalPrice = $unitPrice * $quantity;
@@ -166,6 +168,7 @@ class SafeRealisticDataSeeder extends Seeder
 
         if (! Schema::hasTable('wishlist_items')) {
             $this->command->warn('⚠️ Wishlist items table does not exist, skipping wishlist generation');
+
             return;
         }
 
@@ -174,6 +177,7 @@ class SafeRealisticDataSeeder extends Seeder
 
         if ($products->isEmpty()) {
             $this->command->warn('⚠️ No products found for wishlist generation');
+
             return;
         }
 
@@ -193,7 +197,7 @@ class SafeRealisticDataSeeder extends Seeder
                     ->where('product_id', $product->id)
                     ->first();
 
-                if (!$existingWishlistItem) {
+                if (! $existingWishlistItem) {
                     WishlistItem::create([
                         'user_id' => $user->id,
                         'session_id' => null,
@@ -218,6 +222,7 @@ class SafeRealisticDataSeeder extends Seeder
 
         if ($users->isEmpty() || $products->isEmpty()) {
             $this->command->warn('⚠️ No users or products found for order generation');
+
             return;
         }
 
@@ -226,6 +231,7 @@ class SafeRealisticDataSeeder extends Seeder
 
         if ($ordersToCreate <= 0) {
             $this->command->info('✅ Sufficient orders already exist, skipping order generation');
+
             return;
         }
 
@@ -367,6 +373,7 @@ class SafeRealisticDataSeeder extends Seeder
 
         if ($deliveredOrders->isEmpty()) {
             $this->command->warn('⚠️ No delivered orders found for review generation');
+
             return;
         }
 
@@ -395,7 +402,7 @@ class SafeRealisticDataSeeder extends Seeder
                     ->where('order_id', $order->id)
                     ->first();
 
-                if (!$existingReview && fake()->boolean(70)) {
+                if (! $existingReview && fake()->boolean(70)) {
                     $rating = fake()->numberBetween(3, 5);
                     $reviewText = fake()->randomElement($reviewTemplates);
 

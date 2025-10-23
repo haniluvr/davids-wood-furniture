@@ -17,7 +17,7 @@ class ExampleTest extends TestCase
         $response->assertStatus(200);
         $response->assertJson([
             'status' => 'ok',
-            'message' => 'Laravel route is working'
+            'message' => 'Laravel route is working',
         ]);
     }
 
@@ -30,7 +30,7 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson([
-            'status' => 'ok'
+            'status' => 'ok',
         ]);
     }
 }

@@ -134,7 +134,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
         // Cart Items
         Schema::create('cart_items', function (Blueprint $table) {
             $table->id();

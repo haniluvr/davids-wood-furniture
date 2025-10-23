@@ -1,4 +1,4 @@
-# David's Wood Furniture - S3 Storage Enabled - E-Commerce Platform
+# David's Wood Furniture - S3 Storage Enabled - E-Commerce Platform 🚀
 
 <p align="center">
   <img src="https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12.0">

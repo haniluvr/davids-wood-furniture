@@ -1,4 +1,5 @@
 <?php
+
 // Simple test endpoint
 header('Content-Type: text/html');
 
@@ -17,11 +18,11 @@ echo "<!DOCTYPE html>
 <body>
     <div class='container'>
         <h1 class='success'>✅ Application is Running!</h1>
-        <p><strong>Server Time:</strong> " . date('Y-m-d H:i:s') . "</p>
-        <p><strong>PHP Version:</strong> " . PHP_VERSION . "</p>
-        <p><strong>Server Software:</strong> " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown') . "</p>
-        <p><strong>Document Root:</strong> " . ($_SERVER['DOCUMENT_ROOT'] ?? 'Unknown') . "</p>
-        <p><strong>Request URI:</strong> " . ($_SERVER['REQUEST_URI'] ?? 'Unknown') . "</p>
+        <p><strong>Server Time:</strong> ".date('Y-m-d H:i:s').'</p>
+        <p><strong>PHP Version:</strong> '.PHP_VERSION.'</p>
+        <p><strong>Server Software:</strong> '.($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown').'</p>
+        <p><strong>Document Root:</strong> '.($_SERVER['DOCUMENT_ROOT'] ?? 'Unknown').'</p>
+        <p><strong>Request URI:</strong> '.($_SERVER['REQUEST_URI'] ?? 'Unknown')."</p>
         
         <h2>Quick Links:</h2>
         <ul>
@@ -31,10 +32,9 @@ echo "<!DOCTYPE html>
         </ul>
         
         <h2>Environment:</h2>
-        <p><strong>APP_ENV:</strong> " . ($_ENV['APP_ENV'] ?? 'not set') . "</p>
-        <p><strong>PORT:</strong> " . ($_ENV['PORT'] ?? 'not set') . "</p>
-        <p><strong>DB_CONNECTION:</strong> " . ($_ENV['DB_CONNECTION'] ?? 'not set') . "</p>
+        <p><strong>APP_ENV:</strong> ".($_ENV['APP_ENV'] ?? 'not set').'</p>
+        <p><strong>PORT:</strong> '.($_ENV['PORT'] ?? 'not set').'</p>
+        <p><strong>DB_CONNECTION:</strong> '.($_ENV['DB_CONNECTION'] ?? 'not set').'</p>
     </div>
 </body>
-</html>";
-?>
+</html>';

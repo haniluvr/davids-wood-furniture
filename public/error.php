@@ -34,7 +34,7 @@ $error = [
 try {
     if (file_exists(__DIR__.'/../.env')) {
         $env_content = file_get_contents(__DIR__.'/../.env');
-        $error['env_sample'] = substr($env_content, 0, 200) . '...';
+        $error['env_sample'] = substr($env_content, 0, 200).'...';
     }
 } catch (Exception $e) {
     $error['env_error'] = $e->getMessage();

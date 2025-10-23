@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class RealisticDataSeeder extends Seeder
 {
@@ -29,14 +27,14 @@ class RealisticDataSeeder extends Seeder
                 'session_id' => 'session_123',
                 'expires_at' => now()->addDays(30),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'user_id' => null, // Guest cart
                 'session_id' => 'session_456',
                 'expires_at' => now()->addDays(30),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -48,7 +46,7 @@ class RealisticDataSeeder extends Seeder
                 'quantity' => 2,
                 'price' => 22067.00,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'cart_id' => 1,
@@ -56,7 +54,7 @@ class RealisticDataSeeder extends Seeder
                 'quantity' => 1,
                 'price' => 12269.00,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'cart_id' => 2,
@@ -64,7 +62,7 @@ class RealisticDataSeeder extends Seeder
                 'quantity' => 2,
                 'price' => 7198.00,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -74,13 +72,13 @@ class RealisticDataSeeder extends Seeder
                 'user_id' => null, // Guest wishlist
                 'session_id' => 'wishlist_session_123',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'user_id' => null, // Guest wishlist
                 'session_id' => 'wishlist_session_456',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -90,19 +88,19 @@ class RealisticDataSeeder extends Seeder
                 'wishlist_id' => 1,
                 'product_id' => 1,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'wishlist_id' => 1,
                 'product_id' => 2,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'wishlist_id' => 2,
                 'product_id' => 3,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -125,7 +123,7 @@ class RealisticDataSeeder extends Seeder
                     'city' => 'Manila',
                     'province' => 'Metro Manila',
                     'region' => 'NCR',
-                    'zip_code' => '1000'
+                    'zip_code' => '1000',
                 ]),
                 'billing_address' => json_encode([
                     'first_name' => 'John',
@@ -135,11 +133,11 @@ class RealisticDataSeeder extends Seeder
                     'city' => 'Manila',
                     'province' => 'Metro Manila',
                     'region' => 'NCR',
-                    'zip_code' => '1000'
+                    'zip_code' => '1000',
                 ]),
                 'notes' => 'Please deliver during business hours',
                 'created_at' => now()->subDays(5),
-                'updated_at' => now()->subDays(1)
+                'updated_at' => now()->subDays(1),
             ],
             [
                 'user_id' => null, // Guest order
@@ -158,7 +156,7 @@ class RealisticDataSeeder extends Seeder
                     'city' => 'Quezon City',
                     'province' => 'Metro Manila',
                     'region' => 'NCR',
-                    'zip_code' => '1100'
+                    'zip_code' => '1100',
                 ]),
                 'billing_address' => json_encode([
                     'first_name' => 'Jane',
@@ -168,11 +166,11 @@ class RealisticDataSeeder extends Seeder
                     'city' => 'Quezon City',
                     'province' => 'Metro Manila',
                     'region' => 'NCR',
-                    'zip_code' => '1100'
+                    'zip_code' => '1100',
                 ]),
                 'notes' => 'Gift wrapping requested',
                 'created_at' => now()->subDays(2),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -184,7 +182,7 @@ class RealisticDataSeeder extends Seeder
                 'quantity' => 2,
                 'price' => 21072.00,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'order_id' => 1,
@@ -192,7 +190,7 @@ class RealisticDataSeeder extends Seeder
                 'quantity' => 1,
                 'price' => 18063.00,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'order_id' => 2,
@@ -200,7 +198,7 @@ class RealisticDataSeeder extends Seeder
                 'quantity' => 3,
                 'price' => 15000.00,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -213,7 +211,7 @@ class RealisticDataSeeder extends Seeder
                 'metadata' => json_encode(['source' => 'website']),
                 'performed_by' => null,
                 'created_at' => now()->subDays(5),
-                'updated_at' => now()->subDays(5)
+                'updated_at' => now()->subDays(5),
             ],
             [
                 'order_id' => 1,
@@ -222,7 +220,7 @@ class RealisticDataSeeder extends Seeder
                 'metadata' => json_encode(['payment_method' => 'credit_card', 'amount' => 66727.70]),
                 'performed_by' => 1,
                 'created_at' => now()->subDays(4),
-                'updated_at' => now()->subDays(4)
+                'updated_at' => now()->subDays(4),
             ],
             [
                 'order_id' => 1,
@@ -231,7 +229,7 @@ class RealisticDataSeeder extends Seeder
                 'metadata' => json_encode(['tracking_number' => 'DW123456789', 'carrier' => 'LBC']),
                 'performed_by' => 1,
                 'created_at' => now()->subDays(3),
-                'updated_at' => now()->subDays(3)
+                'updated_at' => now()->subDays(3),
             ],
             [
                 'order_id' => 1,
@@ -240,7 +238,7 @@ class RealisticDataSeeder extends Seeder
                 'metadata' => json_encode(['delivery_time' => '2025-10-15 14:30:00']),
                 'performed_by' => 1,
                 'created_at' => now()->subDays(1),
-                'updated_at' => now()->subDays(1)
+                'updated_at' => now()->subDays(1),
             ],
         ]);
 
@@ -255,7 +253,7 @@ class RealisticDataSeeder extends Seeder
                 'delivered_at' => now()->subDays(1),
                 'notes' => 'Delivered successfully to customer',
                 'created_at' => now()->subDays(5),
-                'updated_at' => now()->subDays(1)
+                'updated_at' => now()->subDays(1),
             ],
             [
                 'order_id' => 2,
@@ -266,7 +264,7 @@ class RealisticDataSeeder extends Seeder
                 'delivered_at' => null,
                 'notes' => 'Order is being prepared for shipment',
                 'created_at' => now()->subDays(2),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -280,7 +278,7 @@ class RealisticDataSeeder extends Seeder
                 'admin_response' => 'Thank you for your wonderful review!',
                 'is_approved' => true,
                 'created_at' => now()->subDays(10),
-                'updated_at' => now()->subDays(5)
+                'updated_at' => now()->subDays(5),
             ],
             [
                 'product_id' => 2,
@@ -290,7 +288,7 @@ class RealisticDataSeeder extends Seeder
                 'admin_response' => null,
                 'is_approved' => true,
                 'created_at' => now()->subDays(7),
-                'updated_at' => now()->subDays(7)
+                'updated_at' => now()->subDays(7),
             ],
             [
                 'product_id' => 3,
@@ -300,7 +298,7 @@ class RealisticDataSeeder extends Seeder
                 'admin_response' => 'Thank you for your feedback. We are working on improving our assembly instructions.',
                 'is_approved' => true,
                 'created_at' => now()->subDays(5),
-                'updated_at' => now()->subDays(3)
+                'updated_at' => now()->subDays(3),
             ],
         ]);
 
@@ -314,7 +312,7 @@ class RealisticDataSeeder extends Seeder
                 'purchase_count' => 12,
                 'total_revenue' => 252864.00,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'product_id' => 2,
@@ -324,7 +322,7 @@ class RealisticDataSeeder extends Seeder
                 'purchase_count' => 8,
                 'total_revenue' => 144504.00,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'product_id' => 3,
@@ -334,7 +332,7 @@ class RealisticDataSeeder extends Seeder
                 'purchase_count' => 15,
                 'total_revenue' => 316080.00,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -349,7 +347,7 @@ class RealisticDataSeeder extends Seeder
                 'reason' => 'Product arrived damaged',
                 'description' => 'The bed frame has a crack on the headboard',
                 'products' => json_encode([
-                    ['product_id' => 1, 'quantity' => 1, 'reason' => 'damaged']
+                    ['product_id' => 1, 'quantity' => 1, 'reason' => 'damaged'],
                 ]),
                 'refund_amount' => 21072.00,
                 'refund_method' => 'credit_card',
@@ -361,7 +359,7 @@ class RealisticDataSeeder extends Seeder
                 'completed_at' => now()->subDays(3),
                 'processed_by' => 1,
                 'created_at' => now()->subDays(10),
-                'updated_at' => now()->subDays(3)
+                'updated_at' => now()->subDays(3),
             ],
         ]);
 
@@ -373,7 +371,7 @@ class RealisticDataSeeder extends Seeder
                 'type' => 'string',
                 'description' => 'The name of the store',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'key' => 'store_email',
@@ -381,7 +379,7 @@ class RealisticDataSeeder extends Seeder
                 'type' => 'string',
                 'description' => 'Main store email address',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'key' => 'store_phone',
@@ -389,7 +387,7 @@ class RealisticDataSeeder extends Seeder
                 'type' => 'string',
                 'description' => 'Main store phone number',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'key' => 'free_shipping_threshold',
@@ -397,7 +395,7 @@ class RealisticDataSeeder extends Seeder
                 'type' => 'integer',
                 'description' => 'Minimum order amount for free shipping (PHP)',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'key' => 'tax_rate',
@@ -405,7 +403,7 @@ class RealisticDataSeeder extends Seeder
                 'type' => 'decimal',
                 'description' => 'Tax rate as decimal (10% = 0.10)',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -417,7 +415,7 @@ class RealisticDataSeeder extends Seeder
                 'is_active' => true,
                 'config' => json_encode(['processor' => 'stripe', 'test_mode' => false]),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'name' => 'Bank Transfer',
@@ -425,7 +423,7 @@ class RealisticDataSeeder extends Seeder
                 'is_active' => true,
                 'config' => json_encode(['bank_name' => 'BPI', 'account_number' => '1234567890']),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'name' => 'Cash on Delivery',
@@ -433,7 +431,7 @@ class RealisticDataSeeder extends Seeder
                 'is_active' => true,
                 'config' => json_encode(['fee' => 100, 'max_amount' => 10000]),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -446,7 +444,7 @@ class RealisticDataSeeder extends Seeder
                 'is_active' => true,
                 'config' => json_encode(['delivery_days' => '3-5', 'max_weight' => 50]),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'name' => 'Express Shipping',
@@ -455,7 +453,7 @@ class RealisticDataSeeder extends Seeder
                 'is_active' => true,
                 'config' => json_encode(['delivery_days' => '1-2', 'max_weight' => 30]),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'name' => 'Free Shipping',
@@ -464,7 +462,7 @@ class RealisticDataSeeder extends Seeder
                 'is_active' => true,
                 'config' => json_encode(['min_order' => 5000, 'delivery_days' => '5-7']),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -477,10 +475,10 @@ class RealisticDataSeeder extends Seeder
                 'config' => json_encode([
                     'publishable_key' => 'pk_test_...',
                     'secret_key' => 'sk_test_...',
-                    'webhook_secret' => 'whsec_...'
+                    'webhook_secret' => 'whsec_...',
                 ]),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'name' => 'PayPal',
@@ -489,10 +487,10 @@ class RealisticDataSeeder extends Seeder
                 'config' => json_encode([
                     'client_id' => 'client_id_...',
                     'client_secret' => 'client_secret_...',
-                    'mode' => 'sandbox'
+                    'mode' => 'sandbox',
                 ]),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
         ]);
 
@@ -505,7 +503,7 @@ class RealisticDataSeeder extends Seeder
                 'reason' => 'Initial stock',
                 'created_by' => 1,
                 'created_at' => now()->subDays(30),
-                'updated_at' => now()->subDays(30)
+                'updated_at' => now()->subDays(30),
             ],
             [
                 'product_id' => 1,
@@ -514,7 +512,7 @@ class RealisticDataSeeder extends Seeder
                 'reason' => 'Sales',
                 'created_by' => 1,
                 'created_at' => now()->subDays(15),
-                'updated_at' => now()->subDays(15)
+                'updated_at' => now()->subDays(15),
             ],
             [
                 'product_id' => 2,
@@ -523,7 +521,7 @@ class RealisticDataSeeder extends Seeder
                 'reason' => 'Restock',
                 'created_by' => 1,
                 'created_at' => now()->subDays(20),
-                'updated_at' => now()->subDays(20)
+                'updated_at' => now()->subDays(20),
             ],
         ]);
 
@@ -539,7 +537,7 @@ class RealisticDataSeeder extends Seeder
                 'replied_by' => 1,
                 'replied_at' => now()->subDays(2),
                 'created_at' => now()->subDays(3),
-                'updated_at' => now()->subDays(2)
+                'updated_at' => now()->subDays(2),
             ],
             [
                 'name' => 'Jane Smith',
@@ -551,7 +549,7 @@ class RealisticDataSeeder extends Seeder
                 'replied_by' => null,
                 'replied_at' => null,
                 'created_at' => now()->subDays(1),
-                'updated_at' => now()->subDays(1)
+                'updated_at' => now()->subDays(1),
             ],
         ]);
 
@@ -566,7 +564,7 @@ class RealisticDataSeeder extends Seeder
                 'is_active' => true,
                 'created_by' => 1,
                 'created_at' => now()->subDays(30),
-                'updated_at' => now()->subDays(30)
+                'updated_at' => now()->subDays(30),
             ],
             [
                 'title' => 'Shipping Information',
@@ -577,7 +575,7 @@ class RealisticDataSeeder extends Seeder
                 'is_active' => true,
                 'created_by' => 1,
                 'created_at' => now()->subDays(25),
-                'updated_at' => now()->subDays(25)
+                'updated_at' => now()->subDays(25),
             ],
             [
                 'title' => 'Return Policy',
@@ -588,7 +586,7 @@ class RealisticDataSeeder extends Seeder
                 'is_active' => true,
                 'created_by' => 1,
                 'created_at' => now()->subDays(20),
-                'updated_at' => now()->subDays(20)
+                'updated_at' => now()->subDays(20),
             ],
         ]);
 
@@ -607,7 +605,7 @@ class RealisticDataSeeder extends Seeder
                 'channel' => 'email',
                 'error_message' => null,
                 'created_at' => now()->subDays(2),
-                'updated_at' => now()->subDays(2)
+                'updated_at' => now()->subDays(2),
             ],
             [
                 'type' => 'inventory',
@@ -622,7 +620,7 @@ class RealisticDataSeeder extends Seeder
                 'channel' => 'email',
                 'error_message' => null,
                 'created_at' => now()->subHours(2),
-                'updated_at' => now()->subHours(2)
+                'updated_at' => now()->subHours(2),
             ],
         ]);
 

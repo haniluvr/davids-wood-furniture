@@ -185,6 +185,7 @@ class Product extends Model
     public function isLowStock($threshold = null): bool
     {
         $threshold = $threshold ?? $this->low_stock_threshold;
+
         return $this->stock_quantity <= $threshold && $this->stock_quantity > 0;
     }
 
@@ -230,6 +231,7 @@ class Product extends Model
         if ($threshold === null) {
             return $query->whereRaw('stock_quantity <= low_stock_threshold')->where('stock_quantity', '>', 0);
         }
+
         return $query->where('stock_quantity', '<=', $threshold)->where('stock_quantity', '>', 0);
     }
 

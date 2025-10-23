@@ -96,7 +96,7 @@ $adminRoutes = function () {
                 'show' => 'users.show',
                 'edit' => 'users.edit',
                 'update' => 'users.update',
-                'destroy' => 'users.destroy'
+                'destroy' => 'users.destroy',
             ]);
             Route::post('all-customers/{user}/suspend', [App\Http\Controllers\Admin\UserController::class, 'suspend'])->name('users.suspend');
             Route::post('all-customers/{user}/unsuspend', [App\Http\Controllers\Admin\UserController::class, 'unsuspend'])->name('users.unsuspend');
@@ -463,43 +463,43 @@ Route::get('/health', function () {
             'redis' => false,
             'storage' => false,
         ];
-        
+
         $errors = [];
-        
+
         // Check database connection
         try {
             \DB::connection()->getPdo();
             $checks['database'] = true;
         } catch (\Exception $e) {
-            $errors[] = 'Database connection failed: ' . $e->getMessage();
+            $errors[] = 'Database connection failed: '.$e->getMessage();
         }
-        
+
         // Check Redis connection
         try {
-            \Redis::ping();
+            \Illuminate\Support\Facades\Redis::ping();
             $checks['redis'] = true;
         } catch (\Exception $e) {
-            $errors[] = 'Redis connection failed: ' . $e->getMessage();
+            $errors[] = 'Redis connection failed: '.$e->getMessage();
         }
-        
+
         // Check storage directories
         try {
             $storageWritable = is_writable(storage_path());
             $bootstrapWritable = is_writable(base_path('bootstrap/cache'));
             $checks['storage'] = $storageWritable && $bootstrapWritable;
-            
-            if (!$storageWritable) {
+
+            if (! $storageWritable) {
                 $errors[] = 'Storage directory not writable';
             }
-            if (!$bootstrapWritable) {
+            if (! $bootstrapWritable) {
                 $errors[] = 'Bootstrap cache directory not writable';
             }
         } catch (\Exception $e) {
-            $errors[] = 'Storage check failed: ' . $e->getMessage();
+            $errors[] = 'Storage check failed: '.$e->getMessage();
         }
-        
+
         $allHealthy = $checks['app'] && $checks['database'] && $checks['redis'] && $checks['storage'];
-        
+
         return response()->json([
             'status' => $allHealthy ? 'healthy' : 'unhealthy',
             'timestamp' => date('Y-m-d H:i:s'),
@@ -509,7 +509,7 @@ Route::get('/health', function () {
             'errors' => $errors,
             'environment' => app()->environment(),
         ], $allHealthy ? 200 : 503);
-        
+
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',

@@ -641,13 +641,13 @@ class OrderController extends Controller
     public function generateTrackingNumber(Order $order)
     {
         if ($order->tracking_number) {
-            return back()->with('info', 'Order already has a tracking number: ' . $order->tracking_number);
+            return back()->with('info', 'Order already has a tracking number: '.$order->tracking_number);
         }
 
         $trackingNumber = $order->generateTrackingNumber();
         $order->update(['tracking_number' => $trackingNumber]);
 
-        return back()->with('success', 'Tracking number generated: ' . $trackingNumber);
+        return back()->with('success', 'Tracking number generated: '.$trackingNumber);
     }
 
     /**

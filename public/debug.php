@@ -42,19 +42,19 @@ $debug_info = [
 try {
     if (file_exists(__DIR__.'/../.env')) {
         $env_content = file_get_contents(__DIR__.'/../.env');
-        $debug_info['env_sample'] = substr($env_content, 0, 300) . '...';
-        
+        $debug_info['env_sample'] = substr($env_content, 0, 300).'...';
+
         // Try to load Laravel and test DB
         if (file_exists(__DIR__.'/../vendor/autoload.php')) {
             require_once __DIR__.'/../vendor/autoload.php';
             $app = require_once __DIR__.'/../bootstrap/app.php';
             $debug_info['laravel_loaded'] = true;
-            
+
             try {
                 $pdo = \Illuminate\Support\Facades\DB::connection()->getPdo();
                 $debug_info['database_connection'] = 'success';
             } catch (Exception $e) {
-                $debug_info['database_connection'] = 'failed: ' . $e->getMessage();
+                $debug_info['database_connection'] = 'failed: '.$e->getMessage();
             }
         }
     }

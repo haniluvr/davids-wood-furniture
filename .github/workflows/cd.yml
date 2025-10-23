@@ -65,7 +65,8 @@ jobs:
           echo "Warning: Key format may be invalid, but continuing..."
         fi
         mkdir -p ~/.ssh
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+        # Add host to known_hosts with error handling
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts || echo "Warning: Could not add host to known_hosts"
 
     - name: Deploy to EC2
       run: |

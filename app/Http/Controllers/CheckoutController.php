@@ -442,7 +442,7 @@ class CheckoutController extends Controller
         $hasCancelledOrders = Order::where('user_id', $user->id)
             ->where('status', 'cancelled')
             ->exists();
-        
+
         if ($hasCancelledOrders && $total > 3000) {
             return true;
         }
@@ -456,7 +456,7 @@ class CheckoutController extends Controller
     private function getApprovalReason($total, $user)
     {
         if ($total > 10000) {
-            return 'High value order (₱' . number_format($total, 2) . ') requires manager approval';
+            return 'High value order (₱'.number_format($total, 2).') requires manager approval';
         }
 
         if ($user->created_at->diffInDays(now()) < 30 && $total > 5000) {
@@ -466,7 +466,7 @@ class CheckoutController extends Controller
         $hasCancelledOrders = Order::where('user_id', $user->id)
             ->where('status', 'cancelled')
             ->exists();
-        
+
         if ($hasCancelledOrders && $total > 3000) {
             return 'Customer with previous cancelled orders requires approval for orders over ₱3,000';
         }
