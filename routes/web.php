@@ -266,13 +266,14 @@ $adminRoutes = function () {
 // Register admin routes for both domains
 Route::domain('admin.davidswood.test')->name('admin.')->group($adminRoutes);
 Route::domain('admin.localhost')->name('admin.')->group($adminRoutes);
+Route::domain('admin.davidswood.shop')->name('admin.')->group($adminRoutes);
 
 // Public routes - but check for admin subdomain first
 Route::get('/', function () {
     $host = request()->getHost();
 
     // If this is an admin subdomain, redirect to admin login
-    if ($host === 'admin.localhost' || $host === 'admin.davidswood.test') {
+    if ($host === 'admin.localhost' || $host === 'admin.davidswood.test' || $host === 'admin.davidswood.shop') {
         if (auth()->guard('admin')->check()) {
             return redirect()->route('admin.dashboard');
         }
