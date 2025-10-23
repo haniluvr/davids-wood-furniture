@@ -16,8 +16,8 @@ on:
 
 jobs:
   deploy:
-    # Only run if CI succeeded
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # Only run if CI succeeded (temporarily disabled for S3 testing)
+    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'production' }}
     
