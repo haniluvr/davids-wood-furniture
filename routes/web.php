@@ -14,9 +14,9 @@ $adminRoutes = function () {
     // Guest routes (login, forgot password, etc.)
     Route::middleware('guest:admin')->group(function () {
         Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('admin.login');
-        Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login']);
+        Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login'])->name('admin.login.post');
         Route::get('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
-        Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink']);
+        Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink'])->name('admin.forgot-password.post');
     });
 
     // Root admin route - redirect to login if not authenticated, dashboard if authenticated
@@ -25,7 +25,7 @@ $adminRoutes = function () {
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->route('admin.login');
+        return redirect()->route('admin.admin.login');
     })->name('index');
 
     // Protected admin routes
@@ -278,7 +278,7 @@ Route::get('/', function () {
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->route('admin.login');
+        return redirect()->route('admin.admin.login');
     }
 
     // Otherwise, show the normal homepage
@@ -574,11 +574,6 @@ Route::get('/test-username-check/{username}', function ($username) {
         'available' => ! $exists,
         'message' => $exists ? 'Username is already taken' : 'Username is available',
     ]);
-});
-
-// Test registration endpoint
-Route::get('/test-register-form', function () {
-    return view('test-register');
 });
 
 // Debug routes for testing
