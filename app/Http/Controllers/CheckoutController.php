@@ -14,12 +14,39 @@ use Illuminate\Support\Facades\Session;
 class CheckoutController extends Controller
 {
     /**
+     * Get selected cart items from session storage
+     */
+    private function getSelectedCartItems()
+    {
+        // Check if selected items are stored in session
+        $selectedItems = Session::get('selectedCartItems', []);
+        
+        if (!empty($selectedItems)) {
+            return $selectedItems;
+        }
+        
+        // Fallback: if no selected items in session, get all cart items
+        $user = Auth::user();
+        $allCartItems = CartItem::forUser($user->id)->pluck('product_id')->toArray();
+        
+        return $allCartItems;
+    }
+    /**
      * Show shipping information step
      */
     public function index()
     {
         $user = Auth::user();
+        
+        // Get selected cart items from session storage
+        $selectedProductIds = $this->getSelectedCartItems();
+        
+        if (empty($selectedProductIds)) {
+            return redirect()->route('products')->with('error', 'No items selected for checkout.');
+        }
+        
         $cartItems = CartItem::forUser($user->id)
+            ->whereIn('product_id', $selectedProductIds)
             ->with('product')
             ->get();
 
@@ -105,7 +132,10 @@ class CheckoutController extends Controller
         $user = Auth::user();
         $paymentMethods = $user->paymentMethods()->orderBy('is_default', 'desc')->get();
 
+        // Get selected cart items
+        $selectedProductIds = $this->getSelectedCartItems();
         $cartItems = CartItem::forUser($user->id)
+            ->whereIn('product_id', $selectedProductIds)
             ->with('product')
             ->get();
 
@@ -171,7 +201,11 @@ class CheckoutController extends Controller
         }
 
         $user = Auth::user();
+        
+        // Get selected cart items
+        $selectedProductIds = $this->getSelectedCartItems();
         $cartItems = CartItem::forUser($user->id)
+            ->whereIn('product_id', $selectedProductIds)
             ->with('product')
             ->get();
 
@@ -204,7 +238,11 @@ class CheckoutController extends Controller
         }
 
         $user = Auth::user();
+        
+        // Get selected cart items
+        $selectedProductIds = $this->getSelectedCartItems();
         $cartItems = CartItem::forUser($user->id)
+            ->whereIn('product_id', $selectedProductIds)
             ->with('product')
             ->get();
 

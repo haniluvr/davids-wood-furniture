@@ -23,11 +23,11 @@
                 <div class="contact-info">
                     <div class="info-item flex items-center">
                         <i data-lucide="phone-call" class="icon"></i>
-                        <span>+1 (234) 555-1234</span>
+                        <span>+63 (917) 123-4567</span>
                     </div>
                     <div class="info-item flex items-center">
                         <i data-lucide="contact" class="icon"></i>
-                        <span>hello@davidswood.com</span>
+                        <span>hello@davidswood.shop</span>
                     </div>
                     <div class="info-item flex flex-col">
                         <div class="flex items-center">
@@ -37,8 +37,8 @@
                             </span>
                         </div>
                         <span class="text-span">
-                            245 Cedar Lane, Suite B<br>
-                            Portland, OR 97205
+                            123 Santa Rosa - Tagaytay Rd,<br>
+                            Silang, 4118 Cavite
                         </span>
                     </div>
                     <div class="info-item flex flex-col">

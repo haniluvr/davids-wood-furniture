@@ -290,8 +290,6 @@
                         <li><a href="{{ admin_route('cms-pages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.cms-pages*') ? 'text-primary dark:text-primary' : '' }}">CMS Pages</a></li>
                         <li><a href="{{ admin_route('reviews.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.reviews*') ? 'text-primary dark:text-primary' : '' }}">Product Reviews</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Blogs</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Media Library</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Testimonials</a></li>
                     </ul>
                 </li>
 

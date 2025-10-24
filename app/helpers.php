@@ -13,8 +13,20 @@ if (! function_exists('admin_route')) {
      */
     function admin_route(string $routeName, $parameters = []): string
     {
-        $env = config('app.env');
-        $prefix = $env === 'local' ? 'admin.test.' : 'admin.';
+        // Check the current domain to determine the correct prefix
+        $host = request()->getHost();
+        
+        if ($host === 'admin.davidswood.test') {
+            $prefix = 'admin.test.';
+        } elseif ($host === 'admin.localhost') {
+            $prefix = 'admin.local.';
+        } elseif ($host === 'admin.davidswood.shop') {
+            $prefix = 'admin.';
+        } else {
+            // Fallback for other domains
+            $env = config('app.env');
+            $prefix = $env === 'local' ? 'admin.test.' : 'admin.';
+        }
 
         return route($prefix.$routeName, $parameters);
     }

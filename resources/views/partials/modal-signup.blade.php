@@ -166,7 +166,7 @@
                     <div class="mb-4">
                         <button 
                             type="submit" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 disabled:opacity-50" 
+                            class="w-full bg-[#8b7355] hover:bg-[#6b5b47] text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 disabled:opacity-50" 
                             id="signup-submit" 
                             disabled>
                             Create Account
@@ -174,7 +174,7 @@
                     </div>
                 </form>
                 
-                <div class="text-center mt-8 text-sm">
+                <div class="text-center text-sm">
                     <p class="mb-0">Already have an account? 
                         <a href="#" class="underline" id="switch-to-login">Sign in here</a>
                     </p>

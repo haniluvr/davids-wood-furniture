@@ -81,6 +81,15 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // Handle AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'You have been logged out successfully.',
+                'redirect' => admin_route('login')
+            ]);
+        }
+
         return redirect()->to(admin_route('login'))
             ->with('success', 'You have been logged out successfully.');
     }

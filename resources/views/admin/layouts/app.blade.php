@@ -183,7 +183,7 @@
     </script>
     
     <!-- Lucide Icons - Local File -->
-    <script src="{{ asset('js/lucide.js') }}"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script>
         // Initialize Lucide icons
         document.addEventListener('DOMContentLoaded', function() {

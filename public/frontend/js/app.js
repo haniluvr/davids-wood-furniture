@@ -2621,6 +2621,12 @@ async function performLoadCartItems() {
                     cartFooter.classList.remove('hidden');
                 }
                 
+                // Show select all button when there are items
+                const selectAllBtn = document.getElementById('select-all-cart-items');
+                if (selectAllBtn) {
+                    selectAllBtn.style.display = 'flex';
+                }
+                
                 // Generate cart items HTML
                 let cartItemsHTML = '';
                 items.forEach((item, index) => {
@@ -2630,8 +2636,17 @@ async function performLoadCartItems() {
                     cartItemsHTML += `
                         <div class="cart-item-new border-b py-3" data-product-id="${item.product_id}">
                             <div class="flex items-center justify-between">
-                                <!-- Left Section: Item Details -->
+                                <!-- Left Section: Selection & Item Details -->
                                 <div class="flex items-center space-x-4 flex-grow">
+                                    <!-- Selection Checkbox -->
+                                    <div class="item-selection">
+                                        <input type="checkbox" 
+                                               class="item-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
+                                               data-product-id="${item.product_id}"
+                                               data-item-total="${item.total_price}"
+                                               checked>
+                                    </div>
+                                    
                                     <!-- Material Label -->
                                     <div class="material-label">
                                         <span class="text-sm text-gray-600 font-medium">${productData.material || 'Wood'}</span>
@@ -2669,14 +2684,18 @@ async function performLoadCartItems() {
                     console.log('Setting cart items HTML:', cartItemsHTML);
                     cartItems.innerHTML = cartItemsHTML;
                     console.log('Cart items HTML set successfully');
+                    
+                    // Initialize cart selection functionality
+                    initializeCartSelection();
                 } else {
                     console.error('cartItems element not found!');
                 }
 
-                // Update subtotal
-                if (cartData.subtotal && cartSubtotal) {
-                    cartSubtotal.textContent = `₱${parseFloat(cartData.subtotal).toLocaleString('en-US')}`;
-                }
+                // Update subtotal based on selected items
+                updateCartSubtotal();
+                
+                // Initialize checkout button state
+                updateCheckoutButtonState();
             } else {
                 // Hide items first
                 if (cartItems) {
@@ -2689,6 +2708,12 @@ async function performLoadCartItems() {
                 // Show empty state last
                 if (cartEmptyState) {
                     cartEmptyState.style.display = 'block';
+                }
+                
+                // Hide select all button when cart is empty
+                const selectAllBtn = document.getElementById('select-all-cart-items');
+                if (selectAllBtn) {
+                    selectAllBtn.style.display = 'none';
                 }
             }
         });
@@ -2916,3 +2941,189 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     await loadModalQuickView();
 });
+
+// ── Cart Selection Functions ──
+
+// Initialize cart selection functionality
+function initializeCartSelection() {
+    // Add event listeners to individual checkboxes
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    itemCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateCartSubtotal();
+            updateSelectAllButton();
+        });
+    });
+    
+    // Add event listener to select all button
+    const selectAllBtn = document.getElementById('select-all-cart-items');
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleSelectAll();
+        });
+    }
+    
+    // Initialize the select all button text based on current state
+    updateSelectAllButton();
+}
+
+// Toggle select all functionality
+function toggleSelectAll() {
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const selectAllBtn = document.getElementById('select-all-cart-items');
+    
+    if (!itemCheckboxes.length || !selectAllBtn) return;
+    
+    // Check if all items are selected
+    const allSelected = Array.from(itemCheckboxes).every(checkbox => checkbox.checked);
+    
+    if (allSelected) {
+        // Deselect all
+        itemCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    } else {
+        // Select all
+        itemCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    }
+    
+    // Update UI after toggling
+    updateCartSubtotal();
+    updateSelectAllButton();
+}
+
+// Update select all button text based on current selection
+function updateSelectAllButton() {
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const selectAllBtn = document.getElementById('select-all-cart-items');
+    
+    if (!selectAllBtn || itemCheckboxes.length === 0) return;
+    
+    const selectedCount = Array.from(itemCheckboxes).filter(checkbox => checkbox.checked).length;
+    const totalCount = itemCheckboxes.length;
+    
+    if (selectedCount === 0) {
+        selectAllBtn.textContent = 'Select All';
+    } else if (selectedCount === totalCount) {
+        selectAllBtn.textContent = 'Deselect All';
+    } else {
+        // When some items are selected but not all, show "Select All" to select remaining items
+        selectAllBtn.textContent = 'Select All';
+    }
+}
+
+// Update cart subtotal based on selected items
+function updateCartSubtotal() {
+    const cartSubtotal = document.getElementById('cart-subtotal');
+    if (!cartSubtotal) return;
+    
+    const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked');
+    let selectedTotal = 0;
+    
+    selectedCheckboxes.forEach(checkbox => {
+        const itemTotal = parseFloat(checkbox.dataset.itemTotal) || 0;
+        selectedTotal += itemTotal;
+    });
+    
+    cartSubtotal.textContent = `₱${selectedTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    
+    // Update checkout button state
+    updateCheckoutButtonState();
+}
+
+// Update checkout button state based on selection and authentication
+function updateCheckoutButtonState() {
+    const checkoutBtn = document.getElementById('cart-checkout-btn');
+    const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked');
+    
+    if (!checkoutBtn) return;
+    
+    if (selectedCheckboxes.length === 0) {
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = 'Select items to checkout';
+        checkoutBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    } else {
+        checkoutBtn.disabled = false;
+        checkoutBtn.textContent = `Checkout (${selectedCheckboxes.length} items)`;
+        checkoutBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+}
+
+// Handle cart checkout with authentication check
+async function handleCartCheckout() {
+    const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked');
+    
+    if (selectedCheckboxes.length === 0) {
+        showNotification('Please select items to checkout', 'error');
+        return;
+    }
+    
+    try {
+        // Check authentication status
+        const response = await fetch('/api/user/check', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.authenticated) {
+            // User is authenticated, proceed to checkout with selected items
+            const selectedProductIds = Array.from(selectedCheckboxes).map(checkbox => 
+                parseInt(checkbox.dataset.productId)
+            );
+            
+            // Store selected items in session storage for checkout page
+            sessionStorage.setItem('selectedCartItems', JSON.stringify(selectedProductIds));
+            
+            // Also store in server session via API call
+            try {
+                await fetch('/api/store-selected-cart-items', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    },
+                    body: JSON.stringify({ selectedItems: selectedProductIds })
+                });
+            } catch (error) {
+                console.error('Failed to store selected items in session:', error);
+            }
+            
+            // Redirect to checkout
+            window.open('/checkout', '_blank');
+        } else {
+            // User is not authenticated, show signup modal with alert
+            showNotification('You need to create an account before checking out. Please sign up to continue.', 'warning');
+            
+            // Show signup modal
+            if (typeof window.showmodalsignup === 'function') {
+                window.showmodalsignup();
+            } else {
+                // Fallback: try to show modal manually
+                const modal = document.getElementById('modal-signup');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.style.display = 'block';
+                    modal.style.opacity = '1';
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error checking authentication:', error);
+        showNotification('Unable to verify authentication. Please try again.', 'error');
+    }
+}
+
+// Make functions globally available
+window.handleCartCheckout = handleCartCheckout;
+window.initializeCartSelection = initializeCartSelection;
+window.updateCartSubtotal = updateCartSubtotal;

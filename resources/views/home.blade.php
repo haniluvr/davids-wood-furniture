@@ -364,12 +364,13 @@
     <div class="w-full hero-content">
         <div class="hero-text text-center">
             <span class="badge-text rounded-full px-4 py-1 flex items-center justify-center mx-auto">
-                <i class="feather-small mr-2" data-lucide="pencil-ruler"></i>
-                Crafted with specialty in Tagyatay
+                <i class="feather-small mr-2" data-lucide=""></i>
+                Nature's grain shaped by artistry
             </span>
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mt-4">
-                Handcrafted wooden furniture,<br>
-                refined to perfection.
+                {{-- Handcrafted wooden furniture,<br>
+                refined to perfection. --}}
+                Beauty carved with intention,<br>shaped by passion.
             </h1>
             <p class="text-lg md:text-xl mt-3 mb-5">
                 Discover heirloom-quality pieces designed with timeless shapes, natural materials,<br>and meticulous craftsmanship—made to live with you for years.

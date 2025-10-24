@@ -8,6 +8,71 @@
         font-family: 'Inter', sans-serif;
         background-color: #f3efe7;
     }
+    
+    /* Account Page Select All Button Styles */
+    .account-select-all-btn {
+        background: transparent;
+        border: 1px solid #8b7355;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        color: #8b7355;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        white-space: nowrap;
+        min-width: fit-content;
+    }
+
+    .account-select-all-btn:hover {
+        background-color: #8b7355;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .account-select-all-btn:active {
+        transform: translateY(0);
+    }
+
+    /* Account Page Item Selection Checkbox Styles */
+    .account-item-selection {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .account-item-checkbox {
+        width: 1rem;
+        height: 1rem;
+        cursor: pointer;
+        border: 2px solid #8b7355;
+        border-radius: 4px;
+        background-color: white;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+
+    .account-item-checkbox:hover {
+        border-color: #6b5b47;
+        box-shadow: 0 0 0 2px rgba(139, 115, 85, 0.1);
+    }
+
+    .account-item-checkbox:checked {
+        background-color: #8b7355;
+        border-color: #8b7355;
+    }
+
+    .account-item-checkbox:checked::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
     .account-card {
         background: white;
         border-radius: 12px;
@@ -600,11 +665,24 @@
 
             <!-- My Cart Section -->
             <div id="my-cart-section" class="bg-white rounded-xl shadow-sm p-6 mb-8 account-card content-section" style="display: none;">
-                <h3 class="border-b text-xl font-bold text-gray-900 mb-8 pb-3">My Cart</h3>
+                <div class="flex items-center justify-between border-b pb-3 mb-8">
+                    <h3 class="text-xl font-bold text-gray-900">My Cart</h3>
+                    <button type="button" class="account-select-all-btn" id="account-select-all-cart-items">
+                        Select All
+                    </button>
+                </div>
                 @if($cartItems->count() > 0)
                     <div class="space-y-3">
                         @foreach($cartItems as $item)
                         <div class="cart-item flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-[#8b7355] transition-colors" data-product-id="{{ $item->product_id }}">
+                            <!-- Selection Checkbox -->
+                            <div class="account-item-selection">
+                                <input type="checkbox" 
+                                       class="account-item-checkbox w-4 h-4 text-[#8b7355] border-gray-300 rounded focus:ring-[#8b7355]" 
+                                       data-product-id="{{ $item->product_id }}"
+                                       data-item-total="{{ $item->total_price }}"
+                                       checked>
+                            </div>
                             <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                 @if($item->product && $item->product->image)
                                     <img src="{{ $item->product->image }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover rounded-lg">
@@ -1051,6 +1129,9 @@
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+        
+        // Initialize account cart selection functionality
+        initializeAccountCartSelection();
 
         // Handle sidebar navigation
         const sectionLinks = document.querySelectorAll('.sidebar-link');
@@ -3114,6 +3195,107 @@
         } catch (error) {
             console.error('Error opening quick view:', error);
             showNotification('Failed to load product details', 'error');
+        }
+    }
+    
+    // ── Account Cart Selection Functions ──
+    
+    // Initialize account cart selection functionality
+    function initializeAccountCartSelection() {
+        // Add event listeners to individual checkboxes
+        const itemCheckboxes = document.querySelectorAll('.account-item-checkbox');
+        itemCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateAccountCartSubtotal();
+                updateAccountSelectAllButton();
+            });
+        });
+        
+        // Add event listener to select all button
+        const selectAllBtn = document.getElementById('account-select-all-cart-items');
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleAccountSelectAll();
+            });
+        }
+        
+        // Initialize the select all button text based on current state
+        updateAccountSelectAllButton();
+        updateAccountCartSubtotal();
+    }
+    
+    // Toggle account select all functionality
+    function toggleAccountSelectAll() {
+        const itemCheckboxes = document.querySelectorAll('.account-item-checkbox');
+        const selectAllBtn = document.getElementById('account-select-all-cart-items');
+        
+        if (!itemCheckboxes.length || !selectAllBtn) return;
+        
+        // Check if all items are selected
+        const allSelected = Array.from(itemCheckboxes).every(checkbox => checkbox.checked);
+        
+        if (allSelected) {
+            // Deselect all
+            itemCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        } else {
+            // Select all
+            itemCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+        
+        // Update UI after toggling
+        updateAccountCartSubtotal();
+        updateAccountSelectAllButton();
+    }
+    
+    // Update account select all button text based on current selection
+    function updateAccountSelectAllButton() {
+        const itemCheckboxes = document.querySelectorAll('.account-item-checkbox');
+        const selectAllBtn = document.getElementById('account-select-all-cart-items');
+        
+        if (!selectAllBtn || itemCheckboxes.length === 0) return;
+        
+        const selectedCount = Array.from(itemCheckboxes).filter(checkbox => checkbox.checked).length;
+        const totalCount = itemCheckboxes.length;
+        
+        if (selectedCount === 0) {
+            selectAllBtn.textContent = 'Select All';
+        } else if (selectedCount === totalCount) {
+            selectAllBtn.textContent = 'Deselect All';
+        } else {
+            // When some items are selected but not all, show "Select All" to select remaining items
+            selectAllBtn.textContent = 'Select All';
+        }
+    }
+    
+    // Update account cart subtotal based on selected items
+    function updateAccountCartSubtotal() {
+        const cartTotalPrice = document.getElementById('cart-total-price');
+        const cartTotalQty = document.getElementById('cart-total-qty');
+        
+        if (!cartTotalPrice) return;
+        
+        const selectedCheckboxes = document.querySelectorAll('.account-item-checkbox:checked');
+        let selectedTotal = 0;
+        let selectedQty = 0;
+        
+        selectedCheckboxes.forEach(checkbox => {
+            const itemTotal = parseFloat(checkbox.dataset.itemTotal) || 0;
+            selectedTotal += itemTotal;
+            selectedQty += 1; // Each checkbox represents one item
+        });
+        
+        if (cartTotalPrice) {
+            cartTotalPrice.textContent = `₱${selectedTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+        
+        if (cartTotalQty) {
+            cartTotalQty.textContent = selectedQty;
         }
     }
 </script>

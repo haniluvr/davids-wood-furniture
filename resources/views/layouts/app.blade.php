@@ -17,7 +17,7 @@
         
         <!-- scripts -->
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-        <script src="{{ asset('js/lucide.js') }}" defer></script>
+        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
         <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" defer></script>
         <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>

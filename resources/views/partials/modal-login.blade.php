@@ -60,7 +60,7 @@
                     <div class="mb-4">
                       <button 
                         type="submit" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition duration-200"
+                        class="w-full bg-[#8b7355] hover:bg-[#6b5b47] text-white font-medium py-2.5 px-4 rounded-lg transition duration-200"
                       >
                         Sign In
                       </button>
@@ -71,7 +71,7 @@
                 <div class="text-center">
                     <p class="text-sm text-gray-600">
                         Don't have an account? 
-                        <a href="#" id="switch-to-signup" class="text-blue-600 font-medium hover:text-blue-800 underline">
+                        <a href="#" id="switch-to-signup" class="underline">
                             Create one here
                         </a>
                     </p>

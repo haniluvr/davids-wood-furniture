@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProductController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // Admin subdomain routes (MUST BE FIRST!)
@@ -13,10 +14,10 @@ use Illuminate\Support\Facades\Route;
 $adminRoutes = function () {
     // Guest routes (login, forgot password, etc.)
     Route::middleware('guest:admin')->group(function () {
-        Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('admin.login');
+        Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
         Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login']);
         Route::get('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
-        Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink'])->name('admin.forgot-password.post');
+        Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink'])->name('forgot-password.post');
     });
 
     // Root admin route - redirect to login if not authenticated, dashboard if authenticated
@@ -28,10 +29,22 @@ $adminRoutes = function () {
         return redirect('/login');
     })->name('index');
 
+    // Admin logout routes (outside middleware to handle CSRF expiration)
+    Route::post('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
+    Route::get('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout.get');
+    
+    // Fallback route for CSRF token expiration
+    Route::get('/logout-fallback', function () {
+        Auth::guard('admin')->logout();
+        session()->invalidate();
+        session()->regenerateToken();
+        return redirect()->to(admin_route('login'))
+            ->with('success', 'You have been logged out successfully.');
+    })->name('logout.fallback');
+
     // Protected admin routes
     Route::middleware('admin')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
-        Route::post('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
 
         // Product Management
         Route::middleware('admin.permission:products.view')->group(function () {
@@ -319,6 +332,7 @@ Route::middleware(['web'])->group(function () {
     Route::put('/api/cart/update', [App\Http\Controllers\CartController::class, 'updateCartItem']);
     Route::delete('/api/cart/remove', [App\Http\Controllers\CartController::class, 'removeFromCart']);
     Route::delete('/api/cart/clear', [App\Http\Controllers\CartController::class, 'clearCart']);
+    Route::post('/api/store-selected-cart-items', [App\Http\Controllers\CartController::class, 'storeSelectedItems']);
 });
 
 // Wishlist routes (using api.session middleware for proper session handling and guest session capture)

@@ -21,7 +21,7 @@ class AdminAuth
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
 
-            return redirect('/login');
+            return redirect()->to(admin_route('login'));
         }
 
         $admin = Auth::guard('admin')->user();
@@ -33,7 +33,7 @@ class AdminAuth
                 return response()->json(['message' => 'Account suspended.'], 403);
             }
 
-            return redirect('/login')
+            return redirect()->to(admin_route('login'))
                 ->with('error', 'Your account has been suspended. Please contact the administrator.');
         }
 
