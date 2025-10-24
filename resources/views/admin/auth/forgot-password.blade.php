@@ -81,7 +81,7 @@
             <!-- Form Section -->
             <div class="flex flex-col flex-1 w-full lg:w-1/2">
                 <div class="w-full max-w-md pt-10 mx-auto">
-                    <a href="{{ route('admin.login') }}" class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                    <a href="{{ url('/login') }}" class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                         <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
                         Back to login
                     </a>
@@ -124,7 +124,7 @@
                         
                         <div>
                             <!-- Reset Password Form -->
-                            <form method="POST" action="{{ route('admin.forgot-password') }}">
+                            <form method="POST" action="{{ url('/forgot-password') }}">
                                 @csrf
                                 <div class="space-y-5">
                                     <!-- Email -->
@@ -160,7 +160,7 @@
                             <div class="mt-5">
                                 <p class="text-sm font-normal text-center text-gray-700 dark:text-gray-400">
                                     Remember your password?
-                                    <a href="{{ route('admin.login') }}" class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
+                                    <a href="{{ url('/login') }}" class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
                                         Sign in instead
                                     </a>
                                 </p>

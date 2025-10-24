@@ -146,7 +146,7 @@
                         <div>
                             
                             <!-- Login Form -->
-                            <form method="POST" action="{{ route('admin.login') }}">
+                            <form method="POST" action="{{ url('/login') }}">
                                 @csrf
                                 <div class="space-y-5">
                                     <!-- Email -->
@@ -213,7 +213,7 @@
                                                 Keep me logged in
                                             </label>
                                         </div>
-                                        <a href="{{ route('admin.forgot-password') }}" class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">
+                                        <a href="{{ url('/forgot-password') }}" class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">
                                             Forgot password?
                                         </a>
                                     </div>
