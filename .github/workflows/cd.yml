@@ -382,11 +382,30 @@ jobs:
         echo "=== Testing Laravel functionality ==="
         sudo -u www-data php artisan route:list | head -5 || echo "Route list failed"
         
+        # Check for PHP syntax errors
+        echo "=== Checking for PHP syntax errors ==="
+        find "$APP_DIR" -name "*.php" -exec php -l {} \; 2>&1 | grep -i "error\|fatal" | head -5 || echo "No PHP syntax errors found"
+        
+        # Check if all required files exist
+        echo "=== Checking critical files ==="
+        ls -la "$APP_DIR/public/index.php" || echo "❌ index.php missing"
+        ls -la "$APP_DIR/vendor/autoload.php" || echo "❌ Composer autoload missing"
+        ls -la "$APP_DIR/bootstrap/app.php" || echo "❌ Laravel bootstrap missing"
+        
         echo "✅ Debug information collected"
         DEBUG_EOF
         
-        # Test website accessibility
+        # Test website accessibility and get detailed error
         echo "Testing website accessibility..."
-        curl -f -s -o /dev/null -w "%{http_code}" "http://${{ secrets.EC2_HOST }}" || echo "Website health check failed"
+        HTTP_CODE=$(curl -f -s -o /dev/null -w "%{http_code}" "http://${{ secrets.EC2_HOST }}" || echo "000")
+        echo "HTTP Status Code: $HTTP_CODE"
+        
+        if [ "$HTTP_CODE" != "200" ]; then
+          echo "=== Getting detailed error response ==="
+          curl -v "http://${{ secrets.EC2_HOST }}" 2>&1 | head -20 || echo "Could not get detailed response"
+          
+          echo "=== Checking if it's a PHP error ==="
+          curl -s "http://${{ secrets.EC2_HOST }}" | grep -i "fatal\|error\|exception" | head -5 || echo "No obvious PHP errors in response"
+        fi
         
         echo "✅ Health checks completed"
