@@ -277,13 +277,59 @@ jobs:
       run: |
         echo "🔍 Running post-deployment health checks..."
         
+        # Debug Laravel application
+        echo "🔧 Debugging Laravel application..."
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'DEBUG_EOF'
+        #!/bin/bash
+        set -e
+        
+        APP_DIR="/var/www/html/davids-wood-furniture"
+        cd "$APP_DIR"
+        
+        # Check if .env file exists and has content
+        echo "=== Checking .env file ==="
+        if [ -f "$APP_DIR/.env" ]; then
+          echo "✅ .env file exists"
+          echo "File size: $(wc -l < "$APP_DIR/.env") lines"
+          echo "First few lines:"
+          head -5 "$APP_DIR/.env" || echo "Could not read .env file"
+        else
+          echo "❌ .env file missing"
+        fi
+        
+        # Check Laravel logs
+        echo "=== Checking Laravel logs ==="
+        if [ -f "$APP_DIR/storage/logs/laravel.log" ]; then
+          echo "✅ Laravel log exists"
+          echo "Last 10 lines of Laravel log:"
+          tail -10 "$APP_DIR/storage/logs/laravel.log" || echo "Could not read Laravel log"
+        else
+          echo "❌ Laravel log missing"
+        fi
+        
+        # Check Apache error logs
+        echo "=== Checking Apache error logs ==="
+        echo "Last 10 lines of Apache error log:"
+        sudo tail -10 /var/log/apache2/error.log || echo "Could not read Apache error log"
+        
+        # Test database connection
+        echo "=== Testing database connection ==="
+        sudo -u www-data php artisan tinker --execute="echo 'DB connection test: '; try { DB::connection()->getPdo(); echo 'SUCCESS'; } catch(Exception \$e) { echo 'FAILED: ' . \$e->getMessage(); }" || echo "Database test failed"
+        
+        # Check Laravel configuration
+        echo "=== Checking Laravel configuration ==="
+        sudo -u www-data php artisan config:show | head -20 || echo "Config show failed"
+        
+        # Test basic Laravel functionality
+        echo "=== Testing Laravel functionality ==="
+        sudo -u www-data php artisan route:list | head -5 || echo "Route list failed"
+        
+        echo "✅ Debug information collected"
+        DEBUG_EOF
+        
         # Test website accessibility
         echo "Testing website accessibility..."
         curl -f -s -o /dev/null -w "%{http_code}" "http://${{ secrets.EC2_HOST }}" || echo "Website health check failed"
-        
-        # Test Laravel application
-        echo "Testing Laravel application..."
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "cd /var/www/html/davids-wood-furniture && sudo -u www-data php artisan --version" || echo "Laravel health check failed"
         
         echo "✅ Health checks completed"
