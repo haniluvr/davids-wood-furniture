@@ -182,8 +182,16 @@
         }
     </script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Lucide Icons - Local File -->
+    <script src="{{ asset('js/lucide.js') }}"></script>
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        });
+    </script>
     
     <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -291,16 +299,19 @@ x-init="
     
     <!-- Initialize Lucide Icons -->
     <script>
-        // Initialize Lucide Icons
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-        });
-        
-        // Re-initialize icons after Alpine updates
-        document.addEventListener('alpine:initialized', () => {
-            setTimeout(() => {
+        // Simple icon initialization
+        function initIcons() {
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
                 lucide.createIcons();
-            }, 100);
+            }
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', initIcons);
+        
+        // Re-initialize after Alpine loads
+        document.addEventListener('alpine:initialized', () => {
+            setTimeout(initIcons, 100);
         });
     </script>
     
@@ -395,7 +406,6 @@ x-init="
         function initializeRealtimeNotifications() {
             // Check if Pusher and Echo are available
             if (typeof Pusher === 'undefined' || typeof Echo === 'undefined') {
-                console.warn('Pusher or Echo not available, skipping real-time notifications');
                 return;
             }
             

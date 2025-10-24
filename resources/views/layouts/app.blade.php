@@ -17,7 +17,7 @@
         
         <!-- scripts -->
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-        <script src="https://unpkg.com/lucide@latest" defer></script>
+        <script src="{{ asset('js/lucide.js') }}" defer></script>
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
         <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" defer></script>
         <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
@@ -70,12 +70,7 @@
         <script src="{{ asset('frontend/js/auth.js') }}"></script>
         <script src="{{ asset('frontend/js/app.js') }}?v={{ time() }}"></script>
         <script>
-            // DEBUG: Confirm app.js is loading
-            console.log('🔧 Layout loaded - app.js should be loading now');
-            console.log('🔧 Page URL:', window.location.href);
-            console.log('🔧 Product grid element exists?', !!document.getElementById('product-grid'));
         </script>
-        <script src="https://unpkg.com/lucide@latest"></script>
         <script>
             // Main JavaScript functionality
             document.addEventListener('DOMContentLoaded', function() {
@@ -138,7 +133,6 @@
 
                 // Check if jQuery and elements exist
                 if (!$slides.length || !$indicators.length) {
-                    console.log('Hero slider elements not found');
                     return;
                 }
 
@@ -401,7 +395,6 @@
             function initModal(id) {
                 const el = document.getElementById(id);
                 if (!el) {
-                    console.warn(`Modal ${id} not found`);
                     return;
                 }
 
@@ -1090,5 +1083,23 @@
         </script>
         
         @stack('scripts')
+        
+        <!-- Initialize Lucide Icons -->
+        <script>
+            // Initialize Lucide icons on client-side pages
+            function initClientIcons() {
+                if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                    lucide.createIcons();
+                } else {
+                    setTimeout(initClientIcons, 100);
+                }
+            }
+            
+            // Initialize when DOM is ready
+            document.addEventListener('DOMContentLoaded', initClientIcons);
+            
+            // Also try on window load
+            window.addEventListener('load', initClientIcons);
+        </script>
     </body>
 </html>

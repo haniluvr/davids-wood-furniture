@@ -18,7 +18,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::withCount(['orders', 'wishlists'])
+        $query = User::withCount(['orders', 'wishlistItems'])
             ->orderBy('created_at', 'desc');
 
         // Search functionality
