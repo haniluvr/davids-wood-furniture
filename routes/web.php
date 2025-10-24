@@ -293,7 +293,7 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store']
 // Login page route (for admin redirects) - redirect to home with login modal
 Route::get('/login', function () {
     return redirect()->route('home')->with('show_login_modal', true);
-})->name('login.form');
+})->name('user.login.form');
 
 // Authentication routes (using api.session middleware for guest session capture)
 Route::middleware(['api.session'])->group(function () {
