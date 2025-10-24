@@ -145,5 +145,4 @@ class DashboardController extends Controller
             'orderStatusDistribution'
         ));
     }
-
 }

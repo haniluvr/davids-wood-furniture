@@ -3,7 +3,6 @@
 /**
  * Global helper functions for the application
  */
-
 if (! function_exists('admin_route')) {
     /**
      * Generate a URL for an admin route
@@ -16,7 +15,7 @@ if (! function_exists('admin_route')) {
     {
         $env = config('app.env');
         $prefix = $env === 'local' ? 'admin.test.' : 'admin.';
-        
-        return route($prefix . $routeName, $parameters);
+
+        return route($prefix.$routeName, $parameters);
     }
 }

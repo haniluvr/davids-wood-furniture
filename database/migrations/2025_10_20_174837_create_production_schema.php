@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         // Cache table
-        if (!Schema::hasTable('cache')) {
+        if (! Schema::hasTable('cache')) {
             Schema::create('cache', function (Blueprint $table) {
                 $table->string('key')->primary();
                 $table->mediumText('value');
@@ -18,7 +18,7 @@ return new class extends Migration
         }
 
         // Cache locks table
-        if (!Schema::hasTable('cache_locks')) {
+        if (! Schema::hasTable('cache_locks')) {
             Schema::create('cache_locks', function (Blueprint $table) {
                 $table->string('key')->primary();
                 $table->string('owner');
@@ -27,7 +27,7 @@ return new class extends Migration
         }
 
         // Failed jobs table
-        if (!Schema::hasTable('failed_jobs')) {
+        if (! Schema::hasTable('failed_jobs')) {
             Schema::create('failed_jobs', function (Blueprint $table) {
                 $table->id();
                 $table->string('uuid')->unique();
@@ -40,7 +40,7 @@ return new class extends Migration
         }
 
         // Jobs table
-        if (!Schema::hasTable('jobs')) {
+        if (! Schema::hasTable('jobs')) {
             Schema::create('jobs', function (Blueprint $table) {
                 $table->id();
                 $table->string('queue');
@@ -53,7 +53,7 @@ return new class extends Migration
         }
 
         // Job batches table
-        if (!Schema::hasTable('job_batches')) {
+        if (! Schema::hasTable('job_batches')) {
             Schema::create('job_batches', function (Blueprint $table) {
                 $table->string('id')->primary();
                 $table->string('name');
@@ -69,7 +69,7 @@ return new class extends Migration
         }
 
         // Migrations table
-        if (!Schema::hasTable('migrations')) {
+        if (! Schema::hasTable('migrations')) {
             Schema::create('migrations', function (Blueprint $table) {
                 $table->unsignedInteger('id')->primary();
                 $table->string('migration');
@@ -78,7 +78,7 @@ return new class extends Migration
         }
 
         // Password reset tokens table
-        if (!Schema::hasTable('password_reset_tokens')) {
+        if (! Schema::hasTable('password_reset_tokens')) {
             Schema::create('password_reset_tokens', function (Blueprint $table) {
                 $table->string('email')->primary();
                 $table->string('token');
@@ -87,7 +87,7 @@ return new class extends Migration
         }
 
         // Sessions table
-        if (!Schema::hasTable('sessions')) {
+        if (! Schema::hasTable('sessions')) {
             Schema::create('sessions', function (Blueprint $table) {
                 $table->string('id')->primary();
                 $table->foreignId('user_id')->nullable()->index();
@@ -99,7 +99,7 @@ return new class extends Migration
         }
 
         // Admin Permissions
-        if (!Schema::hasTable('admin_permissions')) {
+        if (! Schema::hasTable('admin_permissions')) {
             Schema::create('admin_permissions', function (Blueprint $table) {
                 $table->id();
                 $table->string('role');
@@ -110,7 +110,7 @@ return new class extends Migration
         }
 
         // Archived Users
-        if (!Schema::hasTable('archived_users')) {
+        if (! Schema::hasTable('archived_users')) {
             Schema::create('archived_users', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('original_user_id');
@@ -139,7 +139,7 @@ return new class extends Migration
         }
 
         // Audit Logs
-        if (!Schema::hasTable('audit_logs')) {
+        if (! Schema::hasTable('audit_logs')) {
             Schema::create('audit_logs', function (Blueprint $table) {
                 $table->id();
                 $table->string('user_type');
@@ -153,11 +153,11 @@ return new class extends Migration
                 $table->text('user_agent')->nullable();
                 $table->text('description')->nullable();
                 $table->timestamps();
-                    });
-                }
+            });
+        }
 
         // Cart Items
-        if (!Schema::hasTable('cart_items')) {
+        if (! Schema::hasTable('cart_items')) {
             Schema::create('cart_items', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id')->nullable();
@@ -174,7 +174,7 @@ return new class extends Migration
         }
 
         // Categories
-        if (!Schema::hasTable('categories')) {
+        if (! Schema::hasTable('categories')) {
             Schema::create('categories', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('parent_id')->nullable();
@@ -190,7 +190,7 @@ return new class extends Migration
         }
 
         // CMS Pages
-        if (!Schema::hasTable('cms_pages')) {
+        if (! Schema::hasTable('cms_pages')) {
             Schema::create('cms_pages', function (Blueprint $table) {
                 $table->id();
                 $table->string('title');
@@ -213,7 +213,7 @@ return new class extends Migration
         }
 
         // Contact Messages
-        if (!Schema::hasTable('contact_messages')) {
+        if (! Schema::hasTable('contact_messages')) {
             Schema::create('contact_messages', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id')->nullable();
@@ -228,7 +228,7 @@ return new class extends Migration
         }
 
         // Employees
-        if (!Schema::hasTable('employees')) {
+        if (! Schema::hasTable('employees')) {
             Schema::create('employees', function (Blueprint $table) {
                 $table->id();
                 $table->string('first_name');
@@ -249,7 +249,7 @@ return new class extends Migration
         }
 
         // Notifications (Custom table - not Laravel's default notifications)
-        if (!Schema::hasTable('notifications')) {
+        if (! Schema::hasTable('notifications')) {
             Schema::create('notifications', function (Blueprint $table) {
                 $table->id();
                 $table->string('type'); // 'email', 'sms', 'push', 'system'
@@ -272,7 +272,7 @@ return new class extends Migration
         }
 
         // Guest Sessions
-        if (!Schema::hasTable('guest_sessions')) {
+        if (! Schema::hasTable('guest_sessions')) {
             Schema::create('guest_sessions', function (Blueprint $table) {
                 $table->string('session_id', 128)->primary();
                 $table->timestamp('created_at')->useCurrent();
@@ -281,7 +281,7 @@ return new class extends Migration
         }
 
         // Inventory Movements
-        if (!Schema::hasTable('inventory_movements')) {
+        if (! Schema::hasTable('inventory_movements')) {
             Schema::create('inventory_movements', function (Blueprint $table) {
                 $table->id();
                 $table->enum('type', ['in', 'out', 'adjustment', 'transfer'])->default('in');
@@ -299,7 +299,7 @@ return new class extends Migration
         }
 
         // Order Activities
-        if (!Schema::hasTable('order_activities')) {
+        if (! Schema::hasTable('order_activities')) {
             Schema::create('order_activities', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('order_id');
@@ -314,7 +314,7 @@ return new class extends Migration
         }
 
         // Order Fulfillment
-        if (!Schema::hasTable('order_fulfillment')) {
+        if (! Schema::hasTable('order_fulfillment')) {
             Schema::create('order_fulfillment', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('order_id');
@@ -334,7 +334,7 @@ return new class extends Migration
         }
 
         // Order Items
-        if (!Schema::hasTable('order_items')) {
+        if (! Schema::hasTable('order_items')) {
             Schema::create('order_items', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('order_id');
@@ -350,7 +350,7 @@ return new class extends Migration
         }
 
         // Orders
-        if (!Schema::hasTable('orders')) {
+        if (! Schema::hasTable('orders')) {
             Schema::create('orders', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id')->nullable();
@@ -387,7 +387,7 @@ return new class extends Migration
         }
 
         // Payment Gateways
-        if (!Schema::hasTable('payment_gateways')) {
+        if (! Schema::hasTable('payment_gateways')) {
             Schema::create('payment_gateways', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -407,7 +407,7 @@ return new class extends Migration
         }
 
         // Payment Methods
-        if (!Schema::hasTable('payment_methods')) {
+        if (! Schema::hasTable('payment_methods')) {
             Schema::create('payment_methods', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id');
@@ -426,7 +426,7 @@ return new class extends Migration
         }
 
         // Product Popularity
-        if (!Schema::hasTable('product_popularity')) {
+        if (! Schema::hasTable('product_popularity')) {
             Schema::create('product_popularity', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('product_id');
@@ -441,7 +441,7 @@ return new class extends Migration
         }
 
         // Product Reviews
-        if (!Schema::hasTable('product_reviews')) {
+        if (! Schema::hasTable('product_reviews')) {
             Schema::create('product_reviews', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('product_id');
@@ -461,7 +461,7 @@ return new class extends Migration
         }
 
         // Products
-        if (!Schema::hasTable('products')) {
+        if (! Schema::hasTable('products')) {
             Schema::create('products', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('category_id');
@@ -497,7 +497,7 @@ return new class extends Migration
         }
 
         // Returns Repairs
-        if (!Schema::hasTable('returns_repairs')) {
+        if (! Schema::hasTable('returns_repairs')) {
             Schema::create('returns_repairs', function (Blueprint $table) {
                 $table->id();
                 $table->string('rma_number');
@@ -522,7 +522,7 @@ return new class extends Migration
         }
 
         // Settings
-        if (!Schema::hasTable('settings')) {
+        if (! Schema::hasTable('settings')) {
             Schema::create('settings', function (Blueprint $table) {
                 $table->id();
                 $table->string('key')->unique();
@@ -538,7 +538,7 @@ return new class extends Migration
         }
 
         // Shipping Methods
-        if (!Schema::hasTable('shipping_methods')) {
+        if (! Schema::hasTable('shipping_methods')) {
             Schema::create('shipping_methods', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -559,7 +559,7 @@ return new class extends Migration
         }
 
         // Users
-        if (!Schema::hasTable('users')) {
+        if (! Schema::hasTable('users')) {
             Schema::create('users', function (Blueprint $table) {
                 $table->id();
                 $table->string('first_name')->nullable();
@@ -589,7 +589,7 @@ return new class extends Migration
         }
 
         // Wishlist Items
-        if (!Schema::hasTable('wishlist_items')) {
+        if (! Schema::hasTable('wishlist_items')) {
             Schema::create('wishlist_items', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id')->nullable();
@@ -600,7 +600,7 @@ return new class extends Migration
         }
 
         // Wishlists
-        if (!Schema::hasTable('wishlists')) {
+        if (! Schema::hasTable('wishlists')) {
             Schema::create('wishlists', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id')->nullable();
