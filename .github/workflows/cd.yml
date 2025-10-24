@@ -189,7 +189,7 @@ jobs:
         sudo tee "$APP_DIR/.env" > /dev/null << 'ENV_EOF'
         APP_NAME="David's Wood Furniture"
         APP_ENV=production
-        APP_KEY=base64:YourAppKeyHere
+        APP_KEY=
         APP_DEBUG=false
         APP_URL=https://davidswood.shop
 
@@ -251,6 +251,10 @@ jobs:
         # Set proper ownership for .env
         sudo chown www-data:www-data "$APP_DIR/.env"
         sudo chmod 600 "$APP_DIR/.env"
+        
+        # Generate Laravel application key
+        echo "Generating Laravel application key..."
+        sudo -u www-data php artisan key:generate --force || echo "Key generation failed, but continuing..."
         
         # Clear Laravel caches
         echo "Clearing Laravel caches..."
