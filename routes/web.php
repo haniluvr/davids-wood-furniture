@@ -32,12 +32,13 @@ $adminRoutes = function () {
     // Admin logout routes (outside middleware to handle CSRF expiration)
     Route::post('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
     Route::get('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout.get');
-    
+
     // Fallback route for CSRF token expiration
     Route::get('/logout-fallback', function () {
         Auth::guard('admin')->logout();
         session()->invalidate();
         session()->regenerateToken();
+
         return redirect()->to(admin_route('login'))
             ->with('success', 'You have been logged out successfully.');
     })->name('logout.fallback');

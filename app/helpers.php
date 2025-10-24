@@ -15,7 +15,7 @@ if (! function_exists('admin_route')) {
     {
         // Check the current domain to determine the correct prefix
         $host = request()->getHost();
-        
+
         if ($host === 'admin.davidswood.test') {
             $prefix = 'admin.test.';
         } elseif ($host === 'admin.localhost') {

@@ -344,19 +344,19 @@ class CartController extends Controller
     {
         try {
             $selectedItems = $request->input('selectedItems', []);
-            
+
             // Store selected items in session
             session(['selectedCartItems' => $selectedItems]);
-            
+
             return response()->json([
                 'success' => true,
-                'message' => 'Selected items stored successfully'
+                'message' => 'Selected items stored successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to store selected items',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

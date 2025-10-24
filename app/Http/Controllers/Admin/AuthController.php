@@ -86,7 +86,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'You have been logged out successfully.',
-                'redirect' => admin_route('login')
+                'redirect' => admin_route('login'),
             ]);
         }
 
