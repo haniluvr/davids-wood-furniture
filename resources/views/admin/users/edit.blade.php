@@ -12,13 +12,13 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.users.index') }}">Users /</a>
+                <a class="font-medium" href="{{ admin_route('users.index') }}">Users /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.users.show', $user) }}">{{ $user->first_name }} {{ $user->last_name }} /</a>
+                <a class="font-medium" href="{{ admin_route('users.show', $user) }}">{{ $user->first_name }} {{ $user->last_name }} /</a>
             </li>
             <li class="font-medium text-primary">Edit</li>
         </ol>
@@ -82,7 +82,7 @@
 
     <!-- Edit Form -->
     <div class="lg:col-span-2">
-        <form action="{{ route('admin.users.update', $user) }}" method="POST" class="space-y-6">
+        <form action="{{ admin_route('users.update', $user) }}" method="POST" class="space-y-6">
             @csrf
             @method('PUT')
 
@@ -316,7 +316,7 @@
 
             <!-- Form Actions -->
             <div class="flex items-center justify-end gap-4">
-                <a href="{{ route('admin.users.show', $user) }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
+                <a href="{{ admin_route('users.show', $user) }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
                     <i data-lucide="x" class="w-4 h-4"></i>
                     Cancel
                 </a>

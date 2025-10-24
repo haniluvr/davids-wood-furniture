@@ -11,18 +11,18 @@
         </h2>
         <nav>
             <ol class="flex items-center gap-2">
-                <li><a href="{{ route('admin.dashboard') }}" class="font-medium">Dashboard</a></li>
+                <li><a href="{{ admin_route('dashboard') }}" class="font-medium">Dashboard</a></li>
                 <li class="font-medium text-primary">/</li>
-                <li><a href="{{ route('admin.inventory.index') }}" class="font-medium">Inventory</a></li>
+                <li><a href="{{ admin_route('inventory.index') }}" class="font-medium">Inventory</a></li>
                 <li class="font-medium text-primary">/</li>
-                <li><a href="{{ route('admin.inventory.show', $product) }}" class="font-medium">{{ $product->name }}</a></li>
+                <li><a href="{{ admin_route('inventory.show', $product) }}" class="font-medium">{{ $product->name }}</a></li>
                 <li class="font-medium text-primary">/</li>
                 <li class="font-medium text-primary">Adjust</li>
             </ol>
         </nav>
     </div>
 
-    <form action="{{ route('admin.inventory.adjust', $product) }}" method="POST" class="space-y-6">
+    <form action="{{ admin_route('inventory.adjust', $product) }}" method="POST" class="space-y-6">
         @csrf
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -240,7 +240,7 @@
                         </button>
                         
                         <a
-                            href="{{ route('admin.inventory.show', $product) }}"
+                            href="{{ admin_route('inventory.show', $product) }}"
                             class="flex w-full justify-center rounded-lg border border-stroke bg-white p-3 font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-boxdark-2"
                         >
                             Cancel

@@ -12,7 +12,7 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li class="font-medium text-primary">Inventory</li>
         </ol>
@@ -50,7 +50,7 @@
                 <span class="text-sm font-medium">Low Stock</span>
             </div>
             @if($stats['low_stock_products'] > 0)
-            <a href="{{ route('admin.inventory.low-stock') }}" class="text-meta-6 hover:text-meta-6/80">
+            <a href="{{ admin_route('inventory.low-stock') }}" class="text-meta-6 hover:text-meta-6/80">
                 <i data-lucide="external-link" class="w-4 h-4"></i>
             </a>
             @endif
@@ -99,7 +99,7 @@
                         Product Inventory
                     </h4>
                     <div class="flex gap-2">
-                        <a href="{{ route('admin.inventory.movements') }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90">
+                        <a href="{{ admin_route('inventory.movements') }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90">
                             <i data-lucide="activity" class="w-4 h-4 mr-2"></i>
                             View Movements
                         </a>
@@ -140,7 +140,7 @@
                                 <i data-lucide="search" class="w-4 h-4 mr-2"></i>
                                 Filter
                             </button>
-                            <a href="{{ route('admin.inventory.index') }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-3 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
+                            <a href="{{ admin_route('inventory.index') }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-3 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
                                 <i data-lucide="x" class="w-4 h-4 mr-2"></i>
                                 Clear
                             </a>
@@ -217,11 +217,11 @@
                         </button>
                         
                         <div x-show="dropdownOpen" @click.outside="dropdownOpen = false" class="absolute right-0 top-full z-40 w-40 space-y-1 rounded-sm border border-stroke bg-white p-1.5 shadow-default dark:border-strokedark dark:bg-boxdark" x-cloak>
-                            <a href="{{ route('admin.inventory.show', $product) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
+                            <a href="{{ admin_route('inventory.show', $product) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
                                 <i data-lucide="eye" class="w-4 h-4"></i>
                                 View History
                             </a>
-                            <a href="{{ route('admin.inventory.adjust', $product) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
+                            <a href="{{ admin_route('inventory.adjust', $product) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
                                 <i data-lucide="edit" class="w-4 h-4"></i>
                                 Adjust Stock
                             </a>
@@ -288,7 +288,7 @@
                 
                 @if($stats['recent_movements']->count() > 0)
                 <div class="mt-4 pt-4 border-t border-stroke dark:border-strokedark">
-                    <a href="{{ route('admin.inventory.movements') }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90 w-full">
+                    <a href="{{ admin_route('inventory.movements') }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90 w-full">
                         <i data-lucide="activity" class="w-4 h-4 mr-2"></i>
                         View All Movements
                     </a>
@@ -350,7 +350,7 @@
     <div class="w-full max-w-md rounded-lg bg-white p-6 dark:bg-boxdark">
         <h3 class="mb-4 text-lg font-medium text-black dark:text-white">Export Inventory</h3>
         
-        <form action="{{ route('admin.inventory.export') }}" method="GET">
+        <form action="{{ admin_route('inventory.export') }}" method="GET">
             <div class="mb-4">
                 <label class="mb-2.5 block text-black dark:text-white">Export Format</label>
                 <select name="format" class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary">

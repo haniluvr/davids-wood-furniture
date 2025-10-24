@@ -12,7 +12,7 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li class="font-medium text-primary">Notifications</li>
         </ol>
@@ -76,7 +76,7 @@
     <div class="flex items-center justify-between mb-6">
         <h4 class="text-lg font-semibold text-black dark:text-white">Recent Notifications</h4>
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.notifications.templates') }}" class="flex items-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
+            <a href="{{ admin_route('notifications.templates') }}" class="flex items-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
                 <i data-lucide="settings" class="w-4 h-4"></i>
                 Manage Templates
             </a>

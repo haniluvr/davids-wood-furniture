@@ -5,7 +5,7 @@
 >
     <!-- SIDEBAR HEADER -->
     <div class="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
-        <a href="{{ route('admin.dashboard') }}">
+        <a href="{{ admin_route('dashboard') }}">
             <img src="{{ asset('admin/images/logo/logo.svg') }}" alt="Logo" class="h-8" />
         </a>
 
@@ -102,7 +102,7 @@
                                 <li>
                                     <a
                                         class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
-                                        href="{{ route('admin.dashboard') }}"
+                                        href="{{ admin_route('dashboard') }}"
                                         :class="page === 'ecommerce' && 'text-white'"
                                     >eCommerce</a>
                                 </li>
@@ -181,7 +181,7 @@
                                 <li>
                                     <a
                                         class="group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white"
-                                        href="{{ route('admin.products') }}"
+                                        href="{{ admin_route('products') }}"
                                     >Products</a>
                                 </li>
                                 <li>

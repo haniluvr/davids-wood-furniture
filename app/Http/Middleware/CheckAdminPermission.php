@@ -19,7 +19,7 @@ class CheckAdminPermission
     {
         // Check if user is authenticated as admin
         if (! Auth::guard('admin')->check()) {
-            return redirect()->route('admin.login')->with('error', 'Please log in to access this page.');
+            return redirect()->to(admin_route('login'))->with('error', 'Please log in to access this page.');
         }
 
         $admin = Auth::guard('admin')->user();

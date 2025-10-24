@@ -12,10 +12,10 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.settings.index') }}">Settings /</a>
+                <a class="font-medium" href="{{ admin_route('settings.index') }}">Settings /</a>
             </li>
             <li class="font-medium text-primary">Email</li>
         </ol>
@@ -24,7 +24,7 @@
 <!-- Breadcrumb End -->
 
 <div class="max-w-4xl mx-auto">
-    <form action="{{ route('admin.settings.email.update') }}" method="POST" class="space-y-6">
+    <form action="{{ admin_route('settings.email.update') }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -323,7 +323,7 @@
             <h4 class="text-lg font-semibold text-black dark:text-white mb-6">Email Template Previews</h4>
             
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <a href="{{ route('admin.emails.preview', 'order-created') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                <a href="{{ admin_route('emails.preview', 'order-created') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900">
                         <i data-lucide="shopping-cart" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
                     </div>
@@ -333,7 +333,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('admin.emails.preview', 'order-status-changed') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                <a href="{{ admin_route('emails.preview', 'order-status-changed') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
                         <i data-lucide="truck" class="h-5 w-5 text-green-600 dark:text-green-400"></i>
                     </div>
@@ -343,7 +343,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('admin.emails.preview', 'welcome') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                <a href="{{ admin_route('emails.preview', 'welcome') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900">
                         <i data-lucide="user-plus" class="h-5 w-5 text-purple-600 dark:text-purple-400"></i>
                     </div>
@@ -353,7 +353,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('admin.emails.preview', 'newsletter') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                <a href="{{ admin_route('emails.preview', 'newsletter') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900">
                         <i data-lucide="mail" class="h-5 w-5 text-orange-600 dark:text-orange-400"></i>
                     </div>
@@ -363,7 +363,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('admin.emails.preview', 'abandoned-cart') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                <a href="{{ admin_route('emails.preview', 'abandoned-cart') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900">
                         <i data-lucide="shopping-bag" class="h-5 w-5 text-red-600 dark:text-red-400"></i>
                     </div>
@@ -373,7 +373,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('admin.emails.preview') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
+                <a href="{{ admin_route('emails.preview') }}" target="_blank" class="flex items-center gap-3 rounded-lg border border-stroke p-4 hover:bg-gray-50 dark:border-strokedark dark:hover:bg-boxdark">
                     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-900">
                         <i data-lucide="eye" class="h-5 w-5 text-gray-600 dark:text-gray-400"></i>
                     </div>
@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
         testEmailBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Sending...';
 
         // Send test email request
-        fetch('{{ route("admin.settings.email.test") }}', {
+        fetch('{{ admin_route("settings.email.test") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

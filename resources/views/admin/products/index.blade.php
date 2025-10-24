@@ -19,7 +19,7 @@
             <i data-lucide="settings" class="w-4 h-4"></i>
             Bulk Actions
         </button>
-        <a href="{{ route('admin.products.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">
+        <a href="{{ admin_route('products.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">
             <i data-lucide="plus" class="w-4 h-4"></i>
             Add Product
         </a>
@@ -129,7 +129,7 @@
             <p class="text-sm text-stone-600 dark:text-gray-400">Manage your product inventory and settings</p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.products.export', request()->query()) }}" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+            <a href="{{ admin_route('products.export', request()->query()) }}" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Export CSV
             </a>
@@ -138,7 +138,7 @@
 
     <!-- Enhanced Filters -->
     <div class="mb-6 rounded-xl border border-stone-200/50 bg-stone-50/50 p-4 dark:border-strokedark/50 dark:bg-stone-800/20">
-            <form method="GET" action="{{ route('admin.products.index') }}" class="space-y-4">
+            <form method="GET" action="{{ admin_route('products.index') }}" class="space-y-4">
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
                     <!-- Search -->
                     <div>
@@ -201,7 +201,7 @@
                     <i data-lucide="search" class="w-4 h-4"></i>
                     Apply Filters
                 </button>
-                <a href="{{ route('admin.products.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                <a href="{{ admin_route('products.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
                     <i data-lucide="x" class="w-4 h-4"></i>
                         Clear
                     </a>
@@ -272,11 +272,11 @@
 
                             <!-- Actions -->
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('admin.products.show', $product) }}" class="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-primary/90">
+                    <a href="{{ admin_route('products.show', $product) }}" class="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-primary/90">
                         <i data-lucide="eye" class="w-4 h-4"></i>
                                     View
                                 </a>
-                    <a href="{{ route('admin.products.edit', $product) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400" title="Edit">
+                    <a href="{{ admin_route('products.edit', $product) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400" title="Edit">
                         <i data-lucide="edit" class="w-4 h-4"></i>
                     </a>
                     <button onclick="restockProduct({{ $product->id }})" class="inline-flex items-center justify-center h-8 w-8 rounded-xl bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-blue-100 hover:text-blue-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400" title="Restock">

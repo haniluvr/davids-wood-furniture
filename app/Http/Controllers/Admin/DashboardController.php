@@ -60,7 +60,7 @@ class DashboardController extends Controller
                 'title' => 'New Order',
                 'message' => "Order #{$order->order_number} from {$customerName}",
                 'timestamp' => $order->created_at,
-                'url' => route('admin.orders.show', $order),
+                'url' => admin_route('orders.show', $order),
             ];
         });
 
@@ -71,7 +71,7 @@ class DashboardController extends Controller
                 'title' => 'New Message',
                 'message' => "Message from {$message->name}",
                 'timestamp' => $message->created_at,
-                'url' => route('admin.messages.show', $message),
+                'url' => admin_route('messages.show', $message),
             ];
         });
 
@@ -82,7 +82,7 @@ class DashboardController extends Controller
                 'title' => 'Low Stock Alert',
                 'message' => "{$product->name} is running low ({$product->stock_quantity} left)",
                 'timestamp' => now(),
-                'url' => route('admin.inventory.show', $product),
+                'url' => admin_route('inventory.show', $product),
             ];
         });
 

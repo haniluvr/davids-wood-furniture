@@ -225,7 +225,7 @@
                         </li>
                         <li>
                             <a
-                                href="{{ route('admin.settings.index') }}"
+                                href="{{ admin_route('settings.index') }}"
                                 class="flex items-center gap-3 px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50/80 hover:text-primary transition-colors duration-200 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:text-primary"
                             >
                                 <i data-lucide="settings" class="w-4 h-4"></i>
@@ -235,7 +235,7 @@
                     </ul>
                     
                     <div class="border-t border-stroke/50 dark:border-strokedark/50 p-2">
-                        <form method="POST" action="{{ route('admin.logout') }}">
+                        <form method="POST" action="{{ admin_route('logout') }}">
                         @csrf
                             <button type="submit" class="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50/80 hover:text-red-700 transition-colors duration-200 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300 rounded-lg">
                                 <i data-lucide="log-out" class="w-4 h-4"></i>

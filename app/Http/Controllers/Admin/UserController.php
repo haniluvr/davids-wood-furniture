@@ -127,7 +127,7 @@ class UserController extends Controller
 
         $user = User::create($userData);
 
-        return redirect()->route('admin.users.show', $user)
+        return redirect()->to(admin_route('users.show', $user))
             ->with('success', 'User created successfully.');
     }
 
@@ -190,7 +190,7 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        return redirect()->route('admin.users.show', $user)
+        return redirect()->to(admin_route('users.show', $user))
             ->with('success', 'User updated successfully.');
     }
 
@@ -210,7 +210,7 @@ class UserController extends Controller
         // Delete the user
         $user->delete();
 
-        return redirect()->route('admin.users.index')
+        return redirect()->to(admin_route('users.index'))
             ->with('success', 'User deleted successfully.');
     }
 
@@ -324,7 +324,7 @@ class UserController extends Controller
 
         $admin = Admin::create($adminData);
 
-        return redirect()->route('admin.users.admins')
+        return redirect()->to(admin_route('users.admins'))
             ->with('success', 'Admin user created successfully.');
     }
 

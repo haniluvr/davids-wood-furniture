@@ -12,7 +12,7 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li class="font-medium text-primary">eCommerce</li>
         </ol>

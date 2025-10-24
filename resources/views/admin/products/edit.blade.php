@@ -11,16 +11,16 @@
         </h2>
         <nav>
             <ol class="flex items-center gap-2">
-                <li><a href="{{ route('admin.dashboard') }}" class="font-medium">Dashboard</a></li>
+                <li><a href="{{ admin_route('dashboard') }}" class="font-medium">Dashboard</a></li>
                 <li class="font-medium text-primary">/</li>
-                <li><a href="{{ route('admin.products.index') }}" class="font-medium">Products</a></li>
+                <li><a href="{{ admin_route('products.index') }}" class="font-medium">Products</a></li>
                 <li class="font-medium text-primary">/</li>
                 <li class="font-medium text-primary">Edit</li>
             </ol>
         </nav>
     </div>
 
-    <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+    <form action="{{ admin_route('products.update', $product) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -387,7 +387,7 @@
                         </button>
                         
                         <a
-                            href="{{ route('admin.products.index') }}"
+                            href="{{ admin_route('products.index') }}"
                             class="flex w-full justify-center rounded-lg border border-stroke bg-white p-3 font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-boxdark-2"
                         >
                             Cancel

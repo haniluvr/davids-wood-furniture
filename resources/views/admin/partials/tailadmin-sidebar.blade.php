@@ -7,7 +7,7 @@
         :class="sidebarToggle ? 'justify-center' : 'justify-between'"
         class="flex items-center gap-2 pt-8 sidebar-header pb-7"
     >
-        <a href="{{ route('admin.dashboard') }}">
+        <a href="{{ admin_route('dashboard') }}">
             <span class="logo" :class="sidebarToggle ? 'hidden' : ''">
                 <img class="dark:hidden h-8" src="{{ asset('admin/images/logo/logo.svg') }}" alt="NeoCommerce" />
                 <img class="hidden dark:block h-8" src="{{ asset('admin/images/logo/logo-dark.svg') }}" alt="NeoCommerce" />
@@ -51,7 +51,7 @@
                     <!-- Menu Item Dashboard -->
                     <li>
                         <a
-                            href="{{ route('admin.dashboard') }}"
+                            href="{{ admin_route('dashboard') }}"
                             data-accordion="Dashboard"
                             class="menu-item group"
                             :class=" (selected === 'Dashboard') || (page === 'ecommerce' || page === 'analytics' || page === 'marketing' || page === 'crm' || page === 'stocks') ? 'menu-item-active' : 'menu-item-inactive'"
@@ -109,7 +109,7 @@
                             >
                                 <li>
                                     <a
-                                        href="{{ route('admin.dashboard') }}"
+                                        href="{{ admin_route('dashboard') }}"
                                         class="menu-dropdown-item group"
                                         :class="page === 'ecommerce' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
                                     >
@@ -125,7 +125,7 @@
                     <!-- Menu Item Products -->
                     <li>
                         <a
-                            href="{{ route('admin.products.index') }}"
+                            href="{{ admin_route('products.index') }}"
                             data-accordion="Products"
                             class="menu-item group"
                             :class=" (selected === 'Products') || (page === 'products' || page === 'productCategories' || page === 'productInventory') ? 'menu-item-active' : 'menu-item-inactive'"
@@ -183,7 +183,7 @@
                             >
                                 <li>
                                     <a
-                                        href="{{ route('admin.products.index') }}"
+                                        href="{{ admin_route('products.index') }}"
                                         class="menu-dropdown-item group"
                                         :class="page === 'products' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
                                     >
@@ -217,7 +217,7 @@
                     <!-- Menu Item Customers -->
                     <li>
                         <a
-                            href="{{ route('admin.users.index') }}"
+                            href="{{ admin_route('users.index') }}"
                             data-accordion="Customers"
                             class="menu-item group"
                             :class=" (selected === 'Customers') || (page === 'customers' || page === 'customerGroups') ? 'menu-item-active' : 'menu-item-inactive'"
@@ -275,7 +275,7 @@
                             >
                                 <li>
                                     <a
-                                        href="{{ route('admin.users.index') }}"
+                                        href="{{ admin_route('users.index') }}"
                                         class="menu-dropdown-item group"
                                         :class="page === 'customers' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
                                     >
@@ -300,7 +300,7 @@
                     <!-- Menu Item Orders -->
                     <li>
                         <a
-                            href="{{ route('admin.orders.index') }}"
+                            href="{{ admin_route('orders.index') }}"
                             data-accordion="Orders"
                             class="menu-item group"
                             :class=" (selected === 'Orders') || (page === 'orders' || page === 'orderStatus') ? 'menu-item-active' : 'menu-item-inactive'"
@@ -362,7 +362,7 @@
                             >
                                 <li>
                                     <a
-                                        href="{{ route('admin.orders.index') }}"
+                                        href="{{ admin_route('orders.index') }}"
                                         class="menu-dropdown-item group"
                                         :class="page === 'orders' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
                                     >
@@ -387,7 +387,7 @@
                     <!-- Menu Item Analytics -->
                     <li>
                         <a
-                            href="{{ route('admin.analytics') }}"
+                            href="{{ admin_route('analytics') }}"
                             data-accordion="Analytics"
                             class="menu-item group"
                             :class=" (selected === 'Analytics') || (page === 'analytics' || page === 'reports') ? 'menu-item-active' : 'menu-item-inactive'"
@@ -445,7 +445,7 @@
                             >
                                 <li>
                                     <a
-                                        href="{{ route('admin.analytics') }}"
+                                        href="{{ admin_route('analytics') }}"
                                         class="menu-dropdown-item group"
                                         :class="page === 'analytics' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'"
                                     >
@@ -583,7 +583,7 @@
 
                     <!-- Menu Item Logout -->
                     <li>
-                        <form method="POST" action="{{ route('admin.logout') }}">
+                        <form method="POST" action="{{ admin_route('logout') }}">
                             @csrf
                             <button
                                 type="submit"

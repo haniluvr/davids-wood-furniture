@@ -12,10 +12,10 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.settings.index') }}">Settings /</a>
+                <a class="font-medium" href="{{ admin_route('settings.index') }}">Settings /</a>
             </li>
             <li class="font-medium text-primary">Shipping</li>
         </ol>
@@ -24,7 +24,7 @@
 <!-- Breadcrumb End -->
 
 <div class="max-w-4xl mx-auto">
-    <form action="{{ route('admin.settings.shipping.update') }}" method="POST" class="space-y-6">
+    <form action="{{ admin_route('settings.shipping.update') }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
 

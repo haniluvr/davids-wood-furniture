@@ -5,7 +5,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
-        <a href="{{ route('admin.contact-messages.index') }}" class="text-blue-600 hover:text-blue-800">
+        <a href="{{ admin_route('contact-messages.index') }}" class="text-blue-600 hover:text-blue-800">
             ← Back to Messages
         </a>
     </div>
@@ -26,7 +26,7 @@
                     @if($contactMessage->user)
                         <p class="text-sm text-gray-500 mt-1">
                             Registered User: 
-                            <a href="{{ route('admin.users.show', $contactMessage->user) }}" class="text-blue-600 hover:text-blue-800">
+                            <a href="{{ admin_route('users.show', $contactMessage->user) }}" class="text-blue-600 hover:text-blue-800">
                                 {{ $contactMessage->user->name }}
                             </a>
                         </p>
@@ -65,7 +65,7 @@
         <!-- Admin Notes -->
         <div class="px-6 py-6 border-t border-gray-200">
             <h3 class="text-lg font-semibold text-gray-800 mb-3">Admin Notes</h3>
-            <form action="{{ route('admin.contact-messages.update', $contactMessage) }}" method="POST">
+            <form action="{{ admin_route('contact-messages.update', $contactMessage) }}" method="POST">
                 @csrf
                 @method('PATCH')
                 <textarea name="admin_notes" 
@@ -103,7 +103,7 @@
 
         <!-- Actions -->
         <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-            <form action="{{ route('admin.contact-messages.destroy', $contactMessage) }}" 
+            <form action="{{ admin_route('contact-messages.destroy', $contactMessage) }}" 
                   method="POST"
                   onsubmit="return confirm('Are you sure you want to delete this message? This action cannot be undone.');">
                 @csrf

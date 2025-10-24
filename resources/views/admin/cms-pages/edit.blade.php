@@ -12,13 +12,13 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.cms-pages.index') }}">CMS Pages /</a>
+                <a class="font-medium" href="{{ admin_route('cms-pages.index') }}">CMS Pages /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.cms-pages.show', $page) }}">{{ $page->title }} /</a>
+                <a class="font-medium" href="{{ admin_route('cms-pages.show', $page) }}">{{ $page->title }} /</a>
             </li>
             <li class="font-medium text-primary">Edit</li>
         </ol>
@@ -27,7 +27,7 @@
 <!-- Breadcrumb End -->
 
 <div class="max-w-6xl mx-auto">
-    <form action="{{ route('admin.cms-pages.update', $page) }}" method="POST" class="space-y-6">
+    <form action="{{ admin_route('cms-pages.update', $page) }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -298,11 +298,11 @@
         <!-- Form Actions -->
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="{{ route('admin.cms-pages.show', $page) }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
+                <a href="{{ admin_route('cms-pages.show', $page) }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
                     <i data-lucide="eye" class="w-4 h-4"></i>
                     Preview
                 </a>
-                <a href="{{ route('admin.cms-pages.index') }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
+                <a href="{{ admin_route('cms-pages.index') }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
                     <i data-lucide="x" class="w-4 h-4"></i>
                     Cancel
                 </a>

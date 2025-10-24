@@ -82,7 +82,7 @@ class ShippingMethodController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return redirect()->route('admin.shipping-methods.index')
+        return redirect()->to(admin_route('shipping-methods.index'))
             ->with('success', 'Shipping method created successfully.');
     }
 
@@ -135,7 +135,7 @@ class ShippingMethodController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return redirect()->route('admin.shipping-methods.index')
+        return redirect()->to(admin_route('shipping-methods.index'))
             ->with('success', 'Shipping method updated successfully.');
     }
 
@@ -157,7 +157,7 @@ class ShippingMethodController extends Controller
 
         $shippingMethod->delete();
 
-        return redirect()->route('admin.shipping-methods.index')
+        return redirect()->to(admin_route('shipping-methods.index'))
             ->with('success', 'Shipping method deleted successfully.');
     }
 

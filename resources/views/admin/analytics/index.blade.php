@@ -11,7 +11,7 @@
             <p class="text-muted">Comprehensive analytics and reporting for your business</p>
         </div>
         <div>
-            <a href="{{ route('admin.analytics.export') }}" class="btn btn-outline-primary">
+            <a href="{{ admin_route('analytics.export') }}" class="btn btn-outline-primary">
                 <i class="fas fa-download"></i> Export Data
             </a>
         </div>
@@ -22,7 +22,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <form method="GET" action="{{ route('admin.analytics.index') }}" class="row g-3">
+                    <form method="GET" action="{{ admin_route('analytics.index') }}" class="row g-3">
                         <div class="col-md-3">
                             <label for="start_date" class="form-label">Start Date</label>
                             <input type="date" class="form-control" id="start_date" name="start_date" 
@@ -188,22 +188,22 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <a href="{{ route('admin.analytics.sales') }}" class="btn btn-outline-primary btn-block">
+                            <a href="{{ admin_route('analytics.sales') }}" class="btn btn-outline-primary btn-block">
                                 <i class="fas fa-chart-line"></i> Sales Report
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ route('admin.analytics.customers') }}" class="btn btn-outline-success btn-block">
+                            <a href="{{ admin_route('analytics.customers') }}" class="btn btn-outline-success btn-block">
                                 <i class="fas fa-users"></i> Customer Report
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ route('admin.analytics.products') }}" class="btn btn-outline-info btn-block">
+                            <a href="{{ admin_route('analytics.products') }}" class="btn btn-outline-info btn-block">
                                 <i class="fas fa-box"></i> Product Report
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="{{ route('admin.analytics.revenue') }}" class="btn btn-outline-warning btn-block">
+                            <a href="{{ admin_route('analytics.revenue') }}" class="btn btn-outline-warning btn-block">
                                 <i class="fas fa-dollar-sign"></i> Revenue Report
                             </a>
                         </div>

@@ -98,7 +98,7 @@ class PaymentGatewayController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return redirect()->route('admin.payment-gateways.index')
+        return redirect()->to(admin_route('payment-gateways.index'))
             ->with('success', 'Payment gateway created successfully.');
     }
 
@@ -165,7 +165,7 @@ class PaymentGatewayController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return redirect()->route('admin.payment-gateways.index')
+        return redirect()->to(admin_route('payment-gateways.index'))
             ->with('success', 'Payment gateway updated successfully.');
     }
 
@@ -187,7 +187,7 @@ class PaymentGatewayController extends Controller
 
         $paymentGateway->delete();
 
-        return redirect()->route('admin.payment-gateways.index')
+        return redirect()->to(admin_route('payment-gateways.index'))
             ->with('success', 'Payment gateway deleted successfully.');
     }
 

@@ -134,7 +134,7 @@ class InventoryController extends Controller
             event(new LowStockAlert($product, $newStock, 10));
         }
 
-        return redirect()->route('admin.inventory.show', $product)
+        return redirect()->to(admin_route('inventory.show', $product))
             ->with('success', 'Stock adjustment completed successfully.');
     }
 

@@ -52,7 +52,7 @@
                     <div class="tab-content" id="settingsTabsContent">
                         <!-- General Settings -->
                         <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
-                            <form method="POST" action="{{ route('admin.settings.update-general') }}">
+                            <form method="POST" action="{{ admin_route('settings.update-general') }}">
                                 @csrf
                                 <div class="row">
                                     <div class="col-md-6">
@@ -104,7 +104,7 @@
 
                         <!-- Email Settings -->
                         <div class="tab-pane fade" id="email" role="tabpanel" aria-labelledby="email-tab">
-                            <form method="POST" action="{{ route('admin.settings.update-email') }}">
+                            <form method="POST" action="{{ admin_route('settings.update-email') }}">
                                 @csrf
                                 <div class="row">
                                     <div class="col-md-6">

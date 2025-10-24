@@ -15,7 +15,7 @@
     </div>
 
     <div class="flex items-center gap-3">
-        <a href="{{ route('admin.orders.returns-repairs.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+        <a href="{{ admin_route('orders.returns-repairs.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
             Back to Returns & Repairs
         </a>
@@ -24,7 +24,7 @@
 <!-- Breadcrumb End -->
 
 <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
-    <form action="{{ route('admin.orders.returns-repairs.store') }}" method="POST" class="space-y-6">
+    <form action="{{ admin_route('orders.returns-repairs.store') }}" method="POST" class="space-y-6">
         @csrf
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -189,7 +189,7 @@
 
         <!-- Form Actions -->
         <div class="flex items-center justify-end gap-3 pt-6 border-t border-stone-200 dark:border-strokedark">
-            <a href="{{ route('admin.orders.returns-repairs.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-6 py-3 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+            <a href="{{ admin_route('orders.returns-repairs.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-6 py-3 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
                 Cancel
             </a>
             <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">

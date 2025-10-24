@@ -244,7 +244,7 @@
                         <i data-lucide="filter" class="w-4 h-4"></i>
                         Filter
                     </button>
-                    <a href="{{ route('admin.orders.index') }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 transition-all duration-200 hover:bg-emerald-700">
+                    <a href="{{ admin_route('orders.index') }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 transition-all duration-200 hover:bg-emerald-700">
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                         View All
                     </a>
@@ -311,7 +311,7 @@
                     </div>
 
                     <div class="hidden items-center justify-center p-4 sm:flex">
-                        <a href="{{ route('admin.orders.show', $order) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400">
+                        <a href="{{ admin_route('orders.show', $order) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400">
                             <i data-lucide="eye" class="w-4 h-4"></i>
                         </a>
                     </div>

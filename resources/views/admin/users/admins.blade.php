@@ -12,10 +12,10 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.users.index') }}">Users /</a>
+                <a class="font-medium" href="{{ admin_route('users.index') }}">Users /</a>
             </li>
             <li class="font-medium text-primary">Admins</li>
         </ol>
@@ -93,7 +93,7 @@
         <h4 class="text-xl font-semibold text-black dark:text-white">
             Admin Users
         </h4>
-        <a href="{{ route('admin.users.create-admin') }}" class="flex items-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
+        <a href="{{ admin_route('users.create-admin') }}" class="flex items-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
             <i data-lucide="user-plus" class="w-4 h-4"></i>
             Add Admin
         </a>
@@ -206,7 +206,7 @@
                         </td>
                         <td class="py-3 px-4">
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('admin.users.edit-admin', $admin) }}" class="text-primary hover:text-primary/80 transition-colors duration-200" title="Edit">
+                                <a href="{{ admin_route('users.edit-admin', $admin) }}" class="text-primary hover:text-primary/80 transition-colors duration-200" title="Edit">
                                     <i data-lucide="edit" class="w-4 h-4"></i>
                                 </a>
                                 @if($admin->id !== auth('admin')->id())

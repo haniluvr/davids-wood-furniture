@@ -86,7 +86,7 @@ class ReturnsRepairsController extends Controller
             Order::find($request->order_id)->update(['return_status' => 'requested']);
         });
 
-        return redirect()->route('admin.orders.returns-repairs.index')
+        return redirect()->to(admin_route('orders.returns-repairs.index'))
             ->with('success', 'Return/Repair request created successfully.');
     }
 

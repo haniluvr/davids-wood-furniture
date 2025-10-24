@@ -11,9 +11,9 @@
         </h2>
         <nav>
             <ol class="flex items-center gap-2">
-                <li><a href="{{ route('admin.dashboard') }}" class="font-medium">Dashboard</a></li>
+                <li><a href="{{ admin_route('dashboard') }}" class="font-medium">Dashboard</a></li>
                 <li class="font-medium text-primary">/</li>
-                <li><a href="{{ route('admin.inventory.index') }}" class="font-medium">Inventory</a></li>
+                <li><a href="{{ admin_route('inventory.index') }}" class="font-medium">Inventory</a></li>
                 <li class="font-medium text-primary">/</li>
                 <li class="font-medium text-primary">Movements</li>
             </ol>

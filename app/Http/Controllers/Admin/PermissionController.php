@@ -54,7 +54,7 @@ class PermissionController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return redirect()->route('admin.permissions.index')
+        return redirect()->to(admin_route('permissions.index'))
             ->with('success', 'Permissions updated successfully.');
     }
 
@@ -89,7 +89,7 @@ class PermissionController extends Controller
             'user_agent' => request()->userAgent(),
         ]);
 
-        return redirect()->route('admin.permissions.index')
+        return redirect()->to(admin_route('permissions.index'))
             ->with('success', 'Permissions reset to defaults successfully.');
     }
 }

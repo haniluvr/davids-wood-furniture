@@ -22,7 +22,7 @@ $adminRoutes = function () {
     // Root admin route - redirect to login if not authenticated, dashboard if authenticated
     Route::get('/', function () {
         if (auth()->guard('admin')->check()) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->to(admin_route('dashboard'));
         }
 
         return redirect('/login');
@@ -268,6 +268,11 @@ Route::domain('admin.davidswood.test')->name('admin.test.')->group($adminRoutes)
 Route::domain('admin.localhost')->name('admin.local.')->group($adminRoutes);
 Route::domain('admin.davidswood.shop')->name('admin.')->group($adminRoutes);
 
+// Fallback admin routes for any admin subdomain (handles ports)
+Route::group(['middleware' => 'admin.subdomain'], function () use ($adminRoutes) {
+    $adminRoutes();
+})->name('admin.fallback.');
+
 // Public routes - but check for admin subdomain first
 Route::get('/', function () {
     $host = request()->getHost();
@@ -275,7 +280,7 @@ Route::get('/', function () {
     // If this is an admin subdomain, redirect to admin login
     if ($host === 'admin.localhost' || $host === 'admin.davidswood.test' || $host === 'admin.davidswood.shop') {
         if (auth()->guard('admin')->check()) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->to(admin_route('dashboard'));
         }
 
         return redirect('/login');
@@ -653,7 +658,8 @@ Route::get('/debug-products-count', function () {
 });
 
 Route::get('/debug-wishlist-migration/{userId}/{sessionId}', function ($userId, $sessionId) {
-    $wishlistController = new \App\Http\Controllers\WishlistController;
+    $sessionWishlistService = app(\App\Services\SessionWishlistService::class);
+    $wishlistController = new \App\Http\Controllers\WishlistController($sessionWishlistService);
     try {
         $wishlistController->migrateWishlistToUser($userId, $sessionId);
 
@@ -673,7 +679,8 @@ Route::get('/debug-wishlist-migration/{userId}/{sessionId}', function ($userId, 
 });
 
 Route::get('/debug-preserve-wishlist/{sessionId}', function ($sessionId) {
-    $wishlistController = new \App\Http\Controllers\WishlistController;
+    $sessionWishlistService = app(\App\Services\SessionWishlistService::class);
+    $wishlistController = new \App\Http\Controllers\WishlistController($sessionWishlistService);
     try {
         $preservedData = $wishlistController->preserveGuestWishlistData($sessionId);
 

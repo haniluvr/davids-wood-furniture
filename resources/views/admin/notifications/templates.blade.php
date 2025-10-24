@@ -12,10 +12,10 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.notifications.index') }}">Notifications /</a>
+                <a class="font-medium" href="{{ admin_route('notifications.index') }}">Notifications /</a>
             </li>
             <li class="font-medium text-primary">Templates</li>
         </ol>
@@ -28,7 +28,7 @@
     <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
         <h4 class="text-lg font-semibold text-black dark:text-white mb-6">Send Test Notification</h4>
         
-        <form action="{{ route('admin.notifications.test') }}" method="POST" class="space-y-4">
+        <form action="{{ admin_route('notifications.test') }}" method="POST" class="space-y-4">
             @csrf
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <div>
@@ -70,7 +70,7 @@
             
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $template['description'] }}</p>
             
-            <form action="{{ route('admin.notifications.update-template', $key) }}" method="POST" class="space-y-4">
+            <form action="{{ admin_route('notifications.update-template', $key) }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
                     <label for="subject_{{ $key }}" class="mb-2.5 block text-black dark:text-white">Subject</label>
@@ -101,7 +101,7 @@
     <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
         <h4 class="text-lg font-semibold text-black dark:text-white mb-6">Send Custom Notification</h4>
         
-        <form action="{{ route('admin.notifications.send') }}" method="POST" class="space-y-4">
+        <form action="{{ admin_route('notifications.send') }}" method="POST" class="space-y-4">
             @csrf
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div>

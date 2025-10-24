@@ -1,3 +1,5 @@
+{{-- Using global admin_route() helper for environment-aware routing --}}
+
 <!-- Sidebar Start -->
 <aside
     :class="[
@@ -101,7 +103,7 @@
 >
     <!-- SIDEBAR HEADER -->
     <div class="flex items-center justify-between gap-2 px-6 py-6 border-b border-stroke dark:border-strokedark">
-        <a href="{{ route('admin.dashboard') }}" :class="sidebarCollapsed ? 'justify-center' : ''">
+        <a href="{{ admin_route('dashboard') }}" :class="sidebarCollapsed ? 'justify-center' : ''">
             <div class="flex items-center gap-3">
                 <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg">
                     <img src="{{ asset('admin/images/logo/favicon.png') }}" alt="Logo" class="h-8">
@@ -132,7 +134,7 @@
                 <li>
                                 <a
                                     class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.dashboard') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
-                                    href="{{ route('admin.dashboard') }}"
+                                    href="{{ admin_route('dashboard') }}"
                                     :title="sidebarCollapsed ? 'Dashboard' : ''"
                                     x-tooltip="sidebarCollapsed ? 'Dashboard' : ''"
                                 >
@@ -156,11 +158,11 @@
                         <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="ordersOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="ordersOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.orders.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.index') ? 'text-primary dark:text-primary' : '' }}">All Orders</a></li>
-                        <li><a href="{{ route('admin.orders.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.create') ? 'text-primary dark:text-primary' : '' }}">Create Order</a></li>
-                        <li><a href="{{ route('admin.orders.pending-approval') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.pending-approval') ? 'text-primary dark:text-primary' : '' }}">Pending Approval</a></li>
-                        <li><a href="{{ route('admin.orders.fulfillment') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.fulfillment*') ? 'text-primary dark:text-primary' : '' }}">Fulfillment</a></li>
-                        <li><a href="{{ route('admin.orders.returns-repairs.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.returns-repairs*') ? 'text-primary dark:text-primary' : '' }}">Returns & Repairs</a></li>
+                        <li><a href="{{ admin_route('orders.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.index') ? 'text-primary dark:text-primary' : '' }}">All Orders</a></li>
+                        <li><a href="{{ admin_route('orders.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.create') ? 'text-primary dark:text-primary' : '' }}">Create Order</a></li>
+                        <li><a href="{{ admin_route('orders.pending-approval') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.pending-approval') ? 'text-primary dark:text-primary' : '' }}">Pending Approval</a></li>
+                        <li><a href="{{ admin_route('orders.fulfillment') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.fulfillment*') ? 'text-primary dark:text-primary' : '' }}">Fulfillment</a></li>
+                        <li><a href="{{ admin_route('orders.returns-repairs.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.returns-repairs*') ? 'text-primary dark:text-primary' : '' }}">Returns & Repairs</a></li>
                     </ul>
                 </li>
 
@@ -178,8 +180,8 @@
                         <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="productsOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="productsOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.products.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.products.index') ? 'text-primary dark:text-primary' : '' }}">All Products</a></li>
-                        <li><a href="{{ route('admin.products.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.products.create') ? 'text-primary dark:text-primary' : '' }}">Add New Product</a></li>
+                        <li><a href="{{ admin_route('products.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.products.index') ? 'text-primary dark:text-primary' : '' }}">All Products</a></li>
+                        <li><a href="{{ admin_route('products.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.products.create') ? 'text-primary dark:text-primary' : '' }}">Add New Product</a></li>
                     </ul>
                 </li>
 
@@ -197,9 +199,9 @@
                         <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="inventoryOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="inventoryOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.inventory.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.index') ? 'text-primary dark:text-primary' : '' }}">Stock Levels</a></li>
-                        <li><a href="{{ route('admin.inventory.low-stock') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.low-stock') ? 'text-primary dark:text-primary' : '' }}">Low Stock Alerts</a></li>
-                        <li><a href="{{ route('admin.inventory.movements') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.movements') ? 'text-primary dark:text-primary' : '' }}">Inventory History</a></li>
+                        <li><a href="{{ admin_route('inventory.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.index') ? 'text-primary dark:text-primary' : '' }}">Stock Levels</a></li>
+                        <li><a href="{{ admin_route('inventory.low-stock') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.low-stock') ? 'text-primary dark:text-primary' : '' }}">Low Stock Alerts</a></li>
+                        <li><a href="{{ admin_route('inventory.movements') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.movements') ? 'text-primary dark:text-primary' : '' }}">Inventory History</a></li>
                     </ul>
                 </li>
 
@@ -217,8 +219,8 @@
                         <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="customersOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="customersOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.index') ? 'text-primary dark:text-primary' : '' }}">All Customers</a></li>
-                        <li><a href="{{ route('admin.users.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.create') ? 'text-primary dark:text-primary' : '' }}">Add Customer</a></li>
+                        <li><a href="{{ admin_route('users.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.index') ? 'text-primary dark:text-primary' : '' }}">All Customers</a></li>
+                        <li><a href="{{ admin_route('users.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.create') ? 'text-primary dark:text-primary' : '' }}">Add Customer</a></li>
                     </ul>
                 </li>
 
@@ -242,10 +244,10 @@
                         <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="messagesOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="messagesOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.messages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.messages.index') && !request('status') ? 'text-primary dark:text-primary' : '' }}">All Messages</a></li>
-                        <li><a href="{{ route('admin.messages.index', ['status' => 'new']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'new' ? 'text-primary dark:text-primary' : '' }}">New Messages</a></li>
-                        <li><a href="{{ route('admin.messages.index', ['status' => 'read']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'read' ? 'text-primary dark:text-primary' : '' }}">Read</a></li>
-                        <li><a href="{{ route('admin.messages.index', ['status' => 'responded']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'responded' ? 'text-primary dark:text-primary' : '' }}">Responded</a></li>
+                        <li><a href="{{ admin_route('messages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.messages.index') && !request('status') ? 'text-primary dark:text-primary' : '' }}">All Messages</a></li>
+                        <li><a href="{{ admin_route('messages.index', ['status' => 'new']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'new' ? 'text-primary dark:text-primary' : '' }}">New Messages</a></li>
+                        <li><a href="{{ admin_route('messages.index', ['status' => 'read']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'read' ? 'text-primary dark:text-primary' : '' }}">Read</a></li>
+                        <li><a href="{{ admin_route('messages.index', ['status' => 'responded']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'responded' ? 'text-primary dark:text-primary' : '' }}">Responded</a></li>
                     </ul>
                 </li>
 
@@ -263,7 +265,7 @@
                         <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="shippingOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="shippingOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.shipping-methods.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.shipping-methods.*') ? 'text-primary dark:text-primary' : '' }}">Shipping Methods</a></li>
+                        <li><a href="{{ admin_route('shipping-methods.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.shipping-methods.*') ? 'text-primary dark:text-primary' : '' }}">Shipping Methods</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Shipping Zones</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Carriers & Rates</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Delivery Tracking</a></li>
@@ -285,8 +287,8 @@
                         <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="contentOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="contentOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.cms-pages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.cms-pages*') ? 'text-primary dark:text-primary' : '' }}">CMS Pages</a></li>
-                        <li><a href="{{ route('admin.reviews.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.reviews*') ? 'text-primary dark:text-primary' : '' }}">Product Reviews</a></li>
+                        <li><a href="{{ admin_route('cms-pages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.cms-pages*') ? 'text-primary dark:text-primary' : '' }}">CMS Pages</a></li>
+                        <li><a href="{{ admin_route('reviews.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.reviews*') ? 'text-primary dark:text-primary' : '' }}">Product Reviews</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Blogs</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Media Library</a></li>
                         <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Testimonials</a></li>
@@ -308,11 +310,11 @@
                         <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="reportsOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="reportsOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ route('admin.analytics.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.index') ? 'text-primary dark:text-primary' : '' }}">Analytics Dashboard</a></li>
-                        <li><a href="{{ route('admin.analytics.sales') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.sales') ? 'text-primary dark:text-primary' : '' }}">Sales Reports</a></li>
-                        <li><a href="{{ route('admin.analytics.customers') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.customers') ? 'text-primary dark:text-primary' : '' }}">Customer Insights</a></li>
-                        <li><a href="{{ route('admin.analytics.products') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.products') ? 'text-primary dark:text-primary' : '' }}">Product Reports</a></li>
-                        <li><a href="{{ route('admin.analytics.revenue') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.revenue') ? 'text-primary dark:text-primary' : '' }}">Revenue Reports</a></li>
+                        <li><a href="{{ admin_route('analytics.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.index') ? 'text-primary dark:text-primary' : '' }}">Analytics Dashboard</a></li>
+                        <li><a href="{{ admin_route('analytics.sales') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.sales') ? 'text-primary dark:text-primary' : '' }}">Sales Reports</a></li>
+                        <li><a href="{{ admin_route('analytics.customers') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.customers') ? 'text-primary dark:text-primary' : '' }}">Customer Insights</a></li>
+                        <li><a href="{{ admin_route('analytics.products') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.products') ? 'text-primary dark:text-primary' : '' }}">Product Reports</a></li>
+                        <li><a href="{{ admin_route('analytics.revenue') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.revenue') ? 'text-primary dark:text-primary' : '' }}">Revenue Reports</a></li>
                     </ul>
                 </li>
 
@@ -349,23 +351,23 @@
             >
                 <div class="p-2">
                     <div class="space-y-1">
-                        <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.settings.index') ? 'bg-primary/10 text-primary' : '' }}">
+                        <a href="{{ admin_route('settings.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.settings.index') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="store" class="w-4 h-4"></i>
                             Store Settings
                         </a>
-                        <a href="{{ route('admin.shipping-methods.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.shipping-methods*') ? 'bg-primary/10 text-primary' : '' }}">
+                        <a href="{{ admin_route('shipping-methods.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.shipping-methods*') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="truck" class="w-4 h-4"></i>
                             Shipping Methods
                         </a>
-                        <a href="{{ route('admin.payment-gateways.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.payment-gateways*') ? 'bg-primary/10 text-primary' : '' }}">
+                        <a href="{{ admin_route('payment-gateways.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.payment-gateways*') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="credit-card" class="w-4 h-4"></i>
                             Payment Gateways
                         </a>
-                        <a href="{{ route('admin.users.admins') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.users.admins') ? 'bg-primary/10 text-primary' : '' }}">
+                        <a href="{{ admin_route('users.admins') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.users.admins') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="users" class="w-4 h-4"></i>
                             Manage Admins
                         </a>
-                        <a href="{{ route('admin.permissions.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.permissions*') ? 'bg-primary/10 text-primary' : '' }}">
+                        <a href="{{ admin_route('permissions.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.permissions*') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="shield" class="w-4 h-4"></i>
                             Permissions
                         </a>

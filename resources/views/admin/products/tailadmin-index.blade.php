@@ -13,7 +13,7 @@
         <nav>
             <ol class="flex items-center gap-2">
                 <li>
-                    <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                    <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
                 </li>
                 <li class="font-medium text-primary">Products</li>
             </ol>
@@ -28,7 +28,7 @@
             </h3>
         </div>
         <div class="p-7">
-            <form method="GET" action="{{ route('admin.products') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <form method="GET" action="{{ admin_route('products') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <!-- Search Input -->
                 <div>
                     <label class="mb-3 block text-sm font-medium text-black dark:text-white">

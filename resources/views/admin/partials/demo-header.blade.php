@@ -35,7 +35,7 @@
             </button>
             <!-- Hamburger Toggle BTN -->
 
-            <a class="block flex-shrink-0 lg:hidden" href="{{ route('admin.dashboard') }}">
+            <a class="block flex-shrink-0 lg:hidden" href="{{ admin_route('dashboard') }}">
                 <img src="{{ asset('admin/images/logo/logo-icon.svg') }}" alt="Logo" />
             </a>
         </div>
@@ -360,7 +360,7 @@
                             </a>
                         </li>
                     </ul>
-                    <form action="{{ route('admin.logout') }}" method="POST" class="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+                    <form action="{{ admin_route('logout') }}" method="POST" class="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
                         @csrf
                         <svg
                             class="fill-current"

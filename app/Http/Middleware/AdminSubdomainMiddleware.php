@@ -15,56 +15,17 @@ class AdminSubdomainMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Only log session ID if session is available
-        $sessionIdBefore = null;
-        try {
-            $sessionIdBefore = session()->getId();
-        } catch (\Exception $e) {
-            // Session not available yet, that's okay
-        }
-
-        \Log::info('AdminSubdomainMiddleware: Middleware called', [
-            'middleware' => 'AdminSubdomainMiddleware',
-            'session_id_before' => $sessionIdBefore,
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'host' => $request->getHost(),
-            'port' => $request->getPort(),
-        ]);
-
-        // Check if this is an admin subdomain request
         $host = $request->getHost();
-        $port = $request->getPort();
-
-        // Handle admin.localhost:8080, admin.davidswood.test, or admin.davidswood.shop
-        if ($host === 'admin.localhost' || $host === 'admin.davidswood.test' || $host === 'admin.davidswood.shop') {
-            // Set the admin guard for this request
-            $request->attributes->set('admin_subdomain', true);
-
-            // If accessing root path and not authenticated, redirect to login
-            if ($request->is('/') && ! auth()->guard('admin')->check()) {
-                return redirect()->route('admin.login');
-            }
+        
+        // Check if this is an admin subdomain (regardless of port)
+        $isAdminSubdomain = str_starts_with($host, 'admin.');
+        
+        if (!$isAdminSubdomain) {
+            // If not an admin subdomain, continue to next middleware/route
+            return $next($request);
         }
-
-        $response = $next($request);
-
-        // Only log session ID if session is available
-        $sessionIdAfter = null;
-        try {
-            $sessionIdAfter = session()->getId();
-        } catch (\Exception $e) {
-            // Session not available, that's okay
-        }
-
-        \Log::info('AdminSubdomainMiddleware: Middleware completed', [
-            'middleware' => 'AdminSubdomainMiddleware',
-            'session_id_before' => $sessionIdBefore,
-            'session_id_after' => $sessionIdAfter,
-            'session_changed' => $sessionIdBefore !== $sessionIdAfter,
-            'url' => $request->url(),
-        ]);
-
-        return $response;
+        
+        // This is an admin subdomain, continue with the request
+        return $next($request);
     }
 }

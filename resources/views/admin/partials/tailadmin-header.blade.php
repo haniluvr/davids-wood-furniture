@@ -67,7 +67,7 @@
       </button>
       <!-- Hamburger Toggle BTN -->
 
-      <a href="{{ route('admin.dashboard') }}" class="lg:hidden">
+      <a href="{{ admin_route('dashboard') }}" class="lg:hidden">
         <img class="dark:hidden h-8" src="{{ asset('admin/images/logo/logo.svg') }}" alt="Logo" />
         <img
           class="hidden dark:block h-8"
@@ -454,7 +454,7 @@
             </li>
             <li>
               <a
-                href="{{ route('admin.settings.index') }}"
+                href="{{ admin_route('settings.index') }}"
                 class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
               >
                 <svg
@@ -476,7 +476,7 @@
               </a>
             </li>
           </ul>
-          <form method="POST" action="{{ route('admin.logout') }}">
+          <form method="POST" action="{{ admin_route('logout') }}">
             @csrf
             <button
               type="submit"

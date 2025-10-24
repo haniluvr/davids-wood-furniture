@@ -23,25 +23,25 @@
     <div class="mb-6 border-b border-gray-200">
         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
             <li class="mr-2">
-                <a href="{{ route('admin.contact-messages.index', ['status' => 'all']) }}" 
+                <a href="{{ admin_route('contact-messages.index', ['status' => 'all']) }}" 
                    class="inline-block p-4 {{ request('status', 'all') == 'all' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-600 hover:border-gray-300' }}">
                     All Messages
                 </a>
             </li>
             <li class="mr-2">
-                <a href="{{ route('admin.contact-messages.index', ['status' => 'new']) }}" 
+                <a href="{{ admin_route('contact-messages.index', ['status' => 'new']) }}" 
                    class="inline-block p-4 {{ request('status') == 'new' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-600 hover:border-gray-300' }}">
                     New ({{ \App\Models\ContactMessage::where('status', 'new')->count() }})
                 </a>
             </li>
             <li class="mr-2">
-                <a href="{{ route('admin.contact-messages.index', ['status' => 'read']) }}" 
+                <a href="{{ admin_route('contact-messages.index', ['status' => 'read']) }}" 
                    class="inline-block p-4 {{ request('status') == 'read' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-600 hover:border-gray-300' }}">
                     Read
                 </a>
             </li>
             <li class="mr-2">
-                <a href="{{ route('admin.contact-messages.index', ['status' => 'responded']) }}" 
+                <a href="{{ admin_route('contact-messages.index', ['status' => 'responded']) }}" 
                    class="inline-block p-4 {{ request('status') == 'responded' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-600 hover:border-gray-300' }}">
                     Responded
                 </a>
@@ -106,11 +106,11 @@
                             <div class="text-xs text-gray-400">{{ $message->created_at->format('h:i A') }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{{ route('admin.contact-messages.show', $message) }}" 
+                            <a href="{{ admin_route('contact-messages.show', $message) }}" 
                                class="text-blue-600 hover:text-blue-900 mr-3">
                                 View
                             </a>
-                            <form action="{{ route('admin.contact-messages.destroy', $message) }}" 
+                            <form action="{{ admin_route('contact-messages.destroy', $message) }}" 
                                   method="POST" 
                                   class="inline"
                                   onsubmit="return confirm('Are you sure you want to delete this message?');">

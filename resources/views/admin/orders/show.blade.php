@@ -12,10 +12,10 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.orders.index') }}">Orders /</a>
+                <a class="font-medium" href="{{ admin_route('orders.index') }}">Orders /</a>
             </li>
             <li class="font-medium text-primary">{{ $order->order_number }}</li>
         </ol>
@@ -75,7 +75,7 @@
                     <!-- Status Update Form -->
                     <div class="space-y-4">
                         <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Update Status</h4>
-                        <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" class="flex items-end gap-3">
+                        <form action="{{ admin_route('orders.update-status', $order) }}" method="POST" class="flex items-end gap-3">
                             @csrf
                             @method('PATCH')
                             <div class="flex-1">
@@ -99,12 +99,12 @@
                 <div class="border-t border-stroke pt-6 dark:border-strokedark">
                     <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Actions</h4>
                     <div class="flex flex-wrap gap-3">
-                        <a href="{{ route('admin.orders.edit', $order) }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90">
+                        <a href="{{ admin_route('orders.edit', $order) }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90">
                             <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
                             Edit Order
                         </a>
                         
-                        <a href="{{ route('admin.orders.download-invoice', $order) }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-2 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
+                        <a href="{{ admin_route('orders.download-invoice', $order) }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-2 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
                             <i data-lucide="download" class="w-4 h-4 mr-2"></i>
                             Download Invoice
                         </a>
@@ -318,7 +318,7 @@
                 </div>
                 
                 @if($order->user)
-                    <a href="{{ route('admin.users.show', $order->user) }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90 w-full">
+                    <a href="{{ admin_route('users.show', $order->user) }}" class="inline-flex items-center justify-center rounded-md border border-primary px-4 py-2 text-center font-medium text-primary hover:bg-opacity-90 w-full">
                         <i data-lucide="user" class="w-4 h-4 mr-2"></i>
                         View Customer
                     </a>
@@ -468,7 +468,7 @@
     <div class="w-full max-w-md rounded-lg bg-white p-6 dark:bg-boxdark">
         <h3 class="mb-4 text-lg font-medium text-black dark:text-white">Process Refund</h3>
         
-        <form action="{{ route('admin.orders.process-refund', $order) }}" method="POST">
+        <form action="{{ admin_route('orders.process-refund', $order) }}" method="POST">
             @csrf
             <div class="mb-4">
                 <label class="mb-2.5 block text-black dark:text-white">

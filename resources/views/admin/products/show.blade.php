@@ -11,9 +11,9 @@
         </h2>
         <nav>
             <ol class="flex items-center gap-2">
-                <li><a href="{{ route('admin.dashboard') }}" class="font-medium">Dashboard</a></li>
+                <li><a href="{{ admin_route('dashboard') }}" class="font-medium">Dashboard</a></li>
                 <li class="font-medium text-primary">/</li>
-                <li><a href="{{ route('admin.products.index') }}" class="font-medium">Products</a></li>
+                <li><a href="{{ admin_route('products.index') }}" class="font-medium">Products</a></li>
                 <li class="font-medium text-primary">/</li>
                 <li class="font-medium text-primary">{{ $product->name }}</li>
             </ol>
@@ -47,7 +47,7 @@
                     </span>
                 @endif
                 <a
-                    href="{{ route('admin.products.edit', $product) }}"
+                    href="{{ admin_route('products.edit', $product) }}"
                     class="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white hover:bg-opacity-90"
                 >
                     <i data-lucide="edit" class="h-4 w-4"></i>

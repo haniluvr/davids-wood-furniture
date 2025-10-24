@@ -12,13 +12,13 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.orders.index') }}">Orders /</a>
+                <a class="font-medium" href="{{ admin_route('orders.index') }}">Orders /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.orders.show', $order) }}">{{ $order->order_number }} /</a>
+                <a class="font-medium" href="{{ admin_route('orders.show', $order) }}">{{ $order->order_number }} /</a>
             </li>
             <li class="font-medium text-primary">Edit</li>
         </ol>
@@ -26,7 +26,7 @@
 </div>
 <!-- Breadcrumb End -->
 
-<form action="{{ route('admin.orders.update', $order) }}" method="POST">
+<form action="{{ admin_route('orders.update', $order) }}" method="POST">
     @csrf
     @method('PUT')
     
@@ -311,7 +311,7 @@
                             Update Order
                         </button>
                         
-                        <a href="{{ route('admin.orders.show', $order) }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-2 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
+                        <a href="{{ admin_route('orders.show', $order) }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-2 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
                             <i data-lucide="x" class="w-4 h-4 mr-2"></i>
                             Cancel
                         </a>

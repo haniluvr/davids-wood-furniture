@@ -11,7 +11,7 @@
             <p class="text-muted">Manage and moderate product reviews</p>
         </div>
         <div>
-            <a href="{{ route('admin.reviews.export') }}" class="btn btn-outline-primary">
+            <a href="{{ admin_route('reviews.export') }}" class="btn btn-outline-primary">
                 <i class="fas fa-download"></i> Export Reviews
             </a>
         </div>
@@ -22,7 +22,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <form method="GET" action="{{ route('admin.reviews.index') }}" class="row g-3">
+                    <form method="GET" action="{{ admin_route('reviews.index') }}" class="row g-3">
                         <div class="col-md-3">
                             <label for="search" class="form-label">Search</label>
                             <input type="text" class="form-control" id="search" name="search" 

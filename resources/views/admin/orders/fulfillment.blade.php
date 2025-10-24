@@ -191,10 +191,10 @@
             </div>
 
             <div class="flex items-center gap-2 p-4">
-                <a href="{{ route('admin.orders.fulfillment.show', $order) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400" title="View Details">
+                <a href="{{ admin_route('orders.fulfillment.show', $order) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400" title="View Details">
                     <i data-lucide="eye" class="w-4 h-4"></i>
                 </a>
-                <a href="{{ route('admin.orders.fulfillment.print-label', $order) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-blue-100 hover:text-blue-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400" title="Print Label">
+                <a href="{{ admin_route('orders.fulfillment.print-label', $order) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-blue-100 hover:text-blue-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400" title="Print Label">
                     <i data-lucide="printer" class="w-4 h-4"></i>
                 </a>
             </div>
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const formData = new FormData(this);
         
-        fetch('{{ route("admin.orders.fulfillment.bulk-ship") }}', {
+        fetch('{{ admin_route("orders.fulfillment.bulk-ship") }}', {
             method: 'POST',
             body: formData,
             headers: {

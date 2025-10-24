@@ -216,7 +216,7 @@
                 </div>
 
                 <div class="flex items-center gap-2 p-4">
-                    <a href="{{ route('admin.messages.show', $message) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400" title="View Message">
+                    <a href="{{ admin_route('messages.show', $message) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400" title="View Message">
                         <i data-lucide="eye" class="w-4 h-4"></i>
                     </a>
                     @if($message->status !== 'responded')

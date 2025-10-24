@@ -10,7 +10,7 @@
                 <h1 class="text-2xl font-semibold text-gray-900">Add New Product</h1>
                 <p class="mt-1 text-sm text-gray-600">Create a new product for your inventory</p>
             </div>
-            <a href="{{ route('admin.products.index') }}" 
+            <a href="{{ admin_route('products.index') }}" 
                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                 <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+    <form action="{{ admin_route('products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
         
         <!-- Basic Information -->
@@ -298,7 +298,7 @@
 
         <!-- Actions -->
         <div class="flex justify-end space-x-3">
-            <a href="{{ route('admin.products.index') }}" 
+            <a href="{{ admin_route('products.index') }}" 
                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                 Cancel
             </a>

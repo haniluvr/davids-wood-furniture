@@ -12,7 +12,7 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li class="font-medium text-primary">Users</li>
         </ol>
@@ -120,14 +120,14 @@
                         <i data-lucide="search" class="w-4 h-4 mr-2"></i>
                         Filter
                     </button>
-                    <a href="{{ route('admin.users.index') }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-3 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
+                    <a href="{{ admin_route('users.index') }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-3 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
                         <i data-lucide="x" class="w-4 h-4 mr-2"></i>
                         Clear
                     </a>
                 </div>
                 
                 <div class="flex gap-2 ml-auto">
-                    <a href="{{ route('admin.users.create') }}" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-3 text-center font-medium text-white hover:bg-opacity-90">
+                    <a href="{{ admin_route('users.create') }}" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-3 text-center font-medium text-white hover:bg-opacity-90">
                         <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
                         Add User
                     </a>
@@ -225,17 +225,17 @@
                 </button>
                 
                 <div x-show="dropdownOpen" @click.outside="dropdownOpen = false" class="absolute right-0 top-full z-40 w-48 space-y-1 rounded-sm border border-stroke bg-white p-1.5 shadow-default dark:border-strokedark dark:bg-boxdark" x-cloak>
-                    <a href="{{ route('admin.users.show', $user) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
+                    <a href="{{ admin_route('users.show', $user) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
                         <i data-lucide="eye" class="w-4 h-4"></i>
                         View Details
                     </a>
-                    <a href="{{ route('admin.users.edit', $user) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
+                    <a href="{{ admin_route('users.edit', $user) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
                         <i data-lucide="edit" class="w-4 h-4"></i>
                         Edit User
                     </a>
                     
                     @if($user->is_suspended)
-                    <form action="{{ route('admin.users.unsuspend', $user) }}" method="POST" class="inline">
+                    <form action="{{ admin_route('users.unsuspend', $user) }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4 text-green-600">
                             <i data-lucide="user-check" class="w-4 h-4"></i>
@@ -243,7 +243,7 @@
                         </button>
                     </form>
                     @else
-                    <form action="{{ route('admin.users.suspend', $user) }}" method="POST" class="inline">
+                    <form action="{{ admin_route('users.suspend', $user) }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4 text-yellow-600" onclick="return confirm('Are you sure you want to suspend this user?')">
                             <i data-lucide="user-x" class="w-4 h-4"></i>
@@ -253,7 +253,7 @@
                     @endif
                     
                     @if(!$user->email_verified_at)
-                    <form action="{{ route('admin.users.verify-email', $user) }}" method="POST" class="inline">
+                    <form action="{{ admin_route('users.verify-email', $user) }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4 text-blue-600">
                             <i data-lucide="mail-check" class="w-4 h-4"></i>
@@ -263,7 +263,7 @@
                     @endif
                     
                     @if($user->orders_count === 0)
-                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline">
+                    <form action="{{ admin_route('users.destroy', $user) }}" method="POST" class="inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4 text-red-600" onclick="return confirm('Are you sure you want to delete this user?')">
@@ -296,7 +296,7 @@
     <div class="w-full max-w-md rounded-lg bg-white p-6 dark:bg-boxdark">
         <h3 class="mb-4 text-lg font-medium text-black dark:text-white">Export Users</h3>
         
-        <form action="{{ route('admin.users.export') }}" method="GET">
+        <form action="{{ admin_route('users.export') }}" method="GET">
             <div class="mb-4">
                 <label class="mb-2.5 block text-black dark:text-white">Export Format</label>
                 <select name="format" class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary">

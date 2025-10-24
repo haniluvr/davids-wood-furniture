@@ -11,7 +11,7 @@
         </h2>
         <nav>
             <ol class="flex items-center gap-2">
-                <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ admin_route('dashboard') }}">Dashboard</a></li>
                 <li>Email Previews</li>
             </ol>
         </nav>
@@ -29,7 +29,7 @@
                     </p>
                 </div>
                 <div class="flex space-x-2">
-                    <a href="{{ route('admin.emails.preview', $type) }}" 
+                    <a href="{{ admin_route('emails.preview', $type) }}" 
                        target="_blank"
                        class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-center font-medium text-white hover:bg-opacity-90">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@
             <div>
                 <h4 class="mb-2 font-medium text-black dark:text-white">SMTP Settings</h4>
                 <p class="text-sm text-body-color dark:text-body-color-dark">
-                    Configure your SMTP settings in the <a href="{{ route('admin.settings.email') }}" class="text-primary hover:underline">Email Settings</a> page.
+                    Configure your SMTP settings in the <a href="{{ admin_route('settings.email') }}" class="text-primary hover:underline">Email Settings</a> page.
                 </p>
             </div>
             <div>

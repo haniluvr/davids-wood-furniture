@@ -12,10 +12,10 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.reviews.index') }}">Reviews /</a>
+                <a class="font-medium" href="{{ admin_route('reviews.index') }}">Reviews /</a>
             </li>
             <li class="font-medium text-primary">Review #{{ $review->id }}</li>
         </ol>
@@ -60,14 +60,14 @@
                 <!-- Action Buttons -->
                 <div class="flex gap-2 w-full">
                     @if($review->status === 'pending')
-                        <form action="{{ route('admin.reviews.approve', $review) }}" method="POST" class="flex-1">
+                        <form action="{{ admin_route('reviews.approve', $review) }}" method="POST" class="flex-1">
                             @csrf
                             <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-lg border border-green-500 bg-green-500 px-4 py-2 text-white hover:bg-green-600 transition-colors duration-200">
                                 <i data-lucide="check" class="w-4 h-4"></i>
                                 Approve
                             </button>
                         </form>
-                        <form action="{{ route('admin.reviews.reject', $review) }}" method="POST" class="flex-1">
+                        <form action="{{ admin_route('reviews.reject', $review) }}" method="POST" class="flex-1">
                             @csrf
                             <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-lg border border-red-500 bg-red-500 px-4 py-2 text-white hover:bg-red-600 transition-colors duration-200">
                                 <i data-lucide="x" class="w-4 h-4"></i>
@@ -75,7 +75,7 @@
                             </button>
                         </form>
                     @else
-                        <a href="{{ route('admin.reviews.edit', $review) }}" class="flex-1 flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
+                        <a href="{{ admin_route('reviews.edit', $review) }}" class="flex-1 flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
                             <i data-lucide="edit" class="w-4 h-4"></i>
                             Edit
                         </a>
@@ -256,7 +256,7 @@
                                 <p class="text-gray-600 dark:text-gray-400 mb-2">{{ $review->product->description }}</p>
                                 <div class="flex items-center gap-4">
                                     <span class="text-lg font-bold text-primary">${{ number_format($review->product->price, 2) }}</span>
-                                    <a href="{{ route('admin.products.show', $review->product) }}" class="text-primary hover:text-primary/80 transition-colors duration-200">
+                                    <a href="{{ admin_route('products.show', $review->product) }}" class="text-primary hover:text-primary/80 transition-colors duration-200">
                                         View Product
                                     </a>
                                 </div>
@@ -287,7 +287,7 @@
                             <h4 class="text-lg font-semibold text-black dark:text-white mb-4">
                                 {{ $review->admin_response ? 'Update Admin Response' : 'Add Admin Response' }}
                             </h4>
-                            <form action="{{ route('admin.reviews.respond', $review) }}" method="POST">
+                            <form action="{{ admin_route('reviews.respond', $review) }}" method="POST">
                                 @csrf
                                 <div class="mb-4">
                                     <label for="admin_response" class="mb-2.5 block text-black dark:text-white">

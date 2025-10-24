@@ -165,7 +165,7 @@ class OrderController extends Controller
             // Fire order created event
             event(new OrderCreated($order));
 
-            return redirect()->route('admin.orders.show', $order)
+            return redirect()->to(admin_route('orders.show', $order))
                 ->with('success', 'Order created successfully.');
 
         } catch (\Exception $e) {
@@ -222,7 +222,7 @@ class OrderController extends Controller
 
         $order->update($validated);
 
-        return redirect()->route('admin.orders.show', $order)
+        return redirect()->to(admin_route('orders.show', $order))
             ->with('success', 'Order updated successfully.');
     }
 
@@ -252,7 +252,7 @@ class OrderController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.orders.index')
+            return redirect()->to(admin_route('orders.index'))
                 ->with('success', 'Order deleted successfully.');
 
         } catch (\Exception $e) {

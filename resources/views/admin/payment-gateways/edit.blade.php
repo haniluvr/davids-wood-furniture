@@ -12,10 +12,10 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.payment-gateways.index') }}">Payment Gateways /</a>
+                <a class="font-medium" href="{{ admin_route('payment-gateways.index') }}">Payment Gateways /</a>
             </li>
             <li class="font-medium text-primary">{{ $paymentGateway->name }}</li>
         </ol>
@@ -24,7 +24,7 @@
 <!-- Breadcrumb End -->
 
 <div class="max-w-4xl mx-auto">
-    <form action="{{ route('admin.payment-gateways.update', $paymentGateway) }}" method="POST" class="space-y-6">
+    <form action="{{ admin_route('payment-gateways.update', $paymentGateway) }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -397,7 +397,7 @@
 
         <!-- Form Actions -->
         <div class="flex items-center justify-end gap-4">
-            <a href="{{ route('admin.payment-gateways.index') }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
+            <a href="{{ admin_route('payment-gateways.index') }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
                 <i data-lucide="x" class="w-4 h-4"></i>
                 Cancel
             </a>

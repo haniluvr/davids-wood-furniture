@@ -12,7 +12,7 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li class="font-medium text-primary">Orders</li>
         </ol>
@@ -127,14 +127,14 @@
                             <i data-lucide="search" class="w-4 h-4 mr-2"></i>
                             Filter
                         </button>
-                        <a href="{{ route('admin.orders.index') }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-3 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
+                        <a href="{{ admin_route('orders.index') }}" class="inline-flex items-center justify-center rounded-md border border-stroke px-4 py-3 text-center font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:text-white dark:hover:bg-meta-4">
                             <i data-lucide="x" class="w-4 h-4 mr-2"></i>
                             Clear
                         </a>
                     </div>
                 </form>
                 
-                <a href="{{ route('admin.orders.create') }}" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-center font-medium text-white hover:bg-opacity-90 whitespace-nowrap">
+                <a href="{{ admin_route('orders.create') }}" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-center font-medium text-white hover:bg-opacity-90 whitespace-nowrap">
                     <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
                     Create Order
                 </a>
@@ -229,16 +229,16 @@
                 </button>
                 
                 <div x-show="dropdownOpen" @click.outside="dropdownOpen = false" class="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 z-40 w-40 space-y-1 rounded-sm border border-stroke bg-white p-1.5 shadow-default dark:border-strokedark dark:bg-boxdark" x-cloak>
-                    <a href="{{ route('admin.orders.show', $order) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
+                    <a href="{{ admin_route('orders.show', $order) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
                         <i data-lucide="eye" class="w-4 h-4"></i>
                         View
                     </a>
-                    <a href="{{ route('admin.orders.edit', $order) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
+                    <a href="{{ admin_route('orders.edit', $order) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
                         <i data-lucide="edit" class="w-4 h-4"></i>
                         Edit
                     </a>
                     @if($order->status !== 'cancelled')
-                    <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" class="inline">
+                    <form action="{{ admin_route('orders.update-status', $order) }}" method="POST" class="inline">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="status" value="cancelled">

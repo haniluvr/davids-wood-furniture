@@ -33,7 +33,7 @@ class AdminAuth
                 return response()->json(['message' => 'Account suspended.'], 403);
             }
 
-            return redirect()->route('admin.login')
+            return redirect('/login')
                 ->with('error', 'Your account has been suspended. Please contact the administrator.');
         }
 

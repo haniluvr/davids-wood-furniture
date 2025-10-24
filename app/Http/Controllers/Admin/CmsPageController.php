@@ -102,7 +102,7 @@ class CmsPageController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return redirect()->route('admin.cms-pages.index')
+        return redirect()->to(admin_route('cms-pages.index'))
             ->with('success', 'CMS page created successfully.');
     }
 
@@ -173,7 +173,7 @@ class CmsPageController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return redirect()->route('admin.cms-pages.index')
+        return redirect()->to(admin_route('cms-pages.index'))
             ->with('success', 'CMS page updated successfully.');
     }
 
@@ -195,7 +195,7 @@ class CmsPageController extends Controller
 
         $cmsPage->delete();
 
-        return redirect()->route('admin.cms-pages.index')
+        return redirect()->to(admin_route('cms-pages.index'))
             ->with('success', 'CMS page deleted successfully.');
     }
 
@@ -253,7 +253,7 @@ class CmsPageController extends Controller
             'user_agent' => request()->userAgent(),
         ]);
 
-        return redirect()->route('admin.cms-pages.edit', $newCmsPage)
+        return redirect()->to(admin_route('cms-pages.edit', $newCmsPage))
             ->with('success', 'CMS page duplicated successfully.');
     }
 

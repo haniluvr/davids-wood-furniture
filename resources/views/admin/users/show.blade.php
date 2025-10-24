@@ -12,10 +12,10 @@
     <nav>
         <ol class="flex items-center gap-2">
             <li>
-                <a class="font-medium" href="{{ route('admin.dashboard') }}">Dashboard /</a>
+                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ route('admin.users.index') }}">Users /</a>
+                <a class="font-medium" href="{{ admin_route('users.index') }}">Users /</a>
             </li>
             <li class="font-medium text-primary">{{ $user->first_name }} {{ $user->last_name }}</li>
         </ol>
@@ -63,7 +63,7 @@
 
                 <!-- Action Buttons -->
                 <div class="flex gap-2 w-full">
-                    <a href="{{ route('admin.users.edit', $user) }}" class="flex-1 flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
+                    <a href="{{ admin_route('users.edit', $user) }}" class="flex-1 flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
                         <i data-lucide="edit" class="w-4 h-4"></i>
                         Edit
                     </a>
@@ -200,7 +200,7 @@
                                                     </td>
                                                     <td class="py-3 px-4 text-black dark:text-white">${{ number_format($order->total_amount, 2) }}</td>
                                                     <td class="py-3 px-4">
-                                                        <a href="{{ route('admin.orders.show', $order) }}" class="text-primary hover:text-primary/80 transition-colors duration-200">
+                                                        <a href="{{ admin_route('orders.show', $order) }}" class="text-primary hover:text-primary/80 transition-colors duration-200">
                                                             View
                                                         </a>
                                                     </td>
@@ -211,7 +211,7 @@
                                 </div>
                                 @if($user->orders->count() > 10)
                                     <div class="mt-4 text-center">
-                                        <a href="{{ route('admin.orders.index', ['user_id' => $user->id]) }}" class="text-primary hover:text-primary/80 transition-colors duration-200">
+                                        <a href="{{ admin_route('orders.index', ['user_id' => $user->id]) }}" class="text-primary hover:text-primary/80 transition-colors duration-200">
                                             View all {{ $user->orders->count() }} orders
                                         </a>
                                     </div>
