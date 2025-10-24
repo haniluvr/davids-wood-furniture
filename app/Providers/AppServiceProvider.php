@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
         } elseif ($host === 'localhost') {
             config(['app.url' => 'http://localhost:8080']);
         }
-        
+
         // Register Blade directive for admin routes
         Blade::directive('adminRoute', function ($routeName) {
             return "<?php echo \\App\\Helpers\\AdminRouteHelper::route($routeName); ?>";

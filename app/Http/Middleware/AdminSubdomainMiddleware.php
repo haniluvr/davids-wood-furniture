@@ -16,15 +16,15 @@ class AdminSubdomainMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $host = $request->getHost();
-        
+
         // Check if this is an admin subdomain (regardless of port)
         $isAdminSubdomain = str_starts_with($host, 'admin.');
-        
-        if (!$isAdminSubdomain) {
+
+        if (! $isAdminSubdomain) {
             // If not an admin subdomain, continue to next middleware/route
             return $next($request);
         }
-        
+
         // This is an admin subdomain, continue with the request
         return $next($request);
     }

@@ -447,7 +447,7 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
 });
 
 // Public review routes
-Route::get('/api/reviews/{productId}', [App\Http\Controllers\ProductReviewController::class, 'index'])->name('reviews.index');
+Route::get('/api/reviews/{productId}', [App\Http\Controllers\ProductReviewController::class, 'index'])->name('api.reviews.index');
 
 // Simple test route
 Route::get('/test-route', function () {
