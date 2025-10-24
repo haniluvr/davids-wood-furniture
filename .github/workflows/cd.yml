@@ -248,9 +248,12 @@ jobs:
         VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
         ENV_EOF
         
-        # Set proper ownership for .env
+        # Set proper ownership for .env (readable by both www-data and ubuntu users)
         sudo chown www-data:www-data "$APP_DIR/.env"
-        sudo chmod 600 "$APP_DIR/.env"
+        sudo chmod 640 "$APP_DIR/.env"
+        
+        # Add ubuntu user to www-data group for .env access
+        sudo usermod -a -G www-data ubuntu || echo "Failed to add ubuntu to www-data group"
         
         # Generate Laravel application key
         echo "Generating Laravel application key..."
@@ -395,7 +398,8 @@ jobs:
         
         # Check Laravel configuration
         echo "=== Checking Laravel configuration ==="
-        sudo -u www-data php artisan config:show | head -20 || echo "Config show failed"
+        sudo -u www-data php artisan config:cache || echo "Config cache failed"
+        sudo -u www-data php artisan route:cache || echo "Route cache failed"
         
         # Test basic Laravel functionality
         echo "=== Testing Laravel functionality ==="

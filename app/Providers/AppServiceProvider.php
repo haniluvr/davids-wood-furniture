@@ -37,12 +37,5 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('adminRoute', function ($routeName) {
             return "<?php echo \\App\\Helpers\\AdminRouteHelper::route($routeName); ?>";
         });
-        
-        // Register global helper function
-        if (!function_exists('admin_route')) {
-            function admin_route(string $routeName, array $parameters = []): string {
-                return \App\Helpers\AdminRouteHelper::url($routeName, $parameters);
-            }
-        }
     }
 }
