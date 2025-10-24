@@ -25,7 +25,7 @@ $adminRoutes = function () {
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->route('admin.login');
+        return redirect('/login');
     })->name('index');
 
     // Protected admin routes
@@ -278,7 +278,7 @@ Route::get('/', function () {
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->route('admin.login');
+        return redirect('/login');
     }
 
     // Otherwise, show the normal homepage
