@@ -364,7 +364,7 @@
     <div class="w-full hero-content">
         <div class="hero-text text-center">
             <span class="badge-text rounded-full px-4 py-1 flex items-center justify-center mx-auto">
-                <i class="feather-small mr-2" data-lucide=""></i>
+                <i class="feather-small mr-2" data-lucide="flower"></i>
                 Nature's grain shaped by artistry
             </span>
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mt-4">

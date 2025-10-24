@@ -3202,10 +3202,20 @@
     
     // Initialize account cart selection functionality
     function initializeAccountCartSelection() {
-        // Add event listeners to individual checkboxes
+        console.log('Initializing account cart selection functionality...');
+        
+        // Remove existing event listeners to prevent duplicates
         const itemCheckboxes = document.querySelectorAll('.account-item-checkbox');
-        itemCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
+        console.log('Found account checkboxes:', itemCheckboxes.length);
+        
+        itemCheckboxes.forEach((checkbox, index) => {
+            // Remove existing event listeners by cloning the element
+            const newCheckbox = checkbox.cloneNode(true);
+            checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+            
+            // Add fresh event listener
+            newCheckbox.addEventListener('change', function() {
+                console.log('Account checkbox changed:', index, this.checked);
                 updateAccountCartSubtotal();
                 updateAccountSelectAllButton();
             });
@@ -3214,35 +3224,55 @@
         // Add event listener to select all button
         const selectAllBtn = document.getElementById('account-select-all-cart-items');
         if (selectAllBtn) {
-            selectAllBtn.addEventListener('click', function(e) {
+            console.log('Account select all button found');
+            
+            // Remove existing event listeners
+            const newSelectAllBtn = selectAllBtn.cloneNode(true);
+            selectAllBtn.parentNode.replaceChild(newSelectAllBtn, selectAllBtn);
+            
+            newSelectAllBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('Account select all button clicked');
                 toggleAccountSelectAll();
             });
+        } else {
+            console.warn('Account select all button not found');
         }
         
         // Initialize the select all button text based on current state
         updateAccountSelectAllButton();
         updateAccountCartSubtotal();
+        console.log('Account cart selection initialization complete');
     }
     
     // Toggle account select all functionality
     function toggleAccountSelectAll() {
+        console.log('toggleAccountSelectAll called');
         const itemCheckboxes = document.querySelectorAll('.account-item-checkbox');
         const selectAllBtn = document.getElementById('account-select-all-cart-items');
         
-        if (!itemCheckboxes.length || !selectAllBtn) return;
+        console.log('Found account checkboxes:', itemCheckboxes.length);
+        console.log('Account select all button:', !!selectAllBtn);
+        
+        if (!itemCheckboxes.length || !selectAllBtn) {
+            console.warn('Missing elements for toggleAccountSelectAll');
+            return;
+        }
         
         // Check if all items are selected
         const allSelected = Array.from(itemCheckboxes).every(checkbox => checkbox.checked);
+        console.log('All account items selected:', allSelected);
         
         if (allSelected) {
             // Deselect all
+            console.log('Deselecting all account items');
             itemCheckboxes.forEach(checkbox => {
                 checkbox.checked = false;
             });
         } else {
             // Select all
+            console.log('Selecting all account items');
             itemCheckboxes.forEach(checkbox => {
                 checkbox.checked = true;
             });
@@ -3251,6 +3281,7 @@
         // Update UI after toggling
         updateAccountCartSubtotal();
         updateAccountSelectAllButton();
+        console.log('Account toggle complete');
     }
     
     // Update account select all button text based on current selection
@@ -3258,18 +3289,30 @@
         const itemCheckboxes = document.querySelectorAll('.account-item-checkbox');
         const selectAllBtn = document.getElementById('account-select-all-cart-items');
         
-        if (!selectAllBtn || itemCheckboxes.length === 0) return;
+        console.log('updateAccountSelectAllButton called');
+        console.log('Account checkboxes found:', itemCheckboxes.length);
+        console.log('Account select all button found:', !!selectAllBtn);
+        
+        if (!selectAllBtn || itemCheckboxes.length === 0) {
+            console.warn('Missing elements for updateAccountSelectAllButton');
+            return;
+        }
         
         const selectedCount = Array.from(itemCheckboxes).filter(checkbox => checkbox.checked).length;
         const totalCount = itemCheckboxes.length;
         
+        console.log('Account selected count:', selectedCount, 'Total count:', totalCount);
+        
         if (selectedCount === 0) {
             selectAllBtn.textContent = 'Select All';
+            console.log('Account button text set to: Select All');
         } else if (selectedCount === totalCount) {
             selectAllBtn.textContent = 'Deselect All';
+            console.log('Account button text set to: Deselect All');
         } else {
             // When some items are selected but not all, show "Select All" to select remaining items
             selectAllBtn.textContent = 'Select All';
+            console.log('Account button text set to: Select All (partial selection)');
         }
     }
     

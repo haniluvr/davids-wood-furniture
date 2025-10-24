@@ -15,8 +15,13 @@ async function loadComponent(url, targetId, initCallback = null) {
 
         container.innerHTML = await response.text();
 
-        // Re-init Lucide
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        // Re-init Lucide with better error handling
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            console.log('Reinitializing Lucide icons after component load...');
+            lucide.createIcons();
+        } else {
+            console.warn('Lucide not available for reinitialization');
+        }
 
         // Run optional init logic
         if (initCallback && typeof initCallback === 'function') {
@@ -2685,8 +2690,13 @@ async function performLoadCartItems() {
                     cartItems.innerHTML = cartItemsHTML;
                     console.log('Cart items HTML set successfully');
                     
-                    // Initialize cart selection functionality
-                    initializeCartSelection();
+                    // Use requestAnimationFrame to ensure DOM is fully rendered
+                    requestAnimationFrame(() => {
+                        // Initialize cart selection functionality with a small delay
+                        setTimeout(() => {
+                            initializeCartSelection();
+                        }, 50);
+                    });
                 } else {
                     console.error('cartItems element not found!');
                 }
@@ -2696,6 +2706,12 @@ async function performLoadCartItems() {
                 
                 // Initialize checkout button state
                 updateCheckoutButtonState();
+                
+                // Additional fallback initialization after a longer delay
+                setTimeout(() => {
+                    console.log('Fallback cart selection initialization...');
+                    initializeCartSelection();
+                }, 200);
             } else {
                 // Hide items first
                 if (cartItems) {
@@ -2946,10 +2962,20 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 // Initialize cart selection functionality
 function initializeCartSelection() {
-    // Add event listeners to individual checkboxes
+    console.log('Initializing cart selection functionality...');
+    
+    // Remove existing event listeners to prevent duplicates
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-    itemCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
+    console.log('Found checkboxes:', itemCheckboxes.length);
+    
+    itemCheckboxes.forEach((checkbox, index) => {
+        // Remove existing event listeners by cloning the element
+        const newCheckbox = checkbox.cloneNode(true);
+        checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+        
+        // Add fresh event listener
+        newCheckbox.addEventListener('change', function() {
+            console.log('Checkbox changed:', index, this.checked);
             updateCartSubtotal();
             updateSelectAllButton();
         });
@@ -2958,34 +2984,54 @@ function initializeCartSelection() {
     // Add event listener to select all button
     const selectAllBtn = document.getElementById('select-all-cart-items');
     if (selectAllBtn) {
-        selectAllBtn.addEventListener('click', function(e) {
+        console.log('Select all button found');
+        
+        // Remove existing event listeners
+        const newSelectAllBtn = selectAllBtn.cloneNode(true);
+        selectAllBtn.parentNode.replaceChild(newSelectAllBtn, selectAllBtn);
+        
+        newSelectAllBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
+            console.log('Select all button clicked');
             toggleSelectAll();
         });
+    } else {
+        console.warn('Select all button not found');
     }
     
     // Initialize the select all button text based on current state
     updateSelectAllButton();
+    console.log('Cart selection initialization complete');
 }
 
 // Toggle select all functionality
 function toggleSelectAll() {
+    console.log('toggleSelectAll called');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const selectAllBtn = document.getElementById('select-all-cart-items');
     
-    if (!itemCheckboxes.length || !selectAllBtn) return;
+    console.log('Found checkboxes:', itemCheckboxes.length);
+    console.log('Select all button:', !!selectAllBtn);
+    
+    if (!itemCheckboxes.length || !selectAllBtn) {
+        console.warn('Missing elements for toggleSelectAll');
+        return;
+    }
     
     // Check if all items are selected
     const allSelected = Array.from(itemCheckboxes).every(checkbox => checkbox.checked);
+    console.log('All selected:', allSelected);
     
     if (allSelected) {
         // Deselect all
+        console.log('Deselecting all items');
         itemCheckboxes.forEach(checkbox => {
             checkbox.checked = false;
         });
     } else {
         // Select all
+        console.log('Selecting all items');
         itemCheckboxes.forEach(checkbox => {
             checkbox.checked = true;
         });
@@ -2994,6 +3040,7 @@ function toggleSelectAll() {
     // Update UI after toggling
     updateCartSubtotal();
     updateSelectAllButton();
+    console.log('Toggle complete');
 }
 
 // Update select all button text based on current selection
@@ -3001,18 +3048,30 @@ function updateSelectAllButton() {
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const selectAllBtn = document.getElementById('select-all-cart-items');
     
-    if (!selectAllBtn || itemCheckboxes.length === 0) return;
+    console.log('updateSelectAllButton called');
+    console.log('Checkboxes found:', itemCheckboxes.length);
+    console.log('Select all button found:', !!selectAllBtn);
+    
+    if (!selectAllBtn || itemCheckboxes.length === 0) {
+        console.warn('Missing elements for updateSelectAllButton');
+        return;
+    }
     
     const selectedCount = Array.from(itemCheckboxes).filter(checkbox => checkbox.checked).length;
     const totalCount = itemCheckboxes.length;
     
+    console.log('Selected count:', selectedCount, 'Total count:', totalCount);
+    
     if (selectedCount === 0) {
         selectAllBtn.textContent = 'Select All';
+        console.log('Button text set to: Select All');
     } else if (selectedCount === totalCount) {
         selectAllBtn.textContent = 'Deselect All';
+        console.log('Button text set to: Deselect All');
     } else {
         // When some items are selected but not all, show "Select All" to select remaining items
         selectAllBtn.textContent = 'Select All';
+        console.log('Button text set to: Select All (partial selection)');
     }
 }
 
@@ -3127,3 +3186,32 @@ async function handleCartCheckout() {
 window.handleCartCheckout = handleCartCheckout;
 window.initializeCartSelection = initializeCartSelection;
 window.updateCartSubtotal = updateCartSubtotal;
+window.toggleSelectAll = toggleSelectAll;
+window.updateSelectAllButton = updateSelectAllButton;
+
+// Global function to reinitialize cart selection (useful for dynamic content)
+window.reinitializeCartSelection = function() {
+    console.log('Reinitializing cart selection...');
+    setTimeout(() => {
+        initializeCartSelection();
+    }, 100);
+};
+
+// Global function to reinitialize Lucide icons
+window.reinitializeLucideIcons = function() {
+    console.log('Reinitializing Lucide icons from app.js...');
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+        console.log('Lucide icons reinitialized successfully');
+    } else {
+        console.error('Lucide not available for reinitialization');
+    }
+};
+
+// Fallback Lucide initialization
+setTimeout(() => {
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        console.log('Fallback Lucide initialization...');
+        lucide.createIcons();
+    }
+}, 1000);

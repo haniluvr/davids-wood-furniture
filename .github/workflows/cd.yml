@@ -9,6 +9,8 @@ name: CD Pipeline
 # - EC2_SSH_KEY: Private SSH key for EC2 access
 # - DB_PASSWORD: Database password for davidswood_user
 # - MYSQL_ROOT_PASSWORD: MySQL root password
+# - GOOGLE_CLIENT_ID: Google OAuth Client ID (optional)
+# - GOOGLE_CLIENT_SECRET: Google OAuth Client Secret (optional)
 
 on:
   workflow_run:
@@ -258,6 +260,11 @@ jobs:
         VITE_PUSHER_PORT="${PUSHER_PORT}"
         VITE_PUSHER_SCHEME="${PUSHER_SCHEME}"
         VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+        # Google OAuth Configuration
+        GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+        GOOGLE_REDIRECT_URL=https://davidswood.shop/auth/google/callback
         ENV_EOF
         
         # Set proper ownership for .env (readable by both www-data and ubuntu users)
