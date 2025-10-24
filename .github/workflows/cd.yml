@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: CD Pipeline
 
 on:
   push:
@@ -11,24 +11,24 @@ jobs:
     timeout-minutes: 5
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
 
-      - name: Install dependencies
-        run: |
+    - name: Install dependencies
+      run: |
           npm ci
           npm run build
 
-      - name: Prepare SSH key
-        run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
-          chmod 600 key.pem
+    - name: Prepare SSH key
+      run: |
+        echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+        chmod 600 key.pem
 
       - name: Test EC2 connection
         run: |
@@ -40,14 +40,39 @@ jobs:
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
             -o ConnectTimeout=15 -o ServerAliveInterval=5 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'EC2 connection successful'"
 
+      # Prepare directory and set permissions
+      - name: Prepare deployment directory
+      run: |
+          echo "🚀 Preparing deployment directory on EC2..."
+          
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'PREPARE_EOF'
+          #!/bin/bash
+          set -e
+          
+          APP_DIR="/var/www/html/davids-wood-furniture"
+          
+          # Create directory if it doesn't exist
+          echo "Creating application directory..."
+          sudo mkdir -p "$APP_DIR"
+          
+          # Set proper ownership and permissions BEFORE rsync
+          echo "Setting directory permissions..."
+          sudo chown -R ubuntu:www-data "$APP_DIR"
+          sudo chmod -R 755 "$APP_DIR"
+          
+          # Ensure ubuntu user can write to the directory
+          echo "Ensuring ubuntu user can write..."
+          sudo chown -R ubuntu:ubuntu "$APP_DIR"
+          sudo chmod -R 775 "$APP_DIR"
+          
+          echo "✅ Directory prepared with correct permissions"
+          PREPARE_EOF
+
       # Deploy files using rsync
       - name: Deploy with rsync
         run: |
           echo "🚀 Deploying files to EC2..."
-          
-          # Create target directory on EC2
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p /var/www/html/davids-wood-furniture"
           
           # Deploy files using rsync with exclusions
           rsync -avz --delete --progress \
@@ -78,21 +103,21 @@ jobs:
       # Set proper permissions after rsync deployment
       - name: Set file permissions
         run: |
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'PERMISSIONS_EOF'
-          #!/bin/bash
-          set -e
-          
+        #!/bin/bash
+        set -e
+        
           echo "🚀 Setting file permissions on EC2..."
+        
+        APP_DIR="/var/www/html/davids-wood-furniture"
           
-          APP_DIR="/var/www/html/davids-wood-furniture"
-          
-          # Set proper ownership and permissions
-          echo "Setting file permissions..."
-          sudo chown -R www-data:www-data "$APP_DIR"
-          sudo chmod -R 755 "$APP_DIR"
-          sudo chmod -R 775 "$APP_DIR/storage"
-          sudo chmod -R 775 "$APP_DIR/bootstrap/cache"
+          # Set proper ownership and permissions for web server
+          echo "Setting file permissions for web server..."
+        sudo chown -R www-data:www-data "$APP_DIR"
+        sudo chmod -R 755 "$APP_DIR"
+        sudo chmod -R 775 "$APP_DIR/storage"
+        sudo chmod -R 775 "$APP_DIR/bootstrap/cache"
           
           # Create missing Laravel storage directories
           echo "Creating missing Laravel storage directories..."
@@ -124,9 +149,9 @@ jobs:
           
           APP_DIR="/var/www/html/davids-wood-furniture"
           cd "$APP_DIR"
-          
-          # Install PHP dependencies
-          echo "Installing PHP dependencies..."
+        
+        # Install PHP dependencies
+        echo "Installing PHP dependencies..."
           sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
           
           # Fix npm permissions and create clean environment
@@ -138,8 +163,8 @@ jobs:
           # Set npm environment variables for www-data
           echo "Configuring npm environment..."
           sudo -u www-data bash -c 'export NPM_CONFIG_CACHE=/tmp/.npm && export NPM_CONFIG_PREFIX=/tmp/.npm-global && npm ci'
-          
-          echo "Building frontend assets..."
+        
+        echo "Building frontend assets..."
           sudo -u www-data bash -c 'export NPM_CONFIG_CACHE=/tmp/.npm && export NPM_CONFIG_PREFIX=/tmp/.npm-global && npm run build'
           
           # Ensure MySQL is running
@@ -246,8 +271,8 @@ jobs:
           APACHE_EOF
 
       # Post-deployment health check
-      - name: Post-deployment health check
-        run: |
+    - name: Post-deployment health check
+      run: |
           echo "🔍 Running post-deployment health checks..."
           
           # Test website accessibility
