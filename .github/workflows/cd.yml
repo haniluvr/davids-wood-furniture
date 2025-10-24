@@ -284,9 +284,17 @@ jobs:
         sudo -u www-data php artisan route:cache || echo "Route cache failed"
         sudo -u www-data php artisan view:cache || echo "View cache failed"
         
-        # Run database migrations
+                # Run database migrations
         echo "Running database migrations..."
-        sudo -u www-data php artisan migrate --force || echo "Migration failed, but continuing..."
+        # Disable foreign key checks for migration
+        mysql -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "SET FOREIGN_KEY_CHECKS=0;" davids_wood || echo "FK disable failed"
+        sudo -u www-data php artisan migrate --force
+        if [ $? -ne 0 ]; then
+          echo "❌ Migration failed - stopping deployment"
+          exit 1
+        fi
+        # Re-enable foreign key checks
+        mysql -u davidswood_user -p${{ secrets.DB_PASSWORD }} -e "SET FOREIGN_KEY_CHECKS=1;" davids_wood || echo "FK enable failed"
         
         # Restart services
         echo "Restarting services..."
