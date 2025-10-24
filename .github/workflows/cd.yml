@@ -1,5 +1,12 @@
 name: CD Pipeline
 
+# Required GitHub Secrets:
+# - EC2_HOST: EC2 instance public IP
+# - EC2_USER: EC2 username (usually 'ubuntu')
+# - EC2_SSH_KEY: Private SSH key for EC2 access
+# - DB_PASSWORD: Database password for davidswood_user
+# - MYSQL_ROOT_PASSWORD: MySQL root password
+
 on:
   push:
     branches: [main]
@@ -22,266 +29,261 @@ jobs:
 
     - name: Install dependencies
       run: |
-          npm ci
-          npm run build
+        npm ci
+        npm run build
 
     - name: Prepare SSH key
       run: |
         echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
         chmod 600 key.pem
 
-      - name: Test EC2 connection
-        run: |
-          echo "Testing EC2 connection..."
-          echo "EC2 Host: ${{ secrets.EC2_HOST }}"
-          echo "EC2 User: ${{ secrets.EC2_USER }}"
-          
-          # Test SSH connection
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-            -o ConnectTimeout=15 -o ServerAliveInterval=5 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'EC2 connection successful'"
-
-      # Prepare directory and set permissions
-      - name: Prepare deployment directory
+    - name: Test EC2 connection
       run: |
-          echo "🚀 Preparing deployment directory on EC2..."
-          
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'PREPARE_EOF'
-          #!/bin/bash
-          set -e
-          
-          APP_DIR="/var/www/html/davids-wood-furniture"
-          
-          # Create directory if it doesn't exist
-          echo "Creating application directory..."
-          sudo mkdir -p "$APP_DIR"
-          
-          # Set proper ownership and permissions BEFORE rsync
-          echo "Setting directory permissions..."
-          sudo chown -R ubuntu:www-data "$APP_DIR"
-          sudo chmod -R 755 "$APP_DIR"
-          
-          # Ensure ubuntu user can write to the directory
-          echo "Ensuring ubuntu user can write..."
-          sudo chown -R ubuntu:ubuntu "$APP_DIR"
-          sudo chmod -R 775 "$APP_DIR"
-          
-          echo "✅ Directory prepared with correct permissions"
-          PREPARE_EOF
-
-      # Deploy files using rsync
-      - name: Deploy with rsync
-        run: |
-          echo "🚀 Deploying files to EC2..."
-          
-          # Deploy files using rsync with exclusions
-          rsync -avz --delete --progress \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='node_modules' \
-            --exclude='vendor' \
-            --exclude='.env' \
-            --exclude='.env.local' \
-            --exclude='.env.example' \
-            --exclude='storage/logs/*.log' \
-            --exclude='storage/framework/cache/*' \
-            --exclude='storage/framework/sessions/*' \
-            --exclude='storage/framework/views/*' \
-            --exclude='database/*.sqlite' \
-            --exclude='database/*.sql' \
-            --exclude='public/build' \
-            --exclude='*.log' \
-            --exclude='npm-debug.log' \
-            --exclude='yarn-debug.log' \
-            --exclude='.DS_Store' \
-            --exclude='README.md' \
-            -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem -o ConnectTimeout=15" \
-            ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/davids-wood-furniture/
-          
-          echo "✅ Files deployed successfully"
-
-      # Set proper permissions after rsync deployment
-      - name: Set file permissions
-        run: |
+        echo "Testing EC2 connection..."
+        echo "EC2 Host: ${{ secrets.EC2_HOST }}"
+        echo "EC2 User: ${{ secrets.EC2_USER }}"
+        
+        # Test SSH connection
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'PERMISSIONS_EOF'
+          -o ConnectTimeout=15 -o ServerAliveInterval=5 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'EC2 connection successful'"
+
+    # Prepare directory and set permissions
+    - name: Prepare deployment directory
+      run: |
+        echo "🚀 Preparing deployment directory on EC2..."
+        
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'PREPARE_EOF'
         #!/bin/bash
         set -e
         
-          echo "🚀 Setting file permissions on EC2..."
+        APP_DIR="/var/www/html/davids-wood-furniture"
+        
+        # Create directory if it doesn't exist
+        echo "Creating application directory..."
+        sudo mkdir -p "$APP_DIR"
+        
+        # Set proper ownership and permissions BEFORE rsync
+        echo "Setting directory permissions..."
+        sudo chown -R ubuntu:ubuntu "$APP_DIR"
+        sudo chmod -R 775 "$APP_DIR"
+        
+        echo "✅ Directory prepared with correct permissions"
+        PREPARE_EOF
+
+    # Deploy files using rsync
+    - name: Deploy with rsync
+      run: |
+        echo "🚀 Deploying files to EC2..."
+        
+        # Deploy files using rsync with exclusions
+        rsync -avz --delete --progress \
+          --exclude='.git' \
+          --exclude='.github' \
+          --exclude='node_modules' \
+          --exclude='vendor' \
+          --exclude='.env' \
+          --exclude='.env.local' \
+          --exclude='.env.example' \
+          --exclude='storage/logs/*.log' \
+          --exclude='storage/framework/cache/*' \
+          --exclude='storage/framework/sessions/*' \
+          --exclude='storage/framework/views/*' \
+          --exclude='database/*.sqlite' \
+          --exclude='database/*.sql' \
+          --exclude='public/build' \
+          --exclude='*.log' \
+          --exclude='npm-debug.log' \
+          --exclude='yarn-debug.log' \
+          --exclude='.DS_Store' \
+          --exclude='README.md' \
+          -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem -o ConnectTimeout=15" \
+          ./ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/davids-wood-furniture/
+        
+        echo "✅ Files deployed successfully"
+
+    # Set proper permissions after rsync deployment
+    - name: Set file permissions
+      run: |
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'PERMISSIONS_EOF'
+        #!/bin/bash
+        set -e
+        
+        echo "🚀 Setting file permissions on EC2..."
         
         APP_DIR="/var/www/html/davids-wood-furniture"
-          
-          # Set proper ownership and permissions for web server
-          echo "Setting file permissions for web server..."
+        
+        # Set proper ownership and permissions for web server
+        echo "Setting file permissions for web server..."
         sudo chown -R www-data:www-data "$APP_DIR"
         sudo chmod -R 755 "$APP_DIR"
         sudo chmod -R 775 "$APP_DIR/storage"
         sudo chmod -R 775 "$APP_DIR/bootstrap/cache"
-          
-          # Create missing Laravel storage directories
-          echo "Creating missing Laravel storage directories..."
-          sudo mkdir -p "$APP_DIR/storage/logs" || echo "Storage logs directory creation failed"
-          sudo mkdir -p "$APP_DIR/storage/framework/cache" || echo "Storage cache directory creation failed"
-          sudo mkdir -p "$APP_DIR/storage/framework/sessions" || echo "Storage sessions directory creation failed"
-          sudo mkdir -p "$APP_DIR/storage/framework/views" || echo "Storage views directory creation failed"
-          sudo mkdir -p "$APP_DIR/storage/app" || echo "Storage app directory creation failed"
-          sudo mkdir -p "$APP_DIR/bootstrap/cache" || echo "Bootstrap cache directory creation failed"
-          
-          # Set permissions for storage directories
-          sudo chown -R www-data:www-data "$APP_DIR/storage" || echo "Storage ownership fix failed"
-          sudo chown -R www-data:www-data "$APP_DIR/bootstrap/cache" || echo "Bootstrap cache ownership fix failed"
-          sudo chmod -R 775 "$APP_DIR/storage" || echo "Storage permissions fix failed"
-          sudo chmod -R 775 "$APP_DIR/bootstrap/cache" || echo "Bootstrap cache permissions fix failed"
-          
-          echo "✅ File permissions set successfully"
-          PERMISSIONS_EOF
+        
+        # Create missing Laravel storage directories
+        echo "Creating missing Laravel storage directories..."
+        sudo mkdir -p "$APP_DIR/storage/logs" || echo "Storage logs directory creation failed"
+        sudo mkdir -p "$APP_DIR/storage/framework/cache" || echo "Storage cache directory creation failed"
+        sudo mkdir -p "$APP_DIR/storage/framework/sessions" || echo "Storage sessions directory creation failed"
+        sudo mkdir -p "$APP_DIR/storage/framework/views" || echo "Storage views directory creation failed"
+        sudo mkdir -p "$APP_DIR/storage/app" || echo "Storage app directory creation failed"
+        sudo mkdir -p "$APP_DIR/bootstrap/cache" || echo "Bootstrap cache directory creation failed"
+        
+        # Set permissions for storage directories
+        sudo chown -R www-data:www-data "$APP_DIR/storage" || echo "Storage ownership fix failed"
+        sudo chown -R www-data:www-data "$APP_DIR/bootstrap/cache" || echo "Bootstrap cache ownership fix failed"
+        sudo chmod -R 775 "$APP_DIR/storage" || echo "Storage permissions fix failed"
+        sudo chmod -R 775 "$APP_DIR/bootstrap/cache" || echo "Bootstrap cache permissions fix failed"
+        
+        echo "✅ File permissions set successfully"
+        PERMISSIONS_EOF
 
-      # Install dependencies and run Laravel setup
-      - name: Install dependencies and setup Laravel
-        run: |
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'SETUP_EOF'
-          #!/bin/bash
-          set -e
-          
-          echo "🚀 Installing dependencies and setting up Laravel..."
-          
-          APP_DIR="/var/www/html/davids-wood-furniture"
-          cd "$APP_DIR"
+    # Install dependencies and run Laravel setup
+    - name: Install dependencies and setup Laravel
+      run: |
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'SETUP_EOF'
+        #!/bin/bash
+        set -e
+        
+        echo "🚀 Installing dependencies and setting up Laravel..."
+        
+        APP_DIR="/var/www/html/davids-wood-furniture"
+        cd "$APP_DIR"
         
         # Install PHP dependencies
         echo "Installing PHP dependencies..."
-          sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
-          
-          # Fix npm permissions and create clean environment
-          echo "Setting up npm environment..."
-          sudo rm -rf /var/www/.npm /var/www/.npmrc /tmp/.npm
-          sudo mkdir -p /tmp/.npm
-          sudo chown -R www-data:www-data /tmp/.npm
-          
-          # Set npm environment variables for www-data
-          echo "Configuring npm environment..."
-          sudo -u www-data bash -c 'export NPM_CONFIG_CACHE=/tmp/.npm && export NPM_CONFIG_PREFIX=/tmp/.npm-global && npm ci'
+        sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
+        
+        # Fix npm permissions and create clean environment
+        echo "Setting up npm environment..."
+        sudo rm -rf /var/www/.npm /var/www/.npmrc /tmp/.npm
+        sudo mkdir -p /tmp/.npm
+        sudo chown -R www-data:www-data /tmp/.npm
+        
+        # Set npm environment variables for www-data
+        echo "Configuring npm environment..."
+        sudo -u www-data bash -c 'export NPM_CONFIG_CACHE=/tmp/.npm && export NPM_CONFIG_PREFIX=/tmp/.npm-global && npm ci'
         
         echo "Building frontend assets..."
-          sudo -u www-data bash -c 'export NPM_CONFIG_CACHE=/tmp/.npm && export NPM_CONFIG_PREFIX=/tmp/.npm-global && npm run build'
-          
-          # Ensure MySQL is running
-          echo "Checking MySQL status..."
-          sudo systemctl status mysql || echo "MySQL status check failed"
-          sudo systemctl start mysql || echo "MySQL start failed"
-          
-          # Create MySQL user for 127.0.0.1 (required for GitHub Actions environment)
-          echo "Creating MySQL user for 127.0.0.1 as root..."
-          mysql -u root -pRootPassword123! -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'127.0.0.1' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" || echo "User creation failed, but continuing..."
-          mysql -u root -pRootPassword123! -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'127.0.0.1';" || echo "Grant privileges failed, but continuing..."
-          mysql -u root -pRootPassword123! -e "FLUSH PRIVILEGES;" || echo "Flush privileges failed, but continuing..."
-          
-          # Also ensure the database exists
-          echo "Creating database if it doesn't exist..."
-          mysql -u root -pRootPassword123! -e "CREATE DATABASE IF NOT EXISTS davids_wood;" || echo "Database creation failed, but continuing..."
-          
-          # Create .env file if it doesn't exist
-          echo "Creating .env file..."
-          if [ ! -f "$APP_DIR/.env" ]; then
-            echo "Creating .env file from template..."
-            cp "$APP_DIR/.env.example" "$APP_DIR/.env" || echo "Failed to copy .env.example"
-          fi
-          
-          # Update .env with production values
-          echo "Updating .env file with production values..."
-          sed -i "s/DB_HOST=.*/DB_HOST=localhost/" "$APP_DIR/.env" || echo "Failed to update DB_HOST"
-          sed -i "s/DB_DATABASE=.*/DB_DATABASE=davids_wood/" "$APP_DIR/.env" || echo "Failed to update DB_DATABASE"
-          sed -i "s/DB_USERNAME=.*/DB_USERNAME=davidswood_user/" "$APP_DIR/.env" || echo "Failed to update DB_USERNAME"
-          sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/" "$APP_DIR/.env" || echo "Failed to update DB_PASSWORD"
-          sed -i "s/APP_ENV=.*/APP_ENV=production/" "$APP_DIR/.env" || echo "Failed to update APP_ENV"
-          sed -i "s/APP_DEBUG=.*/APP_DEBUG=false/" "$APP_DIR/.env" || echo "Failed to update APP_DEBUG"
-          sed -i "s/APP_URL=.*/APP_URL=https:\/\/${{ secrets.EC2_HOST }}/" "$APP_DIR/.env" || echo "Failed to update APP_URL"
-          
-          # Set proper ownership for .env
-          sudo chown www-data:www-data "$APP_DIR/.env"
-          sudo chmod 600 "$APP_DIR/.env"
-          
-          # Clear Laravel caches
-          echo "Clearing Laravel caches..."
-          sudo -u www-data php artisan config:clear || echo "Config clear failed"
-          sudo -u www-data php artisan route:clear || echo "Route clear failed"
-          sudo -u www-data php artisan view:clear || echo "View clear failed"
-          sudo -u www-data php artisan cache:clear || echo "Cache clear failed"
-          
-          # Cache configuration for production
-          echo "Caching Laravel configuration..."
-          sudo -u www-data php artisan config:cache || echo "Config cache failed"
-          sudo -u www-data php artisan route:cache || echo "Route cache failed"
-          sudo -u www-data php artisan view:cache || echo "View cache failed"
-          
-          # Run database migrations
-          echo "Running database migrations..."
-          sudo -u www-data php artisan migrate --force || echo "Migration failed, but continuing..."
-          
-          # Restart services
-          echo "Restarting services..."
-          sudo systemctl restart apache2 || echo "Apache restart failed"
-          sudo systemctl restart php8.1-fpm || echo "PHP-FPM restart failed"
-          sudo systemctl restart mysql || echo "MySQL restart failed"
-          
-          echo "✅ Laravel setup completed successfully"
-          SETUP_EOF
+        sudo -u www-data bash -c 'export NPM_CONFIG_CACHE=/tmp/.npm && export NPM_CONFIG_PREFIX=/tmp/.npm-global && npm run build'
+        
+        # Ensure MySQL is running
+        echo "Checking MySQL status..."
+        sudo systemctl status mysql || echo "MySQL status check failed"
+        sudo systemctl start mysql || echo "MySQL start failed"
+        
+        # Create MySQL user for 127.0.0.1 (required for GitHub Actions environment)
+        echo "Creating MySQL user for 127.0.0.1 as root..."
+        mysql -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} -e "CREATE USER IF NOT EXISTS 'davidswood_user'@'127.0.0.1' IDENTIFIED BY '${{ secrets.DB_PASSWORD }}';" || echo "User creation failed, but continuing..."
+        mysql -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} -e "GRANT ALL PRIVILEGES ON davids_wood.* TO 'davidswood_user'@'127.0.0.1';" || echo "Grant privileges failed, but continuing..."
+        mysql -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} -e "FLUSH PRIVILEGES;" || echo "Flush privileges failed, but continuing..."
+        
+        # Also ensure the database exists
+        echo "Creating database if it doesn't exist..."
+        mysql -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS davids_wood;" || echo "Database creation failed, but continuing..."
+        
+        # Create .env file if it doesn't exist
+        echo "Creating .env file..."
+        if [ ! -f "$APP_DIR/.env" ]; then
+          echo "Creating .env file from template..."
+          cp "$APP_DIR/.env.example" "$APP_DIR/.env" || echo "Failed to copy .env.example"
+        fi
+        
+        # Update .env with production values
+        echo "Updating .env file with production values..."
+        sed -i "s/DB_HOST=.*/DB_HOST=localhost/" "$APP_DIR/.env" || echo "Failed to update DB_HOST"
+        sed -i "s/DB_DATABASE=.*/DB_DATABASE=davids_wood/" "$APP_DIR/.env" || echo "Failed to update DB_DATABASE"
+        sed -i "s/DB_USERNAME=.*/DB_USERNAME=davidswood_user/" "$APP_DIR/.env" || echo "Failed to update DB_USERNAME"
+        sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/" "$APP_DIR/.env" || echo "Failed to update DB_PASSWORD"
+        sed -i "s/APP_ENV=.*/APP_ENV=production/" "$APP_DIR/.env" || echo "Failed to update APP_ENV"
+        sed -i "s/APP_DEBUG=.*/APP_DEBUG=false/" "$APP_DIR/.env" || echo "Failed to update APP_DEBUG"
+        sed -i "s/APP_URL=.*/APP_URL=https:\/\/${{ secrets.EC2_HOST }}/" "$APP_DIR/.env" || echo "Failed to update APP_URL"
+        
+        # Set proper ownership for .env
+        sudo chown www-data:www-data "$APP_DIR/.env"
+        sudo chmod 600 "$APP_DIR/.env"
+        
+        # Clear Laravel caches
+        echo "Clearing Laravel caches..."
+        sudo -u www-data php artisan config:clear || echo "Config clear failed"
+        sudo -u www-data php artisan route:clear || echo "Route clear failed"
+        sudo -u www-data php artisan view:clear || echo "View clear failed"
+        sudo -u www-data php artisan cache:clear || echo "Cache clear failed"
+        
+        # Cache configuration for production
+        echo "Caching Laravel configuration..."
+        sudo -u www-data php artisan config:cache || echo "Config cache failed"
+        sudo -u www-data php artisan route:cache || echo "Route cache failed"
+        sudo -u www-data php artisan view:cache || echo "View cache failed"
+        
+        # Run database migrations
+        echo "Running database migrations..."
+        sudo -u www-data php artisan migrate --force || echo "Migration failed, but continuing..."
+        
+        # Restart services
+        echo "Restarting services..."
+        sudo systemctl restart apache2 || echo "Apache restart failed"
+        sudo systemctl restart php8.1-fpm || echo "PHP-FPM restart failed"
+        sudo systemctl restart mysql || echo "MySQL restart failed"
+        
+        echo "✅ Laravel setup completed successfully"
+        SETUP_EOF
 
-      # Configure Apache
-      - name: Configure Apache
-        run: |
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'APACHE_EOF'
-          #!/bin/bash
-          set -e
-          
-          echo "🚀 Configuring Apache..."
-          
-          # Enable required Apache modules
-          echo "Enabling Apache modules..."
-          sudo a2enmod rewrite || echo "Rewrite module enable failed"
-          sudo a2enmod ssl || echo "SSL module enable failed"
-          
-          # Update default site document root
-          echo "Updating Apache document root..."
-          sudo sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/davids-wood-furniture/public|' /etc/apache2/sites-available/000-default.conf || echo "Document root update failed"
-          
-          # Add Laravel-specific Apache configuration
-          echo "Adding Laravel Apache configuration..."
-          sudo tee -a /etc/apache2/sites-available/000-default.conf > /dev/null << 'APACHE_CONFIG'
-          
-          # Laravel configuration
-          <Directory /var/www/html/davids-wood-furniture/public>
-              AllowOverride All
-              Require all granted
-          </Directory>
-          APACHE_CONFIG
-          
-          # Test Apache configuration
-          echo "Testing Apache configuration..."
-          sudo apache2ctl configtest || echo "Apache config test failed"
-          
-          # Restart Apache
-          echo "Restarting Apache..."
-          sudo systemctl restart apache2 || echo "Apache restart failed"
-          
-          echo "✅ Apache configuration completed"
-          APACHE_EOF
+    # Configure Apache
+    - name: Configure Apache
+      run: |
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'APACHE_EOF'
+        #!/bin/bash
+        set -e
+        
+        echo "🚀 Configuring Apache..."
+        
+        # Enable required Apache modules
+        echo "Enabling Apache modules..."
+        sudo a2enmod rewrite || echo "Rewrite module enable failed"
+        sudo a2enmod ssl || echo "SSL module enable failed"
+        
+        # Update default site document root
+        echo "Updating Apache document root..."
+        sudo sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/davids-wood-furniture/public|' /etc/apache2/sites-available/000-default.conf || echo "Document root update failed"
+        
+        # Add Laravel-specific Apache configuration
+        echo "Adding Laravel Apache configuration..."
+        sudo tee -a /etc/apache2/sites-available/000-default.conf > /dev/null << 'APACHE_CONFIG'
+        
+        # Laravel configuration
+        <Directory /var/www/html/davids-wood-furniture/public>
+            AllowOverride All
+            Require all granted
+        </Directory>
+        APACHE_CONFIG
+        
+        # Test Apache configuration
+        echo "Testing Apache configuration..."
+        sudo apache2ctl configtest || echo "Apache config test failed"
+        
+        # Restart Apache
+        echo "Restarting Apache..."
+        sudo systemctl restart apache2 || echo "Apache restart failed"
+        
+        echo "✅ Apache configuration completed"
+        APACHE_EOF
 
-      # Post-deployment health check
+    # Post-deployment health check
     - name: Post-deployment health check
       run: |
-          echo "🔍 Running post-deployment health checks..."
-          
-          # Test website accessibility
-          echo "Testing website accessibility..."
-          curl -f -s -o /dev/null -w "%{http_code}" "http://${{ secrets.EC2_HOST }}" || echo "Website health check failed"
-          
-          # Test Laravel application
-          echo "Testing Laravel application..."
+        echo "🔍 Running post-deployment health checks..."
+        
+        # Test website accessibility
+        echo "Testing website accessibility..."
+        curl -f -s -o /dev/null -w "%{http_code}" "http://${{ secrets.EC2_HOST }}" || echo "Website health check failed"
+        
+        # Test Laravel application
+        echo "Testing Laravel application..."
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -i key.pem \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "cd /var/www/html/davids-wood-furniture && sudo -u www-data php artisan --version" || echo "Laravel health check failed"
-          
-          echo "✅ Health checks completed"
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "cd /var/www/html/davids-wood-furniture && sudo -u www-data php artisan --version" || echo "Laravel health check failed"
+        
+        echo "✅ Health checks completed"
