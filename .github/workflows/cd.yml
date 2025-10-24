@@ -191,8 +191,11 @@ jobs:
           cp "$APP_DIR/.env.example" "$APP_DIR/.env" || echo "Failed to copy .env.example"
         fi
         
-        # Update .env with production values
+        # Update .env with production values (fix permissions first)
         echo "Updating .env file with production values..."
+        sudo chown ubuntu:ubuntu "$APP_DIR/.env" || echo "Failed to change .env ownership"
+        sudo chmod 664 "$APP_DIR/.env" || echo "Failed to change .env permissions"
+        
         sed -i "s/DB_HOST=.*/DB_HOST=localhost/" "$APP_DIR/.env" || echo "Failed to update DB_HOST"
         sed -i "s/DB_DATABASE=.*/DB_DATABASE=davids_wood/" "$APP_DIR/.env" || echo "Failed to update DB_DATABASE"
         sed -i "s/DB_USERNAME=.*/DB_USERNAME=davidswood_user/" "$APP_DIR/.env" || echo "Failed to update DB_USERNAME"
@@ -225,7 +228,17 @@ jobs:
         # Restart services
         echo "Restarting services..."
         sudo systemctl restart apache2 || echo "Apache restart failed"
-        sudo systemctl restart php8.1-fpm || echo "PHP-FPM restart failed"
+        
+        # Check and restart PHP-FPM service (try different service names)
+        echo "Checking PHP-FPM service..."
+        if systemctl list-units --type=service | grep -q "php.*fpm"; then
+          echo "Found PHP-FPM service, restarting..."
+          sudo systemctl restart php*-fpm || echo "PHP-FPM restart failed"
+        else
+          echo "No PHP-FPM service found, checking for alternative..."
+          sudo systemctl restart php8.1-fpm || sudo systemctl restart php8.2-fpm || sudo systemctl restart php8.3-fpm || echo "PHP-FPM restart failed"
+        fi
+        
         sudo systemctl restart mysql || echo "MySQL restart failed"
         
         echo "✅ Laravel setup completed successfully"

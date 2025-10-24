@@ -298,7 +298,7 @@ Route::get('/login', function () {
 // Authentication routes (using api.session middleware for guest session capture)
 Route::middleware(['api.session'])->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('register');
-    Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('user.login');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
     Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
