@@ -309,7 +309,13 @@ jobs:
         
         # Update default site document root
         echo "Updating Apache document root..."
+        echo "Current Apache config before update:"
+        sudo cat /etc/apache2/sites-available/000-default.conf | grep DocumentRoot || echo "No DocumentRoot found"
+        
         sudo sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/davids-wood-furniture/public|' /etc/apache2/sites-available/000-default.conf || echo "Document root update failed"
+        
+        echo "Apache config after update:"
+        sudo cat /etc/apache2/sites-available/000-default.conf | grep DocumentRoot || echo "No DocumentRoot found"
         
         # Add Laravel-specific Apache configuration
         echo "Adding Laravel Apache configuration..."
@@ -325,6 +331,15 @@ jobs:
         # Test Apache configuration
         echo "Testing Apache configuration..."
         sudo apache2ctl configtest || echo "Apache config test failed"
+        
+        # Show final Apache configuration
+        echo "Final Apache configuration:"
+        sudo cat /etc/apache2/sites-available/000-default.conf || echo "Could not read Apache config"
+        
+        # Verify Laravel public directory exists and has index.php
+        echo "Checking Laravel public directory:"
+        ls -la /var/www/html/davids-wood-furniture/public/ || echo "Public directory not found"
+        ls -la /var/www/html/davids-wood-furniture/public/index.php || echo "index.php not found"
         
         # Restart Apache
         echo "Restarting Apache..."
