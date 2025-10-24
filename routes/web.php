@@ -14,7 +14,7 @@ $adminRoutes = function () {
     // Guest routes (login, forgot password, etc.)
     Route::middleware('guest:admin')->group(function () {
         Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('admin.login');
-        Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login'])->name('admin.login.post');
+        Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login']);
         Route::get('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
         Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink'])->name('admin.forgot-password.post');
     });
@@ -25,7 +25,7 @@ $adminRoutes = function () {
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->route('admin.admin.login');
+        return redirect()->route('admin.login');
     })->name('index');
 
     // Protected admin routes
@@ -264,8 +264,8 @@ $adminRoutes = function () {
 };
 
 // Register admin routes for both domains
-Route::domain('admin.davidswood.test')->name('admin.')->group($adminRoutes);
-Route::domain('admin.localhost')->name('admin.')->group($adminRoutes);
+Route::domain('admin.davidswood.test')->name('admin.test.')->group($adminRoutes);
+Route::domain('admin.localhost')->name('admin.local.')->group($adminRoutes);
 Route::domain('admin.davidswood.shop')->name('admin.')->group($adminRoutes);
 
 // Public routes - but check for admin subdomain first
@@ -278,7 +278,7 @@ Route::get('/', function () {
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->route('admin.admin.login');
+        return redirect()->route('admin.login');
     }
 
     // Otherwise, show the normal homepage
