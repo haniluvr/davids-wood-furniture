@@ -21,7 +21,7 @@ class AdminAuth
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
 
-            return redirect()->route('admin.login');
+            return redirect('/login');
         }
 
         $admin = Auth::guard('admin')->user();
