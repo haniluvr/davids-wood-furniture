@@ -9,6 +9,11 @@ name: CD Pipeline
 # - EC2_SSH_KEY: Private SSH key for EC2 access
 # - DB_PASSWORD: Database password for davidswood_user
 # - MYSQL_ROOT_PASSWORD: MySQL root password
+# - MAIL_HOST: SMTP server hostname
+# - MAIL_PORT: SMTP server port (usually 465 for SSL)
+# - MAIL_USERNAME: SMTP username
+# - MAIL_PASSWORD: SMTP password
+# - MAIL_FROM_ADDRESS: From email address
 # - GOOGLE_CLIENT_ID: Google OAuth Client ID (optional)
 # - GOOGLE_CLIENT_SECRET: Google OAuth Client Secret (optional)
 
@@ -232,12 +237,12 @@ jobs:
         REDIS_PORT=6379
 
         MAIL_MAILER=smtp
-        MAIL_HOST=mailpit
-        MAIL_PORT=1025
-        MAIL_USERNAME=null
-        MAIL_PASSWORD=null
-        MAIL_ENCRYPTION=null
-        MAIL_FROM_ADDRESS="hello@example.com"
+        MAIL_HOST=${{ secrets.MAIL_HOST }}
+        MAIL_PORT=${{ secrets.MAIL_PORT }}
+        MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+        MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+        MAIL_ENCRYPTION=ssl
+        MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
         MAIL_FROM_NAME="${APP_NAME}"
 
         AWS_ACCESS_KEY_ID=
