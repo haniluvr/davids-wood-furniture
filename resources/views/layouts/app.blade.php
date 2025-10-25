@@ -74,33 +74,11 @@
         <script>
             // Main JavaScript functionality
             document.addEventListener('DOMContentLoaded', function() {
-                // Initialize icons with better timing
-                function initializeLucideIcons() {
-                    if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                        console.log('Initializing Lucide icons...');
-                        lucide.createIcons();
-                        console.log('Lucide icons initialized successfully');
-                    } else {
-                        console.warn('Lucide not available, retrying...');
-                        setTimeout(initializeLucideIcons, 100);
-                    }
-                }
-                
-                // Try to initialize immediately, then with delays if needed
-                initializeLucideIcons();
-                setTimeout(initializeLucideIcons, 100);
-                setTimeout(initializeLucideIcons, 500);
-                
-                // Make reinitialize function globally available
-                window.reinitializeLucideIcons = function() {
-                    console.log('Manually reinitializing Lucide icons...');
+                // Initialize icons
+                setTimeout(function() {
                     if (typeof lucide !== 'undefined' && lucide.createIcons) {
                         lucide.createIcons();
-                        console.log('Lucide icons reinitialized successfully');
-                    } else {
-                        console.error('Lucide not available for reinitialization');
                     }
-                };
                     
                     
                     if (typeof AOS !== 'undefined') {
