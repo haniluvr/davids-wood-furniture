@@ -65,8 +65,8 @@ class NewsletterMail extends Mailable
     private function getFeaturedProducts()
     {
         return Product::where('is_active', true)
-            ->where('is_featured', true)
-            ->with(['category', 'images'])
+            ->where('featured', true)
+            ->with(['category', 'reviews'])
             ->orderBy('created_at', 'desc')
             ->limit(3)
             ->get();

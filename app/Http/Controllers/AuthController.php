@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\MagicLinkService;
 use GuzzleHttp\Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -73,6 +74,26 @@ class AuthController extends Controller
         ], 200, ['Content-Type' => 'application/json']);
     }
 
+    /**
+     * Check email availability
+     */
+    public function checkEmail($email): JsonResponse
+    {
+        \Log::info('Checking email availability', ['email' => $email]);
+
+        $exists = User::where('email', $email)->exists();
+
+        \Log::info('Email check result', [
+            'email' => $email,
+            'exists' => $exists,
+        ]);
+
+        return response()->json([
+            'exists' => $exists,
+            'message' => $exists ? 'Email is already registered' : 'Email is available',
+        ], 200, ['Content-Type' => 'application/json']);
+    }
+
     public function register(Request $request): JsonResponse
     {
         // Capture session ID IMMEDIATELY at the start of the method
@@ -126,52 +147,45 @@ class AuthController extends Controller
             'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists(),
         ]);
 
-        // Migrate guest data BEFORE authentication to prevent session loss
-        try {
-            $cartController = new CartController;
-            $cartController->migrateCartToUser($user->id, $guestSessionId);
+        // Store guest session ID and user ID for later migration after email verification
+        session(['pending_guest_session_id' => $guestSessionId]);
+        session(['pending_user_id' => $user->id]);
+        session(['pending_intended_url' => session()->pull('url.intended', route('home'))]);
 
-            $sessionWishlistService = new \App\Services\SessionWishlistService;
-            $sessionWishlistService->migrateGuestToUser($user->id, $guestSessionId);
-
-            \Log::info('Guest data migration completed successfully');
-        } catch (\Exception $e) {
-            \Log::error('Guest data migration failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            // Continue with registration even if migration fails
-        }
-
-        Auth::login($user);
-
-        // Session regeneration is handled by Laravel's regenerate_on_login config
-
-        $user = Auth::user();
-
-        \Log::info('User registered and logged in', [
+        \Log::info('User registered - pending email verification', [
             'user_id' => $user->id,
             'username' => $user->username,
             'email' => $user->email,
-            'authenticated' => Auth::check(),
-            'session_id' => session()->getId(),
+            'guest_session_id' => $guestSessionId,
+            'authenticated' => false, // Not logged in yet
         ]);
 
-        // Get intended redirect URL from session, fallback to home
-        $intendedUrl = session()->pull('url.intended', route('home'));
+        // Send email verification instead of auto-login
+        try {
+            $magicLinkService = new MagicLinkService;
+            $token = $magicLinkService->generateMagicLink($user, 'email_verification');
+
+            \Log::info('Email verification sent', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'token' => $token,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send email verification', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            // Continue with registration even if email fails
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Registration successful',
-            'user' => [
-                'id' => $user->id,
-                'username' => $user->username,
-                'email' => $user->email,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-            ],
-            'authenticated' => Auth::check(),
-            'redirect' => $intendedUrl,
+            'message' => 'Registration successful! Please check your email to verify your account.',
+            'requires_verification' => true,
+            'redirect' => route('auth.verify-email-sent'),
+            'email' => $user->email,
         ]);
     }
 
@@ -372,6 +386,7 @@ class AuthController extends Controller
         try {
 
             // Configure the Socialite driver to handle SSL issues in development
+            /** @var \Laravel\Socialite\Two\GoogleProvider $googleDriver */
             $googleDriver = Socialite::driver('google');
 
             // For local development, disable SSL certificate verification
@@ -385,6 +400,7 @@ class AuthController extends Controller
                 ]));
             }
 
+            /** @var \Laravel\Socialite\Two\User $googleUser */
             $googleUser = $googleDriver->user();
 
             $existingUser = User::where('google_id', $googleUser->id)
@@ -408,12 +424,12 @@ class AuthController extends Controller
                     $updateData = [
                         'google_id' => $googleUser->id,
                         'provider' => 'google',
-                        'avatar' => $googleUser->avatar,
+                        'avatar' => $googleUser->avatar ?? null,
                     ];
 
                     // Generate username if user doesn't have one
                     if (empty($existingUser->username)) {
-                        $username = $this->generateUsername($googleUser->name);
+                        $username = $this->generateUsername($googleUser->name ?? 'User');
                         $updateData['username'] = $username;
                     }
 
@@ -445,10 +461,10 @@ class AuthController extends Controller
                 ]);
 
                 // Generate username for Google user
-                $username = $this->generateUsername($googleUser->name);
+                $username = $this->generateUsername($googleUser->name ?? 'User');
 
                 // Split Google name into first and last name
-                $nameParts = explode(' ', trim($googleUser->name));
+                $nameParts = explode(' ', trim($googleUser->name ?? 'User'));
                 $firstName = $nameParts[0] ?? '';
                 $lastName = implode(' ', array_slice($nameParts, 1)) ?? '';
 
@@ -460,7 +476,7 @@ class AuthController extends Controller
                     'username' => $username,
                     'password' => null, // No password for Google OAuth users
                     'google_id' => $googleUser->id,
-                    'avatar' => $googleUser->avatar,
+                    'avatar' => $googleUser->avatar ?? null,
                     'provider' => 'google',
                 ]);
 
@@ -518,6 +534,254 @@ class AuthController extends Controller
                 'success' => false,
                 'message' => 'Failed to store intended URL',
             ], 500);
+        }
+    }
+
+    /**
+     * Handle email verification
+     */
+    public function verifyEmail($token)
+    {
+        $magicLinkService = new MagicLinkService;
+        $tokenRecord = $magicLinkService->verifyMagicLink($token, 'email_verification');
+
+        if (! $tokenRecord) {
+            return redirect()->route('auth.verify-email-sent')
+                ->withErrors(['error' => 'Invalid or expired verification link.']);
+        }
+
+        // Find the user
+        $user = User::find($tokenRecord->user_id);
+
+        if (! $user) {
+            return redirect()->route('auth.verify-email-sent')
+                ->withErrors(['error' => 'User not found.']);
+        }
+
+        // Mark email as verified
+        $user->update(['email_verified_at' => now()]);
+
+        // Log in the user
+        Auth::login($user);
+
+        // Migrate guest data now that user is verified and logged in
+        $guestSessionId = session('pending_guest_session_id');
+        if ($guestSessionId) {
+            try {
+                $cartController = new CartController;
+                $cartController->migrateCartToUser($user->id, $guestSessionId);
+
+                $sessionWishlistService = new \App\Services\SessionWishlistService;
+                $sessionWishlistService->migrateGuestToUser($user->id, $guestSessionId);
+
+                \Log::info('Guest data migration completed after email verification', [
+                    'user_id' => $user->id,
+                    'guest_session_id' => $guestSessionId,
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Guest data migration failed after email verification', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $user->id,
+                    'guest_session_id' => $guestSessionId,
+                ]);
+            }
+
+            // Clear pending session data
+            session()->forget(['pending_guest_session_id', 'pending_user_id']);
+        }
+
+        // Get intended redirect URL
+        $intendedUrl = session('pending_intended_url', route('home'));
+        session()->forget('pending_intended_url');
+
+        \Log::info('Email verification completed', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'authenticated' => Auth::check(),
+            'redirect_url' => $intendedUrl,
+        ]);
+
+        return redirect($intendedUrl)
+            ->with('success', 'Email verified successfully! Welcome to David\'s Wood Furniture.');
+    }
+
+    /**
+     * Handle forgot password request
+     */
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['username' => 'required|string']);
+
+        $user = User::where('username', $request->username)->first();
+
+        \Log::info('User lookup for forgot password', [
+            'username' => $request->username,
+            'user_found' => $user ? true : false,
+            'user_email' => $user ? $user->email : null,
+            'user_id' => $user ? $user->id : null,
+        ]);
+
+        if (! $user) {
+            \Log::warning('User not found for forgot password', [
+                'username' => $request->username,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No account found with this username.',
+            ]);
+        }
+
+        try {
+            // Simple logging without complex arrays
+            \Log::info('Attempting to send password reset email for user: '.$user->username);
+            \Log::info('User email: '.$user->email);
+            \Log::info('Mail driver: '.config('mail.default'));
+
+            // Test if PasswordResetMail class exists and can be instantiated
+            try {
+                $testMail = new \App\Mail\PasswordResetMail($user, 'test-token', now());
+                \Log::info('PasswordResetMail class instantiated successfully');
+            } catch (\Exception $e) {
+                \Log::error('Failed to instantiate PasswordResetMail: '.$e->getMessage());
+                throw $e;
+            }
+
+            $magicLinkService = new MagicLinkService;
+            $token = $magicLinkService->generateMagicLink($user, 'password_reset');
+
+            \Log::info('Password reset email sent successfully');
+            \Log::info('Token generated: '.$token);
+
+            // For development with log mailer, always return success
+            // The email will be logged to storage/logs/laravel.log
+            return response()->json([
+                'success' => true,
+                'message' => 'Password reset link sent to your email!',
+                'user_email' => $user->email,
+                'debug_info' => config('app.debug') ? [
+                    'token' => $token,
+                    'reset_url' => route('auth.reset-password', $token),
+                    'mail_driver' => config('mail.default'),
+                    'note' => 'Email logged to storage/logs/laravel.log (development mode)',
+                ] : null,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send password reset email');
+            \Log::error('Error: '.$e->getMessage());
+            \Log::error('File: '.$e->getFile().' Line: '.$e->getLine());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send password reset email. Please try again.',
+            ]);
+        }
+    }
+
+    /**
+     * Show password reset form
+     */
+    public function showResetPasswordForm($token)
+    {
+        // Check if token is valid (without marking it as used)
+        $magicLinkService = new MagicLinkService;
+        $isValid = $magicLinkService->isValidMagicLink($token, 'password_reset');
+
+        if (! $isValid) {
+            return redirect()->route('home')
+                ->withErrors(['error' => 'Invalid or expired password reset link.']);
+        }
+
+        return view('auth.reset-password', ['token' => $token]);
+    }
+
+    /**
+     * Handle password reset
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $magicLinkService = new MagicLinkService;
+        $tokenRecord = $magicLinkService->verifyMagicLink($request->token, 'password_reset');
+
+        if (! $tokenRecord) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired password reset link.',
+            ]);
+        }
+
+        // Find the user by email
+        $user = User::where('email', $tokenRecord->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found.',
+            ]);
+        }
+
+        // Update password
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        \Log::info('Password reset completed', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset successfully!',
+        ]);
+    }
+
+    /**
+     * Resend email verification
+     */
+    public function resendVerification(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No account found with this email address.',
+            ]);
+        }
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This email address is already verified.',
+            ]);
+        }
+
+        try {
+            $magicLinkService = new MagicLinkService;
+            $token = $magicLinkService->generateMagicLink($user, 'email_verification');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Verification email sent successfully!',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to resend verification email', [
+                'email' => $request->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send verification email. Please try again.',
+            ]);
         }
     }
 }

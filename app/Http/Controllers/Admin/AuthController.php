@@ -52,6 +52,19 @@ class AuthController extends Controller
             ]);
         }
 
+        // Check if 2FA is enabled (mandatory for admins)
+        if ($admin->two_factor_enabled) {
+            // Generate magic link for 2FA
+            $magicLinkService = new \App\Services\MagicLinkService;
+            $token = $magicLinkService->generateMagicLink($admin, '2fa');
+
+            // Store pending 2FA state in session
+            session(['pending_admin_2fa_id' => $admin->id]);
+
+            return redirect()->route('admin.check-email')
+                ->with('success', 'Please check your email to complete login');
+        }
+
         // Login the admin
         Auth::guard('admin')->login($admin, $remember);
 
@@ -109,5 +122,48 @@ class AuthController extends Controller
         // For now, we'll just return a success message
 
         return back()->with('success', 'Password reset link has been sent to your email.');
+    }
+
+    /**
+     * Verify magic link for admin 2FA
+     */
+    public function verifyMagicLink($token)
+    {
+        $magicLinkService = new \App\Services\MagicLinkService;
+        $tokenRecord = $magicLinkService->verifyMagicLink($token, '2fa');
+
+        if (! $tokenRecord) {
+            return redirect()->route('admin.login')->withErrors(['error' => 'Invalid or expired magic link.']);
+        }
+
+        // Find the admin
+        $admin = Admin::where('email', $tokenRecord->email)->first();
+
+        if (! $admin) {
+            return redirect()->route('admin.login')->withErrors(['error' => 'Admin not found.']);
+        }
+
+        // Login the admin
+        Auth::guard('admin')->login($admin);
+
+        // Update 2FA verification timestamp
+        $admin->update(['two_factor_verified_at' => now()]);
+
+        // Clear pending 2FA state
+        session()->forget('pending_admin_2fa_id');
+
+        // Log the login
+        AuditLog::logLogin($admin);
+
+        return redirect()->intended(admin_route('dashboard'))
+            ->with('success', 'Login completed successfully!');
+    }
+
+    /**
+     * Show check email page for admin
+     */
+    public function checkEmail()
+    {
+        return view('admin.auth.check-email');
     }
 }

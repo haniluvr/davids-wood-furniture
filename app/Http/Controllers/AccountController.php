@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class AccountController extends Controller
@@ -679,5 +680,104 @@ class AccountController extends Controller
         }
 
         return view('account', compact('user'));
+    }
+
+    /**
+     * Enable two-factor authentication for the user
+     */
+    public function enableTwoFactor(Request $request)
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please log in to enable two-factor authentication.',
+            ], 401);
+        }
+
+        // Validate password
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        if (! Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Incorrect password.',
+            ], 422);
+        }
+
+        // Enable 2FA
+        $user->update([
+            'two_factor_enabled' => true,
+        ]);
+
+        // Send confirmation email
+        Mail::to($user->email)->send(new \App\Mail\TwoFactorEnabledMail($user));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Two-factor authentication has been enabled. You will receive a confirmation email shortly.',
+        ]);
+    }
+
+    /**
+     * Disable two-factor authentication for the user
+     */
+    public function disableTwoFactor(Request $request)
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please log in to disable two-factor authentication.',
+            ], 401);
+        }
+
+        // Validate password
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        if (! Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Incorrect password.',
+            ], 422);
+        }
+
+        // Disable 2FA
+        $user->update([
+            'two_factor_enabled' => false,
+            'two_factor_verified_at' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Two-factor authentication has been disabled.',
+        ]);
+    }
+
+    /**
+     * Get the current 2FA status for the user
+     */
+    public function getTwoFactorStatus()
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please log in to view your security settings.',
+            ], 401);
+        }
+
+        return response()->json([
+            'success' => true,
+            'two_factor_enabled' => $user->two_factor_enabled,
+            'two_factor_verified_at' => $user->two_factor_verified_at,
+        ]);
     }
 }

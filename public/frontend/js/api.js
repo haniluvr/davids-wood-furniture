@@ -260,13 +260,10 @@ class AuthManager {
                     'Content-Type': 'application/json'
                 }
             });
-            
-            console.log('Auth check response status:', response.status);
-            
+
             if (response.ok) {
                 const data = await response.json();
-                console.log('Auth check response data:', data);
-                
+
                 if (data.authenticated && data.user) {
                     this.isAuthenticated = true;
                     this.user = data.user;
@@ -274,9 +271,9 @@ class AuthManager {
                     return true;
                 }
             } else if (response.status === 419) {
-                console.log('Session expired (419) - clearing auth state');
+
             } else {
-                console.log('Auth check failed with status:', response.status);
+
             }
         } catch (error) {
             console.error('Auth check failed:', error);
@@ -326,24 +323,21 @@ class AuthManager {
     }
 
     async logout() {
-        console.log('🟡 AUTH MANAGER LOGOUT: Starting logout process');
-        
+
         try {
-            console.log('🟡 AUTH MANAGER LOGOUT: Calling API logout');
+
             await window.api.logout();
-            console.log('🟡 AUTH MANAGER LOGOUT: API logout completed');
+
         } catch (error) {
             console.error('🟡 AUTH MANAGER LOGOUT: Error occurred', error);
         } finally {
-            console.log('🟡 AUTH MANAGER LOGOUT: Clearing authentication state');
+
             // Always clear local state
             this.isAuthenticated = false;
             this.user = null;
-            console.log('🟡 AUTH MANAGER LOGOUT: Authentication state cleared');
-            
-            console.log('🟡 AUTH MANAGER LOGOUT: Updating UI');
+
             this.updateUI();
-            console.log('🟡 AUTH MANAGER LOGOUT: UI updated');
+
         }
     }
 
@@ -356,12 +350,7 @@ class AuthManager {
         // No UI modifications needed - Laravel handles this server-side
         
         // Log auth state for debugging
-        console.log('🔄 AuthManager updateUI called', {
-            isAuthenticated: this.isAuthenticated,
-            hasUser: !!this.user,
-            userId: this.user?.id
-        });
-        
+
         return;
     }
 
@@ -375,7 +364,7 @@ class AuthManager {
             // With the new session-based structure, wishlist migration is handled
             // automatically by the backend. Just clear any localStorage wishlist items
             localStorage.removeItem('wishlist_items');
-            console.log('Guest wishlist migration handled by backend');
+
         } catch (error) {
             console.error('Error in wishlist migration:', error);
         }

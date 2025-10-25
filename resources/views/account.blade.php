@@ -966,8 +966,13 @@
                             <div>
                                 <h3 class="font-medium text-gray-900">Two-Factor Authentication</h3>
                                 <p class="text-gray-600">Add an extra layer of security</p>
+                                <div id="two-factor-status" class="mt-2">
+                                    <span id="two-factor-status-text" class="text-sm text-gray-500">Loading...</span>
+                                </div>
                             </div>
-                            <button class="text-[#8b7355] hover:text-[#6b5b47] font-medium">Enable</button>
+                            <div class="flex items-center space-x-2">
+                                <button id="two-factor-toggle" class="text-[#8b7355] hover:text-[#6b5b47] font-medium" onclick="toggleTwoFactor()">Loading...</button>
+                            </div>
                         </div>
                     </div>
                     <div class="border border-gray-200 rounded-lg p-4">
@@ -3341,5 +3346,95 @@
             cartTotalQty.textContent = selectedQty;
         }
     }
+
+    // Two-Factor Authentication functionality
+    let twoFactorEnabled = false;
+
+    // Load 2FA status on page load
+    async function loadTwoFactorStatus() {
+        try {
+            const response = await fetch('/api/account/two-factor/status', {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                twoFactorEnabled = data.two_factor_enabled;
+                updateTwoFactorUI();
+            }
+        } catch (error) {
+            console.error('Error loading 2FA status:', error);
+            document.getElementById('two-factor-status-text').textContent = 'Error loading status';
+            document.getElementById('two-factor-toggle').textContent = 'Error';
+        }
+    }
+
+    // Update the UI based on 2FA status
+    function updateTwoFactorUI() {
+        const statusText = document.getElementById('two-factor-status-text');
+        const toggleButton = document.getElementById('two-factor-toggle');
+
+        if (twoFactorEnabled) {
+            statusText.textContent = 'Two-factor authentication is enabled';
+            statusText.className = 'text-sm text-green-600';
+            toggleButton.textContent = 'Disable';
+            toggleButton.className = 'text-red-600 hover:text-red-700 font-medium';
+        } else {
+            statusText.textContent = 'Two-factor authentication is disabled';
+            statusText.className = 'text-sm text-gray-500';
+            toggleButton.textContent = 'Enable';
+            toggleButton.className = 'text-[#8b7355] hover:text-[#6b5b47] font-medium';
+        }
+    }
+
+    // Toggle 2FA functionality
+    async function toggleTwoFactor() {
+        const password = prompt(twoFactorEnabled ? 'Enter your password to disable two-factor authentication:' : 'Enter your password to enable two-factor authentication:');
+        
+        if (!password) {
+            return;
+        }
+
+        const toggleButton = document.getElementById('two-factor-toggle');
+        const originalText = toggleButton.textContent;
+        toggleButton.textContent = 'Processing...';
+        toggleButton.disabled = true;
+
+        try {
+            const endpoint = twoFactorEnabled ? '/api/account/two-factor/disable' : '/api/account/two-factor/enable';
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ password: password }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                twoFactorEnabled = !twoFactorEnabled;
+                updateTwoFactorUI();
+                alert(data.message);
+            } else {
+                alert(data.message || 'An error occurred');
+            }
+        } catch (error) {
+            console.error('Error toggling 2FA:', error);
+            alert('An error occurred while updating two-factor authentication');
+        } finally {
+            toggleButton.textContent = originalText;
+            toggleButton.disabled = false;
+        }
+    }
+
+    // Load 2FA status when the page loads
+    loadTwoFactorStatus();
 </script>
 @endpush

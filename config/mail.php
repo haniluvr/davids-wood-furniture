@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    'default' => env('MAIL_MAILER', 'ses'),
 
     /*
     |--------------------------------------------------------------------------
@@ -111,8 +111,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
+        'address' => env('MAIL_FROM_ADDRESS', 'noreply@davidswood.shop'),
+        'name' => env('MAIL_FROM_NAME', 'David\'s Wood Furniture'),
     ],
 
 ];

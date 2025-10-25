@@ -244,6 +244,8 @@ return new class extends Migration
                 $table->timestamp('last_login_at')->nullable();
                 $table->string('last_login_ip')->nullable();
                 $table->rememberToken();
+                $table->boolean('two_factor_enabled')->default(true);
+                $table->timestamp('two_factor_verified_at')->nullable();
                 $table->timestamps();
             });
         }
@@ -277,6 +279,24 @@ return new class extends Migration
                 $table->string('session_id', 128)->primary();
                 $table->timestamp('created_at')->useCurrent();
                 $table->timestamp('expires_at')->nullable();
+            });
+        }
+
+        // Magic Link Tokens
+        if (! Schema::hasTable('magic_link_tokens')) {
+            Schema::create('magic_link_tokens', function (Blueprint $table) {
+                $table->id();
+                $table->string('email');
+                $table->string('token', 64)->unique();
+                $table->string('type')->default('2fa'); // '2fa' or 'password_reset'
+                $table->timestamp('expires_at');
+                $table->timestamp('used_at')->nullable();
+                $table->string('ip_address')->nullable();
+                $table->string('user_agent')->nullable();
+                $table->timestamps();
+
+                $table->index(['email', 'type']);
+                $table->index('expires_at');
             });
         }
 
@@ -584,6 +604,8 @@ return new class extends Migration
                 $table->boolean('newsletter_special_offers')->default(false);
                 $table->boolean('marketing_emails')->default(false);
                 $table->boolean('newsletter_subscribed')->default(false);
+                $table->boolean('two_factor_enabled')->default(false);
+                $table->timestamp('two_factor_verified_at')->nullable();
                 $table->timestamps();
             });
         }

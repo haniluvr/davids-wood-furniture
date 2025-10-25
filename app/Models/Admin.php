@@ -30,6 +30,8 @@ class Admin extends Authenticatable
         'status',
         'last_login_at',
         'last_login_ip',
+        'two_factor_enabled',
+        'two_factor_verified_at',
     ];
 
     protected $hidden = [
@@ -44,6 +46,8 @@ class Admin extends Authenticatable
         'salary' => 'decimal:2',
         'permissions' => 'array',
         'password' => 'hashed',
+        'two_factor_enabled' => 'boolean',
+        'two_factor_verified_at' => 'datetime',
     ];
 
     // Accessors

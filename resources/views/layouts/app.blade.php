@@ -46,6 +46,7 @@
         @include('partials.modal-login')
         @include('partials.modal-signup')
         @include('partials.modal-alert')
+        @include('partials.modal-verify-email')
         
         <!-- wishlist offcanvas -->
         @include('partials.offcanvas-wishlist')

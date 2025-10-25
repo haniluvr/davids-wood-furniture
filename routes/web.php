@@ -322,8 +322,32 @@ Route::middleware(['api.session'])->group(function () {
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
     Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+    Route::get('/verify-email-sent', [AuthController::class, 'verifyEmailSent'])->name('auth.verify-email-sent');
+    Route::get('/verify-email/{token}', [AuthController::class, 'verifyEmail'])->name('auth.verify-email');
+    Route::post('/resend-verification', [AuthController::class, 'resendVerification'])->name('auth.resend-verification');
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('auth.forgot-password');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('auth.reset-password');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('auth.reset-password.post');
     Route::get('/api/check-username/{username}', [AuthController::class, 'checkUsername'])->name('check.username');
+    Route::get('/api/check-email/{email}', [AuthController::class, 'checkEmail'])->name('check.email');
     Route::post('/api/store-intended-url', [AuthController::class, 'storeIntendedUrl'])->name('store.intended.url');
+    Route::get('/test-user/{username}', function ($username) {
+        if (! config('app.debug')) {
+            return response()->json(['success' => false, 'message' => 'Not available in production']);
+        }
+        $user = \App\Models\User::where('username', $username)->first();
+
+        return response()->json([
+            'success' => true,
+            'user_found' => $user ? true : false,
+            'user_data' => $user ? [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'created_at' => $user->created_at,
+            ] : null,
+        ]);
+    });
 });
 
 // Cart routes (using web middleware for proper session handling)

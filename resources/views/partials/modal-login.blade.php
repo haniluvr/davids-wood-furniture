@@ -67,6 +67,13 @@
                     </div>
                   </form>
                 
+                <!-- Forgot Password Link -->
+                <div class="text-center mb-4">
+                    <a href="#" id="forgot-password-link" class="text-sm text-[#8b7355] hover:text-[#6b5b47] underline">
+                        Forgot your password?
+                    </a>
+                </div>
+                
                 <!-- Signup Switch Link -->
                 <div class="text-center">
                     <p class="text-sm text-gray-600">

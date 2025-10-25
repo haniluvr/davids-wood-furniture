@@ -16,7 +16,7 @@
                             <label for="signup-firstname" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                             <input 
                             type="text" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" 
                             id="signup-firstname" 
                             name="firstName" 
                             required
@@ -26,7 +26,7 @@
                             <label for="signup-lastname" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                             <input 
                             type="text" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" 
                             id="signup-lastname" 
                             name="lastName" 
                             required
@@ -39,7 +39,7 @@
                         <label for="signup-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                         <input 
                             type="email" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" 
                             id="signup-email" 
                             name="email" 
                             required
@@ -69,7 +69,7 @@
                             <div class="relative">
                                 <input 
                                 type="password" 
-                                class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" 
                                 id="signup-password" 
                                 name="password" 
                                 required
@@ -147,7 +147,7 @@
                         <div class="relative">
                             <input 
                                 type="password" 
-                                class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" 
                                 id="signup-confirm-password" 
                                 name="confirmPassword"
                             >

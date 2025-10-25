@@ -25,7 +25,7 @@
             width: 100% !important;
             min-width: 100%;
             height: 100%;
-            background-color: #f8f9fa;
+            background-color: #F8F8F8;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333333;
@@ -41,13 +41,13 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, #8B7355 0%, #b7a99a 100%);
             padding: 30px 20px;
             text-align: center;
         }
 
         .logo {
-            max-width: 120px;
+            max-width: 90px;
             height: auto;
             margin-bottom: 15px;
         }
@@ -61,10 +61,11 @@
         }
 
         .tagline {
-            color: #e0e7ff;
+            color: #F5F5F5;
             font-size: 14px;
             margin: 5px 0 0 0;
             font-weight: 300;
+            font-style: italic;
         }
 
         .content {
@@ -72,7 +73,7 @@
         }
 
         .content h1 {
-            color: #1e40af;
+            color: #8B7355;
             font-size: 28px;
             margin: 0 0 20px 0;
             font-weight: 600;
@@ -94,7 +95,7 @@
         .button {
             display: inline-block;
             padding: 12px 30px;
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, #8B7355 0%, #b7a99a 100%);
             color: #ffffff !important;
             text-decoration: none;
             border-radius: 6px;
@@ -105,34 +106,34 @@
         }
 
         .button:hover {
-            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #504538 0%, #b7a99a 100%);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+            box-shadow: 0 4px 12px rgba(139, 115, 85, 0.3);
         }
 
         .info-box {
-            background-color: #f8fafc;
-            border-left: 4px solid #3b82f6;
+            background-color: #F8F8F8;
+            border-left: 4px solid #8B7355;
             padding: 20px;
             margin: 20px 0;
             border-radius: 0 6px 6px 0;
         }
 
         .footer {
-            background-color: #f8fafc;
+            background-color: #F8F8F8;
             padding: 30px;
             text-align: center;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid #E5E5E5;
         }
 
         .footer p {
             margin: 0 0 10px 0;
-            font-size: 14px;
+            font-size: 12px;
             color: #6b7280;
         }
 
         .social-links {
-            margin: 20px 0;
+            margin: 9px 0 20px 0;
         }
 
         .social-links a {
@@ -140,7 +141,7 @@
             margin: 0 10px;
             color: #6b7280;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .social-links a:hover {
@@ -148,7 +149,7 @@
         }
 
         .unsubscribe {
-            font-size: 12px;
+            font-size: 9px;
             color: #9ca3af;
             margin-top: 20px;
         }
@@ -227,9 +228,9 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <img src="{{ asset('admin/images/logo/favicon.png') }}" alt="David's Wood Furniture" class="logo">
-            <h1 class="company-name">David's Wood Furniture</h1>
-            <p class="tagline">Crafting Quality Furniture for Your Home</p>
+            <img src="https://davidswood.shop/frontend/assets/favicon.png" alt="David's Wood Furniture" class="logo">
+            <h1 class="company-name">DAVID'S WOOD FURNITURES</h1>
+            <p class="tagline">Nature's grain shaped by artistry</p>
         </div>
 
         <!-- Main Content -->
@@ -239,18 +240,18 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p><strong>David's Wood Furniture</strong></p>
-            <p>123 Woodcraft Lane, Furniture City, FC 12345</p>
-            <p>Phone: (555) 123-4567 | Email: info@davidswood.com</p>
+            <p><strong>DAVID'S WOOD FURNITURES</strong></p>
+            <p>123 Santa Rosa - Tagaytay Rd, Silang, 4118 Cavite</p>
+            <p>Phone: +63 (917) 123-4567 | Email: info@davidswood.shop</p>
             
             <div class="social-links">
-                <a href="#">Facebook</a>
+                <a href="#">LinkedIn</a>
                 <a href="#">Instagram</a>
+                <a href="#">Facebook</a>
                 <a href="#">Twitter</a>
-                <a href="#">Pinterest</a>
             </div>
             
-            <p>Thank you for choosing David's Wood Furniture for your home furnishing needs.</p>
+            <p>Thank you for choosing David's Wood Furnitures for your home furnishing needs.</p>
             
             <div class="unsubscribe">
                 <p>You received this email because you have an account with us or subscribed to our newsletter.</p>

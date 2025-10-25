@@ -1,7 +1,6 @@
 // Main Application JavaScript - Updated to use Database API
 // Note: Products are loaded via database API, not static imports
 
-
 // ── Generic Component Loader ──
 async function loadComponent(url, targetId, initCallback = null) {
     const container = document.getElementById(targetId);
@@ -17,7 +16,6 @@ async function loadComponent(url, targetId, initCallback = null) {
 
         // Re-init Lucide with better error handling
         if (typeof lucide !== 'undefined' && lucide.createIcons) {
-            console.log('Reinitializing Lucide icons after component load...');
             lucide.createIcons();
         } else {
             console.warn('Lucide not available for reinitialization');
@@ -321,7 +319,6 @@ async function initProductsSection() {
                 slug: product.slug
             };
 
-
             // Validate product data before rendering
             if (!productData.id) {
                 console.error('Product missing ID, skipping render:', product);
@@ -377,7 +374,6 @@ async function initProductsSection() {
             `;
                 grid.appendChild(col);
             });
-            
 
             // Re-init icons
             if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -521,22 +517,18 @@ function initAddToCartButtons() {
         if (modalButton) {
             event.preventDefault();
             event.stopPropagation();
-            console.log('🛒 MODAL Add to Cart clicked');
 
             // Get product ID from quick view modal context
             const productId = modalButton.getAttribute('data-product-id') || 
                             window.currentQuickViewProduct?.id;
-            
-            console.log('Modal - Product ID:', productId);
-            
+
             if (!productId) {
                 console.error('Modal - No product ID found');
                 return;
             }
             
             const quantity = parseInt(document.getElementById('quantity-input')?.value) || 1;
-            console.log('Modal - Quantity:', quantity);
-            
+
             await handleAddToCart(productId, quantity, event.target);
             return;
         }
@@ -545,14 +537,10 @@ function initAddToCartButtons() {
         if (cardButton || target) {
             event.preventDefault();
             event.stopPropagation();
-            console.log('🛒 CARD Add to Cart clicked');
-            
+
             const productId = parseInt((cardButton || target).getAttribute('data-product-id'));
             const quantity = 1; // Default quantity for product cards
-            
-            console.log('Card - Product ID:', productId);
-            console.log('Card - Quantity:', quantity);
-            
+
             await handleAddToCart(productId, quantity, event.target);
             return;
         }
@@ -618,7 +606,7 @@ async function animateButtonSuccess(clickedElement) {
 
 // ── Shared Add to Cart Handler ──
 async function handleAddToCart(productId, quantity = 1, clickedElement = null) {
-    console.log('handleAddToCart called with:', { productId, quantity });
+
     if (!productId) {
         console.error('No product ID provided');
         return;
@@ -633,13 +621,11 @@ async function handleAddToCart(productId, quantity = 1, clickedElement = null) {
         // Continue with guest cart functionality - don't block the request
     }
             try {
-                console.log('Calling window.api.addToCart...');
+
                 const response = await window.api.addToCart(productId, quantity);
-                console.log('Add to cart response:', response);
-                
+
                 if (response.success) {
-                    console.log('Item added successfully, updating UI...');
-                    console.log('Add to cart session ID:', response.session_id);
+
                     // Update button state with animation
                     if (clickedElement) {
                         await animateButtonSuccess(clickedElement);
@@ -647,14 +633,13 @@ async function handleAddToCart(productId, quantity = 1, clickedElement = null) {
                     // Update cart count in navbar
                     await updateCartCount();
                     // Load updated cart if cart offcanvas is open
-                    console.log('About to call loadCartItems...');
+
                     await loadCartItems();
-                    console.log('loadCartItems completed');
-                    
+
                     // Force refresh cart offcanvas if it's open
                     const cartOffcanvas = document.getElementById('offcanvas-cart');
                     if (cartOffcanvas && !cartOffcanvas.classList.contains('hidden')) {
-                        console.log('Cart offcanvas is open, forcing refresh...');
+
                         // Just reload cart items without clearing first
                         await loadCartItems();
                     }
@@ -913,8 +898,7 @@ function clearGuestWishlist() {
         
         // Clear localStorage
         localStorage.removeItem('wishlist_items');
-        
-        console.log('Guest wishlist state cleared successfully');
+
     } catch (error) {
         console.error('Error clearing guest wishlist state:', error);
     }
@@ -1371,7 +1355,6 @@ function updateStarRating(rating) {
         lucide.createIcons();
     }
 }
-
 
 // ── Load Quick View Modal Component ──
 async function loadModalQuickView() {
@@ -2474,8 +2457,7 @@ async function loadCartItems() {
 
 // ── Clear Cart State (for logout) ──
 function clearCartState() {
-    console.log('🟣 CLEAR CART STATE: Starting cart state clearing');
-    
+
     try {
         // Clear cart UI elements
         const cartItems = document.getElementById('cart-items');
@@ -2483,131 +2465,82 @@ function clearCartState() {
         const cartFooter = document.getElementById('cart-footer');
         const cartSubtotal = document.getElementById('cart-subtotal');
         const cartCount = document.getElementById('cart-count');
-        
-        console.log('🟣 CLEAR CART STATE: Found elements', {
-            cartItems: !!cartItems,
-            cartEmptyState: !!cartEmptyState,
-            cartFooter: !!cartFooter,
-            cartSubtotal: !!cartSubtotal,
-            cartCount: !!cartCount
-        });
-        
+
         // Show empty state
         if (cartEmptyState) {
             cartEmptyState.style.display = 'block';
-            console.log('🟣 CLEAR CART STATE: Empty state shown');
+
         }
         if (cartItems) {
             cartItems.style.display = 'none';
             cartItems.innerHTML = '';
-            console.log('🟣 CLEAR CART STATE: Cart items cleared');
+
         }
         if (cartFooter) {
             cartFooter.classList.add('hidden');
-            console.log('🟣 CLEAR CART STATE: Cart footer hidden');
+
         }
         if (cartSubtotal) {
             cartSubtotal.textContent = '₱0';
-            console.log('🟣 CLEAR CART STATE: Subtotal reset');
+
         }
         if (cartCount) {
             cartCount.textContent = '0';
             cartCount.classList.add('hidden');
-            console.log('🟣 CLEAR CART STATE: Cart count reset and hidden');
+
         }
         
         // Clear localStorage
         localStorage.removeItem('cart_items');
         localStorage.removeItem('wishlist_items');
-        console.log('🟣 CLEAR CART STATE: LocalStorage cleared');
-        
-        console.log('🟣 CLEAR CART STATE: Cart state cleared successfully');
+
     } catch (error) {
         console.error('🟣 CLEAR CART STATE: Error clearing cart state:', error);
     }
 }
 
 async function performLoadCartItems() {
-    console.log('performLoadCartItems called');
+
     const cartBody = document.getElementById('cart-body');
     const cartEmptyState = document.getElementById('cart-empty-state');
     const cartItems = document.getElementById('cart-items');
     const cartFooter = document.getElementById('cart-footer');
     const cartSubtotal = document.getElementById('cart-subtotal');
-    
-    console.log('Cart elements found:', {
-        cartBody: !!cartBody,
-        cartEmptyState: !!cartEmptyState,
-        cartItems: !!cartItems,
-        cartFooter: !!cartFooter,
-        cartSubtotal: !!cartSubtotal
-    });
-      
+
     if (!cartBody) {
         console.error('cart-body element not found!');
         return;
     }
 
     try {
-        console.log('Calling API to get cart...');
+
         const response = await window.api.getCart();
-        console.log('Cart API response:', response);
-        console.log('Response success:', response.success);
-        console.log('Response data:', response.data);
-        console.log('Get cart session ID:', response.session_id);
-        
+
         if (!response.success) {
             console.error('API returned error:', response.message);
             return;
         }
         
         const cartData = response.data;
-        console.log('Full cartData object:', cartData);
-        console.log('cartData type:', typeof cartData);
-        console.log('cartData keys:', Object.keys(cartData));
-        
+
         const items = cartData.cart_items || [];
-        console.log('Cart items found:', items.length, items);
-        console.log('Session ID from response:', response.session_id);
-        console.log('Debug info from response:', response.debug);
-        console.log('Cart subtotal:', cartData.subtotal);
-        console.log('Cart total_items:', cartData.total_items);
-        
+
         // Debug the actual items structure
         if (items.length > 0) {
-            console.log('=== ITEMS DEBUG ===');
+
             items.forEach((item, index) => {
-                console.log(`Item ${index + 1}:`, {
-                    id: item.id,
-                    product_id: item.product_id,
-                    product_name: item.product_name,
-                    quantity: item.quantity,
-                    unit_price: item.unit_price,
-                    total_price: item.total_price,
-                    session_id: item.session_id,
-                    user_id: item.user_id,
-                    product: item.product
-                });
+
             });
-            console.log('=== END ITEMS DEBUG ===');
+
         }
         
         // Debug each item
         if (items.length > 0) {
-            console.log('=== CART ITEMS DEBUG ===');
+
             items.forEach((item, index) => {
-                console.log(`Item ${index + 1}:`, {
-                    id: item.id,
-                    product_id: item.product_id,
-                    product_name: item.product_name,
-                    quantity: item.quantity,
-                    unit_price: item.unit_price,
-                    total_price: item.total_price,
-                    session_id: item.session_id,
-                    user_id: item.user_id
-                });
+
             });
-            console.log('=== END CART ITEMS DEBUG ===');
+
         }
 
         // Use requestAnimationFrame to ensure smooth DOM updates
@@ -2686,10 +2619,9 @@ async function performLoadCartItems() {
                 });
 
                 if (cartItems) {
-                    console.log('Setting cart items HTML:', cartItemsHTML);
+
                     cartItems.innerHTML = cartItemsHTML;
-                    console.log('Cart items HTML set successfully');
-                    
+
                     // Use requestAnimationFrame to ensure DOM is fully rendered
                     requestAnimationFrame(() => {
                         // Initialize cart selection functionality with a small delay
@@ -2709,7 +2641,7 @@ async function performLoadCartItems() {
                 
                 // Additional fallback initialization after a longer delay
                 setTimeout(() => {
-                    console.log('Fallback cart selection initialization...');
+
                     initializeCartSelection();
                 }, 200);
             } else {
@@ -2962,12 +2894,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 // Initialize cart selection functionality
 function initializeCartSelection() {
-    console.log('Initializing cart selection functionality...');
-    
+
     // Remove existing event listeners to prevent duplicates
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-    console.log('Found checkboxes:', itemCheckboxes.length);
-    
+
     itemCheckboxes.forEach((checkbox, index) => {
         // Remove existing event listeners by cloning the element
         const newCheckbox = checkbox.cloneNode(true);
@@ -2975,7 +2905,7 @@ function initializeCartSelection() {
         
         // Add fresh event listener
         newCheckbox.addEventListener('change', function() {
-            console.log('Checkbox changed:', index, this.checked);
+
             updateCartSubtotal();
             updateSelectAllButton();
         });
@@ -2984,8 +2914,7 @@ function initializeCartSelection() {
     // Add event listener to select all button
     const selectAllBtn = document.getElementById('select-all-cart-items');
     if (selectAllBtn) {
-        console.log('Select all button found');
-        
+
         // Remove existing event listeners
         const newSelectAllBtn = selectAllBtn.cloneNode(true);
         selectAllBtn.parentNode.replaceChild(newSelectAllBtn, selectAllBtn);
@@ -2993,7 +2922,7 @@ function initializeCartSelection() {
         newSelectAllBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Select all button clicked');
+
             toggleSelectAll();
         });
     } else {
@@ -3002,18 +2931,15 @@ function initializeCartSelection() {
     
     // Initialize the select all button text based on current state
     updateSelectAllButton();
-    console.log('Cart selection initialization complete');
+
 }
 
 // Toggle select all functionality
 function toggleSelectAll() {
-    console.log('toggleSelectAll called');
+
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const selectAllBtn = document.getElementById('select-all-cart-items');
-    
-    console.log('Found checkboxes:', itemCheckboxes.length);
-    console.log('Select all button:', !!selectAllBtn);
-    
+
     if (!itemCheckboxes.length || !selectAllBtn) {
         console.warn('Missing elements for toggleSelectAll');
         return;
@@ -3021,17 +2947,16 @@ function toggleSelectAll() {
     
     // Check if all items are selected
     const allSelected = Array.from(itemCheckboxes).every(checkbox => checkbox.checked);
-    console.log('All selected:', allSelected);
-    
+
     if (allSelected) {
         // Deselect all
-        console.log('Deselecting all items');
+
         itemCheckboxes.forEach(checkbox => {
             checkbox.checked = false;
         });
     } else {
         // Select all
-        console.log('Selecting all items');
+
         itemCheckboxes.forEach(checkbox => {
             checkbox.checked = true;
         });
@@ -3040,18 +2965,14 @@ function toggleSelectAll() {
     // Update UI after toggling
     updateCartSubtotal();
     updateSelectAllButton();
-    console.log('Toggle complete');
+
 }
 
 // Update select all button text based on current selection
 function updateSelectAllButton() {
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const selectAllBtn = document.getElementById('select-all-cart-items');
-    
-    console.log('updateSelectAllButton called');
-    console.log('Checkboxes found:', itemCheckboxes.length);
-    console.log('Select all button found:', !!selectAllBtn);
-    
+
     if (!selectAllBtn || itemCheckboxes.length === 0) {
         console.warn('Missing elements for updateSelectAllButton');
         return;
@@ -3059,19 +2980,17 @@ function updateSelectAllButton() {
     
     const selectedCount = Array.from(itemCheckboxes).filter(checkbox => checkbox.checked).length;
     const totalCount = itemCheckboxes.length;
-    
-    console.log('Selected count:', selectedCount, 'Total count:', totalCount);
-    
+
     if (selectedCount === 0) {
         selectAllBtn.textContent = 'Select All';
-        console.log('Button text set to: Select All');
+
     } else if (selectedCount === totalCount) {
         selectAllBtn.textContent = 'Deselect All';
-        console.log('Button text set to: Deselect All');
+
     } else {
         // When some items are selected but not all, show "Select All" to select remaining items
         selectAllBtn.textContent = 'Select All';
-        console.log('Button text set to: Select All (partial selection)');
+
     }
 }
 
@@ -3191,7 +3110,7 @@ window.updateSelectAllButton = updateSelectAllButton;
 
 // Global function to reinitialize cart selection (useful for dynamic content)
 window.reinitializeCartSelection = function() {
-    console.log('Reinitializing cart selection...');
+
     setTimeout(() => {
         initializeCartSelection();
     }, 100);
@@ -3199,10 +3118,10 @@ window.reinitializeCartSelection = function() {
 
 // Global function to reinitialize Lucide icons
 window.reinitializeLucideIcons = function() {
-    console.log('Reinitializing Lucide icons from app.js...');
+
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
         lucide.createIcons();
-        console.log('Lucide icons reinitialized successfully');
+
     } else {
         console.error('Lucide not available for reinitialization');
     }
@@ -3211,7 +3130,7 @@ window.reinitializeLucideIcons = function() {
 // Fallback Lucide initialization
 setTimeout(() => {
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
-        console.log('Fallback Lucide initialization...');
+
         lucide.createIcons();
     }
 }, 1000);

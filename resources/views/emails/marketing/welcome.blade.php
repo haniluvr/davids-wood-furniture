@@ -1,91 +1,105 @@
 @extends('emails.layouts.branded')
 
 @section('content')
-<h1>Welcome to David's Wood Furniture!</h1>
-
-<p>Hello {{ $user->name }},</p>
-
-<p>Welcome to David's Wood Furniture! We're thrilled to have you join our community of furniture enthusiasts and home decor lovers.</p>
-
-<div class="info-box" style="border-left-color: #10b981; background-color: #f0fdf4;">
-    <h2 style="color: #059669;">🎉 Welcome Gift</h2>
-    <p>As a thank you for joining us, we're giving you a <strong>10% discount</strong> on your first purchase!</p>
-    <p><strong>Use Code:</strong> <span style="background-color: #059669; color: white; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 16px;">WELCOME10</span></p>
-    <p style="margin: 0; color: #059669; font-weight: 600;">Valid for 30 days from today</p>
+<div style="text-align: center; margin-bottom: 30px;">
+    <h1 style="color: #8B7355; margin: 0;">Welcome to David's Wood Furnitures!</h1>
+    <p style="color: #666; margin: 10px 0 0 0; font-style: italic;">Nature's grain shaped by artistry</p>
 </div>
 
-<h2>What You Can Expect</h2>
-<div class="info-box">
-    <h3>🏠 Quality Furniture</h3>
-    <p>Discover our carefully curated collection of handcrafted wood furniture, from dining tables to bedroom sets, all made with premium materials and expert craftsmanship.</p>
+<div style="background: #F8F8F8; padding: 30px; border-radius: 8px; margin-bottom: 30px; border: 0.75px solid #8B7355;">
+    <h2 style="color: #8B7355; margin: 0 0 20px 0;">Hello {{ $user->name }},</h2>
+    
+    <p style="color: #555; line-height: 1.6; margin: 0 0 20px 0;">
+        Welcome to David's Wood Furnitures! We're thrilled to have you join our community of furniture enthusiasts and home decor lovers.
+    </p>
 </div>
 
-<div class="info-box">
-    <h3>🚚 Free Shipping</h3>
-    <p>Enjoy free shipping on orders over $500. We carefully package and deliver your furniture right to your door.</p>
+<div style="background: #E8F5E8; border: 1px solid #8B7355; padding: 20px; border-radius: 6px; margin: 20px 0;">
+    <h2 style="color: #8B7355; margin: 0 0 15px 0;">🎉 Welcome Gift</h2>
+    <p style="color: #555; margin: 0 0 15px 0;">As a thank you for joining us, we're giving you a <strong>10% discount</strong> on your first purchase!</p>
+    <p style="color: #555; margin: 0 0 15px 0;"><strong>Use Code:</strong> <span style="background-color: #8B7355; color: white; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 16px;">WELCOME10</span></p>
+    <p style="margin: 0; color: #8B7355; font-weight: 600;">Valid for 30 days from today</p>
 </div>
 
-<div class="info-box">
-    <h3>🛠️ Expert Support</h3>
-    <p>Our knowledgeable team is here to help you find the perfect pieces for your home. From design advice to assembly assistance, we've got you covered.</p>
+<h2 style="color: #8B7355; margin: 30px 0 15px 0;">What You Can Expect</h2>
+
+<div style="background: #F8F8F8; border-left: 4px solid #8B7355; padding: 20px; margin: 20px 0; border-radius: 0 6px 6px 0;">
+    <h3 style="color: #8B7355; margin: 0 0 10px 0;">🏠 Quality Furniture</h3>
+    <p style="color: #555; margin: 0;">Discover our carefully curated collection of handcrafted wood furniture, from dining tables to bedroom sets, all made with premium materials and expert craftsmanship.</p>
 </div>
 
-<h2>Getting Started</h2>
+<div style="background: #F8F8F8; border-left: 4px solid #8B7355; padding: 20px; margin: 20px 0; border-radius: 0 6px 6px 0;">
+    <h3 style="color: #8B7355; margin: 0 0 10px 0;">🚚 Free Shipping</h3>
+    <p style="color: #555; margin: 0;">Enjoy free shipping on orders over ₱25,000. We carefully package and deliver your furniture right to your door.</p>
+</div>
+
+<div style="background: #F8F8F8; border-left: 4px solid #8B7355; padding: 20px; margin: 20px 0; border-radius: 0 6px 6px 0;">
+    <h3 style="color: #8B7355; margin: 0 0 10px 0;">🛠️ Expert Support</h3>
+    <p style="color: #555; margin: 0;">Our knowledgeable team is here to help you find the perfect pieces for your home. From design advice to assembly assistance, we've got you covered.</p>
+</div>
+
+<h2 style="color: #8B7355; margin: 30px 0 15px 0;">Getting Started</h2>
 <div style="text-align: center; margin: 30px 0;">
-    <a href="{{ url('/products') }}" class="button">Browse Products</a>
-    <a href="{{ url('/account') }}" class="button" style="background: #6b7280; margin-left: 10px;">My Account</a>
+    <a href="{{ url('/products') }}" style="background: linear-gradient(135deg, #8B7355 0%, #A68B5B 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px; margin: 5px;">Browse Products</a>
+    <a href="{{ url('/account') }}" style="background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px; margin: 5px;">My Account</a>
 </div>
 
-<h2>Popular Categories</h2>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0;">
-    <div style="text-align: center; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #f9fafb;">
-        <h4 style="margin: 0 0 10px 0; color: #1e40af;">Dining Room</h4>
-        <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 14px;">Tables, chairs, and storage</p>
-        <a href="{{ url('/products?category=dining-room') }}" class="button" style="padding: 6px 16px; font-size: 14px;">Shop Now</a>
+<h2 style="color: #8B7355; margin: 30px 0 15px 0;">Popular Categories</h2>
+<div style="display: table; width: 100%; margin: 20px 0;">
+    <div style="display: table-cell; width: 33.33%; padding: 0 10px; vertical-align: top;">
+        <div style="text-align: center; padding: 20px; border: 1px solid #E5E5E5; border-radius: 8px; background-color: #F8F8F8;">
+            <h4 style="margin: 0 0 10px 0; color: #8B7355;">Dining Room</h4>
+            <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Tables, chairs, and storage</p>
+            <a href="{{ url('/products?category=dining-room') }}" style="background: linear-gradient(135deg, #8B7355 0%, #A68B5B 100%); color: white; padding: 6px 16px; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600;">Shop Now</a>
+        </div>
     </div>
     
-    <div style="text-align: center; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #f9fafb;">
-        <h4 style="margin: 0 0 10px 0; color: #1e40af;">Bedroom</h4>
-        <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 14px;">Beds, dressers, and nightstands</p>
-        <a href="{{ url('/products?category=bedroom') }}" class="button" style="padding: 6px 16px; font-size: 14px;">Shop Now</a>
+    <div style="display: table-cell; width: 33.33%; padding: 0 10px; vertical-align: top;">
+        <div style="text-align: center; padding: 20px; border: 1px solid #E5E5E5; border-radius: 8px; background-color: #F8F8F8;">
+            <h4 style="margin: 0 0 10px 0; color: #8B7355;">Bedroom</h4>
+            <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Beds, dressers, and nightstands</p>
+            <a href="{{ url('/products?category=bedroom') }}" style="background: linear-gradient(135deg, #8B7355 0%, #A68B5B 100%); color: white; padding: 6px 16px; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600;">Shop Now</a>
+        </div>
     </div>
     
-    <div style="text-align: center; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #f9fafb;">
-        <h4 style="margin: 0 0 10px 0; color: #1e40af;">Living Room</h4>
-        <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 14px;">Sofas, coffee tables, and storage</p>
-        <a href="{{ url('/products?category=living-room') }}" class="button" style="padding: 6px 16px; font-size: 14px;">Shop Now</a>
+    <div style="display: table-cell; width: 33.33%; padding: 0 10px; vertical-align: top;">
+        <div style="text-align: center; padding: 20px; border: 1px solid #E5E5E5; border-radius: 8px; background-color: #F8F8F8;">
+            <h4 style="margin: 0 0 10px 0; color: #8B7355;">Living Room</h4>
+            <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Sofas, coffee tables, and storage</p>
+            <a href="{{ url('/products?category=living-room') }}" style="background: linear-gradient(135deg, #8B7355 0%, #A68B5B 100%); color: white; padding: 6px 16px; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600;">Shop Now</a>
+        </div>
     </div>
 </div>
 
-<h2>Stay Connected</h2>
-<div class="info-box">
-    <p>Follow us on social media for design inspiration, new product announcements, and exclusive offers:</p>
+<h2 style="color: #8B7355; margin: 30px 0 15px 0;">Stay Connected</h2>
+<div style="background: #F8F8F8; border-left: 4px solid #8B7355; padding: 20px; margin: 20px 0; border-radius: 0 6px 6px 0;">
+    <p style="color: #555; margin: 0 0 15px 0;">Follow us on social media for design inspiration, new product announcements, and exclusive offers:</p>
     <div style="text-align: center; margin: 20px 0;">
-        <a href="#" style="display: inline-block; margin: 0 10px; color: #3b82f6; text-decoration: none;">📘 Facebook</a>
-        <a href="#" style="display: inline-block; margin: 0 10px; color: #e1306c; text-decoration: none;">📷 Instagram</a>
-        <a href="#" style="display: inline-block; margin: 0 10px; color: #1da1f2; text-decoration: none;">🐦 Twitter</a>
-        <a href="#" style="display: inline-block; margin: 0 10px; color: #bd081c; text-decoration: none;">📌 Pinterest</a>
+        <a href="#" style="display: inline-block; margin: 0 10px; color: #8B7355; text-decoration: none;">LinkedIn</a> | 
+        <a href="#" style="display: inline-block; margin: 0 10px; color: #8B7355; text-decoration: none;">Instagram</a> | 
+        <a href="#" style="display: inline-block; margin: 0 10px; color: #8B7355; text-decoration: none;">Facebook</a> | 
+        <a href="#" style="display: inline-block; margin: 0 10px; color: #8B7355; text-decoration: none;">Twitter</a>
     </div>
 </div>
 
-<h2>Need Help?</h2>
-<div class="info-box">
-    <p>Our customer service team is here to help you with any questions:</p>
-    <ul style="margin: 0; padding-left: 20px;">
-        <li><strong>Phone:</strong> (555) 123-4567</li>
-        <li><strong>Email:</strong> support@davidswood.com</li>
+<h2 style="color: #8B7355; margin: 30px 0 15px 0;">Need Help?</h2>
+<div style="background: #F8F8F8; border-left: 4px solid #8B7355; padding: 20px; margin: 20px 0; border-radius: 0 6px 6px 0;">
+    <p style="color: #555; margin: 0 0 15px 0;">Our customer service team is here to help you with any questions:</p>
+    <ul style="margin: 0; padding-left: 20px; color: #555;">
+        <li><strong>Phone:</strong> +63 (917) 123-4567</li>
+        <li><strong>Email:</strong> hello@davidswood.shop</li>
         <li><strong>Live Chat:</strong> Available on our website</li>
-        <li><strong>Showroom:</strong> Visit us at 123 Woodcraft Lane, Furniture City</li>
+        <li><strong>Showroom:</strong> 123 Santa Rosa - Tagaytay Rd, Silang, 4118 Cavite</li>
     </ul>
 </div>
 
 <div style="text-align: center; margin: 40px 0;">
-    <a href="{{ url('/products') }}" class="button">Start Shopping</a>
+    <a href="{{ url('/products') }}" style="background: linear-gradient(135deg, #8B7355 0%, #A68B5B 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">Start Shopping</a>
 </div>
 
-<p>Thank you for choosing David's Wood Furniture. We look forward to helping you create beautiful spaces in your home!</p>
+<p style="color: #555; margin: 20px 0;">Thank you for choosing David's Wood Furnitures. We look forward to helping you create beautiful spaces in your home!</p>
 
-<p>Best regards,<br>
-The David's Wood Furniture Team</p>
+<p style="color: #555; margin: 20px 0;">Best regards,<br>
+The David's Wood Furnitures Team</p>
 @endsection
 
