@@ -29,7 +29,7 @@ return new class extends Migration
             $table->boolean('newsletter_subscribed')->default(false)->after('marketing_emails');
             $table->boolean('two_factor_enabled')->default(false)->after('newsletter_subscribed');
             $table->timestamp('two_factor_verified_at')->nullable()->after('two_factor_enabled');
-            
+
             // Remove the name column
             $table->dropColumn('name');
         });
@@ -40,7 +40,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             // Re-add the name column
             $table->string('name')->after('id');
-            
+
             // Drop the new columns
             $table->dropColumn([
                 'first_name', 'last_name', 'username', 'phone', 'region',
@@ -48,7 +48,7 @@ return new class extends Migration
                 'city', 'province', 'zip_code', 'is_suspended',
                 'newsletter_product_updates', 'newsletter_special_offers',
                 'marketing_emails', 'newsletter_subscribed',
-                'two_factor_enabled', 'two_factor_verified_at'
+                'two_factor_enabled', 'two_factor_verified_at',
             ]);
         });
     }
