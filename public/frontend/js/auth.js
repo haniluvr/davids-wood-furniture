@@ -35,6 +35,10 @@ if (typeof window.addEventListener === 'function') {
 let usernameCheckTimeout = null;
 let isUsernameAvailable = false;
 
+// Prevent duplicate alerts
+let isAlertShowing = false;
+let isModalSwitching = false;
+
 // Form validation state tracking
 let formValidationState = {
     firstName: false,
@@ -99,9 +103,31 @@ async function validateEmail(value) {
 }
 
 function showEmailExistsAlert() {
+    // Check if login modal is already open - if so, don't show alert
+    const loginModal = document.getElementById('modal-login');
+    if (loginModal && !loginModal.classList.contains('hidden') && loginModal.style.display !== 'none') {
+        console.log('Login modal is already open, skipping email exists alert');
+        return;
+    }
+    
+    // Check if signup modal is currently open - if not, don't show alert
+    const signupModal = document.getElementById('modal-signup');
+    if (!signupModal || signupModal.classList.contains('hidden') || signupModal.style.display === 'none') {
+        console.log('Signup modal is not open, skipping email exists alert');
+        return;
+    }
+    
+    // Prevent duplicate alerts
+    if (isAlertShowing || isModalSwitching) {
+        console.log('Alert already showing or modal switching, skipping duplicate');
+        return;
+    }
+    
+    isAlertShowing = true;
+    
     // Create and show alert
     const alertDiv = document.createElement('div');
-    alertDiv.className = 'fixed top-4 right-4 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg shadow-lg z-50 max-w-md';
+    alertDiv.className = 'fixed top-4 right-4 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg shadow-lg z-[9999] max-w-md';
     alertDiv.innerHTML = `
         <div class="flex items-start">
             <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 mr-3 mt-0.5"></i>
@@ -109,10 +135,10 @@ function showEmailExistsAlert() {
                 <h3 class="font-semibold text-red-800">Account Already Exists</h3>
                 <p class="text-sm text-red-700 mt-1">You already have an account with this email address.</p>
                 <div class="mt-3 flex gap-2">
-                    <button onclick="redirectToSignIn()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium">
+                    <button id="sign-in-instead-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium">
                         Sign In Instead
                     </button>
-                    <button onclick="this.parentElement.parentElement.parentElement.remove()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-sm font-medium">
+                    <button id="dismiss-alert-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-sm font-medium">
                         Dismiss
                     </button>
                 </div>
@@ -121,6 +147,24 @@ function showEmailExistsAlert() {
     `;
     
     document.body.appendChild(alertDiv);
+    
+    // Add event listeners after the element is in the DOM
+    const signInBtn = alertDiv.querySelector('#sign-in-instead-btn');
+    const dismissBtn = alertDiv.querySelector('#dismiss-alert-btn');
+    
+    if (signInBtn) {
+        signInBtn.addEventListener('click', function() {
+            console.log('Sign In Instead button clicked');
+            redirectToSignIn();
+        });
+    }
+    
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', function() {
+            alertDiv.remove();
+            isAlertShowing = false;
+        });
+    }
     
     // Re-initialize Lucide icons
     if (typeof lucide !== 'undefined') {
@@ -131,30 +175,62 @@ function showEmailExistsAlert() {
     setTimeout(() => {
         if (alertDiv.parentNode) {
             alertDiv.remove();
+            isAlertShowing = false;
         }
     }, 10000);
 }
 
 function redirectToSignIn() {
-    // Close signup modal
-    const signupModal = document.getElementById('modal-signup');
-    if (signupModal) {
-        signupModal.classList.add('hidden');
-    }
+    console.log('redirectToSignIn called');
     
-    // Open login modal
-    const loginModal = document.getElementById('modal-login');
-    if (loginModal) {
-        loginModal.classList.remove('hidden');
-    }
+    // Set modal switching flag to prevent duplicate alerts
+    isModalSwitching = true;
     
-    // Remove alert
+    // Remove ALL alerts first to prevent duplicate alerts
     const alerts = document.querySelectorAll('.fixed.top-4.right-4');
     alerts.forEach(alert => alert.remove());
+    isAlertShowing = false; // Reset the flag
+    console.log('All alerts removed');
+    
+    // Use the same logic as the existing modal switching
+    // Close signup modal using the existing function
+    if (typeof window.hidemodalsignup === 'function') {
+        window.hidemodalsignup();
+        console.log('Signup modal closed using existing function');
+    }
+    
+    // Open login modal using the existing function with delay
+    setTimeout(() => {
+        if (typeof window.showmodallogin === 'function') {
+            window.showmodallogin();
+            console.log('Login modal opened using existing function');
+            
+            // Reset modal switching flag after modal is shown
+            isModalSwitching = false;
+            
+            // Focus on username field after modal is fully shown
+            setTimeout(() => {
+                const usernameField = document.getElementById('login-username');
+                if (usernameField) {
+                    usernameField.focus();
+                }
+            }, 100);
+        }
+    }, 300);
 }
 
 // Make redirectToSignIn globally available
 window.redirectToSignIn = redirectToSignIn;
+
+// Debug function to test modal availability
+window.debugModals = function() {
+    console.log('=== MODAL DEBUG INFO ===');
+    console.log('Signup modal:', document.getElementById('modal-signup'));
+    console.log('Login modal:', document.getElementById('modal-login'));
+    console.log('Signup modal classes:', document.getElementById('modal-signup')?.className);
+    console.log('Login modal classes:', document.getElementById('modal-login')?.className);
+    console.log('========================');
+};
 
 // Make handleForgotPasswordClick globally available
 window.handleForgotPasswordClick = function() {
@@ -1038,34 +1114,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Migrate wishlist before reloading
-                    try {
-                        await fetch('/api/wishlist/migrate', {
-                            method: 'POST',
-                            credentials: 'include',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-                            }
-                        });
-                    } catch (migrationError) {
-                        console.log('Wishlist migration failed:', migrationError);
-                        // Continue with registration even if migration fails
-                    }
-                    
-                    // Hide modals and redirect to intended URL or reload current page
+                    // Hide signup modal
                     document.getElementById('modal-signup')?.classList.add('hidden');
                     
-                    // Add a small delay to ensure session is saved
-                    setTimeout(() => {
-                        if (result.redirect && result.redirect !== window.location.href) {
-                            // Redirect to the intended URL
-                            window.location.href = result.redirect;
-                        } else {
-                            // Reload current page if no specific redirect
-                            location.reload();
-                        }
-                    }, 300);
+                    // Check if email verification is required
+                    if (result.requires_verification && result.redirect) {
+                        // Redirect to email verification page (backend already includes email parameter)
+                        window.location.href = result.redirect;
+                    } else if (result.redirect && result.redirect !== window.location.href) {
+                        // Regular redirect
+                        window.location.href = result.redirect;
+                    } else {
+                        // Fallback: reload the current page
+                        window.location.reload();
+                    }
                 } else {
                     // Log validation errors to console only
                     if (result.errors) {

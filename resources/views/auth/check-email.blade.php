@@ -1,53 +1,228 @@
 @extends('layouts.app')
 
+@push('styles')
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f3efe7;
+        min-height: 100vh;
+    }
+    
+    .check-email-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+    }
+    
+    .check-email-content {
+        max-width: 800px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+    }
+    
+    .check-email-info {
+        padding-right: 2rem;
+    }
+    
+    .check-email-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 1.5rem;
+        line-height: 3rem;
+    }
+    
+    .check-email-description {
+        font-size: 1.1rem;
+        color: #4a4a4a;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+    
+    .check-email-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+    }
+    
+    .form-group {
+        margin-bottom: 2rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 0;
+        border: none;
+        border-bottom: 2px solid #8B7355;
+        background: transparent;
+        font-size: 1rem;
+        color: #1a1a1a;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-bottom-color: #6b5b47;
+    }
+    
+    .form-input::placeholder {
+        color: #999;
+    }
+    
+    .btn-primary {
+        background: white;
+        color: #1a1a1a;
+        border: 2px solid #8B7355;
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .btn-primary:hover {
+        background: #8B7355;
+        color: white;
+    }
+    
+    .status-message {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+    }
+    
+    .status-message.success {
+        background: #f0f9f0;
+        color: #065f46;
+        border: 1px solid #10b981;
+    }
+    
+    .status-message.error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #ef4444;
+    }
+    
+    .status-message i {
+        margin-right: 0.5rem;
+    }
+    
+    .brown-accent {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 4px;
+        height: 100%;
+        background: #8B7355;
+    }
+    
+    @media (max-width: 768px) {
+        .check-email-content {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .check-email-info {
+            padding-right: 0;
+            text-align: center;
+        }
+        
+        .check-email-title {
+            font-size: 2rem;
+        }
+        
+        .brown-accent {
+            display: none;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-        <div>
-            <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-orange-100">
-                <svg class="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                </svg>
-            </div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Check Your Email
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                We've sent you a secure magic link to complete your login
+<div class="check-email-container">
+    <div class="brown-accent"></div>
+    
+    <div class="check-email-content">
+        <!-- Left Section - Information -->
+        <div class="check-email-info">
+            <h1 class="check-email-title">Check Your Email</h1>
+            <p class="check-email-description">
+                We've sent you a secure magic link to complete your login. Please check your email inbox and click the link to continue.
             </p>
         </div>
         
-        <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-blue-800">
-                        What's next?
-                    </h3>
-                    <div class="mt-2 text-sm text-blue-700">
-                        <ul class="list-disc pl-5 space-y-1">
-                            <li>Check your email inbox (and spam folder)</li>
-                            <li>Click the magic link in the email</li>
-                            <li>You'll be automatically logged in</li>
-                        </ul>
-                    </div>
-                </div>
+        <!-- Right Section - Form -->
+        <div class="check-email-form">
+            <!-- Status Messages -->
+            <div id="status-messages"></div>
+            
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-input" placeholder="your.email@example.com" readonly>
             </div>
-        </div>
-        
-        <div class="text-center">
-            <p class="text-sm text-gray-500">
-                Didn't receive the email? 
-                <a href="{{ route('user.login.form') }}" class="font-medium text-orange-600 hover:text-orange-500">
-                    Try logging in again
-                </a>
-            </p>
+            
+            <div class="form-group">
+                <label class="form-label">Status</label>
+                <input type="text" class="form-input" value="Magic link sent" readonly>
+            </div>
+            
+            <button type="button" class="btn-primary" onclick="window.location.href='{{ route('user.login.form') }}'">
+                Back to Login
+            </button>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    function showMessage(type, message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `status-message ${type}`;
+        messageDiv.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${message}`;
+        document.getElementById('status-messages').appendChild(messageDiv);
+        
+        // Re-initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        // Auto-hide success messages after 5 seconds
+        if (type === 'success') {
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+    }
+});
+</script>
 @endsection
+
 

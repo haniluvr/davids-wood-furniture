@@ -44,7 +44,10 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
 - **Product Pagination** - Efficient browsing with 8 products on home, 28 on products page
 - **Shopping Cart** - Add/remove items, update quantities, real-time total calculation
 - **Wishlist** - Save favorite items (Redis/Database/Session storage options)
-- **User Authentication** - Register, login, profile management
+- **User Authentication** - Register, login, profile management with email verification
+- **Email Verification System** - Secure email verification with magic links for new registrations
+- **Magic Link Authentication** - Passwordless login and password reset via secure email links
+- **Password Reset** - Secure password reset functionality with email verification
 - **Google OAuth** - Social login with Google account for quick access
 - **Order Management** - Place orders, track status, view order history with receipt generation
 - **Order Receipts** - Print and download professional receipts for completed orders
@@ -68,17 +71,32 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
 - **Message Management** - Advanced contact message system with status tracking and assignment
 - **Review Moderation** - Approve/reject customer reviews
 - **Email Preview System** - Preview all email templates before sending
+- **Admin Authentication** - Secure admin login with magic link 2FA system
+- **Magic Link 2FA** - Two-factor authentication for admin accounts via email
 - **Analytics** - Sales trends, revenue reports, customer insights with deep BI analytics
 - **Notifications** - Admin alerts and activity monitoring
 - **Audit Logs** - Complete activity tracking for security
 - **Employee Management** - Role-based access control
 - **Settings** - Configure site settings, appearance, and behavior
 
+### CI/CD & Deployment
+- **GitHub Actions CI/CD** - Automated testing, building, and deployment pipeline
+- **AWS EC2 Deployment** - Production deployment to AWS EC2 instances
+- **Automated Testing** - PHPUnit tests, code quality checks, and security scanning
+- **Zero-Downtime Deployment** - Rolling deployments with health checks and rollback
+- **Production Optimization** - Laravel caching, asset optimization, and performance tuning
+- **Health Monitoring** - Automated health checks and service monitoring
+- **Backup & Recovery** - Automatic backups before deployment with rollback capability
+- **Environment Management** - Separate staging and production environments
+
 ### Security Features
 - **Role-based Access Control** - Admin middleware protection
 - **HTTPS/SSL Support** - Secure data transmission
 - **Password Encryption** - Bcrypt hashing
 - **CSRF Protection** - Built-in Laravel security
+- **Email Verification** - Required email verification for new user registrations
+- **Magic Link Authentication** - Secure token-based authentication for password reset and 2FA
+- **Token Expiration** - Time-limited authentication tokens (1-hour expiration)
 - **Audit Trail** - Complete action logging
 - **Subdomain Isolation** - Admin panel separated from public site
 
@@ -611,6 +629,53 @@ Access the application:
 4. Add admin notes and update status
 5. Click "Reply via Email" to respond
 
+### Using the CI/CD Pipeline
+
+**Automatic Deployment:**
+1. **Push to Main Branch**: Code changes automatically trigger CI/CD pipeline
+2. **CI Pipeline**: Runs tests, code quality checks, and security scans
+3. **CD Pipeline**: Deploys to production if CI passes successfully
+4. **Health Checks**: Automated verification of deployment success
+
+**Manual Deployment:**
+1. **GitHub Actions**: Go to Actions tab → Select workflow → Run workflow
+2. **Environment Selection**: Choose production or staging environment
+3. **Deployment Monitoring**: Watch real-time deployment progress
+4. **Rollback**: Automatic rollback if deployment fails
+
+**Production Management:**
+1. **Health Monitoring**: Check `/health.php` endpoint for service status
+2. **Log Monitoring**: View application logs in `/storage/logs/laravel.log`
+3. **Service Management**: Restart services via deployment scripts
+4. **Backup Management**: Automatic backups before each deployment
+
+### Using the Authentication System
+
+**Email Verification:**
+1. **New User Registration**: Users must verify their email before accessing protected features
+2. **Verification Process**: 
+   - User registers with email and password
+   - System sends verification email with magic link
+   - User clicks link to verify email and complete registration
+   - Guest session data (cart, wishlist) is automatically migrated after verification
+3. **Resend Verification**: Users can resend verification emails if needed
+4. **Protected Access**: Unverified users are redirected to verification page
+
+**Password Reset:**
+1. **Forgot Password**: Users can request password reset via email
+2. **Magic Link Reset**: System sends secure magic link instead of traditional reset tokens
+3. **Reset Process**: 
+   - User clicks magic link in email
+   - System validates token and shows reset form
+   - User enters new password with confirmation
+   - Password is updated and user can login immediately
+
+**Admin 2FA:**
+1. **Admin Login**: Admins login with email and password
+2. **2FA Verification**: System sends magic link to admin's email for 2FA
+3. **Complete Login**: Admin clicks magic link to complete authentication
+4. **Enhanced Security**: All admin actions are logged and tracked
+
 ### Using the Product Popularity System
 
 **For Admins:**
@@ -666,6 +731,7 @@ davids-wood-furniture/
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Admin/              # Admin panel controllers
+│   │   │   │   ├── AuthController.php           # Admin authentication with 2FA
 │   │   │   │   ├── FulfillmentController.php    # Order fulfillment management
 │   │   │   │   ├── ReturnsRepairsController.php # Returns & repairs management
 │   │   │   │   ├── MessageController.php        # Advanced message management
@@ -676,15 +742,17 @@ davids-wood-furniture/
 │   │   │   │   ├── ProductController.php        # Product management
 │   │   │   │   ├── UserController.php           # Customer management
 │   │   │   │   └── InventoryController.php      # Inventory tracking
+│   │   │   ├── AuthController.php           # User authentication with email verification
 │   │   │   ├── CartController.php
 │   │   │   ├── OrderController.php
 │   │   │   ├── ProductController.php
 │   │   │   ├── ProductReviewController.php  # Review system
 │   │   │   └── ContactController.php        # Contact form
 │   │   └── Middleware/
-│   │       ├── AdminMiddleware.php  # Admin authentication
-│   │       ├── ForceHttps.php       # HTTPS enforcement
-│   │       └── StoreIntendedUrl.php # Remember intended URL after login
+│   │       ├── AdminMiddleware.php           # Admin authentication
+│   │       ├── ForceHttps.php                # HTTPS enforcement
+│   │       ├── RequireEmailVerification.php  # Email verification requirement
+│   │       └── StoreIntendedUrl.php          # Remember intended URL after login
 │   ├── Models/
 │   │   ├── Product.php
 │   │   ├── ProductReview.php        # Review model
@@ -694,14 +762,21 @@ davids-wood-furniture/
 │   │   ├── Category.php
 │   │   ├── Order.php                # Enhanced with fulfillment & returns
 │   │   ├── Cart.php
-│   │   ├── User.php
-│   │   └── Admin.php
-│   └── Services/
-│       ├── DatabaseWishlistService.php
-│       ├── RedisWishlistService.php
-│       └── SessionWishlistService.php
+│   │   ├── User.php                 # Enhanced with email verification
+│   │   └── Admin.php                # Enhanced with 2FA support
+│   ├── Services/
+│   │   ├── MagicLinkService.php     # Magic link authentication service
+│   │   ├── DatabaseWishlistService.php
+│   │   ├── RedisWishlistService.php
+│   │   └── SessionWishlistService.php
+│   └── Mail/
+│       ├── EmailVerificationMail.php    # Email verification emails
+│       ├── MagicLinkMail.php            # Magic link authentication emails
+│       ├── PasswordResetMail.php        # Password reset emails
+│       └── TwoFactorEnabledMail.php     # 2FA confirmation emails
 ├── database/
 │   ├── migrations/                  # Database schema
+│   │   ├── create_magic_link_tokens_table.php   # Magic link authentication tokens
 │   │   ├── create_product_popularity_table.php  # Product popularity tracking
 │   │   ├── update_product_skus_to_five_digit_format.php  # SKU standardization
 │   │   ├── create_returns_repairs_table.php     # Returns & repairs management
@@ -721,6 +796,8 @@ davids-wood-furniture/
 ├── resources/
 │   ├── views/
 │   │   ├── admin/                   # Admin panel views
+│   │   │   ├── auth/
+│   │   │   │   └── check-email.blade.php        # Admin 2FA check email page
 │   │   │   ├── orders/
 │   │   │   │   ├── fulfillment.blade.php        # Order fulfillment management
 │   │   │   │   ├── pending-approval.blade.php   # Pending approval orders
@@ -730,6 +807,13 @@ davids-wood-furniture/
 │   │   │   │   └── preview.blade.php            # Email template previews
 │   │   │   └── partials/
 │   │   │       └── sidebar.blade.php            # Enhanced navigation
+│   │   ├── auth/                    # Authentication views
+│   │   │   ├── check-email.blade.php            # Magic link check email page
+│   │   │   ├── verify-email-sent.blade.php      # Email verification sent page
+│   │   │   └── reset-password.blade.php         # Password reset form
+│   │   ├── emails/                  # Email templates
+│   │   │   └── auth/
+│   │   │       └── email-verification.blade.php # Email verification template
 │   │   ├── layouts/                 # Public site layouts
 │   │   ├── partials/                # Reusable components
 │   │   └── checkout/                # Checkout pages
@@ -739,10 +823,36 @@ davids-wood-furniture/
 │   ├── web.php                      # Web routes (with subdomain)
 │   ├── api.php                      # API routes
 │   └── console.php                  # Artisan commands
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                   # Continuous Integration pipeline
+│       └── cd.yml                   # Continuous Deployment pipeline
+├── docs/
+│   ├── CI-CD-Setup-Guide.md         # Complete CI/CD setup guide
+│   ├── Deployment-Guide.md          # Production deployment guide
+│   ├── Quick-Setup-Checklist.md     # Quick setup checklist
+│   ├── EC2-Setup-Guide.md           # AWS EC2 setup guide
+│   ├── Domain-Setup-Guide.md        # Domain configuration guide
+│   ├── S3-Setup-Guide.md            # AWS S3 setup guide
+│   └── Google-OAuth-Production-Setup.md # OAuth production setup
+├── scripts/
+│   ├── setup-ec2-server.sh          # EC2 server setup script
+│   ├── deploy-compose.sh            # Docker deployment script
+│   ├── check-ec2-status.sh          # EC2 status check script
+│   └── fix-500-error.sh             # Error troubleshooting script
+├── deploy.sh                        # Main deployment script
+├── docker-compose.yml               # Docker development setup
+├── docker-compose.prod.yml          # Docker production setup
+├── Dockerfile                       # Docker container configuration
+├── nixpacks.toml                    # Nixpacks configuration
+├── railway.json                     # Railway deployment config
+├── Procfile                         # Process configuration
 ├── .env                             # Environment configuration
+├── env.production.template          # Production environment template
 ├── composer.json                    # PHP dependencies
 ├── package.json                     # Node dependencies
-└── README.md                        # This file
+├── README.md                        # This file
+└── README-CI-CD.md                  # CI/CD specific documentation
 ```
 
 ---
@@ -781,6 +891,150 @@ davids-wood-furniture/
 ---
 
 ## Recent Updates
+
+### Version 1.4.14 (October 2025)
+
+#### CI/CD Pipeline & Production Deployment System
+- **GitHub Actions CI/CD Pipeline**: Complete automated deployment system
+  - New `.github/workflows/ci.yml` for continuous integration with PHPUnit testing
+  - New `.github/workflows/cd.yml` for continuous deployment to AWS EC2
+  - Automated code quality checks with Laravel Pint
+  - Frontend asset building and optimization
+  - Security vulnerability scanning and dependency checks
+  - Workflow triggers on push to main branch and manual dispatch
+
+- **AWS EC2 Production Deployment**: Enterprise-grade deployment infrastructure
+  - Automated deployment to AWS EC2 instances with Ubuntu 22.04
+  - Production environment configuration with optimized settings
+  - Apache web server configuration with SSL support
+  - MySQL database setup with proper user permissions
+  - PHP-FPM optimization for production performance
+  - Automated service management and health monitoring
+
+- **Deployment Automation**: Streamlined deployment process
+  - Zero-downtime deployments with health checks
+  - Automatic backup creation before deployment
+  - Rollback capability on deployment failure
+  - Laravel optimization (config cache, route cache, view cache)
+  - Asset compilation and optimization
+  - Database migration automation with foreign key handling
+
+- **Production Environment Management**: Comprehensive production setup
+  - Production `.env` configuration with secure defaults
+  - SMTP email configuration for production notifications
+  - Google OAuth integration for production domain
+  - SSL certificate management and HTTPS enforcement
+  - File permissions and security hardening
+  - Service monitoring and automatic restart capabilities
+
+#### Enhanced Documentation & Setup Guides
+- **CI/CD Documentation**: Comprehensive deployment guides
+  - New `README-CI-CD.md` with complete CI/CD setup instructions
+  - `docs/CI-CD-Setup-Guide.md` with step-by-step AWS EC2 setup
+  - `docs/Quick-Setup-Checklist.md` for rapid deployment setup
+  - `docs/Deployment-Guide.md` with production deployment instructions
+  - GitHub secrets configuration guide
+  - Environment-specific configuration templates
+
+- **Infrastructure Scripts**: Automated server setup and maintenance
+  - `scripts/setup-ec2-server.sh` for complete EC2 server configuration
+  - `deploy.sh` deployment script with backup and rollback features
+  - Health check endpoints and monitoring scripts
+  - Service management and optimization scripts
+  - Security hardening and firewall configuration
+
+#### Production Features & Monitoring
+- **Health Monitoring**: Comprehensive application monitoring
+  - Health check endpoint (`/health.php`) for service status monitoring
+  - Database connection monitoring and testing
+  - Service status checks (Apache, MySQL, PHP-FPM)
+  - Application performance monitoring
+  - Error logging and debugging capabilities
+
+- **Security Enhancements**: Production security hardening
+  - Secure file permissions and ownership management
+  - Environment variable protection and encryption
+  - SSL/TLS configuration with modern security standards
+  - Firewall configuration and access control
+  - Audit logging for security events
+
+### Version 1.4.13 (October 2025)
+
+#### Advanced Authentication & Email Verification System
+- **Email Verification System**: Complete email verification workflow for new user registrations
+  - New `EmailVerificationMail` class with branded email templates
+  - Magic link-based email verification with secure token generation
+  - Automatic user login after successful email verification
+  - Guest session data migration after email verification completion
+  - Resend verification email functionality with user-friendly interface
+  - Email verification required before accessing protected features
+
+- **Magic Link Authentication Service**: Comprehensive token-based authentication system
+  - New `MagicLinkService` class for secure token management
+  - Support for multiple token types: email verification, password reset, and 2FA
+  - 64-character secure random token generation
+  - 1-hour token expiration with automatic cleanup
+  - Token usage tracking and statistics
+  - Database-driven token storage with proper indexing
+
+- **Password Reset System**: Enhanced password reset functionality
+  - New `PasswordResetMail` class with professional email templates
+  - Magic link-based password reset (no traditional reset tokens)
+  - Secure password reset form with token validation
+  - Password confirmation and validation
+  - Automatic token invalidation after successful reset
+  - Comprehensive error handling and user feedback
+
+- **Admin 2FA System**: Two-factor authentication for admin accounts
+  - Magic link-based 2FA for admin login security
+  - Admin-specific authentication flow with enhanced security
+  - 2FA verification tracking and audit logging
+  - Seamless integration with existing admin authentication
+  - Enhanced admin login security without traditional 2FA apps
+
+#### User Interface Improvements
+- **Authentication Pages**: Redesigned authentication user interface
+  - New `verify-email-sent.blade.php` with modern, responsive design
+  - Enhanced `check-email.blade.php` for magic link authentication
+  - Updated `reset-password.blade.php` with improved UX
+  - Consistent branding and styling across all auth pages
+  - Mobile-responsive design with proper accessibility
+
+- **Enhanced JavaScript**: Improved client-side authentication handling
+  - Updated `auth.js` with better form validation and user feedback
+  - AJAX-powered email verification resend functionality
+  - Real-time form validation and error handling
+  - Improved user experience with loading states and success messages
+  - Better integration with Laravel's CSRF protection
+
+#### Database & Infrastructure Updates
+- **Magic Link Tokens Table**: New database table for token management
+  - `magic_link_tokens` table with proper indexing
+  - Token expiration and usage tracking
+  - Support for multiple token types and purposes
+  - Automatic cleanup of expired tokens
+  - Comprehensive token statistics and monitoring
+
+- **Enhanced User Model**: Updated user authentication features
+  - Email verification tracking with `email_verified_at` field
+  - Integration with magic link authentication system
+  - Enhanced user registration workflow
+  - Better session management and guest data migration
+
+#### Security Enhancements
+- **Token Security**: Advanced token security measures
+  - 64-character cryptographically secure random tokens
+  - Time-limited token expiration (1 hour)
+  - Single-use token validation
+  - Automatic token cleanup and garbage collection
+  - Protection against token replay attacks
+
+- **Email Security**: Enhanced email-based authentication
+  - Secure email verification workflow
+  - Magic link authentication for passwordless login
+  - Email-based 2FA for admin accounts
+  - Comprehensive email template system
+  - Protection against email-based attacks
 
 ### Version 1.4.12 (October 2025)
 
@@ -1319,6 +1573,151 @@ SSLCertificateKeyFile "conf/ssl.crt/davidswood/davidswood-v2.key"
 5. Update Google Cloud Console redirect URI accordingly
 
 **Important**: Google OAuth **does not support** `.test` domains. Always use `localhost` or a registered domain for OAuth.
+
+#### Issue: Email verification not working
+**Solution:**
+1. Check mail configuration in `.env`:
+   ```env
+   MAIL_MAILER=log  # For development (emails logged to storage/logs/laravel.log)
+   # OR
+   MAIL_MAILER=smtp  # For production with real SMTP
+   MAIL_HOST=your-smtp-host
+   MAIL_PORT=587
+   MAIL_USERNAME=your-username
+   MAIL_PASSWORD=your-password
+   MAIL_ENCRYPTION=tls
+   ```
+
+2. Check if magic_link_tokens table exists:
+   ```bash
+   php artisan migrate
+   ```
+
+3. For development, check logs for email content:
+   ```bash
+   tail -f storage/logs/laravel.log
+   ```
+
+4. Clear cache after mail configuration changes:
+   ```bash
+   php artisan config:clear
+   php artisan cache:clear
+   ```
+
+#### Issue: Magic link tokens not working
+**Solution:**
+1. Check if tokens table exists and has data:
+   ```bash
+   php artisan tinker
+   >>> DB::table('magic_link_tokens')->count()
+   ```
+
+2. Clean up expired tokens:
+   ```bash
+   php artisan tinker
+   >>> (new \App\Services\MagicLinkService)->cleanupExpiredTokens()
+   ```
+
+3. Check token expiration (tokens expire after 1 hour):
+   ```bash
+   php artisan tinker
+   >>> DB::table('magic_link_tokens')->where('expires_at', '>', now())->get()
+   ```
+
+#### Issue: Password reset emails not sending
+**Solution:**
+1. Verify mail configuration (same as email verification)
+2. Check if user exists in database:
+   ```bash
+   php artisan tinker
+   >>> \App\Models\User::where('email', 'user@example.com')->first()
+   ```
+
+3. Test password reset manually:
+   ```bash
+   php artisan tinker
+   >>> $user = \App\Models\User::first()
+   >>> (new \App\Services\MagicLinkService)->generateMagicLink($user, 'password_reset')
+   ```
+
+#### Issue: Admin 2FA not working
+**Solution:**
+1. Check admin email configuration
+2. Verify admin user exists:
+   ```bash
+   php artisan tinker
+   >>> \App\Models\Admin::where('email', 'admin@example.com')->first()
+   ```
+
+3. Check admin authentication guard configuration in `config/auth.php`
+
+#### Issue: CI/CD pipeline failing
+**Solution:**
+1. Check GitHub Actions logs for specific error messages
+2. Verify all required secrets are configured:
+   ```bash
+   # Required GitHub Secrets:
+   EC2_HOST=your-ec2-public-ip
+   EC2_USER=ubuntu
+   EC2_SSH_KEY=your-private-key-content
+   DB_PASSWORD=your-db-password
+   MYSQL_ROOT_PASSWORD=your-mysql-root-password
+   MAIL_HOST=your-smtp-host
+   MAIL_PORT=465
+   MAIL_USERNAME=your-smtp-username
+   MAIL_PASSWORD=your-smtp-password
+   MAIL_FROM_ADDRESS=your-from-email
+   ```
+
+3. Test EC2 connection manually:
+   ```bash
+   ssh -i your-key.pem ubuntu@your-ec2-ip
+   ```
+
+4. Check EC2 instance status and security groups
+
+#### Issue: Deployment fails on EC2
+**Solution:**
+1. Check EC2 instance logs:
+   ```bash
+   ssh -i your-key.pem ubuntu@your-ec2-ip
+   sudo tail -f /var/log/apache2/error.log
+   sudo tail -f /var/www/html/davids-wood-furniture/storage/logs/laravel.log
+   ```
+
+2. Verify file permissions:
+   ```bash
+   sudo chown -R www-data:www-data /var/www/html/davids-wood-furniture
+   sudo chmod -R 755 /var/www/html/davids-wood-furniture
+   sudo chmod -R 775 /var/www/html/davids-wood-furniture/storage
+   ```
+
+3. Check Apache configuration:
+   ```bash
+   sudo apache2ctl configtest
+   sudo systemctl restart apache2
+   ```
+
+4. Verify database connection:
+   ```bash
+   cd /var/www/html/davids-wood-furniture
+   sudo -u www-data php artisan migrate:status
+   ```
+
+#### Issue: Health check endpoint not working
+**Solution:**
+1. Check if health.php exists:
+   ```bash
+   ls -la /var/www/html/davids-wood-furniture/public/health.php
+   ```
+
+2. Test health endpoint manually:
+   ```bash
+   curl http://your-domain.com/health.php
+   ```
+
+3. Check Apache virtual host configuration
+4. Verify file permissions and ownership
 
 ### Getting Help
 

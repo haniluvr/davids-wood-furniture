@@ -184,7 +184,7 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Registration successful! Please check your email to verify your account.',
             'requires_verification' => true,
-            'redirect' => route('auth.verify-email-sent'),
+            'redirect' => route('auth.verify-email-sent').'?email='.urlencode($user->email),
             'email' => $user->email,
         ]);
     }
@@ -550,8 +550,8 @@ class AuthController extends Controller
                 ->withErrors(['error' => 'Invalid or expired verification link.']);
         }
 
-        // Find the user
-        $user = User::find($tokenRecord->user_id);
+        // Find the user by email
+        $user = User::where('email', $tokenRecord->email)->first();
 
         if (! $user) {
             return redirect()->route('auth.verify-email-sent')
@@ -783,5 +783,22 @@ class AuthController extends Controller
                 'message' => 'Failed to send verification email. Please try again.',
             ]);
         }
+    }
+
+    /**
+     * Show email verification sent page
+     */
+    public function verifyEmailSent(Request $request)
+    {
+        $email = $request->query('email');
+
+        if (! $email) {
+            return redirect()->route('home');
+        }
+
+        // Store email in session for resend functionality
+        session(['verification_email' => $email]);
+
+        return view('auth.verify-email-sent', compact('email'));
     }
 }

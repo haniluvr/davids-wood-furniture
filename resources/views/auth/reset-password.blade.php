@@ -11,103 +11,80 @@
     }
     
     .reset-container {
-        min-height: calc(100vh - 8rem);
+        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 2rem 1rem;
-    }
-    
-    .reset-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        max-width: 500px;
-        width: 100%;
-        overflow: hidden;
-        border: 1px solid rgba(139, 115, 85, 0.1);
-    }
-    
-    .reset-header {
-        background: linear-gradient(135deg, #8B7355 0%, #b7a99a 100%);
-        padding: 3rem 2rem;
-        text-align: center;
-        color: white;
+        padding: 2rem;
         position: relative;
-    }
-    
-    .reset-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-        opacity: 0.3;
-    }
-    
-    .reset-icon {
-        width: 80px;
-        height: 80px;
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        backdrop-filter: blur(10px);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        position: relative;
-        z-index: 1;
-    }
-    
-    .reset-title {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        position: relative;
-        z-index: 1;
-    }
-    
-    .reset-subtitle {
-        font-size: 1.1rem;
-        opacity: 0.95;
-        font-weight: 400;
-        position: relative;
-        z-index: 1;
     }
     
     .reset-content {
-        padding: 3rem 2rem;
+        max-width: 800px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+    }
+    
+    .reset-info {
+        padding-right: 2rem;
+    }
+    
+    .reset-title {
+        font-size: 3rem;
+        font-weight: 500;
+        color: #1a1a1a;
+        margin-bottom: 1.5rem;
+        line-height: 3rem;
+    }
+    
+    .reset-description {
+        font-size: 1.1rem;
+        color: #4a4a4a;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+    
+    .reset-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
     }
     
     .form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
     }
     
     .form-label {
         display: block;
-        font-weight: 500;
-        color: #374151;
+        font-weight: 600;
+        color: #1a1a1a;
         margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     .form-input {
         width: 100%;
-        padding: 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
+        padding: 0.75rem 0;
+        border: none;
+        border-bottom: 2px solid #8B7355;
+        background: transparent;
         font-size: 1rem;
-        transition: all 0.2s ease;
-        background: white;
+        color: #1a1a1a;
+        transition: border-color 0.3s ease;
     }
     
     .form-input:focus {
         outline: none;
-        border-color: #8B7355;
-        box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
+        border-bottom-color: #6b5b47;
+    }
+    
+    .form-input::placeholder {
+        color: #999;
     }
     
     .password-container {
@@ -116,63 +93,48 @@
     
     .password-toggle {
         position: absolute;
-        right: 1rem;
+        right: 0;
         top: 50%;
         transform: translateY(-50%);
         background: none;
         border: none;
         cursor: pointer;
-        color: #6b7280;
+        color: #8B7355;
+        padding: 0.5rem;
     }
     
     .password-toggle:hover {
-        color: #374151;
+        color: #6b5b47;
     }
     
     .btn-primary {
-        background: linear-gradient(135deg, #8B7355 0%, #b7a99a 100%);
-        color: white;
-        border: none;
+        background: white;
+        color: #1a1a1a;
+        border: 2px solid #8B7355;
         padding: 1rem 2rem;
-        border-radius: 12px;
+        border-radius: 25px;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         width: 100%;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .btn-primary::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
-    }
-    
-    .btn-primary:hover::before {
-        left: 100%;
     }
     
     .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(139, 115, 85, 0.3);
+        background: #8B7355;
+        color: white;
     }
     
     .btn-primary:disabled {
         opacity: 0.6;
         cursor: not-allowed;
-        transform: none;
     }
     
     .status-message {
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
+        padding: 1rem;
+        border-radius: 8px;
         margin-bottom: 1rem;
         font-weight: 500;
         display: flex;
@@ -180,13 +142,13 @@
     }
     
     .status-message.success {
-        background: #d1fae5;
+        background: #f0f9f0;
         color: #065f46;
         border: 1px solid #10b981;
     }
     
     .status-message.error {
-        background: #fee2e2;
+        background: #fef2f2;
         color: #991b1b;
         border: 1px solid #ef4444;
     }
@@ -201,9 +163,9 @@
     
     .strength-bar {
         width: 100%;
-        height: 4px;
+        height: 2px;
         background: #e5e7eb;
-        border-radius: 2px;
+        border-radius: 1px;
         overflow: hidden;
         margin-bottom: 0.5rem;
     }
@@ -211,7 +173,7 @@
     .strength-fill {
         height: 100%;
         transition: all 0.3s ease;
-        border-radius: 2px;
+        border-radius: 1px;
     }
     
     .strength-weak .strength-fill {
@@ -235,7 +197,7 @@
     }
     
     .strength-text {
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         font-weight: 500;
     }
     
@@ -255,17 +217,32 @@
         color: #059669;
     }
     
-    @media (max-width: 640px) {
-        .reset-header {
-            padding: 2rem 1.5rem;
+    .brown-accent {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 4px;
+        height: 100%;
+        background: #8B7355;
+    }
+    
+    @media (max-width: 768px) {
+        .reset-content {
+            grid-template-columns: 1fr;
+            gap: 2rem;
         }
         
-        .reset-content {
-            padding: 2rem 1.5rem;
+        .reset-info {
+            padding-right: 0;
+            text-align: center;
         }
         
         .reset-title {
-            font-size: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .brown-accent {
+            display: none;
         }
     }
 </style>
@@ -273,18 +250,19 @@
 
 @section('content')
 <div class="reset-container">
-    <div class="reset-card">
-        <!-- Header -->
-        <div class="reset-header">
-            <div class="reset-icon">
-                <i data-lucide="key" class="w-8 h-8 text-white"></i>
-            </div>
+    <div class="brown-accent"></div>
+    
+    <div class="reset-content">
+        <!-- Left Section - Information -->
+        <div class="reset-info">
             <h1 class="reset-title">Reset Password</h1>
-            <p class="reset-subtitle">Enter your new password below</p>
+            <p class="reset-description">
+                Enter your new password below. Make sure it's secure and easy for you to remember.
+            </p>
         </div>
         
-        <!-- Content -->
-        <div class="reset-content">
+        <!-- Right Section - Form -->
+        <div class="reset-form">
             <!-- Status Messages -->
             <div id="status-messages"></div>
             
