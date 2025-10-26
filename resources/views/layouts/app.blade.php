@@ -21,6 +21,7 @@
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
         <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" defer></script>
         <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+        <script src='https://www.noupe.com/embed/019a1fbba6967b649fb5061d5d5f459ea1ea.js'></script>
         <!-- Preline UI -->
         <script src="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.js" defer></script>
         

@@ -49,6 +49,7 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
 - **Magic Link Authentication** - Passwordless login and password reset via secure email links
 - **Password Reset** - Secure password reset functionality with email verification
 - **Google OAuth** - Social login with Google account for quick access
+- **AI Customer Support Chatbot** - Intelligent customer support with instant responses
 - **Order Management** - Place orders, track status, view order history with receipt generation
 - **Order Receipts** - Print and download professional receipts for completed orders
 - **Product Reviews & Ratings** - Submit reviews for purchased products with 5-star rating system
@@ -629,6 +630,23 @@ Access the application:
 4. Add admin notes and update status
 5. Click "Reply via Email" to respond
 
+### Using the AI Customer Support Chatbot
+
+**For Customers:**
+1. **Access Chatbot**: Look for the chat widget on any page of the website
+2. **Ask Questions**: Type your questions about products, orders, or general inquiries
+3. **Get Instant Responses**: Receive immediate answers to common questions
+4. **Product Information**: Ask about product details, availability, and specifications
+5. **Order Support**: Inquire about order status, shipping, and delivery information
+6. **Human Handoff**: Get connected to human support for complex issues
+
+**For Admins:**
+1. **Monitor Conversations**: View chatbot interactions and customer satisfaction
+2. **Update Knowledge Base**: Improve chatbot responses based on common questions
+3. **Analytics**: Track chatbot usage and effectiveness metrics
+4. **Integration**: Seamless integration with existing contact form system
+5. **Customization**: Configure chatbot responses and behavior as needed
+
 ### Using the CI/CD Pipeline
 
 **Automatic Deployment:**
@@ -815,6 +833,7 @@ davids-wood-furniture/
 │   │   │   └── auth/
 │   │   │       └── email-verification.blade.php # Email verification template
 │   │   ├── layouts/                 # Public site layouts
+│   │   │   └── app.blade.php                    # Main layout with AI chatbot integration
 │   │   ├── partials/                # Reusable components
 │   │   └── checkout/                # Checkout pages
 │   ├── css/
@@ -891,6 +910,26 @@ davids-wood-furniture/
 ---
 
 ## Recent Updates
+
+### Version 1.4.15 (October 2025)
+
+#### AI Customer Support Chatbot Integration
+- **AI-Powered Customer Support**: Intelligent chatbot for instant customer assistance
+  - Integrated Noupe AI chatbot for 24/7 customer support
+  - Instant responses to common customer inquiries
+  - Product information and recommendations
+  - Order status and shipping inquiries
+  - Seamless integration with existing customer support workflow
+  - Mobile-responsive chat interface
+  - Multilingual support capabilities
+
+- **Enhanced Customer Experience**: Improved customer service and engagement
+  - Reduced response time for customer queries
+  - Automated handling of frequently asked questions
+  - Intelligent routing to human support when needed
+  - Context-aware responses based on customer behavior
+  - Integration with existing contact form system
+  - Analytics and insights on customer interactions
 
 ### Version 1.4.14 (October 2025)
 
