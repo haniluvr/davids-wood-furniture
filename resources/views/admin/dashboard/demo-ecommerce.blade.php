@@ -87,21 +87,21 @@
                 
                 <div class="flex items-center mb-4">
                     <span class="text-meta-3 text-sm mr-2">+10%</span>
-                    <p class="text-sm">You earn $3287 today, it's higher than last month. Keep up your good work!</p>
+                    <p class="text-sm">You earn ₱3287 today, it's higher than last month. Keep up your good work!</p>
                 </div>
 
                 <div class="flex items-center justify-between">
                     <div class="text-center">
                         <p class="text-sm text-gray-500">Target</p>
-                        <p class="text-lg font-bold text-black dark:text-white">$20K</p>
+                        <p class="text-lg font-bold text-black dark:text-white">₱20K</p>
                     </div>
                     <div class="text-center">
                         <p class="text-sm text-gray-500">Revenue</p>
-                        <p class="text-lg font-bold text-black dark:text-white">$20K</p>
+                        <p class="text-lg font-bold text-black dark:text-white">₱20K</p>
                     </div>
                     <div class="text-center">
                         <p class="text-sm text-gray-500">Today</p>
-                        <p class="text-lg font-bold text-black dark:text-white">$20K</p>
+                        <p class="text-lg font-bold text-black dark:text-white">₱20K</p>
                     </div>
                 </div>
             </div>
@@ -294,7 +294,7 @@
                         <p class="text-black dark:text-white text-sm">Laptop</p>
                     </div>
                     <div class="flex items-center justify-center p-2.5 xl:p-4">
-                        <p class="text-black dark:text-white font-medium text-sm">$2399.00</p>
+                        <p class="text-black dark:text-white font-medium text-sm">₱2399.00</p>
                     </div>
                     <div class="flex items-center justify-center p-2.5 xl:p-4">
                         <span class="inline-flex rounded-full bg-success bg-opacity-10 px-2 py-1 text-xs font-medium text-success">Delivered</span>
@@ -315,7 +315,7 @@
                         <p class="text-black dark:text-white text-sm">Watch</p>
                     </div>
                     <div class="flex items-center justify-center p-2.5 xl:p-4">
-                        <p class="text-black dark:text-white font-medium text-sm">$879.00</p>
+                        <p class="text-black dark:text-white font-medium text-sm">₱879.00</p>
                     </div>
                     <div class="flex items-center justify-center p-2.5 xl:p-4">
                         <span class="inline-flex rounded-full bg-warning bg-opacity-10 px-2 py-1 text-xs font-medium text-warning">Pending</span>
@@ -336,7 +336,7 @@
                         <p class="text-black dark:text-white text-sm">SmartPhone</p>
                     </div>
                     <div class="flex items-center justify-center p-2.5 xl:p-4">
-                        <p class="text-black dark:text-white font-medium text-sm">$1869.00</p>
+                        <p class="text-black dark:text-white font-medium text-sm">₱1869.00</p>
                     </div>
                     <div class="flex items-center justify-center p-2.5 xl:p-4">
                         <span class="inline-flex rounded-full bg-success bg-opacity-10 px-2 py-1 text-xs font-medium text-success">Delivered</span>
@@ -357,7 +357,7 @@
                         <p class="text-black dark:text-white text-sm">Electronics</p>
                     </div>
                     <div class="flex items-center justify-center p-2.5 xl:p-4">
-                        <p class="text-black dark:text-white font-medium text-sm">$1699.00</p>
+                        <p class="text-black dark:text-white font-medium text-sm">₱1699.00</p>
                     </div>
                     <div class="flex items-center justify-center p-2.5 xl:p-4">
                         <span class="inline-flex rounded-full bg-danger bg-opacity-10 px-2 py-1 text-xs font-medium text-danger">Canceled</span>
@@ -378,7 +378,7 @@
                         <p class="text-black dark:text-white text-sm">Accessories</p>
                     </div>
                     <div class="flex items-center justify-center p-2.5 xl:p-4">
-                        <p class="text-black dark:text-white font-medium text-sm">$240.00</p>
+                        <p class="text-black dark:text-white font-medium text-sm">₱240.00</p>
                     </div>
                     <div class="flex items-center justify-center p-2.5 xl:p-4">
                         <span class="inline-flex rounded-full bg-success bg-opacity-10 px-2 py-1 text-xs font-medium text-success">Delivered</span>

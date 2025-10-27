@@ -153,6 +153,7 @@
             </ul>
 
             <!-- User Area -->
+            @auth('admin')
             <div class="relative" x-data="{ dropdownOpen: false }">
                 <a
                     class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition-all duration-200"
@@ -246,6 +247,7 @@
                 </div>
                 <!-- Dropdown End -->
             </div>
+            @endauth
             <!-- User Area -->
         </div>
     </div>

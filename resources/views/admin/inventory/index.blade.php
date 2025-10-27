@@ -80,7 +80,7 @@
         <div class="mt-4 flex items-end justify-between">
             <div>
                 <h4 class="text-title-md font-bold text-black dark:text-white">
-                    ${{ number_format($stats['total_stock_value'], 2) }}
+                    ₱{{ number_format($stats['total_stock_value'], 2) }}
                 </h4>
                 <span class="text-sm font-medium">Stock Value</span>
             </div>
@@ -207,7 +207,7 @@
                 </div>
                 <div class="col-span-1 flex items-center">
                     <p class="text-sm text-black dark:text-white font-medium">
-                        ${{ number_format($product->stock_quantity * $product->price, 2) }}
+                        ₱{{ number_format($product->stock_quantity * $product->price, 2) }}
                     </p>
                 </div>
                 <div class="col-span-1 flex items-center">

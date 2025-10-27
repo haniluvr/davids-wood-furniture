@@ -62,7 +62,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Revenue</dt>
-                            <dd class="text-lg font-medium text-gray-900 dark:text-white">${{ number_format($salesData['total_revenue'], 2) }}</dd>
+                            <dd class="text-lg font-medium text-gray-900 dark:text-white">₱{{ number_format($salesData['total_revenue'], 2) }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -81,7 +81,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Avg Order Value</dt>
-                            <dd class="text-lg font-medium text-gray-900 dark:text-white">${{ number_format($salesData['average_order_value'], 2) }}</dd>
+                            <dd class="text-lg font-medium text-gray-900 dark:text-white">₱{{ number_format($salesData['average_order_value'], 2) }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -189,7 +189,7 @@
                         <div class="text-sm text-gray-600 dark:text-gray-400">Active Customers</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-gray-900 dark:text-white">${{ number_format($customerStats['average_customer_value'], 2) }}</div>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">₱{{ number_format($customerStats['average_customer_value'], 2) }}</div>
                         <div class="text-sm text-gray-600 dark:text-gray-400">Avg Customer Value</div>
                     </div>
                 </div>

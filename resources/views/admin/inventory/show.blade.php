@@ -96,7 +96,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Value</p>
-                    <p class="text-2xl font-bold text-black dark:text-white">${{ number_format($product->stock_quantity * $product->price, 2) }}</p>
+                    <p class="text-2xl font-bold text-black dark:text-white">₱{{ number_format($product->stock_quantity * $product->price, 2) }}</p>
                 </div>
                 <div class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
                     <i data-lucide="dollar-sign" class="h-6 w-6 text-purple-600 dark:text-purple-400"></i>
@@ -299,7 +299,7 @@
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Total Revenue:</span>
-                                <span class="font-medium text-black dark:text-white">${{ number_format($product->orderItems()->sum(DB::raw('quantity * price')), 2) }}</span>
+                                <span class="font-medium text-black dark:text-white">₱{{ number_format($product->orderItems()->sum(DB::raw('quantity * unit_price')), 2) }}</span>
                             </div>
                         </div>
                     </div>
@@ -318,7 +318,7 @@
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Stock Value:</span>
-                                <span class="font-medium text-black dark:text-white">${{ number_format($product->stock_quantity * $product->price, 2) }}</span>
+                                <span class="font-medium text-black dark:text-white">₱{{ number_format($product->stock_quantity * $product->price, 2) }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Reorder Point:</span>

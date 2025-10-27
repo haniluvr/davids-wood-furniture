@@ -382,8 +382,8 @@
                         </td>
                         <td class="text-center">{{ $item->product->sku }}</td>
                         <td class="text-center">{{ $item->quantity }}</td>
-                        <td class="text-right">${{ number_format($item->price, 2) }}</td>
-                        <td class="text-right">${{ number_format($item->quantity * $item->price, 2) }}</td>
+                        <td class="text-right">₱{{ number_format($item->unit_price, 2) }}</td>
+                        <td class="text-right">₱{{ number_format($item->quantity * $item->unit_price, 2) }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -394,29 +394,29 @@
             <table class="totals-table">
                 <tr>
                     <td class="label">Subtotal:</td>
-                    <td class="amount">${{ number_format($order->subtotal, 2) }}</td>
+                    <td class="amount">₱{{ number_format($order->subtotal, 2) }}</td>
                 </tr>
                 @if($order->tax_amount > 0)
                     <tr>
                         <td class="label">Tax:</td>
-                        <td class="amount">${{ number_format($order->tax_amount, 2) }}</td>
+                        <td class="amount">₱{{ number_format($order->tax_amount, 2) }}</td>
                     </tr>
                 @endif
                 @if($order->shipping_cost > 0)
                     <tr>
                         <td class="label">Shipping:</td>
-                        <td class="amount">${{ number_format($order->shipping_cost, 2) }}</td>
+                        <td class="amount">₱{{ number_format($order->shipping_cost, 2) }}</td>
                     </tr>
                 @endif
                 @if($order->discount_amount > 0)
                     <tr>
                         <td class="label">Discount:</td>
-                        <td class="amount">-${{ number_format($order->discount_amount, 2) }}</td>
+                        <td class="amount">-₱{{ number_format($order->discount_amount, 2) }}</td>
                     </tr>
                 @endif
                 <tr class="total-row">
                     <td class="label">Total:</td>
-                    <td class="amount">${{ number_format($order->total_amount, 2) }}</td>
+                    <td class="amount">₱{{ number_format($order->total_amount, 2) }}</td>
                 </tr>
             </table>
         </div>

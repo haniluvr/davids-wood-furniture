@@ -244,20 +244,20 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-black dark:text-white">Subtotal:</span>
-                            <span class="text-black dark:text-white">${{ number_format($order->subtotal, 2) }}</span>
+                            <span class="text-black dark:text-white">₱{{ number_format($order->subtotal, 2) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-black dark:text-white">Tax:</span>
-                            <span class="text-black dark:text-white">${{ number_format($order->tax_amount, 2) }}</span>
+                            <span class="text-black dark:text-white">₱{{ number_format($order->tax_amount, 2) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-black dark:text-white">Shipping:</span>
-                            <span class="text-black dark:text-white">${{ number_format($order->shipping_amount, 2) }}</span>
+                            <span class="text-black dark:text-white">₱{{ number_format($order->shipping_amount, 2) }}</span>
                         </div>
                         <div class="border-t border-stroke pt-3 dark:border-strokedark">
                             <div class="flex justify-between">
                                 <span class="font-medium text-black dark:text-white">Total:</span>
-                                <span class="font-medium text-black dark:text-white">${{ number_format($order->total_amount, 2) }}</span>
+                                <span class="font-medium text-black dark:text-white">₱{{ number_format($order->total_amount, 2) }}</span>
                             </div>
                         </div>
                     </div>

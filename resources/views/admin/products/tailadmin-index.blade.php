@@ -153,11 +153,11 @@
                         <td class="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                             @if($product->sale_price && $product->sale_price < $product->price)
                                 <div class="flex flex-col">
-                                    <p class="text-green-500 font-medium">${{ number_format($product->sale_price, 2) }}</p>
-                                    <p class="text-sm text-gray-500 line-through">${{ number_format($product->price, 2) }}</p>
+                                    <p class="text-green-500 font-medium">₱{{ number_format($product->sale_price, 2) }}</p>
+                                    <p class="text-sm text-gray-500 line-through">₱{{ number_format($product->price, 2) }}</p>
                                 </div>
                             @else
-                                <p class="text-black dark:text-white font-medium">${{ number_format($product->price, 2) }}</p>
+                                <p class="text-black dark:text-white font-medium">₱{{ number_format($product->price, 2) }}</p>
                             @endif
                         </td>
                         <td class="border-b border-[#eee] px-4 py-5 dark:border-strokedark">

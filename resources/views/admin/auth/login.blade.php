@@ -13,6 +13,128 @@
     <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('loginForm', () => ({
+                showOtpForm: false,
+                otpCode: '',
+                isLoading: false,
+                errorMessage: '',
+                successMessage: '',
+                
+                
+                async sendOtp() {
+                    this.isLoading = true;
+                    this.errorMessage = '';
+                    this.successMessage = '';
+                    
+                    try {
+                        const formData = new FormData(document.getElementById('login-form'));
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                        
+                        const response = await fetch('{{ admin_route("login") }}', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            // Delay showing OTP form to let login form slide out first
+                            setTimeout(() => {
+                                this.showOtpForm = true;
+                                // Focus on OTP input after form appears
+                                this.$nextTick(() => {
+                                    const otpInput = document.getElementById('otp-code');
+                                    if (otpInput) {
+                                        otpInput.focus();
+                                    }
+                                });
+                            }, 300); // 300ms delay to match transition duration
+                        } else {
+                            const data = await response.json();
+                            this.errorMessage = data.message || data.errors?.email?.[0] || 'Failed to send OTP. Please try again.';
+                        }
+                    } catch (error) {
+                        console.error('Login error:', error);
+                        this.errorMessage = 'An error occurred. Please try again.';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                
+                async verifyOtp() {
+                    this.isLoading = true;
+                    this.errorMessage = '';
+                    
+                    try {
+                        const response = await fetch('{{ admin_route("verify-otp.post") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ code: this.otpCode })
+                        });
+                        
+                        if (response.ok) {
+                            window.location.href = '{{ admin_route("dashboard") }}';
+                        } else {
+                            const data = await response.json();
+                            this.errorMessage = data.message || 'Invalid verification code.';
+                        }
+                    } catch (error) {
+                        this.errorMessage = 'An error occurred. Please try again.';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                
+                async resendOtp() {
+                    this.isLoading = true;
+                    this.errorMessage = '';
+                    
+                    try {
+                        const response = await fetch('{{ admin_route("resend-otp") }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            // Code resent successfully - no message needed
+                        } else {
+                            this.errorMessage = 'Failed to resend code. Please try again.';
+                        }
+                    } catch (error) {
+                        this.errorMessage = 'An error occurred. Please try again.';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                
+                handleOtpInput(event) {
+                    // Only allow numbers
+                    this.otpCode = event.target.value.replace(/[^0-9]/g, '');
+                    
+                    // Auto-submit when 6 digits are entered
+                    if (this.otpCode.length === 6) {
+                        setTimeout(() => {
+                            if (this.otpCode.length === 6) {
+                                this.verifyOtp();
+                            }
+                        }, 100);
+                    }
+                }
+            }));
+        });
+    </script>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -143,10 +265,27 @@
                             </div>
                         @endif
                         
-                        <div>
-                            
-                            <!-- Login Form -->
-                            <form method="POST" action="{{ url('/login') }}">
+                        <div x-data="loginForm()">
+                            <!-- Error Messages -->
+                            <div x-show="errorMessage" x-transition class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                <div class="flex">
+                                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-400 mr-2"></i>
+                                    <p class="text-sm text-red-700" x-text="errorMessage"></p>
+                                </div>
+                            </div>
+
+                            <!-- Form Container with relative positioning -->
+                            <div class="relative overflow-hidden min-h-[400px] bg-transparent">
+                                <!-- Login Form -->
+                                <div x-show="!showOtpForm" 
+                                     x-transition:enter="transition ease-in duration-300" 
+                                     x-transition:enter-start="opacity-0 transform translate-x-0" 
+                                     x-transition:enter-end="opacity-100 transform translate-x-0" 
+                                     x-transition:leave="transition ease-in" 
+                                     x-transition:leave-start="opacity-100 transform translate-x-0" 
+                                     x-transition:leave-end="opacity-0 transform -translate-x-full"
+                                     class="w-full bg-transparent">
+                                <form id="login-form" @submit.prevent="sendOtp()">
                                 @csrf
                                 <div class="space-y-5">
                                     <!-- Email -->
@@ -158,8 +297,8 @@
                                             type="email"
                                             id="email"
                                             name="email"
-                                            placeholder="admin@davidswood.com"
-                                            value="{{ old('email') }}"
+                                                placeholder="hymarquez@dwatelier.co"
+                                                value="{{ old('email', 'hymarquez@dwatelier.co') }}"
                                             required
                                             class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                                         />
@@ -222,15 +361,89 @@
                                     <div>
                                         <button
                                             type="submit"
-                                            class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-sm hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
+                                                :disabled="isLoading"
+                                                class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-sm hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            <i data-lucide="log-in" class="w-4 h-4 mr-2"></i>
-                                            Sign In
+                                                <i data-lucide="mail" class="w-4 h-4 mr-2" x-show="!isLoading"></i>
+                                                <i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin" x-show="isLoading"></i>
+                                                <span x-text="isLoading ? 'Sending...' : 'Send OTP'"></span>
                                         </button>
                                     </div>
                                 </div>
                             </form>
-                            
+                                </div>
+
+                                <!-- OTP Form -->
+                                <div x-show="showOtpForm" 
+                                     x-transition:enter="transition ease-in duration-300" 
+                                     x-transition:enter-start="opacity-0 transform translate-x-0" 
+                                     x-transition:enter-end="opacity-100 transform translate-x-0" 
+                                     x-transition:leave="transition ease-out duration-300" 
+                                     x-transition:leave-start="opacity-100 transform translate-x-0" 
+                                     x-transition:leave-end="opacity-0 transform translate-x-full"
+                                     class="absolute top-0 left-0 w-full bg-transparent">
+                                <div class="text-center mb-6">
+                                    <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-brand-100 dark:bg-brand-900 mb-4">
+                                        <i data-lucide="mail" class="h-6 w-6 text-brand-600 dark:text-brand-400"></i>
+                                    </div>
+                                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                        Enter Verification Code
+                                    </h2>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        We've sent a 6-digit code to your email
+                                    </p>
+                                </div>
+
+                                <form @submit.prevent="verifyOtp()">
+                                    <div class="space-y-5">
+                                        <!-- OTP Code Input -->
+                                        <div>
+                                            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                                                Verification Code<span class="text-error-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="otp-code"
+                                                x-model="otpCode"
+                                                @input="handleOtpInput"
+                                                maxlength="6"
+                                                required
+                                                class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-center text-2xl font-mono tracking-widest text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                                                placeholder="000000"
+                                                autocomplete="one-time-code"
+                                            />
+                                        </div>
+
+                                        <!-- Submit Button -->
+                                        <div>
+                                            <button
+                                                type="submit"
+                                                :disabled="isLoading || otpCode.length !== 6"
+                                                class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-sm hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <i data-lucide="log-in" class="w-4 h-4 mr-2" x-show="!isLoading"></i>
+                                                <i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin" x-show="isLoading"></i>
+                                                <span x-text="isLoading ? 'Verifying...' : 'Sign In'"></span>
+                                            </button>
+                                        </div>
+
+                                        <div class="text-center space-y-2">
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                Didn't receive the code? 
+                                                <button type="button" @click="resendOtp()" :disabled="isLoading" class="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300 disabled:opacity-50">
+                                                    Resend Code
+                                                </button>
+                                            </p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                <button type="button" @click="showOtpForm = false; otpCode = ''; errorMessage = ''; successMessage = ''" class="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300">
+                                                    ← Back to Login
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

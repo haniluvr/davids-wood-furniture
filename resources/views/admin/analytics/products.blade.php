@@ -84,7 +84,7 @@
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        ${{ number_format($totalProductRevenue, 2) }}
+                        ₱{{ number_format($totalProductRevenue, 2) }}
                     </h3>
                     <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Product Revenue</p>
                 </div>
@@ -108,7 +108,7 @@
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        ${{ number_format($averageProductPrice, 2) }}
+                        ₱{{ number_format($averageProductPrice, 2) }}
                     </h3>
                     <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Average Price</p>
                 </div>
@@ -163,7 +163,7 @@
                         <div class="h-3 w-3 rounded-full" style="background-color: {{ $category->color ?? '#3B82F6' }}"></div>
                         <span class="text-sm font-medium text-stone-900 dark:text-white">{{ $category->name }}</span>
                     </div>
-                    <span class="text-sm font-bold text-stone-900 dark:text-white">${{ number_format($category->total_revenue, 2) }}</span>
+                    <span class="text-sm font-bold text-stone-900 dark:text-white">₱{{ number_format($category->total_revenue, 2) }}</span>
                 </div>
                 @endforeach
             </div>
@@ -224,7 +224,7 @@
                 </div>
 
                 <div class="flex items-center justify-center p-4">
-                    <p class="font-bold text-stone-900 dark:text-white">${{ number_format($product->price, 2) }}</p>
+                    <p class="font-bold text-stone-900 dark:text-white">₱{{ number_format($product->price, 2) }}</p>
                 </div>
 
                 <div class="flex items-center justify-center p-4">
@@ -232,7 +232,7 @@
                 </div>
 
                 <div class="flex items-center justify-center p-4">
-                    <p class="font-bold text-emerald-600 dark:text-emerald-400">${{ number_format($product->total_revenue, 2) }}</p>
+                    <p class="font-bold text-emerald-600 dark:text-emerald-400">₱{{ number_format($product->total_revenue, 2) }}</p>
                 </div>
 
                 <div class="flex items-center justify-center p-4">

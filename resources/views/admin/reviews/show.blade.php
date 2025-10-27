@@ -255,7 +255,7 @@
                                 <h5 class="font-semibold text-black dark:text-white mb-2">{{ $review->product->name }}</h5>
                                 <p class="text-gray-600 dark:text-gray-400 mb-2">{{ $review->product->description }}</p>
                                 <div class="flex items-center gap-4">
-                                    <span class="text-lg font-bold text-primary">${{ number_format($review->product->price, 2) }}</span>
+                                    <span class="text-lg font-bold text-primary">₱{{ number_format($review->product->price, 2) }}</span>
                                     <a href="{{ admin_route('products.show', $review->product) }}" class="text-primary hover:text-primary/80 transition-colors duration-200">
                                         View Product
                                     </a>

@@ -62,7 +62,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Value at Risk</p>
-                    <p class="text-2xl font-bold text-black dark:text-white">$24,580</p>
+                    <p class="text-2xl font-bold text-black dark:text-white">₱24,580</p>
                 </div>
                 <div class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
                     <i data-lucide="dollar-sign" class="h-6 w-6 text-purple-600 dark:text-purple-400"></i>

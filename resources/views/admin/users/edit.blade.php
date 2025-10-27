@@ -69,7 +69,7 @@
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-gray-600 dark:text-gray-400">Total Spent</span>
-                        <span class="font-semibold text-black dark:text-white">${{ number_format($user->orders->where('status', '!=', 'cancelled')->sum('total_amount'), 2) }}</span>
+                        <span class="font-semibold text-black dark:text-white">₱{{ number_format($user->orders->where('status', '!=', 'cancelled')->sum('total_amount'), 2) }}</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-gray-600 dark:text-gray-400">Member Since</span>

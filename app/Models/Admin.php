@@ -18,6 +18,7 @@ class Admin extends Authenticatable
         'first_name',
         'last_name',
         'email',
+        'personal_email',
         'password',
         'phone',
         'avatar',
@@ -32,6 +33,8 @@ class Admin extends Authenticatable
         'last_login_ip',
         'two_factor_enabled',
         'two_factor_verified_at',
+        'otp_code',
+        'otp_expires_at',
     ];
 
     protected $hidden = [
@@ -48,6 +51,7 @@ class Admin extends Authenticatable
         'password' => 'hashed',
         'two_factor_enabled' => 'boolean',
         'two_factor_verified_at' => 'datetime',
+        'otp_expires_at' => 'datetime',
     ];
 
     // Accessors
@@ -196,5 +200,46 @@ class Admin extends Authenticatable
             'notifications.send' => 'Send Notifications',
             'audit.view' => 'View Audit Logs',
         ];
+    }
+
+    /**
+     * Generate OTP code for admin 2FA
+     */
+    public function generateOtpCode()
+    {
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $this->update([
+            'otp_code' => $code,
+            'otp_expires_at' => now()->addMinutes(5),
+        ]);
+
+        return $code;
+    }
+
+    /**
+     * Verify OTP code for admin 2FA
+     */
+    public function verifyOtpCode($code)
+    {
+        if (! $this->otp_code || ! $this->otp_expires_at) {
+            return false;
+        }
+
+        if ($this->otp_expires_at->isPast()) {
+            return false;
+        }
+
+        if ($this->otp_code !== $code) {
+            return false;
+        }
+
+        // Clear the code after successful verification
+        $this->update([
+            'otp_code' => null,
+            'otp_expires_at' => null,
+        ]);
+
+        return true;
     }
 }

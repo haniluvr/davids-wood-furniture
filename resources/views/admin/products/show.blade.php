@@ -75,7 +75,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Regular Price</p>
-                    <p class="text-2xl font-bold text-black dark:text-white">${{ number_format($product->price, 2) }}</p>
+                    <p class="text-2xl font-bold text-black dark:text-white">₱{{ number_format($product->price, 2) }}</p>
                 </div>
                 <div class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
                     <i data-lucide="dollar-sign" class="h-6 w-6 text-green-600 dark:text-green-400"></i>
@@ -186,18 +186,18 @@
                             <div class="space-y-3">
                                 <div class="flex justify-between">
                                     <span class="text-gray-600 dark:text-gray-400">Regular Price:</span>
-                                    <span class="font-medium text-black dark:text-white">${{ number_format($product->price, 2) }}</span>
+                                    <span class="font-medium text-black dark:text-white">₱{{ number_format($product->price, 2) }}</span>
                                 </div>
                                 @if($product->cost_price)
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Cost Price:</span>
-                                        <span class="font-medium text-black dark:text-white">${{ number_format($product->cost_price, 2) }}</span>
+                                        <span class="font-medium text-black dark:text-white">₱{{ number_format($product->cost_price, 2) }}</span>
                                     </div>
                                 @endif
                                 @if($product->sale_price)
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Sale Price:</span>
-                                        <span class="font-medium text-green-600">${{ number_format($product->sale_price, 2) }}</span>
+                                        <span class="font-medium text-green-600">₱{{ number_format($product->sale_price, 2) }}</span>
                                     </div>
                                 @endif
                                 @if($product->cost_price)
@@ -348,11 +348,11 @@
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Total Revenue:</span>
-                                <span class="font-medium text-black dark:text-white">${{ number_format($product->orderItems()->sum(DB::raw('quantity * price')), 2) }}</span>
+                                <span class="font-medium text-black dark:text-white">₱{{ number_format($product->orderItems()->sum(DB::raw('quantity * unit_price')), 2) }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Average Order Value:</span>
-                                <span class="font-medium text-black dark:text-white">${{ number_format($product->orderItems()->avg(DB::raw('quantity * price')), 2) }}</span>
+                                <span class="font-medium text-black dark:text-white">₱{{ number_format($product->orderItems()->avg(DB::raw('quantity * unit_price')), 2) }}</span>
                             </div>
                         </div>
                     </div>

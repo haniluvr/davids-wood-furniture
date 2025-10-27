@@ -14,10 +14,17 @@
     </p>
 
     <div style="text-align: center; margin: 30px 0;">
-        <a href="{{ route('auth.verify-magic-link', $token) }}" 
-           style="background: linear-gradient(135deg, #8B7355 0%, #A68B5B 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
-            Complete Login
-        </a>
+        @if($user instanceof \App\Models\Admin)
+            <a href="{{ admin_route('verify-magic-link', $token) }}" 
+               style="background: linear-gradient(135deg, #8B7355 0%, #A68B5B 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
+                Complete Login
+            </a>
+        @else
+            <a href="{{ route('auth.verify-email', $token) }}" 
+               style="background: linear-gradient(135deg, #8B7355 0%, #A68B5B 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
+                Complete Login
+            </a>
+        @endif
     </div>
 
     <p style="color: #666; font-size: 14px; margin: 20px 0 0 0;">

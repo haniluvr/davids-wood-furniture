@@ -18,6 +18,11 @@ $adminRoutes = function () {
         Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login']);
         Route::get('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
         Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink'])->name('forgot-password.post');
+        Route::get('/verify-magic-link/{token}', [App\Http\Controllers\Admin\AuthController::class, 'verifyMagicLink'])->name('verify-magic-link');
+        Route::get('/check-email', [App\Http\Controllers\Admin\AuthController::class, 'checkEmail'])->name('check-email');
+        Route::get('/verify-otp', [App\Http\Controllers\Admin\AuthController::class, 'showOtpVerification'])->name('verify-otp');
+        Route::post('/verify-otp', [App\Http\Controllers\Admin\AuthController::class, 'verifyOtp'])->name('verify-otp.post');
+        Route::post('/resend-otp', [App\Http\Controllers\Admin\AuthController::class, 'resendOtp'])->name('resend-otp');
     });
 
     // Root admin route - redirect to login if not authenticated, dashboard if authenticated

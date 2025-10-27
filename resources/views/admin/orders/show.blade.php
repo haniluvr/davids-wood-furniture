@@ -180,10 +180,10 @@
                                     <p class="text-black dark:text-white">{{ $item->quantity }}</p>
                                 </td>
                                 <td class="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                                    <p class="text-black dark:text-white">${{ number_format($item->unit_price, 2) }}</p>
+                                    <p class="text-black dark:text-white">₱{{ number_format($item->unit_price, 2) }}</p>
                                 </td>
                                 <td class="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                                    <p class="text-black dark:text-white font-medium">${{ number_format($item->total_price, 2) }}</p>
+                                    <p class="text-black dark:text-white font-medium">₱{{ number_format($item->total_price, 2) }}</p>
                                 </td>
                             </tr>
                             @endforeach
@@ -342,20 +342,20 @@
                 <div class="space-y-3">
                     <div class="flex justify-between">
                         <span class="text-black dark:text-white">Subtotal:</span>
-                        <span class="text-black dark:text-white">${{ number_format($order->subtotal, 2) }}</span>
+                        <span class="text-black dark:text-white">₱{{ number_format($order->subtotal, 2) }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-black dark:text-white">Tax:</span>
-                        <span class="text-black dark:text-white">${{ number_format($order->tax_amount, 2) }}</span>
+                        <span class="text-black dark:text-white">₱{{ number_format($order->tax_amount, 2) }}</span>
                     </div>
                         <div class="flex justify-between">
                             <span class="text-black dark:text-white">Shipping:</span>
-                            <span class="text-black dark:text-white">${{ number_format($order->shipping_cost ?? 0, 2) }}</span>
+                            <span class="text-black dark:text-white">₱{{ number_format($order->shipping_cost ?? 0, 2) }}</span>
                         </div>
                     <div class="border-t border-stroke pt-3 dark:border-strokedark">
                         <div class="flex justify-between">
                             <span class="font-medium text-black dark:text-white">Total:</span>
-                            <span class="font-medium text-black dark:text-white">${{ number_format($order->total_amount, 2) }}</span>
+                            <span class="font-medium text-black dark:text-white">₱{{ number_format($order->total_amount, 2) }}</span>
                         </div>
                     </div>
                 </div>

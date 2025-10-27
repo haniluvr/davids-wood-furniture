@@ -84,7 +84,7 @@
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        ${{ number_format($averageLifetimeValue, 2) }}
+                        ₱{{ number_format($averageLifetimeValue, 2) }}
                     </h3>
                     <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Avg Lifetime Value</p>
                 </div>

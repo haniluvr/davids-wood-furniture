@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AdminOtpMail;
 use App\Models\Admin;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -54,15 +56,47 @@ class AuthController extends Controller
 
         // Check if 2FA is enabled (mandatory for admins)
         if ($admin->two_factor_enabled) {
-            // Generate magic link for 2FA
-            $magicLinkService = new \App\Services\MagicLinkService;
-            $token = $magicLinkService->generateMagicLink($admin, '2fa');
+            // Check if admin has personal email for OTP
+            if (! $admin->personal_email) {
+                throw ValidationException::withMessages([
+                    'email' => ['Personal email is required for two-factor authentication. Please contact administrator.'],
+                ]);
+            }
+
+            // Generate OTP code
+            $otpCode = $admin->generateOtpCode();
+
+            // Send OTP email
+            try {
+                Mail::to($admin->personal_email)->send(new AdminOtpMail($admin, $otpCode));
+
+                \Log::info('Admin OTP sent', [
+                    'admin_id' => $admin->id,
+                    'admin_email' => $admin->email,
+                    'personal_email' => $admin->personal_email,
+                    'otp_code' => $otpCode,
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to send admin OTP email', [
+                    'admin_id' => $admin->id,
+                    'personal_email' => $admin->personal_email,
+                    'error' => $e->getMessage(),
+                ]);
+
+                throw ValidationException::withMessages([
+                    'email' => ['Failed to send verification code. Please try again.'],
+                ]);
+            }
 
             // Store pending 2FA state in session
             session(['pending_admin_2fa_id' => $admin->id]);
 
-            return redirect()->route('admin.check-email')
-                ->with('success', 'Please check your email to complete login');
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Verification code sent to your email']);
+            }
+
+            return redirect()->route('admin.verify-otp')
+                ->with('success', 'Verification code sent to your email');
         }
 
         // Login the admin
@@ -165,5 +199,110 @@ class AuthController extends Controller
     public function checkEmail()
     {
         return view('admin.auth.check-email');
+    }
+
+    /**
+     * Show OTP verification page for admin
+     */
+    public function showOtpVerification()
+    {
+        if (! session('pending_admin_2fa_id')) {
+            return redirect()->route('admin.login');
+        }
+
+        return view('admin.auth.verify-otp');
+    }
+
+    /**
+     * Verify OTP code for admin 2FA
+     */
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|size:6',
+        ]);
+
+        $adminId = session('pending_admin_2fa_id');
+
+        if (! $adminId) {
+            return redirect()->route('admin.login')
+                ->withErrors(['error' => 'Session expired. Please login again.']);
+        }
+
+        $admin = Admin::find($adminId);
+
+        if (! $admin) {
+            return redirect()->route('admin.login')
+                ->withErrors(['error' => 'Admin not found.']);
+        }
+
+        if (! $admin->verifyOtpCode($request->code)) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Invalid or expired verification code.'], 422);
+            }
+
+            return back()->withErrors(['code' => 'Invalid or expired verification code.']);
+        }
+
+        // Login the admin
+        Auth::guard('admin')->login($admin);
+        $admin->update(['two_factor_verified_at' => now()]);
+        session()->forget('pending_admin_2fa_id');
+        AuditLog::logLogin($admin);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Login completed successfully!']);
+        }
+
+        return redirect()->intended(admin_route('dashboard'))
+            ->with('success', 'Login completed successfully!');
+    }
+
+    /**
+     * Resend OTP code for admin 2FA
+     */
+    public function resendOtp(Request $request)
+    {
+        $adminId = session('pending_admin_2fa_id');
+
+        if (! $adminId) {
+            return redirect()->route('admin.login')
+                ->withErrors(['error' => 'Session expired. Please login again.']);
+        }
+
+        $admin = Admin::find($adminId);
+
+        if (! $admin) {
+            return redirect()->route('admin.login')
+                ->withErrors(['error' => 'Admin not found.']);
+        }
+
+        // Generate new OTP code
+        $otpCode = $admin->generateOtpCode();
+
+        // Send new OTP email
+        try {
+            Mail::to($admin->personal_email)->send(new AdminOtpMail($admin, $otpCode));
+
+            \Log::info('Admin OTP resent', [
+                'admin_id' => $admin->id,
+                'personal_email' => $admin->personal_email,
+                'otp_code' => $otpCode,
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Verification code resent to your email']);
+            }
+
+            return back()->with('success', 'Verification code resent to your email');
+        } catch (\Exception $e) {
+            \Log::error('Failed to resend admin OTP email', [
+                'admin_id' => $admin->id,
+                'personal_email' => $admin->personal_email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to resend verification code. Please try again.']);
+        }
     }
 }

@@ -14,7 +14,7 @@
     <p><strong>Category:</strong> {{ $product->category->name ?? 'Uncategorized' }}</p>
     <p><strong>Current Stock:</strong> {{ $product->stock_quantity }} units</p>
     <p><strong>Low Stock Threshold:</strong> {{ $product->low_stock_threshold ?? 'Not set' }} units</p>
-    <p><strong>Price:</strong> ${{ number_format($product->price, 2) }}</p>
+    <p><strong>Price:</strong> ₱{{ number_format($product->price, 2) }}</p>
     <p><strong>Status:</strong> {{ $product->is_active ? 'Active' : 'Inactive' }}</p>
 </div>
 

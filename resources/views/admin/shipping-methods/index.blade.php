@@ -124,7 +124,7 @@
                                         @if($method->type === 'free_shipping')
                                             <span class="text-green-600 font-medium">Free</span>
                                         @else
-                                            ${{ number_format($method->cost, 2) }}
+                                            ₱{{ number_format($method->cost, 2) }}
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-stone-900">

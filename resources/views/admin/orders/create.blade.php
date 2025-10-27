@@ -86,24 +86,24 @@
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Subtotal:</span>
-                                <span id="subtotal" class="font-medium text-black dark:text-white">$0.00</span>
+                                <span id="subtotal" class="font-medium text-black dark:text-white">₱0.00</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Tax:</span>
-                                <span id="tax-amount" class="font-medium text-black dark:text-white">$0.00</span>
+                                <span id="tax-amount" class="font-medium text-black dark:text-white">₱0.00</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Shipping:</span>
-                                <span id="shipping-cost" class="font-medium text-black dark:text-white">$0.00</span>
+                                <span id="shipping-cost" class="font-medium text-black dark:text-white">₱0.00</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Discount:</span>
-                                <span id="discount-amount" class="font-medium text-black dark:text-white">$0.00</span>
+                                <span id="discount-amount" class="font-medium text-black dark:text-white">₱0.00</span>
                             </div>
                             <div class="col-span-2 border-t border-gray-300 dark:border-gray-600 pt-2">
                                 <div class="flex justify-between">
                                     <span class="text-lg font-semibold text-gray-900 dark:text-white">Total:</span>
-                                    <span id="total-amount" class="text-lg font-semibold text-black dark:text-white">$0.00</span>
+                                    <span id="total-amount" class="text-lg font-semibold text-black dark:text-white">₱0.00</span>
                                 </div>
                             </div>
                         </div>
@@ -564,7 +564,7 @@ function calculateTotals() {
     document.querySelectorAll('#order-items > div').forEach(item => {
         const quantity = parseFloat(item.querySelector('input[name*="[quantity]"]').value) || 0;
         const price = parseFloat(item.querySelector('input[name*="[price]"]').value) || 0;
-        const itemTotal = quantity * price;
+        const itemTotal = quantity * unit_price;
         subtotal += itemTotal;
         
         item.querySelector('.item-total').textContent = itemTotal.toFixed(2);

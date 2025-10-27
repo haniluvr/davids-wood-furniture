@@ -36,7 +36,7 @@
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        ${{ number_format($totalRevenue, 2) }}
+                        ₱{{ number_format($totalRevenue, 2) }}
                     </h3>
                     <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Total Revenue</p>
                 </div>
@@ -84,7 +84,7 @@
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        ${{ number_format($averageOrderValue, 2) }}
+                        ₱{{ number_format($averageOrderValue, 2) }}
                     </h3>
                     <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Avg Order Value</p>
                 </div>
@@ -108,7 +108,7 @@
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        ${{ number_format($revenuePerCustomer, 2) }}
+                        ₱{{ number_format($revenuePerCustomer, 2) }}
                     </h3>
                     <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Revenue per Customer</p>
                 </div>
@@ -176,7 +176,7 @@
                         <div class="h-3 w-3 rounded-full" style="background-color: {{ $category->color ?? '#3B82F6' }}"></div>
                         <span class="text-sm font-medium text-stone-900 dark:text-white">{{ $category->name }}</span>
                     </div>
-                    <span class="text-sm font-bold text-stone-900 dark:text-white">${{ number_format($category->total_revenue, 2) }}</span>
+                    <span class="text-sm font-bold text-stone-900 dark:text-white">₱{{ number_format($category->total_revenue, 2) }}</span>
                 </div>
                 @endforeach
             </div>
@@ -201,7 +201,7 @@
                     <i data-lucide="calendar" class="w-6 h-6 text-white"></i>
                 </div>
                 <h4 class="text-lg font-bold text-stone-900 dark:text-white mb-2">Current Period</h4>
-                <p class="text-2xl font-bold text-emerald-600 mb-1">${{ number_format($currentPeriodRevenue, 2) }}</p>
+                <p class="text-2xl font-bold text-emerald-600 mb-1">₱{{ number_format($currentPeriodRevenue, 2) }}</p>
                 <p class="text-sm text-stone-600 dark:text-gray-400">{{ $startDate->format('M d') }} - {{ $endDate->format('M d, Y') }}</p>
             </div>
 
@@ -211,7 +211,7 @@
                     <i data-lucide="calendar-days" class="w-6 h-6 text-white"></i>
                 </div>
                 <h4 class="text-lg font-bold text-stone-900 dark:text-white mb-2">Previous Period</h4>
-                <p class="text-2xl font-bold text-stone-600 dark:text-gray-400 mb-1">${{ number_format($previousPeriodRevenue, 2) }}</p>
+                <p class="text-2xl font-bold text-stone-600 dark:text-gray-400 mb-1">₱{{ number_format($previousPeriodRevenue, 2) }}</p>
                 <p class="text-sm text-stone-600 dark:text-gray-400">{{ $previousStartDate->format('M d') }} - {{ $previousEndDate->format('M d, Y') }}</p>
             </div>
 

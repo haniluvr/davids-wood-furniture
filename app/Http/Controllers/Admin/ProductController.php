@@ -417,15 +417,14 @@ class ProductController extends Controller
             ]);
 
             // Log the restock action
-            AuditLog::create([
-                'admin_id' => Auth::guard('admin')->id(),
-                'action' => 'bulk_restock',
-                'model_type' => Product::class,
-                'model_id' => $product->id,
-                'old_values' => ['stock_quantity' => $oldQuantity],
-                'new_values' => ['stock_quantity' => $newQuantity],
-                'notes' => $request->notes,
-            ]);
+            AuditLog::log(
+                'bulk_restock',
+                Auth::guard('admin')->user(),
+                $product,
+                ['stock_quantity' => $oldQuantity],
+                ['stock_quantity' => $newQuantity],
+                $request->notes
+            );
         }
 
         return response()->json([

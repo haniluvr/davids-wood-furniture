@@ -52,7 +52,7 @@
     <p><strong>Product Name:</strong> {{ $review->product->name }}</p>
     <p><strong>SKU:</strong> {{ $review->product->sku ?? 'Not set' }}</p>
     <p><strong>Category:</strong> {{ $review->product->category->name ?? 'Uncategorized' }}</p>
-    <p><strong>Price:</strong> ${{ number_format($review->product->price, 2) }}</p>
+    <p><strong>Price:</strong> ₱{{ number_format($review->product->price, 2) }}</p>
     <p><strong>Current Rating:</strong> {{ number_format($review->product->average_rating ?? 0, 1) }}/5 ({{ $review->product->reviews_count ?? 0 }} reviews)</p>
 </div>
 

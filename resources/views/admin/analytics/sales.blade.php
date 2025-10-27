@@ -60,7 +60,7 @@
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        ${{ number_format($totalRevenue, 2) }}
+                        ₱{{ number_format($totalRevenue, 2) }}
                     </h3>
                     <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Total Revenue</p>
                 </div>
@@ -84,7 +84,7 @@
                 </div>
                 <div class="mt-4">
                     <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        ${{ number_format($averageOrderValue, 2) }}
+                        ₱{{ number_format($averageOrderValue, 2) }}
                     </h3>
                     <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Avg Order Value</p>
                 </div>
@@ -154,7 +154,7 @@
                     <div class="h-3 w-3 rounded-full bg-emerald-500"></div>
                     <div>
                         <p class="text-sm font-medium text-stone-900 dark:text-white">Revenue</p>
-                        <p class="text-lg font-bold text-emerald-600">${{ number_format($totalRevenue, 2) }}</p>
+                        <p class="text-lg font-bold text-emerald-600">₱{{ number_format($totalRevenue, 2) }}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -193,7 +193,7 @@
                         <p class="text-xs text-stone-500 dark:text-gray-400">{{ $product->total_sold }} sold</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-stone-900 dark:text-white">${{ number_format($product->total_revenue, 2) }}</p>
+                        <p class="font-bold text-stone-900 dark:text-white">₱{{ number_format($product->total_revenue, 2) }}</p>
                     </div>
                 </div>
                 @empty

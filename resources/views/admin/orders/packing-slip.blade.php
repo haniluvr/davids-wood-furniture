@@ -412,7 +412,7 @@
                         <td class="text-center">
                             <div class="quantity-box">{{ $item->quantity }}</div>
                         </td>
-                        <td class="text-right">${{ number_format($item->price, 2) }}</td>
+                        <td class="text-right">₱{{ number_format($item->unit_price, 2) }}</td>
                     </tr>
                 @endforeach
             </tbody>

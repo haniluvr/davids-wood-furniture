@@ -122,7 +122,7 @@
                                                 +
                                             @endif
                                             @if($gateway->transaction_fee_fixed > 0)
-                                                ${{ number_format($gateway->transaction_fee_fixed, 2) }}
+                                                ₱{{ number_format($gateway->transaction_fee_fixed, 2) }}
                                             @endif
                                         @else
                                             <span class="text-stone-400">No fees</span>

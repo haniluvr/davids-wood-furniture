@@ -93,7 +93,7 @@
 
                 <div class="mt-4 flex items-end justify-between">
                     <div>
-                        <h4 class="text-title-md font-bold text-black dark:text-white">${{ number_format($stats['total_revenue'], 2) }}</h4>
+                        <h4 class="text-title-md font-bold text-black dark:text-white">₱{{ number_format($stats['total_revenue'], 2) }}</h4>
                         <span class="text-sm font-medium">Total Revenue</span>
                     </div>
 
@@ -279,7 +279,7 @@
                     </div>
 
                     <div class="flex items-center justify-center p-2.5 xl:p-5">
-                        <p class="text-green-500">${{ number_format($product->current_price, 2) }}</p>
+                        <p class="text-green-500">₱{{ number_format($product->current_price, 2) }}</p>
                     </div>
 
                     <div class="hidden items-center justify-center p-2.5 sm:flex xl:p-5">

@@ -209,6 +209,14 @@
             </form>
     </div>
 
+    <!-- Select All Checkbox -->
+    <div class="mb-4 flex items-center gap-3">
+        <label class="flex items-center gap-2">
+            <input type="checkbox" id="select-all-products" class="rounded border-stone-300 text-primary focus:ring-primary">
+            <span class="text-sm font-medium text-stone-700 dark:text-stone-300">Select All Products</span>
+        </label>
+    </div>
+
     <!-- Products Grid -->
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         @forelse($products as $product)
@@ -304,7 +312,7 @@
 </div>
 
 <!-- Bulk Actions Modal -->
-<div id="bulk-actions-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+<div id="bulk-actions-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
     <div class="flex min-h-screen items-center justify-center p-4">
         <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
         <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
@@ -317,11 +325,11 @@
                     <i data-lucide="check" class="w-4 h-4"></i>
                     Activate Selected
                 </button>
-                <button onclick="bulkUpdateStatus('inactive')" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-yellow-600 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-yellow-700">
+                <button onclick="showBulkDeactivateModal(document.querySelectorAll('.product-checkbox:checked').length)" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-yellow-600 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-yellow-700">
                     <i data-lucide="x" class="w-4 h-4"></i>
                     Deactivate Selected
                 </button>
-                <button onclick="bulkRestock()" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700">
+                <button onclick="showBulkRestockModal(document.querySelectorAll('.product-checkbox:checked').length)" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700">
                     <i data-lucide="package-plus" class="w-4 h-4"></i>
                     Restock Selected
                 </button>
@@ -336,7 +344,7 @@
 </div>
 
 <!-- Restock Modal -->
-<div id="restock-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+<div id="restock-modal" class="fixed inset-0 z-[9998] hidden overflow-y-auto">
     <div class="flex min-h-screen items-center justify-center p-4">
         <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
         <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
@@ -366,8 +374,262 @@
     </div>
 </div>
 
+<!-- Confirmation Modal -->
+<div id="confirmation-modal" class="fixed inset-0 z-[10000] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900 dark:text-white">Confirm Action</h3>
+                <p id="confirmation-message" class="text-sm text-stone-600 dark:text-gray-400"></p>
+            </div>
+            <div class="flex gap-3">
+                <button id="confirmation-cancel" class="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                    Cancel
+                </button>
+                <button id="confirmation-confirm" class="flex-1 rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-red-700">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Modal -->
+<div id="alert-modal" class="fixed inset-0 z-[10001] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900 dark:text-white">Notification</h3>
+                <p id="alert-message" class="text-sm text-stone-600 dark:text-gray-400"></p>
+            </div>
+            <div class="flex justify-end">
+                <button id="alert-ok" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Deactivate Confirmation Modal -->
+<div id="bulk-deactivate-modal" class="fixed inset-0 z-[10002] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
+            <div class="mb-4">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+                        <i data-lucide="alert-triangle" class="h-5 w-5 text-yellow-600 dark:text-yellow-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-stone-900 dark:text-white">Deactivate Products</h3>
+                </div>
+                <p id="bulk-deactivate-message" class="text-sm text-stone-600 dark:text-gray-400"></p>
+            </div>
+            <div class="flex gap-3">
+                <button id="bulk-deactivate-cancel" class="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                    Cancel
+                </button>
+                <button id="bulk-deactivate-confirm" class="flex-1 rounded-xl bg-yellow-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-yellow-700">
+                    Deactivate
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Restock Modal -->
+<div id="bulk-restock-modal" class="fixed inset-0 z-[10003] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
+            <div class="mb-4">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                        <i data-lucide="package-plus" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-stone-900 dark:text-white">Bulk Restock</h3>
+                </div>
+                <p id="bulk-restock-message" class="text-sm text-stone-600 dark:text-gray-400 mb-4"></p>
+                <div class="mb-4">
+                    <label for="bulk-restock-quantity" class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">Quantity to Add</label>
+                    <input type="number" id="bulk-restock-quantity" min="1" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400" placeholder="Enter quantity">
+                </div>
+                <div class="mb-4">
+                    <label for="bulk-restock-notes" class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">Notes (Optional)</label>
+                    <textarea id="bulk-restock-notes" rows="3" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400" placeholder="Add notes about this bulk restock..."></textarea>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button id="bulk-restock-cancel" class="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                    Cancel
+                </button>
+                <button id="bulk-restock-confirm" class="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700">
+                    Restock
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('styles')
+<style>
+/* Modal backdrop and body scroll prevention */
+.modal-open {
+    overflow: hidden;
+}
+
+/* Ensure modals are always on top */
+#confirmation-modal,
+#alert-modal,
+#bulk-actions-modal,
+#restock-modal,
+#bulk-deactivate-modal,
+#bulk-restock-modal {
+    backdrop-filter: blur(4px);
+}
+
+/* Smooth transitions for modals */
+.modal-transition {
+    transition: all 0.3s ease-in-out;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
+// Custom modal functions
+function showConfirmationModal(message, onConfirm) {
+    document.getElementById('confirmation-message').textContent = message;
+    document.getElementById('confirmation-modal').classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    
+    // Remove existing event listeners
+    const confirmBtn = document.getElementById('confirmation-confirm');
+    const cancelBtn = document.getElementById('confirmation-cancel');
+    
+    // Clone and replace to remove event listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    // Add new event listeners
+    newConfirmBtn.addEventListener('click', function() {
+        document.getElementById('confirmation-modal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+        if (onConfirm) onConfirm();
+    });
+    
+    newCancelBtn.addEventListener('click', function() {
+        document.getElementById('confirmation-modal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+    });
+}
+
+function showAlertModal(message) {
+    document.getElementById('alert-message').textContent = message;
+    document.getElementById('alert-modal').classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    
+    // Remove existing event listeners
+    const okBtn = document.getElementById('alert-ok');
+    const newOkBtn = okBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+    
+    // Add new event listener
+    newOkBtn.addEventListener('click', function() {
+        document.getElementById('alert-modal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+    });
+}
+
+// Bulk deactivate modal functions
+function showBulkDeactivateModal(productCount) {
+    if (productCount === 0) {
+        showAlertModal('Please select at least one product to deactivate.');
+        return;
+    }
+    
+    document.getElementById('bulk-deactivate-message').textContent = `Are you sure you want to deactivate ${productCount} products? This will make them unavailable for purchase.`;
+    document.getElementById('bulk-deactivate-modal').classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    
+    // Remove existing event listeners
+    const confirmBtn = document.getElementById('bulk-deactivate-confirm');
+    const cancelBtn = document.getElementById('bulk-deactivate-cancel');
+    
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    // Add new event listeners
+    newConfirmBtn.addEventListener('click', function() {
+        document.getElementById('bulk-deactivate-modal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+        closeBulkActionsModal();
+        bulkUpdateStatus('inactive');
+    });
+    
+    newCancelBtn.addEventListener('click', function() {
+        document.getElementById('bulk-deactivate-modal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+    });
+}
+
+// Bulk restock modal functions
+function showBulkRestockModal(productCount) {
+    if (productCount === 0) {
+        showAlertModal('Please select at least one product to restock.');
+        return;
+    }
+    
+    document.getElementById('bulk-restock-message').textContent = `Add inventory to ${productCount} selected products.`;
+    document.getElementById('bulk-restock-modal').classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    
+    // Clear previous values
+    document.getElementById('bulk-restock-quantity').value = '';
+    document.getElementById('bulk-restock-notes').value = '';
+    
+    // Focus on quantity input
+    setTimeout(() => {
+        document.getElementById('bulk-restock-quantity').focus();
+    }, 100);
+    
+    // Remove existing event listeners
+    const confirmBtn = document.getElementById('bulk-restock-confirm');
+    const cancelBtn = document.getElementById('bulk-restock-cancel');
+    
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    // Add new event listeners
+    newConfirmBtn.addEventListener('click', function() {
+        const quantity = document.getElementById('bulk-restock-quantity').value;
+        const notes = document.getElementById('bulk-restock-notes').value;
+        
+        if (!quantity || quantity <= 0) {
+            showAlertModal('Please enter a valid quantity.');
+            return;
+        }
+        
+        document.getElementById('bulk-restock-modal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+        closeBulkActionsModal();
+        bulkRestockWithQuantity(quantity, notes);
+    });
+    
+    newCancelBtn.addEventListener('click', function() {
+        document.getElementById('bulk-restock-modal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.getElementById('select-all-products');
     const productCheckboxes = document.querySelectorAll('.product-checkbox');
@@ -396,6 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
         if (checkedBoxes.length > 0) {
             document.getElementById('bulk-actions-modal').classList.remove('hidden');
+            document.body.classList.add('modal-open');
         }
     });
 
@@ -427,19 +690,22 @@ document.addEventListener('DOMContentLoaded', function() {
 function restockProduct(productId) {
     document.getElementById('restock-form').dataset.productId = productId;
     document.getElementById('restock-modal').classList.remove('hidden');
+    document.body.classList.add('modal-open');
 }
 
 function closeRestockModal() {
     document.getElementById('restock-modal').classList.add('hidden');
     document.getElementById('restock-form').reset();
+    document.body.classList.remove('modal-open');
 }
 
 function closeBulkActionsModal() {
     document.getElementById('bulk-actions-modal').classList.add('hidden');
+    document.body.classList.remove('modal-open');
 }
 
 function restockProductSubmit(productId, quantity, notes) {
-    fetch(`/admin/products/${productId}/restock`, {
+    fetch(`{{ admin_route('products.restock', ':product') }}`.replace(':product', productId), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -456,12 +722,12 @@ function restockProductSubmit(productId, quantity, notes) {
             closeRestockModal();
             location.reload();
         } else {
-            alert('Error: ' + data.message);
+            showAlertModal('Error: ' + data.message);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while processing the request.');
+        showAlertModal('An error occurred while processing the request.');
     });
 }
 
@@ -469,68 +735,103 @@ function bulkUpdateStatus(status) {
     const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
     const productIds = Array.from(checkedBoxes).map(cb => cb.value);
     
-    if (confirm(`Are you sure you want to ${status} ${productIds.length} products?`)) {
-        fetch('/admin/products/bulk-update-status', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                product_ids: productIds,
-                status: status
-            })
+    showConfirmationModal(`Are you sure you want to ${status} ${productIds.length} products?`, function() {
+    console.log('Sending bulk update request:', {
+        product_ids: productIds,
+        status: status,
+        csrf_token: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    });
+    
+    fetch('{{ admin_route("products.bulk-update-status") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            product_ids: productIds,
+            status: status
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                closeBulkActionsModal();
-                location.reload();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while processing the request.');
-        });
-    }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            closeBulkActionsModal();
+            location.reload();
+        } else {
+            showAlertModal('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Detailed error:', error);
+        showAlertModal('An error occurred while processing the request: ' + error.message);
+    });
+    });
 }
 
 function bulkRestock() {
+    // This function is now replaced by showBulkRestockModal
+    const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
+    const productCount = checkedBoxes.length;
+    showBulkRestockModal(productCount);
+}
+
+function bulkRestockWithQuantity(quantity, notes = 'Bulk restock') {
     const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
     const productIds = Array.from(checkedBoxes).map(cb => cb.value);
     
-    const quantity = prompt('Enter quantity to add to all selected products:');
-    if (quantity && quantity > 0) {
-        if (confirm(`Are you sure you want to restock ${quantity} units for ${productIds.length} products?`)) {
-            fetch('/admin/products/bulk-restock', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    product_ids: productIds,
-                    quantity: quantity,
-                    notes: 'Bulk restock'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    closeBulkActionsModal();
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while processing the request.');
-            });
+    console.log('Sending bulk restock request:', {
+        product_ids: productIds,
+        quantity: quantity,
+        notes: notes,
+        csrf_token: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    });
+    
+    fetch('{{ admin_route("products.bulk-restock") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            product_ids: productIds,
+            quantity: quantity,
+            notes: notes
+        })
+    })
+    .then(response => {
+        console.log('Restock response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    }
+        
+        return response.json();
+    })
+    .then(data => {
+        console.log('Restock response data:', data);
+        if (data.success) {
+            location.reload();
+        } else {
+            showAlertModal('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Restock detailed error:', error);
+        showAlertModal('An error occurred while processing the request: ' + error.message);
+    });
 }
 </script>
 @endpush
