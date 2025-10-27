@@ -757,9 +757,10 @@ davids-wood-furniture/
 │   │   │   │   ├── AnalyticsController.php      # Deep BI analytics
 │   │   │   │   ├── DashboardController.php      # Enhanced dashboard
 │   │   │   │   ├── OrderController.php          # Order management
-│   │   │   │   ├── ProductController.php        # Product management
+│   │   │   │   ├── ProductController.php        # Product management with dynamic storage
 │   │   │   │   ├── UserController.php           # Customer management
-│   │   │   │   └── InventoryController.php      # Inventory tracking
+│   │   │   │   ├── InventoryController.php      # Inventory tracking
+│   │   │   │   └── ImageUploadController.php    # Image upload management
 │   │   │   ├── AuthController.php           # User authentication with email verification
 │   │   │   ├── CartController.php
 │   │   │   ├── OrderController.php
@@ -771,6 +772,12 @@ davids-wood-furniture/
 │   │       ├── ForceHttps.php                # HTTPS enforcement
 │   │       ├── RequireEmailVerification.php  # Email verification requirement
 │   │       └── StoreIntendedUrl.php          # Remember intended URL after login
+│   ├── Helpers/
+│   │   ├── RouteHelper.php                   # Dynamic route generation for production
+│   │   └── AdminRouteHelper.php              # Admin route management
+│   ├── Providers/
+│   │   ├── AppServiceProvider.php
+│   │   └── StorageServiceProvider.php        # Dynamic storage switching (local/S3)
 │   ├── Models/
 │   │   ├── Product.php
 │   │   ├── ProductReview.php        # Review model
@@ -868,10 +875,12 @@ davids-wood-furniture/
 ├── Procfile                         # Process configuration
 ├── .env                             # Environment configuration
 ├── env.production.template          # Production environment template
+├── pint.json                        # Laravel Pint code style configuration
 ├── composer.json                    # PHP dependencies
 ├── package.json                     # Node dependencies
 ├── README.md                        # This file
-└── README-CI-CD.md                  # CI/CD specific documentation
+├── README-CI-CD.md                  # CI/CD specific documentation
+└── PRODUCTION_DEPLOYMENT_CHECKLIST.md # Production deployment guide
 ```
 
 ---
@@ -897,19 +906,109 @@ davids-wood-furniture/
 ### Development Tools
 - **Composer** - PHP dependency manager
 - **npm** - Node package manager
-- **Laravel Pint** - Code style fixer
+- **Laravel Pint** - Code style fixer (PSR-12 compliance)
 - **PHPUnit** - Testing framework
 - **Laravel Pail** - Log viewer
+- **Dynamic Storage System** - Automatic local/S3 storage switching
+- **Route Helper System** - Centralized route generation for production
 
 ### Infrastructure
 - **Apache/Nginx** - Web server
 - **OpenSSL** - SSL certificates
 - **Redis** (optional) - Caching and sessions
+- **AWS S3** - Cloud storage for production
+- **Dynamic Storage** - Automatic local/S3 switching
 - **Git** - Version control
 
 ---
 
 ## Recent Updates
+
+### Version 1.4.16 (October 2025)
+
+#### Dynamic Storage System & Production Optimization
+- **Dynamic Storage Configuration**: Intelligent storage switching between local and S3
+  - New `StorageServiceProvider` with automatic disk selection based on environment
+  - Local development uses `public` disk for fast file operations
+  - Production environment automatically switches to S3 for scalable storage
+  - Priority-based disk selection: `FILESYSTEM_DISK` → `production` → `localhost` detection
+  - Seamless file upload, display, and deletion across both storage systems
+
+- **Enhanced Route Management**: Centralized route generation for production deployment
+  - New `RouteHelper` class for consistent admin route generation
+  - Dynamic URL scheme and port handling for different environments
+  - Automatic URL correction for localhost development (8000, 8080, 8443)
+  - Production-ready route generation with proper domain handling
+  - Helper functions `admin_route()`, `storage_disk()`, and `storage_url()`
+
+- **Code Quality & Standards**: Professional code formatting and style consistency
+  - Laravel Pint integration for automatic code formatting
+  - PSR-12 coding standards compliance across 163 files
+  - Consistent code style and formatting throughout the project
+  - Professional code structure and readability improvements
+
+- **Production Deployment Readiness**: Comprehensive production configuration
+  - Dynamic storage switching tested and verified for S3 compatibility
+  - Route generation tested across multiple environments and ports
+  - Storage operations validated for both local and S3 storage
+  - Production deployment checklist updated with storage configuration
+  - Environment-specific configuration templates and documentation
+
+#### Image Management & Product System Enhancements
+- **Advanced Image Upload System**: Comprehensive image management for products
+  - Drag-and-drop image upload with multiple file support
+  - Client-side image preview with instant feedback
+  - Image removal system with visual selection and confirmation
+  - Automatic image optimization and thumbnail generation
+  - Support for multiple image formats (JPEG, PNG, WebP)
+
+- **Enhanced Product Management**: Improved product creation and editing workflow
+  - Auto-generated SKU system with category-based numbering
+  - Dynamic subcategory dropdown with AJAX loading
+  - Real-time form validation and error handling
+  - Bulk operations for product management (activate, deactivate, restock)
+  - CSV export functionality with selected product filtering
+
+- **Currency Standardization**: Philippine Peso (₱) integration throughout the system
+  - All prices displayed in Philippine Peso (₱) format
+  - Currency conversion and formatting utilities
+  - Consistent currency display across admin and customer interfaces
+  - Database migration for currency standardization
+
+#### User Interface & Experience Improvements
+- **Modern Admin Interface**: Redesigned admin panel with enhanced UX
+  - Custom modal system replacing browser alerts and confirms
+  - Improved z-index management for proper modal layering
+  - Enhanced form validation with real-time feedback
+  - Responsive design improvements for mobile and tablet devices
+  - Consistent styling and branding across all admin pages
+
+- **Customer-Facing Improvements**: Enhanced customer experience
+  - Improved product card display with proper image loading
+  - Enhanced product detail pages with image galleries
+  - Better navigation and user flow throughout the site
+  - Mobile-responsive design optimizations
+  - Improved loading states and error handling
+
+#### Technical Infrastructure & Performance
+- **Storage System Optimization**: Efficient file handling and storage
+  - Dynamic storage disk selection based on environment
+  - Optimized file upload and retrieval processes
+  - Proper image URL generation for both local and S3 storage
+  - Efficient file existence checking and validation
+  - Automatic storage link management
+
+- **Database & Migration Improvements**: Enhanced data management
+  - Improved migration handling with proper foreign key constraints
+  - Enhanced data seeding with realistic test data
+  - Better database indexing for improved performance
+  - Optimized queries for product and image management
+
+- **Debug & Development Tools**: Enhanced development experience
+  - Comprehensive debug logging system (now removed for production)
+  - Better error handling and user feedback
+  - Improved development workflow with better tooling
+  - Enhanced testing and validation capabilities
 
 ### Version 1.4.15 (October 2025)
 

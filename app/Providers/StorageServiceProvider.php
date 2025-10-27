@@ -36,22 +36,22 @@ class StorageServiceProvider extends ServiceProvider
         Storage::macro('getDynamicDisk', function () {
             $env = config('app.env');
             $host = request()->getHost();
-            
+
             // Use S3 if explicitly set in environment (highest priority)
             if (env('FILESYSTEM_DISK') === 's3') {
                 return 's3';
             }
-            
+
             // Use S3 for production environment
             if ($env === 'production') {
                 return 's3';
             }
-            
+
             // Use local storage for localhost development
             if (str_contains($host, 'localhost') || str_contains($host, '127.0.0.1') || str_contains($host, '.test')) {
                 return 'public';
             }
-            
+
             // Default to public for other environments
             return 'public';
         });
