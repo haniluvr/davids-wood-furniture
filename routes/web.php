@@ -61,6 +61,8 @@ $adminRoutes = function () {
             Route::post('products/bulk-update-prices', [App\Http\Controllers\Admin\ProductController::class, 'bulkUpdatePrices'])->name('products.bulk-update-prices');
             Route::post('products/bulk-restock', [App\Http\Controllers\Admin\ProductController::class, 'bulkRestock'])->name('products.bulk-restock');
             Route::get('products/export', [App\Http\Controllers\Admin\ProductController::class, 'export'])->name('products.export');
+            Route::post('products/export-download', [App\Http\Controllers\Admin\ProductController::class, 'exportDownload'])->name('products.export-download');
+            Route::get('categories/{category}/subcategories', [App\Http\Controllers\Admin\CategoryController::class, 'getSubcategories'])->name('categories.subcategories');
         });
 
         // Order Management
@@ -379,12 +381,15 @@ Route::get('/api/products', function (Illuminate\Http\Request $request) {
         switch ($request->get('sort')) {
             case 'price-low':
                 $query->orderBy('price', 'asc');
+
                 break;
             case 'price-high':
                 $query->orderBy('price', 'desc');
+
                 break;
             case 'newest':
                 $query->orderBy('created_at', 'desc');
+
                 break;
             case 'popularity':
             default:
@@ -397,6 +402,7 @@ Route::get('/api/products', function (Illuminate\Http\Request $request) {
                     ->orderBy('avg_rating', 'desc')
                     ->orderBy('sort_order', 'asc')
                     ->orderBy('created_at', 'desc');
+
                 break;
         }
 
@@ -414,7 +420,6 @@ Route::get('/api/products', function (Illuminate\Http\Request $request) {
                 'last_page' => $products->lastPage(),
             ],
         ]);
-
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
@@ -541,7 +546,6 @@ Route::get('/health', function () {
             'errors' => $errors,
             'environment' => app()->environment(),
         ], $allHealthy ? 200 : 503);
-
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',

@@ -98,7 +98,7 @@ class Product extends Model
 
     /**
      * Generate a custom product ID based on category and product sequence
-     * Format: A-BB-CC where A=main_category, BB=sub_category, CC=product_number
+     * Format: A-BB-CC where A=main_category, BB=sub_category, CC=product_number.
      */
     public function generateCustomProductId($mainCategoryId, $subCategoryId, $productNumber)
     {
@@ -106,12 +106,12 @@ class Product extends Model
     }
 
     /**
-     * Parse custom product ID to extract components
+     * Parse custom product ID to extract components.
      */
     public function parseCustomProductId($customId)
     {
         if (strlen($customId) != 5) {
-            return null;
+            return;
         }
 
         return [
@@ -122,7 +122,7 @@ class Product extends Model
     }
 
     /**
-     * Get the room category text based on the array values
+     * Get the room category text based on the array values.
      */
     public function getRoomCategoryTextAttribute()
     {
@@ -145,7 +145,7 @@ class Product extends Model
     }
 
     /**
-     * Validate that subcategory_id is valid for the given category_id
+     * Validate that subcategory_id is valid for the given category_id.
      */
     public function validateSubcategory()
     {
@@ -159,7 +159,7 @@ class Product extends Model
     }
 
     /**
-     * Get valid subcategories for the current category
+     * Get valid subcategories for the current category.
      */
     public function getValidSubcategories()
     {

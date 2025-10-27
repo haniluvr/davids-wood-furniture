@@ -23,17 +23,21 @@ Route::get('/products', function (Request $request) {
         switch ($request->get('sort')) {
             case 'price-low':
                 $query->orderBy('price', 'asc');
+
                 break;
             case 'price-high':
                 $query->orderBy('price', 'desc');
+
                 break;
             case 'newest':
                 $query->orderBy('created_at', 'desc');
+
                 break;
             case 'popularity':
             default:
                 // Use sort_order for popularity, fallback to created_at
                 $query->orderBy('sort_order', 'asc')->orderBy('created_at', 'desc');
+
                 break;
         }
 
@@ -51,7 +55,6 @@ Route::get('/products', function (Request $request) {
                 'last_page' => $products->lastPage(),
             ],
         ]);
-
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
@@ -80,7 +83,6 @@ Route::get('/product/{id}', function ($id) {
             'success' => true,
             'data' => $product,
         ]);
-
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
@@ -130,7 +132,6 @@ Route::get('/products/id/{id}', function ($id) {
                 'review_rating' => round($averageRating, 1), // For compatibility
             ],
         ]);
-
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
@@ -159,7 +160,6 @@ Route::get('/products/{slug}', function ($slug) {
             'success' => true,
             'data' => $product,
         ]);
-
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
@@ -181,7 +181,6 @@ Route::get('/categories', function () {
             'success' => true,
             'data' => $categories,
         ]);
-
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
@@ -218,7 +217,6 @@ Route::get('/search', function (Request $request) {
             'data' => $products,
             'total' => $products->count(),
         ]);
-
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,

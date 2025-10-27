@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Session;
 class CheckoutController extends Controller
 {
     /**
-     * Get selected cart items from session storage
+     * Get selected cart items from session storage.
      */
     private function getSelectedCartItems()
     {
@@ -33,7 +33,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Show shipping information step
+     * Show shipping information step.
      */
     public function index()
     {
@@ -67,7 +67,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Validate and save shipping information
+     * Validate and save shipping information.
      */
     public function validateShipping(Request $request)
     {
@@ -122,7 +122,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Show payment method selection step
+     * Show payment method selection step.
      */
     public function showPayment()
     {
@@ -152,7 +152,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Validate payment method selection
+     * Validate payment method selection.
      */
     public function validatePayment(Request $request)
     {
@@ -193,7 +193,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Show order review step
+     * Show order review step.
      */
     public function showReview()
     {
@@ -230,7 +230,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Process the final order
+     * Process the final order.
      */
     public function processOrder(Request $request)
     {
@@ -322,7 +322,6 @@ class CheckoutController extends Controller
 
             return redirect()->route('checkout.confirmation', ['order' => $order->order_number])
                 ->with('success', 'Order placed successfully!');
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -331,7 +330,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Show order confirmation
+     * Show order confirmation.
      */
     public function confirmation($orderNumber)
     {
@@ -344,7 +343,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Calculate shipping cost
+     * Calculate shipping cost.
      */
     private function calculateShipping($region, $subtotal)
     {
@@ -362,7 +361,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Calculate tax (12% VAT)
+     * Calculate tax (12% VAT).
      */
     private function calculateTax($subtotal)
     {
@@ -370,7 +369,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Get payment method display name
+     * Get payment method display name.
      */
     private function getPaymentMethodName($paymentInfo)
     {
@@ -389,7 +388,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Save new payment method
+     * Save new payment method.
      */
     private function saveNewPaymentMethod($user, $paymentInfo)
     {
@@ -419,7 +418,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Detect card type from number
+     * Detect card type from number.
      */
     private function detectCardType($cardNumber)
     {
@@ -439,7 +438,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Check if user's default address is complete
+     * Check if user's default address is complete.
      */
     private function isDefaultAddressComplete($user)
     {
@@ -463,7 +462,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Determine if order requires approval
+     * Determine if order requires approval.
      */
     private function shouldRequireApproval($total, $user)
     {
@@ -490,7 +489,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Get approval reason for order
+     * Get approval reason for order.
      */
     private function getApprovalReason($total, $user)
     {

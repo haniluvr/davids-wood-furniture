@@ -31,7 +31,7 @@ class GuestSession extends Model
     ];
 
     /**
-     * Get cart items for this guest session
+     * Get cart items for this guest session.
      */
     public function cartItems(): HasMany
     {
@@ -39,7 +39,7 @@ class GuestSession extends Model
     }
 
     /**
-     * Get wishlist items for this guest session
+     * Get wishlist items for this guest session.
      */
     public function wishlistItems(): HasMany
     {
@@ -47,7 +47,7 @@ class GuestSession extends Model
     }
 
     /**
-     * Create a new guest session
+     * Create a new guest session.
      */
     public static function createSession(): self
     {
@@ -60,7 +60,7 @@ class GuestSession extends Model
     }
 
     /**
-     * Find or create guest session
+     * Find or create guest session.
      */
     public static function findOrCreateSession(string $sessionId): self
     {
@@ -81,6 +81,7 @@ class GuestSession extends Model
                     'session_id' => $sessionId,
                     'error' => $e->getMessage(),
                 ]);
+
                 throw $e;
             }
         } else {
@@ -94,7 +95,7 @@ class GuestSession extends Model
     }
 
     /**
-     * Check if session is expired
+     * Check if session is expired.
      */
     public function isExpired(): bool
     {
@@ -102,7 +103,7 @@ class GuestSession extends Model
     }
 
     /**
-     * Clean up expired sessions
+     * Clean up expired sessions.
      */
     public static function cleanupExpired(): int
     {

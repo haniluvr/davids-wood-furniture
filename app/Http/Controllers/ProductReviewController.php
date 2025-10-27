@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 class ProductReviewController extends Controller
 {
     /**
-     * Store a new review
+     * Store a new review.
      */
     public function store(Request $request)
     {
@@ -89,7 +89,7 @@ class ProductReviewController extends Controller
     }
 
     /**
-     * Get reviews for a product
+     * Get reviews for a product.
      */
     public function index($productId)
     {

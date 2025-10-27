@@ -196,7 +196,7 @@
                         @if($page->featured_image)
                             <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
                                 <h4 class="text-lg font-semibold text-black dark:text-white mb-4">Featured Image</h4>
-                                <img src="{{ Storage::url($page->featured_image) }}" alt="{{ $page->title }}" class="h-48 w-auto rounded-lg border border-stroke dark:border-strokedark">
+                                <img src="{{ Storage::getDynamicUrl($page->featured_image) }}" alt="{{ $page->title }}" class="h-48 w-auto rounded-lg border border-stroke dark:border-strokedark">
                             </div>
                         @endif
 

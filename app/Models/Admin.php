@@ -203,7 +203,7 @@ class Admin extends Authenticatable
     }
 
     /**
-     * Generate OTP code for admin 2FA
+     * Generate OTP code for admin 2FA.
      */
     public function generateOtpCode()
     {
@@ -218,7 +218,7 @@ class Admin extends Authenticatable
     }
 
     /**
-     * Verify OTP code for admin 2FA
+     * Verify OTP code for admin 2FA.
      */
     public function verifyOtpCode($code)
     {

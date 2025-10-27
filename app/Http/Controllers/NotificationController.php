@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class NotificationController extends Controller
 {
     /**
-     * Get notifications for the authenticated user
+     * Get notifications for the authenticated user.
      */
     public function getUserNotifications(Request $request): JsonResponse
     {
@@ -42,7 +42,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Get unread notification count for the authenticated user
+     * Get unread notification count for the authenticated user.
      */
     public function getUnreadCount(): JsonResponse
     {
@@ -65,7 +65,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Mark a specific notification as read
+     * Mark a specific notification as read.
      */
     public function markAsRead(Request $request, $id): JsonResponse
     {
@@ -92,7 +92,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Mark all notifications as read for the authenticated user
+     * Mark all notifications as read for the authenticated user.
      */
     public function markAllAsRead(): JsonResponse
     {
@@ -120,7 +120,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Delete a specific notification
+     * Delete a specific notification.
      */
     public function deleteNotification(Request $request, $id): JsonResponse
     {
@@ -147,7 +147,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Clear all notifications for the authenticated user
+     * Clear all notifications for the authenticated user.
      */
     public function clearAll(): JsonResponse
     {

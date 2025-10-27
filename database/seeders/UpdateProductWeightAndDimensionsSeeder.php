@@ -48,7 +48,7 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
     }
 
     /**
-     * Create a mapping of IKEA products by name
+     * Create a mapping of IKEA products by name.
      */
     private function createIkeaMapping($ikeaData)
     {
@@ -73,7 +73,7 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
     }
 
     /**
-     * Extract dimensions from IKEA description
+     * Extract dimensions from IKEA description.
      */
     private function extractDimensions($description)
     {
@@ -86,12 +86,10 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
         if (preg_match('/(\d+)\s*cm/', $description, $matches)) {
             return $matches[1].' cm';
         }
-
-        return null;
     }
 
     /**
-     * Get weight and dimensions for a product
+     * Get weight and dimensions for a product.
      */
     private function getWeightAndDimensions($product, $ikeaMapping)
     {
@@ -122,7 +120,7 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
     }
 
     /**
-     * Extract IKEA product name from full product name
+     * Extract IKEA product name from full product name.
      */
     private function extractIkeaName($productName)
     {
@@ -141,12 +139,10 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
                 return $name;
             }
         }
-
-        return null;
     }
 
     /**
-     * Calculate weight based on product type and dimensions
+     * Calculate weight based on product type and dimensions.
      */
     private function calculateWeight($product, $dimensions)
     {
@@ -185,7 +181,7 @@ class UpdateProductWeightAndDimensionsSeeder extends Seeder
     }
 
     /**
-     * Generate fallback dimensions and weight based on product category
+     * Generate fallback dimensions and weight based on product category.
      */
     private function generateFallbackData($product)
     {

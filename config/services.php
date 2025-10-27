@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -44,5 +43,4 @@ return [
     'openweather' => [
         'key' => env('OPENWEATHER_API_KEY'),
     ],
-
 ];

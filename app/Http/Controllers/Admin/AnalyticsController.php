@@ -44,9 +44,19 @@ class AnalyticsController extends Controller
         $profitabilityAnalysis = $this->getProfitabilityAnalysis($startDate, $endDate);
 
         return view('admin.analytics.dashboard', compact(
-            'salesData', 'revenueData', 'orderStats', 'productStats', 'customerStats',
-            'conversionMetrics', 'trafficSources', 'geographicData', 'seasonalTrends',
-            'profitabilityAnalysis', 'dateRange', 'startDate', 'endDate'
+            'salesData',
+            'revenueData',
+            'orderStats',
+            'productStats',
+            'customerStats',
+            'conversionMetrics',
+            'trafficSources',
+            'geographicData',
+            'seasonalTrends',
+            'profitabilityAnalysis',
+            'dateRange',
+            'startDate',
+            'endDate'
         ));
     }
 
@@ -78,9 +88,20 @@ class AnalyticsController extends Controller
         $chartLabels = $this->generateChartLabels($startDate, $endDate);
 
         return view('admin.analytics.sales', compact(
-            'salesData', 'revenueData', 'topProducts', 'salesByCategory', 'dateRange', 'startDate', 'endDate',
-            'totalSales', 'totalRevenue', 'averageOrderValue', 'conversionRate',
-            'dailyRevenue', 'dailyOrders', 'chartLabels'
+            'salesData',
+            'revenueData',
+            'topProducts',
+            'salesByCategory',
+            'dateRange',
+            'startDate',
+            'endDate',
+            'totalSales',
+            'totalRevenue',
+            'averageOrderValue',
+            'conversionRate',
+            'dailyRevenue',
+            'dailyOrders',
+            'chartLabels'
         ));
     }
 
@@ -114,9 +135,22 @@ class AnalyticsController extends Controller
         $lowValueCustomers = 30; // Placeholder
 
         return view('admin.analytics.customers', compact(
-            'customerStats', 'newCustomers', 'topCustomers', 'customerSegments', 'dateRange', 'startDate', 'endDate',
-            'totalCustomers', 'newCustomersCount', 'averageLifetimeValue', 'repeatPurchaseRate',
-            'dailyNewCustomers', 'chartLabels', 'highValueCustomers', 'mediumValueCustomers', 'lowValueCustomers'
+            'customerStats',
+            'newCustomers',
+            'topCustomers',
+            'customerSegments',
+            'dateRange',
+            'startDate',
+            'endDate',
+            'totalCustomers',
+            'newCustomersCount',
+            'averageLifetimeValue',
+            'repeatPurchaseRate',
+            'dailyNewCustomers',
+            'chartLabels',
+            'highValueCustomers',
+            'mediumValueCustomers',
+            'lowValueCustomers'
         ));
     }
 
@@ -152,8 +186,18 @@ class AnalyticsController extends Controller
         $categorySales = $this->getSalesByCategory($startDate, $endDate);
 
         return view('admin.analytics.products', compact(
-            'productStats', 'topProducts', 'lowStockProducts', 'productReviews', 'dateRange', 'startDate', 'endDate',
-            'totalProducts', 'totalUnitsSold', 'totalProductRevenue', 'averageProductPrice', 'categorySales'
+            'productStats',
+            'topProducts',
+            'lowStockProducts',
+            'productReviews',
+            'dateRange',
+            'startDate',
+            'endDate',
+            'totalProducts',
+            'totalUnitsSold',
+            'totalProductRevenue',
+            'averageProductPrice',
+            'categorySales'
         ));
     }
 
@@ -192,9 +236,23 @@ class AnalyticsController extends Controller
         $currentPeriodRevenue = $totalRevenue;
 
         return view('admin.analytics.revenue', compact(
-            'revenueData', 'revenueByMonth', 'revenueByPaymentMethod', 'averageOrderValue', 'dateRange', 'startDate', 'endDate',
-            'totalRevenue', 'revenueGrowth', 'revenuePerCustomer', 'dailyRevenue', 'chartLabels', 'revenueByCategory',
-            'previousStartDate', 'previousEndDate', 'previousPeriodRevenue', 'currentPeriodRevenue'
+            'revenueData',
+            'revenueByMonth',
+            'revenueByPaymentMethod',
+            'averageOrderValue',
+            'dateRange',
+            'startDate',
+            'endDate',
+            'totalRevenue',
+            'revenueGrowth',
+            'revenuePerCustomer',
+            'dailyRevenue',
+            'chartLabels',
+            'revenueByCategory',
+            'previousStartDate',
+            'previousEndDate',
+            'previousPeriodRevenue',
+            'currentPeriodRevenue'
         ));
     }
 
@@ -221,15 +279,19 @@ class AnalyticsController extends Controller
             switch ($type) {
                 case 'sales':
                     $this->exportSalesData($file, $startDate, $endDate);
+
                     break;
                 case 'customers':
                     $this->exportCustomerData($file, $startDate, $endDate);
+
                     break;
                 case 'products':
                     $this->exportProductData($file, $startDate, $endDate);
+
                     break;
                 case 'revenue':
                     $this->exportRevenueData($file, $startDate, $endDate);
+
                     break;
             }
 
@@ -516,7 +578,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Generate daily revenue data for charts
+     * Generate daily revenue data for charts.
      */
     private function generateDailyRevenueData($startDate, $endDate)
     {
@@ -536,7 +598,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Generate daily orders data for charts
+     * Generate daily orders data for charts.
      */
     private function generateDailyOrdersData($startDate, $endDate)
     {
@@ -556,7 +618,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Generate chart labels for date range
+     * Generate chart labels for date range.
      */
     private function generateChartLabels($startDate, $endDate)
     {
@@ -572,7 +634,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Generate daily new customers data for charts
+     * Generate daily new customers data for charts.
      */
     private function generateDailyNewCustomersData($startDate, $endDate)
     {
@@ -589,7 +651,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Calculate average lifetime value
+     * Calculate average lifetime value.
      */
     private function calculateAverageLifetimeValue()
     {
@@ -600,7 +662,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Calculate repeat purchase rate
+     * Calculate repeat purchase rate.
      */
     private function calculateRepeatPurchaseRate($startDate, $endDate)
     {
@@ -611,7 +673,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Calculate revenue growth
+     * Calculate revenue growth.
      */
     private function calculateRevenueGrowth($startDate, $endDate)
     {
@@ -634,7 +696,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Calculate revenue per customer
+     * Calculate revenue per customer.
      */
     private function calculateRevenuePerCustomer($startDate, $endDate)
     {
@@ -651,7 +713,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Get conversion metrics
+     * Get conversion metrics.
      */
     private function getConversionMetrics($startDate, $endDate)
     {
@@ -669,7 +731,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Get traffic sources (simulated - would integrate with analytics service)
+     * Get traffic sources (simulated - would integrate with analytics service).
      */
     private function getTrafficSources($startDate, $endDate)
     {
@@ -684,7 +746,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Get geographic data
+     * Get geographic data.
      */
     private function getGeographicData($startDate, $endDate)
     {
@@ -710,7 +772,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Get seasonal trends
+     * Get seasonal trends.
      */
     private function getSeasonalTrends($startDate, $endDate)
     {
@@ -742,7 +804,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Get profitability analysis
+     * Get profitability analysis.
      */
     private function getProfitabilityAnalysis($startDate, $endDate)
     {
@@ -776,7 +838,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Get average session duration (simulated)
+     * Get average session duration (simulated).
      */
     private function getAverageSessionDuration($startDate, $endDate)
     {
@@ -785,7 +847,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Get customer lifetime value analysis
+     * Get customer lifetime value analysis.
      */
     public function customerLifetimeValue(Request $request)
     {
@@ -837,7 +899,7 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Get product performance metrics
+     * Get product performance metrics.
      */
     public function productPerformance(Request $request)
     {

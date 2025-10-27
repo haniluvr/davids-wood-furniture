@@ -35,7 +35,6 @@
                 reportsOpen: reportsOpen
             };
             sessionStorage.setItem('sidebarAccordionStates', JSON.stringify(states));
-            console.log('Sidebar states saved:', states);
         }
         
         // Function to close all accordions except the one being opened
@@ -53,7 +52,6 @@
         
         // Restore accordion states from session storage
         const savedStates = JSON.parse(sessionStorage.getItem('sidebarAccordionStates') || '{}');
-        console.log('Restoring sidebar states:', savedStates);
         ordersOpen = savedStates.ordersOpen || false;
         productsOpen = savedStates.productsOpen || false;
         inventoryOpen = savedStates.inventoryOpen || false;

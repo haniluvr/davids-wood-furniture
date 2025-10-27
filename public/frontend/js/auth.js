@@ -106,20 +106,17 @@ function showEmailExistsAlert() {
     // Check if login modal is already open - if so, don't show alert
     const loginModal = document.getElementById('modal-login');
     if (loginModal && !loginModal.classList.contains('hidden') && loginModal.style.display !== 'none') {
-        console.log('Login modal is already open, skipping email exists alert');
         return;
     }
     
     // Check if signup modal is currently open - if not, don't show alert
     const signupModal = document.getElementById('modal-signup');
     if (!signupModal || signupModal.classList.contains('hidden') || signupModal.style.display === 'none') {
-        console.log('Signup modal is not open, skipping email exists alert');
         return;
     }
     
     // Prevent duplicate alerts
     if (isAlertShowing || isModalSwitching) {
-        console.log('Alert already showing or modal switching, skipping duplicate');
         return;
     }
     
@@ -154,7 +151,6 @@ function showEmailExistsAlert() {
     
     if (signInBtn) {
         signInBtn.addEventListener('click', function() {
-            console.log('Sign In Instead button clicked');
             redirectToSignIn();
         });
     }
@@ -181,7 +177,7 @@ function showEmailExistsAlert() {
 }
 
 function redirectToSignIn() {
-    console.log('redirectToSignIn called');
+
     
     // Set modal switching flag to prevent duplicate alerts
     isModalSwitching = true;
@@ -190,20 +186,20 @@ function redirectToSignIn() {
     const alerts = document.querySelectorAll('.fixed.top-4.right-4');
     alerts.forEach(alert => alert.remove());
     isAlertShowing = false; // Reset the flag
-    console.log('All alerts removed');
+
     
     // Use the same logic as the existing modal switching
     // Close signup modal using the existing function
     if (typeof window.hidemodalsignup === 'function') {
         window.hidemodalsignup();
-        console.log('Signup modal closed using existing function');
+
     }
     
     // Open login modal using the existing function with delay
     setTimeout(() => {
         if (typeof window.showmodallogin === 'function') {
             window.showmodallogin();
-            console.log('Login modal opened using existing function');
+
             
             // Reset modal switching flag after modal is shown
             isModalSwitching = false;
@@ -222,28 +218,13 @@ function redirectToSignIn() {
 // Make redirectToSignIn globally available
 window.redirectToSignIn = redirectToSignIn;
 
-// Debug function to test modal availability
-window.debugModals = function() {
-    console.log('=== MODAL DEBUG INFO ===');
-    console.log('Signup modal:', document.getElementById('modal-signup'));
-    console.log('Login modal:', document.getElementById('modal-login'));
-    console.log('Signup modal classes:', document.getElementById('modal-signup')?.className);
-    console.log('Login modal classes:', document.getElementById('modal-login')?.className);
-    console.log('========================');
-};
 
 // Make handleForgotPasswordClick globally available
 window.handleForgotPasswordClick = function() {
-    console.log('handleForgotPasswordClick called directly');
-    
     const username = document.getElementById('forgot-username').value;
     const submitBtn = document.getElementById('forgot-password-submit');
     
-    console.log('Username from direct click:', username);
-    console.log('Submit button from direct click:', submitBtn);
-    
     if (!username) {
-        console.log('No username provided in direct click handler');
         alert('Please enter a username');
         return;
     }
@@ -254,10 +235,8 @@ window.handleForgotPasswordClick = function() {
 
 // Handle forgot password submission
 async function handleForgotPasswordSubmission(username) {
-    console.log('handleForgotPasswordSubmission called with username:', username);
     
     try {
-        console.log('Sending forgot password request for username:', username);
         const response = await fetch('/forgot-password', {
             method: 'POST',
             headers: {
@@ -267,18 +246,18 @@ async function handleForgotPasswordSubmission(username) {
             body: JSON.stringify({ username: username })
         });
         
-        console.log('Forgot password response:', response);
+
         const result = await response.json();
-        console.log('Forgot password result:', result);
+
         
         if (result.success) {
-            console.log('Password reset success, showing success message for username:', username);
-            console.log('Debug info:', result.debug_info);
+
+
             
             // Show success message in login modal
             showPasswordResetSuccessInLoginModal(result.user_email || 'your email', result.debug_info);
         } else {
-            console.log('Password reset failed:', result.message);
+
             showMessage('error', result.message || 'Failed to send reset link. Please try again.');
         }
     } catch (error) {
@@ -288,12 +267,12 @@ async function handleForgotPasswordSubmission(username) {
 }
 
 function showForgotPasswordModal() {
-    console.log('showForgotPasswordModal called - sending password reset email automatically');
+
     
     // Get the login modal
     const loginModal = document.getElementById('modal-login');
     if (!loginModal) {
-        console.log('Login modal not found');
+
         return;
     }
     
@@ -301,7 +280,7 @@ function showForgotPasswordModal() {
     const usernameInput = loginModal.querySelector('#login-username');
     const username = usernameInput ? usernameInput.value : '';
     
-    console.log('Username from login form:', username);
+
     
     if (!username) {
         alert('Please enter your username first');
@@ -320,17 +299,17 @@ function showForgotPasswordModal() {
 }
 
 function showPasswordResetSuccessInLoginModal(email, debugInfo = null) {
-    console.log('showPasswordResetSuccessInLoginModal called with email:', email);
-    console.log('Debug info:', debugInfo);
+
+
     
     // Hash the email for display
     const hashedEmail = hashEmail(email);
-    console.log('Hashed email:', hashedEmail);
+
     
     // Get the login modal
     const loginModal = document.getElementById('modal-login');
     if (!loginModal) {
-        console.log('Login modal not found');
+
         return;
     }
     
@@ -380,16 +359,16 @@ function showPasswordResetSuccessInLoginModal(email, debugInfo = null) {
 }
 
 function showPasswordResetSuccess(email, debugInfo = null) {
-    console.log('showPasswordResetSuccess called with email:', email);
-    console.log('Debug info:', debugInfo);
+
+
     
     // Hash the email for display
     const hashedEmail = hashEmail(email);
-    console.log('Hashed email:', hashedEmail);
+
     
     // Show success message in login modal
     const loginModal = document.getElementById('modal-login');
-    console.log('Login modal found:', loginModal);
+
     if (loginModal) {
         // Add success message container
         const successContainer = document.createElement('div');
@@ -457,7 +436,7 @@ function hashEmail(email) {
     const middleStars = '*'.repeat(Math.max(3, localPart.length - 3));
     
     const result = `${firstTwo}${middleStars}${lastChar}@${domain}`;
-    console.log(`Email hashing: ${email} -> ${result}`);
+
     return result;
 }
 
@@ -1026,7 +1005,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         });
                     } catch (migrationError) {
-                        console.log('Wishlist migration failed:', migrationError);
+
                         // Continue with login even if migration fails
                     }
                     
@@ -1156,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle Logout - Simplified
     document.addEventListener('click', async function(e) {
         if (e.target && e.target.id === 'logout-btn') {
-            console.log('🟢 LOGOUT BUTTON: Logout button clicked');
+
             
             e.preventDefault();
             e.stopPropagation();
@@ -1164,21 +1143,21 @@ document.addEventListener('DOMContentLoaded', function() {
             // Disable button to prevent multiple clicks
             const logoutBtn = e.target;
             logoutBtn.disabled = true;
-            console.log('🟢 LOGOUT BUTTON: Button disabled');
+
             
             try {
-                console.log('🟢 LOGOUT BUTTON: Checking if authManager exists', !!window.authManager);
+
                 
                 // Use the centralized logout from AuthManager
                 if (window.authManager) {
-                    console.log('🟢 LOGOUT BUTTON: Calling authManager.logout()');
+
                     await window.authManager.logout();
-                    console.log('🟢 LOGOUT BUTTON: authManager.logout() completed');
+
                 } else {
                     console.error('🟢 LOGOUT BUTTON: authManager not found!');
                 }
                 
-                console.log('🟢 LOGOUT BUTTON: Redirecting to homepage');
+
                 // Redirect to homepage after logout
                 window.location.href = '/';
             } catch (error) {

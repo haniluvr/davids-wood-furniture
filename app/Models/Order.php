@@ -106,7 +106,7 @@ class Order extends Model
     /**
      * Generate a unique order number in format: ORD-YYYY-NNNN
      * YYYY = Year when order was made
-     * NNNN = Unique alphanumeric code (letters + numbers)
+     * NNNN = Unique alphanumeric code (letters + numbers).
      */
     public static function generateOrderNumber(): string
     {
@@ -137,7 +137,7 @@ class Order extends Model
      * P = Province code (1 digit, 0 if not applicable)
      * CC = City/Municipality code (2 digits)
      * ZZZZ = Zip Code (4 digits)
-     * NNNN = 4-character code from order number
+     * NNNN = 4-character code from order number.
      */
     public function generateTrackingNumber(): string
     {
@@ -167,7 +167,7 @@ class Order extends Model
     }
 
     /**
-     * Convert region name to 2-letter code
+     * Convert region name to 2-letter code.
      */
     private function getRegionCode(?string $region): string
     {
@@ -195,7 +195,7 @@ class Order extends Model
     }
 
     /**
-     * Convert province to 1-digit code (0 if NCR or not applicable)
+     * Convert province to 1-digit code (0 if NCR or not applicable).
      */
     private function getProvinceCode(?string $province, ?string $region): string
     {
@@ -211,7 +211,7 @@ class Order extends Model
     }
 
     /**
-     * Convert city name to 2-digit code
+     * Convert city name to 2-digit code.
      */
     private function getCityCode(?string $city): string
     {
@@ -231,7 +231,7 @@ class Order extends Model
     }
 
     /**
-     * Scope for ordering orders by proper status priority and date
+     * Scope for ordering orders by proper status priority and date.
      *
      * Customer view order priority logic:
      * 1. pending (new orders waiting to be processed)
@@ -258,7 +258,7 @@ class Order extends Model
 
     /**
      * Get status priority for sorting
-     * Lower number = higher priority
+     * Lower number = higher priority.
      */
     public function getStatusPriority(): int
     {

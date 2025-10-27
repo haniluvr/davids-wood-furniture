@@ -151,7 +151,6 @@ function bulkAction(action) {
     
     if (confirm(`Are you sure you want to ${action} ${selectedReviews.length} review(s)?`)) {
         // Implement bulk action logic here
-        console.log(`Bulk action: ${action}`, selectedReviews.length);
     }
 }
 </script>

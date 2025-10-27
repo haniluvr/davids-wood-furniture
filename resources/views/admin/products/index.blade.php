@@ -129,7 +129,7 @@
             <p class="text-sm text-stone-600 dark:text-gray-400">Manage your product inventory and settings</p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ admin_route('products.export', request()->query()) }}" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+            <button onclick="exportSelectedProducts()" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Export CSV
             </a>
@@ -223,8 +223,8 @@
         <div class="group relative overflow-hidden rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm shadow-lg shadow-stone-500/5 transition-all duration-300 hover:shadow-xl hover:shadow-stone-500/10 dark:border-strokedark/50 dark:bg-boxdark/80">
                         <!-- Product Image -->
             <div class="relative h-48 overflow-hidden">
-                @if($product->image)
-                    <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105">
+                @if($product->images && count($product->images) > 0 && Storage::dynamic()->exists($product->images[0]))
+                    <img src="{{ Storage::getDynamicUrl($product->images[0]) }}?v={{ time() }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105">
                             @else
                     <div class="flex h-full w-full items-center justify-center bg-stone-100 dark:bg-stone-800">
                         <i data-lucide="image" class="w-12 h-12 text-stone-400"></i>
@@ -704,6 +704,56 @@ function closeBulkActionsModal() {
     document.body.classList.remove('modal-open');
 }
 
+// Export selected products
+function exportSelectedProducts() {
+    const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (selectedIds.length === 0) {
+        showAlertModal('Please select at least one product to export.');
+        return;
+    }
+    
+    
+    // Create a form for POST request
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ admin_route("products.export-download") }}';
+    form.target = '_blank';
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_token';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // Add selected products
+    const selectedInput = document.createElement('input');
+    selectedInput.type = 'hidden';
+    selectedInput.name = 'selected_products';
+    selectedInput.value = selectedIds.join(',');
+    form.appendChild(selectedInput);
+    
+    // Add current filter parameters
+    const currentParams = new URLSearchParams(window.location.search);
+    for (const [key, value] of currentParams.entries()) {
+        if (key !== 'selected_products') { // Don't duplicate selected_products
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            form.appendChild(input);
+        }
+    }
+    
+    // Submit form to trigger download
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
 function restockProductSubmit(productId, quantity, notes) {
     fetch(`{{ admin_route('products.restock', ':product') }}`.replace(':product', productId), {
         method: 'POST',
@@ -726,7 +776,6 @@ function restockProductSubmit(productId, quantity, notes) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         showAlertModal('An error occurred while processing the request.');
     });
 }
@@ -736,11 +785,6 @@ function bulkUpdateStatus(status) {
     const productIds = Array.from(checkedBoxes).map(cb => cb.value);
     
     showConfirmationModal(`Are you sure you want to ${status} ${productIds.length} products?`, function() {
-    console.log('Sending bulk update request:', {
-        product_ids: productIds,
-        status: status,
-        csrf_token: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-    });
     
     fetch('{{ admin_route("products.bulk-update-status") }}', {
         method: 'POST',
@@ -755,9 +799,6 @@ function bulkUpdateStatus(status) {
         })
     })
     .then(response => {
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -765,7 +806,6 @@ function bulkUpdateStatus(status) {
         return response.json();
     })
     .then(data => {
-        console.log('Response data:', data);
         if (data.success) {
             closeBulkActionsModal();
             location.reload();
@@ -774,7 +814,6 @@ function bulkUpdateStatus(status) {
         }
     })
     .catch(error => {
-        console.error('Detailed error:', error);
         showAlertModal('An error occurred while processing the request: ' + error.message);
     });
     });
@@ -791,12 +830,6 @@ function bulkRestockWithQuantity(quantity, notes = 'Bulk restock') {
     const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
     const productIds = Array.from(checkedBoxes).map(cb => cb.value);
     
-    console.log('Sending bulk restock request:', {
-        product_ids: productIds,
-        quantity: quantity,
-        notes: notes,
-        csrf_token: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-    });
     
     fetch('{{ admin_route("products.bulk-restock") }}', {
         method: 'POST',
@@ -812,8 +845,6 @@ function bulkRestockWithQuantity(quantity, notes = 'Bulk restock') {
         })
     })
     .then(response => {
-        console.log('Restock response status:', response.status);
-        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -821,7 +852,6 @@ function bulkRestockWithQuantity(quantity, notes = 'Bulk restock') {
         return response.json();
     })
     .then(data => {
-        console.log('Restock response data:', data);
         if (data.success) {
             location.reload();
         } else {
@@ -829,7 +859,6 @@ function bulkRestockWithQuantity(quantity, notes = 'Bulk restock') {
         }
     })
     .catch(error => {
-        console.error('Restock detailed error:', error);
         showAlertModal('An error occurred while processing the request: ' + error.message);
     });
 }

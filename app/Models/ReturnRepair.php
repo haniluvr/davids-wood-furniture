@@ -54,7 +54,7 @@ class ReturnRepair extends Model
     }
 
     /**
-     * Generate a unique RMA number in format: RMA-YYYY-NNNN
+     * Generate a unique RMA number in format: RMA-YYYY-NNNN.
      */
     public static function generateRmaNumber(): string
     {
@@ -78,7 +78,7 @@ class ReturnRepair extends Model
     }
 
     /**
-     * Get status badge color
+     * Get status badge color.
      */
     public function getStatusColorAttribute(): string
     {

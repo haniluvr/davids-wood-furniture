@@ -34,7 +34,7 @@ class PaymentMethod extends Model
     }
 
     /**
-     * Get display name for the payment method
+     * Get display name for the payment method.
      */
     public function getDisplayName(): string
     {
@@ -48,7 +48,7 @@ class PaymentMethod extends Model
     }
 
     /**
-     * Get masked number for display
+     * Get masked number for display.
      */
     public function getMaskedNumber(): string
     {
@@ -62,7 +62,7 @@ class PaymentMethod extends Model
     }
 
     /**
-     * Check if this is a card payment method
+     * Check if this is a card payment method.
      */
     public function isCard(): bool
     {
@@ -70,7 +70,7 @@ class PaymentMethod extends Model
     }
 
     /**
-     * Check if this is a GCash payment method
+     * Check if this is a GCash payment method.
      */
     public function isGcash(): bool
     {
@@ -78,7 +78,7 @@ class PaymentMethod extends Model
     }
 
     /**
-     * Get formatted expiry date for cards
+     * Get formatted expiry date for cards.
      */
     public function getFormattedExpiry(): string
     {
@@ -90,7 +90,7 @@ class PaymentMethod extends Model
     }
 
     /**
-     * Check if card is expired
+     * Check if card is expired.
      */
     public function isExpired(): bool
     {

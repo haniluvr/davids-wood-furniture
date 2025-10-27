@@ -43,12 +43,15 @@ class InventoryController extends Controller
             switch ($request->stock_status) {
                 case 'low_stock':
                     $query->lowStock();
+
                     break;
                 case 'out_of_stock':
                     $query->outOfStock();
+
                     break;
                 case 'in_stock':
                     $query->inStock()->where('stock_quantity', '>', 10);
+
                     break;
             }
         }
@@ -111,12 +114,15 @@ class InventoryController extends Controller
         switch ($validated['adjustment_type']) {
             case 'set':
                 $newStock = $validated['quantity'];
+
                 break;
             case 'add':
                 $newStock = $currentStock + $validated['quantity'];
+
                 break;
             case 'subtract':
                 $newStock = max(0, $currentStock - $validated['quantity']);
+
                 break;
         }
 
@@ -322,6 +328,7 @@ class InventoryController extends Controller
         ]);
 
         DB::beginTransaction();
+
         try {
             foreach ($validated['products'] as $productData) {
                 $product = Product::findOrFail($productData['id']);
@@ -341,7 +348,6 @@ class InventoryController extends Controller
             DB::commit();
 
             return back()->with('success', 'Bulk stock update completed successfully.');
-
         } catch (\Exception $e) {
             DB::rollback();
 
@@ -403,6 +409,7 @@ class InventoryController extends Controller
         $notes = $request->notes;
 
         DB::beginTransaction();
+
         try {
             $products = Product::whereIn('id', $productIds)->get();
 
@@ -430,7 +437,6 @@ class InventoryController extends Controller
                 'success' => true,
                 'message' => "Restocked {$quantity} units for ".count($productIds).' products',
             ]);
-
         } catch (\Exception $e) {
             DB::rollback();
 

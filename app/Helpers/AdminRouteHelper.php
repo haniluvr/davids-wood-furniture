@@ -5,14 +5,14 @@ namespace App\Helpers;
 use Illuminate\Support\Facades\Route;
 
 /**
- * Helper class for environment-aware admin routing
+ * Helper class for environment-aware admin routing.
  */
 class AdminRouteHelper
 {
     /**
-     * Get the environment-aware route name for admin routes
+     * Get the environment-aware route name for admin routes.
      *
-     * @param  string  $routeName  The route name without the admin prefix
+     * @param string $routeName The route name without the admin prefix
      * @return string The full route name with appropriate prefix
      */
     public static function route(string $routeName): string
@@ -27,10 +27,10 @@ class AdminRouteHelper
     }
 
     /**
-     * Generate a URL for an admin route
+     * Generate a URL for an admin route.
      *
-     * @param  string  $routeName  The route name without the admin prefix
-     * @param  array|object  $parameters  Route parameters (array or model objects)
+     * @param string $routeName The route name without the admin prefix
+     * @param array|object $parameters Route parameters (array or model objects)
      * @return string The generated URL
      */
     public static function url(string $routeName, $parameters = []): string
@@ -39,7 +39,7 @@ class AdminRouteHelper
     }
 }
 
-/**
+/*
  * Global helper function for admin routes
  *
  * @param  string  $routeName  The route name without the admin prefix

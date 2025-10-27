@@ -25,7 +25,7 @@
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex items-center gap-4">
                 @if($product->images && count($product->images) > 0)
-                    <img src="{{ Storage::url($product->images[0]) }}" alt="{{ $product->name }}" class="h-16 w-16 rounded-lg object-cover">
+                    <img src="{{ Storage::getDynamicUrl($product->images[0]) }}" alt="{{ $product->name }}" class="h-16 w-16 rounded-lg object-cover">
                 @else
                     <div class="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
                         <i data-lucide="image" class="h-8 w-8 text-gray-400"></i>
@@ -217,9 +217,9 @@
                             <div class="grid grid-cols-2 gap-4">
                                 @foreach($product->images as $image)
                                     <div class="group relative">
-                                        <img src="{{ Storage::url($image) }}" alt="{{ $product->name }}" class="h-32 w-full rounded-lg object-cover">
+                                        <img src="{{ Storage::getDynamicUrl($image) }}" alt="{{ $product->name }}" class="h-32 w-full rounded-lg object-cover">
                                         <div class="absolute inset-0 flex items-center justify-center rounded-lg bg-black bg-opacity-0 transition-all group-hover:bg-opacity-50">
-                                            <button class="hidden text-white group-hover:block" onclick="openImageModal('{{ Storage::url($image) }}')">
+                                            <button class="hidden text-white group-hover:block" onclick="openImageModal('{{ Storage::getDynamicUrl($image) }}')">
                                                 <i data-lucide="zoom-in" class="h-6 w-6"></i>
                                             </button>
                                         </div>
@@ -385,7 +385,7 @@
 </div>
 
 <!-- Image Modal -->
-<div id="image-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+<div id="image-modal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50" style="z-index: 2147483647 !important; position: fixed !important;">
     <div class="relative max-w-4xl max-h-full p-4">
         <button onclick="closeImageModal()" class="absolute -right-4 -top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-100">
             <i data-lucide="x" class="h-5 w-5"></i>

@@ -552,14 +552,17 @@ class UserController extends Controller
             switch ($action) {
                 case 'add':
                     $updatedTags = array_unique(array_merge($currentTags, $newTags));
+
                     break;
                 case 'remove':
                     $updatedTags = array_values(array_filter($currentTags, function ($tag) use ($newTags) {
                         return ! in_array($tag, $newTags);
                     }));
+
                     break;
                 case 'replace':
                     $updatedTags = $newTags;
+
                     break;
             }
 
@@ -584,15 +587,19 @@ class UserController extends Controller
         switch ($group) {
             case 'new_customers':
                 $query->having('orders_count', '<=', 1);
+
                 break;
             case 'regular_customers':
                 $query->having('orders_count', '>=', 2)->having('orders_count', '<=', 5);
+
                 break;
             case 'loyal_customers':
                 $query->having('orders_count', '>=', 6)->having('orders_count', '<=', 15);
+
                 break;
             case 'vip_customers':
                 $query->having('orders_count', '>=', 16);
+
                 break;
         }
 

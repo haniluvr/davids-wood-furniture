@@ -60,7 +60,7 @@ class NewsletterMail extends Mailable
     }
 
     /**
-     * Get featured products for the newsletter
+     * Get featured products for the newsletter.
      */
     private function getFeaturedProducts()
     {
@@ -73,7 +73,7 @@ class NewsletterMail extends Mailable
     }
 
     /**
-     * Get active promotions
+     * Get active promotions.
      */
     private function getActivePromotions()
     {

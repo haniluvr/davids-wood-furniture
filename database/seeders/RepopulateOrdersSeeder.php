@@ -102,6 +102,7 @@ class RepopulateOrdersSeeder extends Seeder
         ];
 
         DB::beginTransaction();
+
         try {
             foreach ($orders as $orderData) {
                 // Calculate totals
@@ -185,7 +186,6 @@ class RepopulateOrdersSeeder extends Seeder
 
             DB::commit();
             $this->command->info('Successfully created 9 orders for user_id 1!');
-
         } catch (\Exception $e) {
             DB::rollback();
             $this->command->error('Failed to create orders: '.$e->getMessage());

@@ -1290,33 +1290,18 @@
                 
                 // Validate username only if it has changed
                 const usernameInputs = document.querySelectorAll('input[name="username"]');
-                console.log('Found username inputs:', usernameInputs.length);
                 
                 // Find the username input within the personal info form, not the login modal
                 const personalInfoForm = document.getElementById('personal-info-form');
-                console.log('Personal info form found:', personalInfoForm);
                 const usernameInput = personalInfoForm ? personalInfoForm.querySelector('input[name="username"]') : null;
                 const usernameError = document.getElementById('username-error');
                 
-                console.log('Correct username input found:', usernameInput);
                 
                 if (usernameInput && usernameError) {
-                    console.log('Username input element found:', usernameInput);
-                    console.log('Username input value:', usernameInput.value);
-                    console.log('Username input type:', usernameInput.type);
-                    console.log('Username input name:', usernameInput.name);
                     
                     const username = usernameInput.value.trim();
                     const hasChanged = username !== currentUser.username;
                     
-                    console.log('Username validation check:', {
-                        current: currentUser.username,
-                        new: username,
-                        hasChanged: hasChanged,
-                        allDataUsername: allData.username,
-                        inputValue: usernameInput.value,
-                        trimmedValue: usernameInput.value.trim()
-                    });
                     
                     if (hasChanged) {
                         // Clear any existing errors
@@ -1390,9 +1375,6 @@
                     data.phone = allData.phone;
                 }
                 
-                console.log('Data being sent:', data);
-                console.log('All form data:', allData);
-                console.log('Current user data:', currentUser);
                 
                 // If no fields have changed, show message and return
                 if (Object.keys(data).length === 0) {
@@ -1764,7 +1746,6 @@
                     zip_code: this.querySelector('input[name="zip_code"]').value
                 };
                 
-                console.log('Submitting address data:', data);
                 
                 try {
                     const response = await fetch('/api/account/address/update', {
@@ -1808,9 +1789,7 @@
     // Load all regions
     async function loadRegions() {
         try {
-            console.log('🔄 Loading regions from PSGC API...');
             const response = await fetch(`${PSGC_API}/regions`);
-            console.log('📡 Response status:', response.status);
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -1819,12 +1798,6 @@
             }
             
             const data = await response.json();
-            console.log('📦 API Response:', data);
-            console.log('📦 API Response Type:', typeof data);
-            console.log('📦 Is Array?', Array.isArray(data));
-            if (typeof data === 'object') {
-                console.log('📦 Object keys:', Object.keys(data));
-            }
             
             // Extract array from response
             if (Array.isArray(data)) {
@@ -1859,10 +1832,8 @@
                 });
             }
             
-            console.log('✅ Regions loaded:', regionsData.length);
         } catch (error) {
             console.error('❌ Error loading regions:', error);
-            console.log('🔄 Falling back to static regions data...');
             
             // Fallback to static regions data
             regionsData = [
@@ -1906,10 +1877,8 @@
         try {
             currentRegionCode = regionCodeOrName;
             const url = `${PSGC_API}/regions/${encodeURIComponent(regionCodeOrName)}/provinces`;
-            console.log('🔍 Loading provinces from:', url);
             
             const response = await fetch(url);
-            console.log('📡 Response status:', response.status);
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -1918,16 +1887,13 @@
             }
             
             const data = await response.json();
-            console.log('📦 Province data received:', data);
             
             // Extract provinces array from response (v2 API wraps in {data: [...]})
             const provinces = data.data || data;
             
-            console.log('📦 Province count:', provinces.length);
             
             // Special case: Some regions (like NCR) have no provinces, go directly to cities
             if (!Array.isArray(provinces) || provinces.length === 0) {
-                console.log('⚠️ No provinces in this region, loading cities directly...');
                 
                 // Skip province selection and load cities directly
                 const provinceSelect = document.getElementById('province-select');
@@ -1955,13 +1921,11 @@
                 });
             }
             
-            console.log('✅ Provinces loaded:', provinces.length);
         } catch (error) {
             console.error('❌ Error loading provinces:', error);
             
             // Fallback for NCR (no provinces, load cities directly)
             if (regionCodeOrName === 'National Capital Region (NCR)' || regionCodeOrName === 'NCR') {
-                console.log('🔄 NCR detected, loading cities directly...');
                 await loadCitiesDirectly(regionCodeOrName);
                 return;
             }
@@ -1974,10 +1938,8 @@
     async function loadCitiesDirectly(regionCodeOrName) {
         try {
             const url = `${PSGC_API}/regions/${encodeURIComponent(regionCodeOrName)}/cities-municipalities`;
-            console.log('🔍 Loading cities directly from:', url);
             
             const response = await fetch(url);
-            console.log('📡 Response status:', response.status);
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -1986,7 +1948,6 @@
             }
             
             const data = await response.json();
-            console.log('📦 City data received:', data);
             
             // Extract cities array from response (v2 API wraps in {data: [...]})
             const cities = data.data || data;
@@ -2007,13 +1968,11 @@
                 }
             }
             
-            console.log('✅ Cities/Municipalities loaded:', cities.length);
         } catch (error) {
             console.error('❌ Error loading cities:', error);
             
             // Fallback for NCR cities
             if (regionCodeOrName === 'National Capital Region (NCR)' || regionCodeOrName === 'NCR') {
-                console.log('🔄 Loading NCR cities fallback...');
                 const ncrCities = [
                     { name: 'Caloocan', type: 'City' },
                     { name: 'Las Piñas', type: 'City' },
@@ -2060,10 +2019,8 @@
         try {
             currentProvinceCode = provinceCodeOrName;
             const url = `${PSGC_API}/regions/${encodeURIComponent(currentRegionCode)}/provinces/${encodeURIComponent(provinceCodeOrName)}/cities-municipalities`;
-            console.log('🔍 Loading cities from:', url);
             
             const response = await fetch(url);
-            console.log('📡 Response status:', response.status);
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -2072,7 +2029,6 @@
             }
             
             const data = await response.json();
-            console.log('📦 City data received:', data);
             
             // Extract cities array from response (v2 API wraps in {data: [...]})
             const cities = data.data || data;
@@ -2093,7 +2049,6 @@
                 }
             }
             
-            console.log('✅ Cities/Municipalities loaded:', cities.length);
         } catch (error) {
             console.error('❌ Error loading cities:', error);
             showNotification('Failed to load cities. Please try again.', 'error');
@@ -2105,10 +2060,8 @@
         try {
             // Use the direct cities-municipalities endpoint to get barangays
             const url = `${PSGC_API}/cities-municipalities/${encodeURIComponent(cityCodeOrName)}/barangays`;
-            console.log('🔍 Loading barangays from:', url);
             
             const response = await fetch(url);
-            console.log('📡 Response status:', response.status);
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -2117,7 +2070,6 @@
             }
             
             const data = await response.json();
-            console.log('📦 Barangay data received:', data);
             
             // Extract barangays array from response (v2 API wraps in {data: [...]})
             const barangays = data.data || data;
@@ -2137,7 +2089,6 @@
                 }
             }
             
-            console.log('✅ Barangays loaded:', barangays.length);
         } catch (error) {
             console.error('❌ Error loading barangays:', error);
             showNotification('Failed to load barangays. Please try again.', 'error');
@@ -2166,7 +2117,6 @@
                 }
             }
             
-            console.log('✅ Billing Regions loaded:', billingRegionsData.length);
         } catch (error) {
             console.error('❌ Error loading billing regions:', error);
         }
@@ -2214,7 +2164,6 @@
                 }
             }
             
-            console.log('✅ Billing Provinces loaded:', provinces.length);
         } catch (error) {
             console.error('❌ Error loading billing provinces:', error);
         }
@@ -2248,7 +2197,6 @@
                 }
             }
             
-            console.log('✅ Billing Cities/Municipalities loaded:', cities.length);
         } catch (error) {
             console.error('❌ Error loading billing cities:', error);
         }
@@ -2283,7 +2231,6 @@
                 }
             }
             
-            console.log('✅ Billing Cities/Municipalities loaded:', cities.length);
         } catch (error) {
             console.error('❌ Error loading billing cities:', error);
         }
@@ -2316,7 +2263,6 @@
                 }
             }
             
-            console.log('✅ Billing Barangays loaded:', barangays.length);
         } catch (error) {
             console.error('❌ Error loading billing barangays:', error);
         }
@@ -2334,7 +2280,6 @@
             const regionName = selectedOption.value;
             const regionCode = selectedOption.getAttribute('data-code');
             
-            console.log('🌏 Region selected:', { name: regionName, code: regionCode });
             
             // Reset province code (important for regions without provinces)
             currentProvinceCode = '';
@@ -2371,7 +2316,6 @@
             const provinceName = selectedOption.value;
             const provinceCode = selectedOption.getAttribute('data-code');
             
-            console.log('🏛️ Province selected:', { name: provinceName, code: provinceCode });
             
             // Reset city and barangay
             if (citySelect) {
@@ -2401,7 +2345,6 @@
             const cityName = selectedOption.value;
             const cityCode = selectedOption.getAttribute('data-code');
             
-            console.log('🏙️ City selected:', { name: cityName, code: cityCode });
             
             // Reset barangay
             if (barangaySelect) {
@@ -2427,7 +2370,6 @@
             const regionName = selectedOption.value;
             const regionCode = selectedOption.getAttribute('data-code');
             
-            console.log('🌏 Billing Region selected:', { name: regionName, code: regionCode });
             
             // Reset province code (important for regions without provinces)
             billingCurrentProvinceCode = '';
@@ -2458,7 +2400,6 @@
             const provinceName = selectedOption.value;
             const provinceCode = selectedOption.getAttribute('data-code');
             
-            console.log('🏛️ Billing Province selected:', { name: provinceName, code: provinceCode });
             
             // Reset city and barangay
             if (billingCitySelect) {
@@ -2482,7 +2423,6 @@
             const cityName = selectedOption.value;
             const cityCode = selectedOption.getAttribute('data-code');
             
-            console.log('🏙️ Billing City selected:', { name: cityName, code: cityCode });
             
             // Reset barangay
             if (billingBarangaySelect) {
@@ -3207,11 +3147,9 @@
     
     // Initialize account cart selection functionality
     function initializeAccountCartSelection() {
-        console.log('Initializing account cart selection functionality...');
         
         // Remove existing event listeners to prevent duplicates
         const itemCheckboxes = document.querySelectorAll('.account-item-checkbox');
-        console.log('Found account checkboxes:', itemCheckboxes.length);
         
         itemCheckboxes.forEach((checkbox, index) => {
             // Remove existing event listeners by cloning the element
@@ -3220,7 +3158,6 @@
             
             // Add fresh event listener
             newCheckbox.addEventListener('change', function() {
-                console.log('Account checkbox changed:', index, this.checked);
                 updateAccountCartSubtotal();
                 updateAccountSelectAllButton();
             });
@@ -3229,7 +3166,6 @@
         // Add event listener to select all button
         const selectAllBtn = document.getElementById('account-select-all-cart-items');
         if (selectAllBtn) {
-            console.log('Account select all button found');
             
             // Remove existing event listeners
             const newSelectAllBtn = selectAllBtn.cloneNode(true);
@@ -3238,7 +3174,6 @@
             newSelectAllBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Account select all button clicked');
                 toggleAccountSelectAll();
             });
         } else {
@@ -3248,17 +3183,13 @@
         // Initialize the select all button text based on current state
         updateAccountSelectAllButton();
         updateAccountCartSubtotal();
-        console.log('Account cart selection initialization complete');
     }
     
     // Toggle account select all functionality
     function toggleAccountSelectAll() {
-        console.log('toggleAccountSelectAll called');
         const itemCheckboxes = document.querySelectorAll('.account-item-checkbox');
         const selectAllBtn = document.getElementById('account-select-all-cart-items');
         
-        console.log('Found account checkboxes:', itemCheckboxes.length);
-        console.log('Account select all button:', !!selectAllBtn);
         
         if (!itemCheckboxes.length || !selectAllBtn) {
             console.warn('Missing elements for toggleAccountSelectAll');
@@ -3267,17 +3198,14 @@
         
         // Check if all items are selected
         const allSelected = Array.from(itemCheckboxes).every(checkbox => checkbox.checked);
-        console.log('All account items selected:', allSelected);
         
         if (allSelected) {
             // Deselect all
-            console.log('Deselecting all account items');
             itemCheckboxes.forEach(checkbox => {
                 checkbox.checked = false;
             });
         } else {
             // Select all
-            console.log('Selecting all account items');
             itemCheckboxes.forEach(checkbox => {
                 checkbox.checked = true;
             });
@@ -3286,7 +3214,6 @@
         // Update UI after toggling
         updateAccountCartSubtotal();
         updateAccountSelectAllButton();
-        console.log('Account toggle complete');
     }
     
     // Update account select all button text based on current selection
@@ -3294,9 +3221,6 @@
         const itemCheckboxes = document.querySelectorAll('.account-item-checkbox');
         const selectAllBtn = document.getElementById('account-select-all-cart-items');
         
-        console.log('updateAccountSelectAllButton called');
-        console.log('Account checkboxes found:', itemCheckboxes.length);
-        console.log('Account select all button found:', !!selectAllBtn);
         
         if (!selectAllBtn || itemCheckboxes.length === 0) {
             console.warn('Missing elements for updateAccountSelectAllButton');
@@ -3306,18 +3230,14 @@
         const selectedCount = Array.from(itemCheckboxes).filter(checkbox => checkbox.checked).length;
         const totalCount = itemCheckboxes.length;
         
-        console.log('Account selected count:', selectedCount, 'Total count:', totalCount);
         
         if (selectedCount === 0) {
             selectAllBtn.textContent = 'Select All';
-            console.log('Account button text set to: Select All');
         } else if (selectedCount === totalCount) {
             selectAllBtn.textContent = 'Deselect All';
-            console.log('Account button text set to: Deselect All');
         } else {
             // When some items are selected but not all, show "Select All" to select remaining items
             selectAllBtn.textContent = 'Select All';
-            console.log('Account button text set to: Select All (partial selection)');
         }
     }
     

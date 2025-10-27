@@ -9,6 +9,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -66,12 +67,15 @@ class ProductController extends Controller
             switch ($request->stock_level) {
                 case 'in_stock':
                     $query->where('stock_quantity', '>', 0);
+
                     break;
                 case 'low_stock':
                     $query->whereRaw('stock_quantity <= low_stock_threshold AND stock_quantity > 0');
+
                     break;
                 case 'out_of_stock':
                     $query->where('stock_quantity', 0);
+
                     break;
             }
         }
@@ -82,7 +86,7 @@ class ProductController extends Controller
         $query->orderBy($sortBy, $sortOrder);
 
         $products = $query->paginate(12)->withQueryString();
-        $categories = Category::all();
+        $categories = Category::whereNull('parent_id')->where('is_active', true)->orderBy('sort_order')->get();
 
         // Get statistics
         $stats = [
@@ -109,7 +113,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $categories = Category::all();
+        $categories = Category::whereNull('parent_id')->where('is_active', true)->orderBy('sort_order')->get();
 
         return view('admin.products.create', compact('categories'));
     }
@@ -129,6 +133,7 @@ class ProductController extends Controller
             'sku' => 'required|string|unique:products,sku',
             'barcode' => 'nullable|string|unique:products,barcode',
             'category_id' => 'required|exists:categories,id',
+            'subcategory_id' => 'required|exists:categories,id',
             'stock_quantity' => 'required|integer|min:0',
             'low_stock_threshold' => 'required|integer|min:0',
             'weight' => 'nullable|numeric|min:0',
@@ -181,9 +186,18 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $categories = Category::all();
+        $categories = Category::whereNull('parent_id')->where('is_active', true)->orderBy('sort_order')->get();
 
-        return view('admin.products.edit', compact('product', 'categories'));
+        // Load subcategories for the product's current category
+        $subcategories = collect();
+        if ($product->category_id) {
+            $subcategories = Category::where('parent_id', $product->category_id)
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->get();
+        }
+
+        return view('admin.products.edit', compact('product', 'categories', 'subcategories'));
     }
 
     /**
@@ -203,6 +217,7 @@ class ProductController extends Controller
             'sku' => 'required|string|unique:products,sku,'.$product->id,
             'barcode' => 'nullable|string|unique:products,barcode,'.$product->id,
             'category_id' => 'required|exists:categories,id',
+            'subcategory_id' => 'required|exists:categories,id',
             'stock_quantity' => 'required|integer|min:0',
             'low_stock_threshold' => 'required|integer|min:0',
             'weight' => 'nullable|numeric|min:0',
@@ -223,21 +238,46 @@ class ProductController extends Controller
         $validated['updated_by'] = Auth::guard('admin')->id();
 
         // Handle images
-        if ($request->hasFile('images')) {
-            // Delete old images
-            if ($product->images) {
-                foreach ($product->images as $image) {
-                    Storage::disk('public')->delete($image);
+        if ($request->hasFile('images') || $request->has('remove_images')) {
+            // Get existing images
+            $existingImages = $product->images ?: [];
+
+            // Handle images to remove
+            if ($request->has('remove_images')) {
+                $imagesToRemove = $request->input('remove_images', []);
+                $removedCount = 0;
+                $failedToRemove = [];
+                $imagesAfterRemoval = [];
+
+                foreach ($existingImages as $index => $imagePath) {
+                    if (in_array($index, $imagesToRemove)) {
+                        if (Storage::dynamic()->exists($imagePath)) {
+                            Storage::dynamic()->delete($imagePath);
+                            $removedCount++;
+                        } else {
+                            $removedCount++; // Consider it removed
+                        }
+                    } else {
+                        $imagesAfterRemoval[] = $imagePath; // Keep images not marked for removal
+                    }
+                }
+
+                $existingImages = $imagesAfterRemoval;
+            }
+
+            // Add new images
+            $newImages = [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('products', 'public');
+                    $newImages[] = $path;
                 }
             }
 
-            $images = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('products', 'public');
-                $images[] = $path;
-            }
-            $validated['images'] = $images;
-            $validated['gallery'] = $images;
+            // Merge existing and new images
+            $allImages = array_merge($existingImages, $newImages);
+            $validated['images'] = $allImages;
+            $validated['gallery'] = $allImages;
         }
 
         $product->update($validated);
@@ -245,7 +285,7 @@ class ProductController extends Controller
         // Log the action
         AuditLog::logUpdate(Auth::guard('admin')->user(), $product, $oldValues);
 
-        return redirect()->to(admin_route('products.index'))
+        return redirect()->to(admin_route('products.show', $product))
             ->with('success', 'Product updated successfully.');
     }
 
@@ -257,7 +297,7 @@ class ProductController extends Controller
         // Delete images
         if ($product->images) {
             foreach ($product->images as $image) {
-                Storage::disk('public')->delete($image);
+                Storage::dynamic()->delete($image);
             }
         }
 
@@ -271,7 +311,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Toggle product status
+     * Toggle product status.
      */
     public function toggleStatus(Product $product)
     {
@@ -292,7 +332,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Bulk update product status
+     * Bulk update product status.
      */
     public function bulkUpdateStatus(Request $request)
     {
@@ -319,7 +359,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Bulk update product prices
+     * Bulk update product prices.
      */
     public function bulkUpdatePrices(Request $request)
     {
@@ -355,7 +395,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Restock product
+     * Restock product.
      */
     public function restock(Request $request, Product $product)
     {
@@ -391,7 +431,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Bulk restock products
+     * Bulk restock products.
      */
     public function bulkRestock(Request $request)
     {
@@ -434,38 +474,142 @@ class ProductController extends Controller
     }
 
     /**
-     * Export products to CSV
+     * Export products to CSV.
      */
     public function export(Request $request)
     {
         $query = Product::with(['category']);
 
-        // Apply same filters as index
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%'.$request->search.'%')
-                    ->orWhere('sku', 'like', '%'.$request->search.'%')
-                    ->orWhere('description', 'like', '%'.$request->search.'%');
-            });
-        }
+        // Check if specific products are selected
+        if ($request->filled('selected_products')) {
+            $selectedIds = is_array($request->selected_products)
+                ? $request->selected_products
+                : explode(',', $request->selected_products);
 
-        if ($request->filled('category') && $request->category !== 'all') {
-            $query->where('category_id', $request->category);
-        }
+            $query->whereIn('id', $selectedIds);
+        } else {
+            // Apply same filters as index only if no specific products selected
+            if ($request->filled('search')) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->search.'%')
+                        ->orWhere('sku', 'like', '%'.$request->search.'%')
+                        ->orWhere('description', 'like', '%'.$request->search.'%');
+                });
+            }
 
-        if ($request->filled('status')) {
-            if ($request->status === 'active') {
-                $query->where('is_active', true);
-            } elseif ($request->status === 'inactive') {
-                $query->where('is_active', false);
-            } elseif ($request->status === 'low_stock') {
-                $query->whereRaw('stock_quantity <= low_stock_threshold');
+            if ($request->filled('category') && $request->category !== 'all') {
+                $query->where('category_id', $request->category);
+            }
+
+            if ($request->filled('status')) {
+                if ($request->status === 'active') {
+                    $query->where('is_active', true);
+                } elseif ($request->status === 'inactive') {
+                    $query->where('is_active', false);
+                } elseif ($request->status === 'low_stock') {
+                    $query->whereRaw('stock_quantity <= low_stock_threshold');
+                }
             }
         }
 
         $products = $query->get();
 
-        $filename = 'products_export_'.now()->format('Y-m-d_H-i-s').'.csv';
+        // Generate filename based on export type
+        if ($request->filled('selected_products')) {
+            $filename = 'selected_products_export_'.now()->format('Y-m-d_H-i-s').'.csv';
+        } else {
+            $filename = 'products_export_'.now()->format('Y-m-d_H-i-s').'.csv';
+        }
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ];
+
+        $callback = function () use ($products) {
+            $file = fopen('php://output', 'w');
+
+            // CSV headers
+            fputcsv($file, [
+                'SKU',
+                'Name',
+                'Category',
+                'Price (PHP)',
+                'Stock Quantity',
+                'Low Stock Threshold',
+                'Material',
+                'Status',
+                'Created At',
+            ]);
+
+            // CSV data
+            foreach ($products as $product) {
+                fputcsv($file, [
+                    $product->sku,
+                    $product->name,
+                    $product->category->name ?? 'N/A',
+                    $product->price,
+                    $product->stock_quantity,
+                    $product->low_stock_threshold,
+                    $product->material ?? 'N/A',
+                    $product->is_active ? 'Active' : 'Inactive',
+                    $product->created_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Export products to CSV via POST (for direct download).
+     */
+    public function exportDownload(Request $request)
+    {
+        $query = Product::with(['category']);
+
+        // Check if specific products are selected
+        if ($request->filled('selected_products')) {
+            $selectedIds = is_array($request->selected_products)
+                ? $request->selected_products
+                : explode(',', $request->selected_products);
+
+            $query->whereIn('id', $selectedIds);
+        } else {
+            // Apply same filters as index only if no specific products selected
+            if ($request->filled('search')) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->search.'%')
+                        ->orWhere('sku', 'like', '%'.$request->search.'%')
+                        ->orWhere('description', 'like', '%'.$request->search.'%');
+                });
+            }
+
+            if ($request->filled('category') && $request->category !== 'all') {
+                $query->where('category_id', $request->category);
+            }
+
+            if ($request->filled('status')) {
+                if ($request->status === 'active') {
+                    $query->where('is_active', true);
+                } elseif ($request->status === 'inactive') {
+                    $query->where('is_active', false);
+                } elseif ($request->status === 'low_stock') {
+                    $query->whereRaw('stock_quantity <= low_stock_threshold');
+                }
+            }
+        }
+
+        $products = $query->get();
+
+        // Generate filename based on export type
+        if ($request->filled('selected_products')) {
+            $filename = 'selected_products_export_'.now()->format('Y-m-d_H-i-s').'.csv';
+        } else {
+            $filename = 'products_export_'.now()->format('Y-m-d_H-i-s').'.csv';
+        }
 
         $headers = [
             'Content-Type' => 'text/csv',

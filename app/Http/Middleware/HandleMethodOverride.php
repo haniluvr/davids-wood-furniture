@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminSubdomainMiddleware
+class HandleMethodOverride
 {
     /**
      * Handle an incoming request.
@@ -15,17 +15,15 @@ class AdminSubdomainMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $host = $request->getHost();
+        if ($request->has('_method')) {
+            $method = strtoupper($request->input('_method'));
 
-        // Check if this is an admin subdomain (regardless of port)
-        $isAdminSubdomain = str_starts_with($host, 'admin.');
-
-        if (! $isAdminSubdomain) {
-            // If not an admin subdomain, continue to next middleware/route
-            return $next($request);
+            // Only allow certain HTTP methods for method override
+            if (in_array($method, ['PUT', 'PATCH', 'DELETE'])) {
+                $request->setMethod($method);
+            }
         }
 
-        // This is an admin subdomain, continue with the request
         return $next($request);
     }
 }

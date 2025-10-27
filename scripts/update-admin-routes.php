@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Script to update all admin route references to use environment-aware routing
+ * Script to update all admin route references to use environment-aware routing.
  */
 $basePath = __DIR__.'/../';
 $files = [

@@ -48,7 +48,7 @@ class OrderFulfillment extends Model
     }
 
     /**
-     * Get fulfillment progress percentage
+     * Get fulfillment progress percentage.
      */
     public function getProgressAttribute(): int
     {
@@ -69,7 +69,7 @@ class OrderFulfillment extends Model
     }
 
     /**
-     * Get fulfillment status
+     * Get fulfillment status.
      */
     public function getStatusAttribute(): string
     {

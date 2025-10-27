@@ -15,7 +15,7 @@ use Laravel\Socialite\Facades\Socialite;
 class AuthController extends Controller
 {
     /**
-     * Generate a unique username from Google user's name
+     * Generate a unique username from Google user's name.
      */
     private function generateUsername($fullName)
     {
@@ -54,7 +54,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Check if username is available
+     * Check if username is available.
      */
     public function checkUsername($username): JsonResponse
     {
@@ -75,7 +75,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Check email availability
+     * Check email availability.
      */
     public function checkEmail($email): JsonResponse
     {
@@ -235,7 +235,6 @@ class AuthController extends Controller
             ->first();
 
         if ($user && Auth::attempt(['id' => $user->id, 'password' => $request->password], $request->boolean('remember'))) {
-
             // Get user after successful authentication
             $user = Auth::user();
 
@@ -325,7 +324,6 @@ class AuthController extends Controller
 
             // Redirect to home for regular requests
             return redirect()->route('home')->with('success', 'Logged out successfully');
-
         } catch (\Exception $e) {
             \Log::error('LOGOUT: Error during logout', [
                 'error' => $e->getMessage(),
@@ -384,7 +382,6 @@ class AuthController extends Controller
         ]);
 
         try {
-
             // Configure the Socialite driver to handle SSL issues in development
             /** @var \Laravel\Socialite\Two\GoogleProvider $googleDriver */
             $googleDriver = Socialite::driver('google');
@@ -408,7 +405,6 @@ class AuthController extends Controller
                 ->first();
 
             if ($existingUser) {
-
                 // Use the immediately captured session ID for migration
                 $guestSessionId = $originalSessionId;
 
@@ -448,9 +444,7 @@ class AuthController extends Controller
                 $sessionWishlistService->migrateGuestToUser($existingUser->id, $guestSessionId);
 
                 Auth::login($existingUser);
-
             } else {
-
                 // Use the immediately captured session ID for migration
                 $guestSessionId = $originalSessionId;
 
@@ -488,7 +482,6 @@ class AuthController extends Controller
                 $sessionWishlistService->migrateGuestToUser($newUser->id, $guestSessionId);
 
                 Auth::login($newUser);
-
             }
 
             // Get intended redirect URL from session, fallback to home
@@ -503,7 +496,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Store the intended URL for redirect after login
+     * Store the intended URL for redirect after login.
      */
     public function storeIntendedUrl(Request $request)
     {
@@ -523,7 +516,6 @@ class AuthController extends Controller
                 'success' => false,
                 'message' => 'No intended URL provided',
             ], 400);
-
         } catch (\Exception $e) {
             \Log::error('Error storing intended URL:', [
                 'error' => $e->getMessage(),
@@ -538,7 +530,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle email verification
+     * Handle email verification.
      */
     public function verifyEmail($token)
     {
@@ -606,7 +598,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle forgot password request
+     * Handle forgot password request.
      */
     public function forgotPassword(Request $request)
     {
@@ -644,6 +636,7 @@ class AuthController extends Controller
                 \Log::info('PasswordResetMail class instantiated successfully');
             } catch (\Exception $e) {
                 \Log::error('Failed to instantiate PasswordResetMail: '.$e->getMessage());
+
                 throw $e;
             }
 
@@ -679,7 +672,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Show password reset form
+     * Show password reset form.
      */
     public function showResetPasswordForm($token)
     {
@@ -696,7 +689,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle password reset
+     * Handle password reset.
      */
     public function resetPassword(Request $request)
     {
@@ -742,7 +735,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Resend email verification
+     * Resend email verification.
      */
     public function resendVerification(Request $request)
     {
@@ -786,7 +779,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Show email verification sent page
+     * Show email verification sent page.
      */
     public function verifyEmailSent(Request $request)
     {

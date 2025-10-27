@@ -33,12 +33,15 @@ class ProductController extends Controller
         switch ($sortBy) {
             case 'price-low':
                 $query->orderBy('price', 'asc');
+
                 break;
             case 'price-high':
                 $query->orderBy('price', 'desc');
+
                 break;
             case 'newest':
                 $query->orderBy('created_at', 'desc');
+
                 break;
             case 'popularity':
             default:
@@ -51,6 +54,7 @@ class ProductController extends Controller
                     ->orderBy('avg_rating', 'desc')
                     ->orderBy('sort_order', 'asc')
                     ->orderBy('created_at', 'desc');
+
                 break;
         }
 

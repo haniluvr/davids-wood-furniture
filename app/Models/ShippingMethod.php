@@ -104,6 +104,7 @@ class ShippingMethod extends Model
                 $remainingWeight -= $rateWeight;
             } else {
                 $totalCost += $rateCost;
+
                 break;
             }
         }

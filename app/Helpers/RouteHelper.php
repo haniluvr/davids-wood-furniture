@@ -5,23 +5,51 @@ namespace App\Helpers;
 class RouteHelper
 {
     /**
-     * Get the correct admin route name based on environment
+     * Get the correct admin route name based on environment.
      */
-    public static function adminRoute(string $routeName): string
+    public static function adminRoute(string $routeName, $parameters = []): string
     {
         $env = config('app.env');
+        $httpHost = request()->server->get('HTTP_HOST');
+        $host = request()->getHost();
+        $port = request()->getPort();
+        $scheme = request()->getScheme();
 
+        // Determine the correct prefix based on environment and domain
         if ($env === 'local') {
-            // For local development, use test prefix
-            return 'admin.test.'.$routeName;
+            // For local development, check domain to determine prefix
+            if (str_contains($httpHost, 'admin.davidswood.test')) {
+                $prefix = 'admin.test.';
+            } elseif (str_contains($httpHost, 'admin.localhost')) {
+                $prefix = 'admin.local.';
+            } else {
+                $prefix = 'admin.test.'; // Default for local
+            }
         } else {
             // For production, use standard admin prefix
-            return 'admin.'.$routeName;
+            $prefix = 'admin.';
         }
+
+        $url = route($prefix.$routeName, $parameters);
+
+        // Fix URL scheme and port for specific environments
+        if ($env === 'local') {
+            // Fix HTTPS for admin.davidswood.test:8443
+            if ($host === 'admin.davidswood.test' && $port === 8443) {
+                $url = str_replace('http://admin.davidswood.test:8080', 'https://admin.davidswood.test:8443', $url);
+            }
+
+            // Fix localhost port issues
+            if ($host === 'admin.localhost' && $port === 8000) {
+                $url = str_replace('admin.localhost:8080', 'admin.localhost:8000', $url);
+            }
+        }
+
+        return $url;
     }
 
     /**
-     * Get the correct route name for any route based on environment
+     * Get the correct route name for any route based on environment.
      */
     public static function getRoute(string $routeName): string
     {

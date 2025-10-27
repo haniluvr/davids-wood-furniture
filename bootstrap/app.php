@@ -45,6 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Add CORS middleware to web routes for cart/wishlist API endpoints
         $middleware->web(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
+            \App\Http\Middleware\HandleMethodOverride::class,
             // \App\Http\Middleware\ForceHttps::class, // Temporarily disabled for testing
         ]);
 

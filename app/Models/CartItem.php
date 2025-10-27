@@ -41,7 +41,7 @@ class CartItem extends Model
     }
 
     /**
-     * Check if this cart item belongs to a guest
+     * Check if this cart item belongs to a guest.
      */
     public function isGuest(): bool
     {
@@ -49,7 +49,7 @@ class CartItem extends Model
     }
 
     /**
-     * Check if this cart item belongs to a user
+     * Check if this cart item belongs to a user.
      */
     public function isUser(): bool
     {
@@ -57,7 +57,7 @@ class CartItem extends Model
     }
 
     /**
-     * Scope for guest cart items
+     * Scope for guest cart items.
      */
     public function scopeForGuest($query, string $sessionId)
     {
@@ -65,7 +65,7 @@ class CartItem extends Model
     }
 
     /**
-     * Scope for user cart items
+     * Scope for user cart items.
      */
     public function scopeForUser($query, int $userId)
     {

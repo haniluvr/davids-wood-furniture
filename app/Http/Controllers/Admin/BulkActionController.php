@@ -30,22 +30,26 @@ class BulkActionController extends Controller
                 case 'delete':
                     Product::whereIn('id', $productIds)->delete();
                     $message = count($productIds).' products deleted successfully.';
+
                     break;
 
                 case 'activate':
                     Product::whereIn('id', $productIds)->update(['is_active' => true]);
                     $message = count($productIds).' products activated successfully.';
+
                     break;
 
                 case 'deactivate':
                     Product::whereIn('id', $productIds)->update(['is_active' => false]);
                     $message = count($productIds).' products deactivated successfully.';
+
                     break;
 
                 case 'update_category':
                     $request->validate(['category_id' => 'required|exists:categories,id']);
                     Product::whereIn('id', $productIds)->update(['category_id' => $request->category_id]);
                     $message = count($productIds).' products updated with new category.';
+
                     break;
 
                 case 'export':
@@ -55,7 +59,6 @@ class BulkActionController extends Controller
             DB::commit();
 
             return redirect()->back()->with('success', $message);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -82,6 +85,7 @@ class BulkActionController extends Controller
                     $request->validate(['status' => 'required|in:pending,processing,shipped,delivered,cancelled']);
                     Order::whereIn('id', $orderIds)->update(['status' => $request->status]);
                     $message = count($orderIds).' orders updated to '.$request->status.' status.';
+
                     break;
 
                 case 'export':
@@ -90,13 +94,13 @@ class BulkActionController extends Controller
                 case 'delete':
                     Order::whereIn('id', $orderIds)->delete();
                     $message = count($orderIds).' orders deleted successfully.';
+
                     break;
             }
 
             DB::commit();
 
             return redirect()->back()->with('success', $message);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -122,16 +126,19 @@ class BulkActionController extends Controller
                 case 'activate':
                     User::whereIn('id', $userIds)->update(['is_active' => true]);
                     $message = count($userIds).' users activated successfully.';
+
                     break;
 
                 case 'deactivate':
                     User::whereIn('id', $userIds)->update(['is_active' => false]);
                     $message = count($userIds).' users deactivated successfully.';
+
                     break;
 
                 case 'delete':
                     User::whereIn('id', $userIds)->delete();
                     $message = count($userIds).' users deleted successfully.';
+
                     break;
 
                 case 'export':
@@ -152,13 +159,13 @@ class BulkActionController extends Controller
                         ));
                     }
                     $message = 'Email sent to '.count($userIds).' users successfully.';
+
                     break;
             }
 
             DB::commit();
 
             return redirect()->back()->with('success', $message);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -184,16 +191,19 @@ class BulkActionController extends Controller
                 case 'approve':
                     ProductReview::whereIn('id', $reviewIds)->update(['is_approved' => true]);
                     $message = count($reviewIds).' reviews approved successfully.';
+
                     break;
 
                 case 'reject':
                     ProductReview::whereIn('id', $reviewIds)->update(['is_approved' => false]);
                     $message = count($reviewIds).' reviews rejected successfully.';
+
                     break;
 
                 case 'delete':
                     ProductReview::whereIn('id', $reviewIds)->delete();
                     $message = count($reviewIds).' reviews deleted successfully.';
+
                     break;
 
                 case 'export':
@@ -203,7 +213,6 @@ class BulkActionController extends Controller
             DB::commit();
 
             return redirect()->back()->with('success', $message);
-
         } catch (\Exception $e) {
             DB::rollBack();
 

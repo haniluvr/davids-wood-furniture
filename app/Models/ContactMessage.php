@@ -30,7 +30,7 @@ class ContactMessage extends Model
     ];
 
     /**
-     * Get the user that sent the message (if authenticated)
+     * Get the user that sent the message (if authenticated).
      */
     public function user(): BelongsTo
     {
@@ -38,7 +38,7 @@ class ContactMessage extends Model
     }
 
     /**
-     * Get the admin assigned to this message
+     * Get the admin assigned to this message.
      */
     public function assignedTo(): BelongsTo
     {
@@ -46,7 +46,7 @@ class ContactMessage extends Model
     }
 
     /**
-     * Get the admin who responded to this message
+     * Get the admin who responded to this message.
      */
     public function respondedBy(): BelongsTo
     {
@@ -54,7 +54,7 @@ class ContactMessage extends Model
     }
 
     /**
-     * Mark message as read
+     * Mark message as read.
      */
     public function markAsRead(): void
     {
@@ -67,7 +67,7 @@ class ContactMessage extends Model
     }
 
     /**
-     * Mark message as responded
+     * Mark message as responded.
      */
     public function markAsResponded(int $adminId): void
     {
@@ -79,7 +79,7 @@ class ContactMessage extends Model
     }
 
     /**
-     * Scope to get only new messages
+     * Scope to get only new messages.
      */
     public function scopeNew($query)
     {
@@ -87,7 +87,7 @@ class ContactMessage extends Model
     }
 
     /**
-     * Scope to get unread messages (new status)
+     * Scope to get unread messages (new status).
      */
     public function scopeUnread($query)
     {
@@ -95,7 +95,7 @@ class ContactMessage extends Model
     }
 
     /**
-     * Scope to get responded messages
+     * Scope to get responded messages.
      */
     public function scopeResponded($query)
     {
@@ -103,7 +103,7 @@ class ContactMessage extends Model
     }
 
     /**
-     * Scope to get read messages
+     * Scope to get read messages.
      */
     public function scopeRead($query)
     {

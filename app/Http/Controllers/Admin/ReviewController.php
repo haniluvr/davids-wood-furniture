@@ -38,15 +38,19 @@ class ReviewController extends Controller
             switch ($request->status) {
                 case 'pending':
                     $query->where('is_approved', false);
+
                     break;
                 case 'approved':
                     $query->where('is_approved', true);
+
                     break;
                 case 'verified':
                     $query->where('is_verified_purchase', true);
+
                     break;
                 case 'unverified':
                     $query->where('is_verified_purchase', false);
+
                     break;
             }
         }
@@ -95,7 +99,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Approve a review
+     * Approve a review.
      */
     public function approve(ProductReview $review)
     {
@@ -113,7 +117,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Reject a review
+     * Reject a review.
      */
     public function reject(ProductReview $review)
     {
@@ -131,7 +135,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Add admin response to a review
+     * Add admin response to a review.
      */
     public function respond(Request $request, ProductReview $review)
     {
@@ -155,7 +159,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Update admin response
+     * Update admin response.
      */
     public function updateResponse(Request $request, ProductReview $review)
     {
@@ -179,7 +183,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Remove admin response
+     * Remove admin response.
      */
     public function removeResponse(ProductReview $review)
     {
@@ -213,7 +217,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Bulk approve reviews
+     * Bulk approve reviews.
      */
     public function bulkApprove(Request $request)
     {
@@ -235,7 +239,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Bulk reject reviews
+     * Bulk reject reviews.
      */
     public function bulkReject(Request $request)
     {
@@ -257,7 +261,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Bulk delete reviews
+     * Bulk delete reviews.
      */
     public function bulkDelete(Request $request)
     {
@@ -278,7 +282,7 @@ class ReviewController extends Controller
     }
 
     /**
-     * Export reviews
+     * Export reviews.
      */
     public function export(Request $request)
     {
@@ -299,9 +303,11 @@ class ReviewController extends Controller
             switch ($request->status) {
                 case 'pending':
                     $query->where('is_approved', false);
+
                     break;
                 case 'approved':
                     $query->where('is_approved', true);
+
                     break;
             }
         }

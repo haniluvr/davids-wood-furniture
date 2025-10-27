@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 class PaymentMethodController extends Controller
 {
     /**
-     * Get user's payment methods
+     * Get user's payment methods.
      */
     public function index()
     {
@@ -25,7 +25,7 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * Store a new payment method
+     * Store a new payment method.
      */
     public function store(Request $request)
     {
@@ -89,7 +89,7 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * Update a payment method
+     * Update a payment method.
      */
     public function update(Request $request, $id)
     {
@@ -135,7 +135,7 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * Remove a payment method
+     * Remove a payment method.
      */
     public function destroy($id)
     {
@@ -161,7 +161,7 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * Set a payment method as default
+     * Set a payment method as default.
      */
     public function setDefault($id)
     {

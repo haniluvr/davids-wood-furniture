@@ -18,7 +18,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Get or create guest session
+     * Get or create guest session.
      */
     private function getOrCreateGuestSession(string $sessionId): GuestSession
     {
@@ -31,7 +31,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Ensure session persistence for guest operations
+     * Ensure session persistence for guest operations.
      */
     private function ensureSessionPersistence(): void
     {
@@ -45,7 +45,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Preserve guest wishlist data before session loss
+     * Preserve guest wishlist data before session loss.
      */
     public function preserveGuestWishlistData($sessionId): array
     {
@@ -64,7 +64,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Restore guest wishlist data from preserved data
+     * Restore guest wishlist data from preserved data.
      */
     public function restoreGuestWishlistData($userId, array $preservedData): int
     {
@@ -98,7 +98,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Get wishlist items for current user or guest
+     * Get wishlist items for current user or guest.
      */
     public function index(Request $request)
     {
@@ -136,7 +136,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Add product to wishlist
+     * Add product to wishlist.
      */
     public function add(Request $request)
     {
@@ -213,7 +213,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Remove product from wishlist
+     * Remove product from wishlist.
      */
     public function remove(Request $request)
     {
@@ -240,7 +240,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Check if product is in wishlist
+     * Check if product is in wishlist.
      */
     public function check($productId)
     {
@@ -261,7 +261,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Toggle wishlist item (add if not exists, remove if exists)
+     * Toggle wishlist item (add if not exists, remove if exists).
      */
     public function toggle(Request $request)
     {
@@ -337,6 +337,7 @@ class WishlistController extends Controller
                         'session_id' => $sessionId,
                         'product_id' => $productId,
                     ]);
+
                     throw $e;
                 }
 
@@ -362,7 +363,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Clear all wishlist items for current user or guest
+     * Clear all wishlist items for current user or guest.
      */
     public function clear(Request $request)
     {
@@ -387,7 +388,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Manual migration endpoint for frontend to trigger wishlist migration
+     * Manual migration endpoint for frontend to trigger wishlist migration.
      */
     public function migrate(Request $request)
     {
@@ -428,7 +429,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Migrate guest wishlist items to user account when they log in
+     * Migrate guest wishlist items to user account when they log in.
      */
     public function migrateWishlistToUser($userId, $sessionId)
     {
@@ -446,7 +447,6 @@ class WishlistController extends Controller
                 'session_id' => $sessionId,
                 'migrated_count' => $migratedCount,
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Database wishlist migration failed', [
                 'user_id' => $userId,
@@ -454,6 +454,7 @@ class WishlistController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             throw $e; // Re-throw to ensure the error is visible
         }
     }

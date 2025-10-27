@@ -20,7 +20,7 @@ class RedisWishlistService
     }
 
     /**
-     * Add product to wishlist (guest or user)
+     * Add product to wishlist (guest or user).
      */
     public function addToWishlist($userId, $sessionId, $productId)
     {
@@ -59,12 +59,13 @@ class RedisWishlistService
                 'session_id' => $sessionId,
                 'product_id' => $productId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Remove product from wishlist
+     * Remove product from wishlist.
      */
     public function removeFromWishlist($userId, $sessionId, $productId)
     {
@@ -92,12 +93,13 @@ class RedisWishlistService
                 'session_id' => $sessionId,
                 'product_id' => $productId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Get wishlist items
+     * Get wishlist items.
      */
     public function getWishlistItems($userId = null, $sessionId = null)
     {
@@ -134,7 +136,7 @@ class RedisWishlistService
     }
 
     /**
-     * Check if product is in wishlist
+     * Check if product is in wishlist.
      */
     public function isInWishlist($userId, $sessionId, $productId)
     {
@@ -156,7 +158,7 @@ class RedisWishlistService
     }
 
     /**
-     * Migrate guest wishlist to user
+     * Migrate guest wishlist to user.
      */
     public function migrateGuestToUser($userId, $sessionId)
     {
@@ -202,12 +204,13 @@ class RedisWishlistService
                 'user_id' => $userId,
                 'session_id' => $sessionId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Clear wishlist
+     * Clear wishlist.
      */
     public function clearWishlist($userId = null, $sessionId = null)
     {
@@ -231,12 +234,13 @@ class RedisWishlistService
                 'user_id' => $userId,
                 'session_id' => $sessionId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Get Redis key for wishlist
+     * Get Redis key for wishlist.
      */
     private function getWishlistKey($userId = null, $sessionId = null)
     {
@@ -250,7 +254,7 @@ class RedisWishlistService
     }
 
     /**
-     * Store in database for persistence
+     * Store in database for persistence.
      */
     private function storeInDatabase($userId, $sessionId, $productId)
     {
@@ -271,7 +275,7 @@ class RedisWishlistService
     }
 
     /**
-     * Remove from database
+     * Remove from database.
      */
     private function removeFromDatabase($userId, $sessionId, $productId)
     {
@@ -291,7 +295,7 @@ class RedisWishlistService
     }
 
     /**
-     * Get from database (fallback)
+     * Get from database (fallback).
      */
     private function getFromDatabase($userId, $sessionId)
     {
@@ -317,7 +321,7 @@ class RedisWishlistService
     }
 
     /**
-     * Check if in database (fallback)
+     * Check if in database (fallback).
      */
     private function isInDatabase($userId, $sessionId, $productId)
     {
@@ -344,7 +348,7 @@ class RedisWishlistService
     }
 
     /**
-     * Clear from database
+     * Clear from database.
      */
     private function clearFromDatabase($userId, $sessionId)
     {

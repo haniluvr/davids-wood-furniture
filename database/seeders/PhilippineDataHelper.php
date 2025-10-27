@@ -36,7 +36,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Fetch regions from PSGC API
+     * Fetch regions from PSGC API.
      */
     public static function getRegions()
     {
@@ -59,7 +59,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Fetch provinces for a specific region
+     * Fetch provinces for a specific region.
      */
     public static function getProvinces($regionName)
     {
@@ -81,7 +81,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Fetch cities/municipalities for a specific province
+     * Fetch cities/municipalities for a specific province.
      */
     public static function getCitiesMunicipalities($regionName, $provinceName)
     {
@@ -103,7 +103,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Fetch barangays for a specific city/municipality
+     * Fetch barangays for a specific city/municipality.
      */
     public static function getBarangays($regionName, $provinceName, $cityName)
     {
@@ -125,7 +125,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Generate a random Philippine address using PSGC API
+     * Generate a random Philippine address using PSGC API.
      */
     public static function getRandomPhilippineAddress()
     {
@@ -176,7 +176,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Generate Filipino-based email address
+     * Generate Filipino-based email address.
      */
     public static function generateFilipinoEmail($firstName, $lastName)
     {
@@ -201,7 +201,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Fallback regions if API fails
+     * Fallback regions if API fails.
      */
     private static function getFallbackRegions()
     {
@@ -221,7 +221,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Generate NCR address (no provinces)
+     * Generate NCR address (no provinces).
      */
     private static function getNCRAddress($regionName)
     {
@@ -243,7 +243,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Generate fallback address
+     * Generate fallback address.
      */
     private static function getFallbackAddress()
     {
@@ -261,7 +261,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Generate realistic street name
+     * Generate realistic street name.
      */
     private static function generateStreetName()
     {
@@ -277,7 +277,7 @@ class PhilippineDataHelper
     }
 
     /**
-     * Generate realistic zip code based on region and city
+     * Generate realistic zip code based on region and city.
      */
     private static function generateZipCode($regionName, $cityName)
     {

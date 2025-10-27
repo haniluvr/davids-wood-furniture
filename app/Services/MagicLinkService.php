@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class MagicLinkService
 {
     /**
-     * Generate a magic link token for a user
+     * Generate a magic link token for a user.
      */
     public function generateMagicLink($user, $type = '2fa')
     {
@@ -33,7 +33,7 @@ class MagicLinkService
     }
 
     /**
-     * Check if a magic link token is valid (without marking it as used)
+     * Check if a magic link token is valid (without marking it as used).
      */
     public function isValidMagicLink($token, $type = '2fa')
     {
@@ -48,7 +48,7 @@ class MagicLinkService
     }
 
     /**
-     * Verify a magic link token (marks it as used)
+     * Verify a magic link token (marks it as used).
      */
     public function verifyMagicLink($token, $type = '2fa')
     {
@@ -72,7 +72,7 @@ class MagicLinkService
     }
 
     /**
-     * Clean up expired tokens
+     * Clean up expired tokens.
      */
     public function cleanupExpiredTokens()
     {
@@ -82,7 +82,7 @@ class MagicLinkService
     }
 
     /**
-     * Get token statistics
+     * Get token statistics.
      */
     public function getTokenStats()
     {
@@ -104,7 +104,7 @@ class MagicLinkService
     }
 
     /**
-     * Send magic link email
+     * Send magic link email.
      */
     private function sendMagicLinkEmail($user, $token, $type, $expiresAt)
     {
@@ -126,12 +126,13 @@ class MagicLinkService
             \Log::error('Failed to send magic link email');
             \Log::error('Error: '.$e->getMessage());
             \Log::error('File: '.$e->getFile().' Line: '.$e->getLine());
+
             throw $e;
         }
     }
 
     /**
-     * Send 2FA enabled confirmation email
+     * Send 2FA enabled confirmation email.
      */
     public function sendTwoFactorEnabledConfirmation($user)
     {

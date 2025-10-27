@@ -1,33 +1,43 @@
 <?php
 
 /**
- * Global helper functions for the application
+ * Global helper functions for the application.
  */
 if (! function_exists('admin_route')) {
     /**
-     * Generate a URL for an admin route
+     * Generate a URL for an admin route.
      *
-     * @param  string  $routeName  The route name without the admin prefix
-     * @param  array|object  $parameters  Route parameters (array or model objects)
+     * @param string $routeName The route name without the admin prefix
+     * @param array|object $parameters Route parameters (array or model objects)
      * @return string The generated URL
      */
     function admin_route(string $routeName, $parameters = []): string
     {
-        // Check the current domain to determine the correct prefix
-        $host = request()->getHost();
+        // Use RouteHelper for consistent route generation
+        return \App\Helpers\RouteHelper::adminRoute($routeName, $parameters);
+    }
+}
 
-        if ($host === 'admin.davidswood.test') {
-            $prefix = 'admin.test.';
-        } elseif ($host === 'admin.localhost') {
-            $prefix = 'admin.local.';
-        } elseif ($host === 'admin.davidswood.shop') {
-            $prefix = 'admin.';
-        } else {
-            // Fallback for other domains
-            $env = config('app.env');
-            $prefix = $env === 'local' ? 'admin.test.' : 'admin.';
-        }
+if (! function_exists('storage_disk')) {
+    /**
+     * Get the appropriate storage disk based on environment
+     * Uses local storage for localhost, S3 for production.
+     *
+     * @return \Illuminate\Contracts\Filesystem\Filesystem
+     */
+    function storage_disk()
+    {
+        return \Illuminate\Support\Facades\Storage::dynamic();
+    }
+}
 
-        return route($prefix.$routeName, $parameters);
+if (! function_exists('storage_url')) {
+    /**
+     * Get the appropriate storage URL based on environment
+     * Uses local URLs for localhost, S3 URLs for production.
+     */
+    function storage_url(string $path): string
+    {
+        return \Illuminate\Support\Facades\Storage::dynamic()->url($path);
     }
 }

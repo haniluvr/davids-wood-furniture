@@ -206,7 +206,7 @@
                     </label>
                     @if($page->featured_image)
                         <div class="mb-4">
-                            <img src="{{ Storage::url($page->featured_image) }}" alt="{{ $page->title }}" class="h-32 w-auto rounded-lg border border-stroke dark:border-strokedark">
+                            <img src="{{ Storage::getDynamicUrl($page->featured_image) }}" alt="{{ $page->title }}" class="h-32 w-auto rounded-lg border border-stroke dark:border-strokedark">
                             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Current image</p>
                         </div>
                     @endif

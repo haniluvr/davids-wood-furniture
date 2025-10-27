@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Application Name
@@ -124,5 +123,4 @@ return [
     ],
 
     'force_https' => env('FORCE_HTTPS', false),
-
 ];

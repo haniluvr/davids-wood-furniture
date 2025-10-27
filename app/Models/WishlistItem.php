@@ -31,7 +31,7 @@ class WishlistItem extends Model
     }
 
     /**
-     * Check if this wishlist item belongs to a guest
+     * Check if this wishlist item belongs to a guest.
      */
     public function isGuest(): bool
     {
@@ -39,7 +39,7 @@ class WishlistItem extends Model
     }
 
     /**
-     * Check if this wishlist item belongs to a user
+     * Check if this wishlist item belongs to a user.
      */
     public function isUser(): bool
     {
@@ -47,7 +47,7 @@ class WishlistItem extends Model
     }
 
     /**
-     * Scope for guest wishlist items
+     * Scope for guest wishlist items.
      */
     public function scopeForGuest($query, string $sessionId)
     {
@@ -55,7 +55,7 @@ class WishlistItem extends Model
     }
 
     /**
-     * Scope for user wishlist items
+     * Scope for user wishlist items.
      */
     public function scopeForUser($query, int $userId)
     {

@@ -61,7 +61,7 @@ class AbandonedCartMail extends Mailable
     }
 
     /**
-     * Get user's cart items
+     * Get user's cart items.
      */
     private function getUserCartItems(User $user)
     {
@@ -71,7 +71,7 @@ class AbandonedCartMail extends Mailable
     }
 
     /**
-     * Calculate cart total
+     * Calculate cart total.
      */
     private function calculateCartTotal()
     {

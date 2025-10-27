@@ -159,7 +159,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Verify magic link for admin 2FA
+     * Verify magic link for admin 2FA.
      */
     public function verifyMagicLink($token)
     {
@@ -194,7 +194,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Show check email page for admin
+     * Show check email page for admin.
      */
     public function checkEmail()
     {
@@ -202,7 +202,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Show OTP verification page for admin
+     * Show OTP verification page for admin.
      */
     public function showOtpVerification()
     {
@@ -214,7 +214,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Verify OTP code for admin 2FA
+     * Verify OTP code for admin 2FA.
      */
     public function verifyOtp(Request $request)
     {
@@ -259,7 +259,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Resend OTP code for admin 2FA
+     * Resend OTP code for admin 2FA.
      */
     public function resendOtp(Request $request)
     {

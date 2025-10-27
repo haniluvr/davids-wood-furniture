@@ -648,7 +648,6 @@ return new class extends Migration
 
         if (Schema::hasTable('cms_pages')) {
             Schema::table('cms_pages', function (Blueprint $table) {
-
                 $table->foreign('created_by')->references('id')->on('employees')->onDelete('set null');
                 $table->foreign('updated_by')->references('id')->on('employees')->onDelete('set null');
             });
@@ -656,14 +655,12 @@ return new class extends Migration
 
         if (Schema::hasTable('contact_messages')) {
             Schema::table('contact_messages', function (Blueprint $table) {
-
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
             });
         }
 
         if (Schema::hasTable('inventory_movements')) {
             Schema::table('inventory_movements', function (Blueprint $table) {
-
                 $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
                 $table->foreign('created_by')->references('id')->on('employees')->onDelete('set null');
             });
@@ -671,7 +668,6 @@ return new class extends Migration
 
         if (Schema::hasTable('order_activities')) {
             Schema::table('order_activities', function (Blueprint $table) {
-
                 $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
                 $table->foreign('admin_id')->references('id')->on('employees')->onDelete('set null');
             });
@@ -679,14 +675,12 @@ return new class extends Migration
 
         if (Schema::hasTable('order_fulfillment')) {
             Schema::table('order_fulfillment', function (Blueprint $table) {
-
                 $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             });
         }
 
         if (Schema::hasTable('order_items')) {
             Schema::table('order_items', function (Blueprint $table) {
-
                 $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
                 $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             });
@@ -694,7 +688,6 @@ return new class extends Migration
 
         if (Schema::hasTable('orders')) {
             Schema::table('orders', function (Blueprint $table) {
-
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
                 $table->foreign('approved_by')->references('id')->on('employees')->onDelete('set null');
             });
@@ -702,14 +695,12 @@ return new class extends Migration
 
         if (Schema::hasTable('product_popularity')) {
             Schema::table('product_popularity', function (Blueprint $table) {
-
                 $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             });
         }
 
         if (Schema::hasTable('product_reviews')) {
             Schema::table('product_reviews', function (Blueprint $table) {
-
                 $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
                 $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
@@ -719,7 +710,6 @@ return new class extends Migration
 
         if (Schema::hasTable('products')) {
             Schema::table('products', function (Blueprint $table) {
-
                 $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
                 $table->foreign('subcategory_id')->references('id')->on('categories')->onDelete('set null');
             });
@@ -727,7 +717,6 @@ return new class extends Migration
 
         if (Schema::hasTable('returns_repairs')) {
             Schema::table('returns_repairs', function (Blueprint $table) {
-
                 $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             });
@@ -735,7 +724,6 @@ return new class extends Migration
 
         if (Schema::hasTable('wishlist_items')) {
             Schema::table('wishlist_items', function (Blueprint $table) {
-
                 $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             });
@@ -743,7 +731,6 @@ return new class extends Migration
 
         if (Schema::hasTable('wishlists')) {
             Schema::table('wishlists', function (Blueprint $table) {
-
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             });
         }

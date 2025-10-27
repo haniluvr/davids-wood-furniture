@@ -40,7 +40,6 @@ class ApiController extends Controller
                 'success' => false,
                 'message' => 'Weather data not found',
             ], 404);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

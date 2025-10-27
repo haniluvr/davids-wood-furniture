@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class DatabaseWishlistService
 {
     /**
-     * Add product to wishlist (guest or user)
+     * Add product to wishlist (guest or user).
      */
     public function addToWishlist($productId, $userId = null, $sessionId = null)
     {
@@ -60,12 +60,13 @@ class DatabaseWishlistService
                 'session_id' => $sessionId,
                 'product_id' => $productId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Remove product from wishlist
+     * Remove product from wishlist.
      */
     public function removeFromWishlist($productId, $userId = null, $sessionId = null)
     {
@@ -95,12 +96,13 @@ class DatabaseWishlistService
                 'session_id' => $sessionId,
                 'product_id' => $productId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Get wishlist items
+     * Get wishlist items.
      */
     public function getWishlistItems($userId = null, $sessionId = null)
     {
@@ -134,7 +136,7 @@ class DatabaseWishlistService
     }
 
     /**
-     * Check if product is in wishlist
+     * Check if product is in wishlist.
      */
     public function isInWishlist($productId, $userId = null, $sessionId = null)
     {
@@ -161,7 +163,7 @@ class DatabaseWishlistService
     }
 
     /**
-     * Migrate guest wishlist to user
+     * Migrate guest wishlist to user.
      */
     public function migrateGuestToUser($userId, $sessionId)
     {
@@ -244,12 +246,13 @@ class DatabaseWishlistService
                 'user_id' => $userId,
                 'session_id' => $sessionId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Clear wishlist
+     * Clear wishlist.
      */
     public function clearWishlist($userId = null, $sessionId = null)
     {
@@ -277,12 +280,13 @@ class DatabaseWishlistService
                 'user_id' => $userId,
                 'session_id' => $sessionId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Ensure guest session exists
+     * Ensure guest session exists.
      */
     private function ensureGuestSession($sessionId)
     {
@@ -306,12 +310,13 @@ class DatabaseWishlistService
                 'error' => $e->getMessage(),
                 'session_id' => $sessionId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Preserve guest wishlist data before session loss
+     * Preserve guest wishlist data before session loss.
      */
     public function preserveGuestWishlistData($sessionId)
     {
@@ -339,7 +344,7 @@ class DatabaseWishlistService
     }
 
     /**
-     * Restore guest wishlist data from preserved data
+     * Restore guest wishlist data from preserved data.
      */
     public function restoreGuestWishlistData($userId, $preservedData)
     {

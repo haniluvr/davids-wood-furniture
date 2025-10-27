@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 class CartController extends Controller
 {
     /**
-     * Get or create guest session
+     * Get or create guest session.
      */
     private function getOrCreateGuestSession(string $sessionId): GuestSession
     {
@@ -20,7 +20,7 @@ class CartController extends Controller
     }
 
     /**
-     * Get cart items for current user or guest
+     * Get cart items for current user or guest.
      */
     public function index(Request $request)
     {
@@ -49,7 +49,6 @@ class CartController extends Controller
                 $cartItems = CartItem::forGuest($sessionId)
                     ->with('product')
                     ->get();
-
             }
 
             $subtotal = $cartItems->sum('total_price');
@@ -80,7 +79,7 @@ class CartController extends Controller
     }
 
     /**
-     * Add item to cart
+     * Add item to cart.
      */
     public function addToCart(Request $request)
     {
@@ -166,7 +165,6 @@ class CartController extends Controller
                         ],
                     ]);
                 }
-
             }
 
             // Force session save to ensure cookie is set
@@ -194,7 +192,7 @@ class CartController extends Controller
     }
 
     /**
-     * Update cart item quantity
+     * Update cart item quantity.
      */
     public function updateCartItem(Request $request)
     {
@@ -229,7 +227,7 @@ class CartController extends Controller
     }
 
     /**
-     * Remove item from cart
+     * Remove item from cart.
      */
     public function removeFromCart(Request $request)
     {
@@ -257,7 +255,7 @@ class CartController extends Controller
     }
 
     /**
-     * Clear cart
+     * Clear cart.
      */
     public function clearCart(Request $request)
     {
@@ -277,7 +275,7 @@ class CartController extends Controller
     }
 
     /**
-     * Migrate guest cart items to user account when they log in
+     * Migrate guest cart items to user account when they log in.
      */
     public function migrateCartToUser($userId, $sessionId)
     {
@@ -312,7 +310,6 @@ class CartController extends Controller
                 // Clean up guest session
                 GuestSession::where('session_id', $sessionId)->delete();
             });
-
         } catch (\Exception $e) {
             \Log::error('Cart migration failed', [
                 'user_id' => $userId,
@@ -323,7 +320,7 @@ class CartController extends Controller
     }
 
     /**
-     * Clear user cart (called when user logs out)
+     * Clear user cart (called when user logs out).
      */
     public function clearUserCart($userId)
     {
@@ -338,7 +335,7 @@ class CartController extends Controller
     }
 
     /**
-     * Store selected cart items in session for checkout
+     * Store selected cart items in session for checkout.
      */
     public function storeSelectedItems(Request $request)
     {

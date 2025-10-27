@@ -10,7 +10,7 @@ use App\Models\User;
 class EmailPreviewController extends Controller
 {
     /**
-     * Display email previews
+     * Display email previews.
      */
     public function index()
     {
@@ -28,7 +28,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Preview specific email type
+     * Preview specific email type.
      */
     public function preview($type)
     {
@@ -64,7 +64,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Preview order created email
+     * Preview order created email.
      */
     private function previewOrderCreated()
     {
@@ -75,7 +75,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Preview order status changed email
+     * Preview order status changed email.
      */
     private function previewOrderStatusChanged()
     {
@@ -88,7 +88,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Preview low stock email
+     * Preview low stock email.
      */
     private function previewLowStock()
     {
@@ -98,7 +98,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Preview new review email
+     * Preview new review email.
      */
     private function previewNewReview()
     {
@@ -108,7 +108,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Preview newsletter email
+     * Preview newsletter email.
      */
     private function previewNewsletter()
     {
@@ -120,7 +120,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Preview welcome email
+     * Preview welcome email.
      */
     private function previewWelcome()
     {
@@ -130,7 +130,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Preview abandoned cart email
+     * Preview abandoned cart email.
      */
     private function previewAbandonedCart()
     {
@@ -144,7 +144,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Get sample order data
+     * Get sample order data.
      */
     private function getSampleOrder()
     {
@@ -176,7 +176,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Get sample order items
+     * Get sample order items.
      */
     private function getSampleOrderItems()
     {
@@ -207,7 +207,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Get sample user data
+     * Get sample user data.
      */
     private function getSampleUser()
     {
@@ -220,7 +220,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Get sample product data
+     * Get sample product data.
      */
     private function getSampleProduct()
     {
@@ -240,7 +240,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Get sample products
+     * Get sample products.
      */
     private function getSampleProducts($count = 3)
     {
@@ -262,7 +262,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Get sample review data
+     * Get sample review data.
      */
     private function getSampleReview()
     {
@@ -281,7 +281,7 @@ class EmailPreviewController extends Controller
     }
 
     /**
-     * Get sample cart items
+     * Get sample cart items.
      */
     private function getSampleCartItems()
     {

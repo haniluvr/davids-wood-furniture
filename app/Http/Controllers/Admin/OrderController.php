@@ -97,6 +97,7 @@ class OrderController extends Controller
         ]);
 
         DB::beginTransaction();
+
         try {
             // Calculate totals
             $subtotal = 0;
@@ -167,7 +168,6 @@ class OrderController extends Controller
 
             return redirect()->to(admin_route('orders.show', $order))
                 ->with('success', 'Order created successfully.');
-
         } catch (\Exception $e) {
             DB::rollback();
 
@@ -237,6 +237,7 @@ class OrderController extends Controller
         }
 
         DB::beginTransaction();
+
         try {
             // Restore product stock if order was not delivered
             if ($order->status !== 'delivered') {
@@ -254,7 +255,6 @@ class OrderController extends Controller
 
             return redirect()->to(admin_route('orders.index'))
                 ->with('success', 'Order deleted successfully.');
-
         } catch (\Exception $e) {
             DB::rollback();
 
@@ -581,7 +581,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Update fulfillment status for an order
+     * Update fulfillment status for an order.
      */
     public function updateFulfillmentStatus(Request $request, Order $order)
     {
@@ -636,7 +636,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Generate tracking number for an order
+     * Generate tracking number for an order.
      */
     public function generateTrackingNumber(Order $order)
     {
@@ -651,7 +651,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Mark order as packed
+     * Mark order as packed.
      */
     public function markAsPacked(Request $request, Order $order)
     {
@@ -673,7 +673,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Mark order as shipped
+     * Mark order as shipped.
      */
     public function markAsShipped(Request $request, Order $order)
     {

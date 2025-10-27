@@ -14,7 +14,7 @@ class SessionWishlistService
     private $sessionKey = 'wishlist_items';
 
     /**
-     * Add product to wishlist (guest or user)
+     * Add product to wishlist (guest or user).
      */
     public function addToWishlist($productId, $userId = null, $sessionId = null)
     {
@@ -29,6 +29,7 @@ class SessionWishlistService
             $product = Product::find($productId);
             if (! $product) {
                 \Log::error('Product not found in SessionWishlistService', ['product_id' => $productId]);
+
                 throw new \Exception('Product not found');
             }
 
@@ -88,12 +89,13 @@ class SessionWishlistService
                 'session_id' => $sessionId,
                 'product_id' => $productId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Remove product from wishlist
+     * Remove product from wishlist.
      */
     public function removeFromWishlist($productId, $userId = null, $sessionId = null)
     {
@@ -128,12 +130,13 @@ class SessionWishlistService
                 'session_id' => $sessionId,
                 'product_id' => $productId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Get wishlist items
+     * Get wishlist items.
      */
     public function getWishlistItems($userId = null, $sessionId = null)
     {
@@ -167,7 +170,7 @@ class SessionWishlistService
     }
 
     /**
-     * Check if product is in wishlist
+     * Check if product is in wishlist.
      */
     public function isInWishlist($productId, $userId = null, $sessionId = null)
     {
@@ -194,7 +197,7 @@ class SessionWishlistService
     }
 
     /**
-     * Migrate guest wishlist to user
+     * Migrate guest wishlist to user.
      */
     public function migrateGuestToUser($userId, $sessionId)
     {
@@ -289,12 +292,13 @@ class SessionWishlistService
                 'user_id' => $userId,
                 'session_id' => $sessionId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Clear wishlist
+     * Clear wishlist.
      */
     public function clearWishlist($userId = null, $sessionId = null)
     {
@@ -327,12 +331,13 @@ class SessionWishlistService
                 'user_id' => $userId,
                 'session_id' => $sessionId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Ensure guest session exists
+     * Ensure guest session exists.
      */
     private function ensureGuestSession($sessionId)
     {
@@ -356,12 +361,13 @@ class SessionWishlistService
                 'error' => $e->getMessage(),
                 'session_id' => $sessionId,
             ]);
+
             throw $e;
         }
     }
 
     /**
-     * Add to session wishlist
+     * Add to session wishlist.
      */
     private function addToSessionWishlist($productId)
     {
@@ -373,7 +379,7 @@ class SessionWishlistService
     }
 
     /**
-     * Remove from session wishlist
+     * Remove from session wishlist.
      */
     private function removeFromSessionWishlist($productId)
     {
@@ -385,7 +391,7 @@ class SessionWishlistService
     }
 
     /**
-     * Get session wishlist
+     * Get session wishlist.
      */
     public function getSessionWishlist()
     {
@@ -393,7 +399,7 @@ class SessionWishlistService
     }
 
     /**
-     * Sync session with database
+     * Sync session with database.
      */
     public function syncSessionWithDatabase($sessionId)
     {
@@ -419,7 +425,6 @@ class SessionWishlistService
                 'session_items' => count($sessionItems),
                 'db_items' => count($dbItems),
             ]);
-
         } catch (\Exception $e) {
             Log::error('Failed to sync session with database', [
                 'error' => $e->getMessage(),

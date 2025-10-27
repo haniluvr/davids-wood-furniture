@@ -22,7 +22,7 @@ class ExampleTest extends TestCase
     }
 
     /**
-     * Test health endpoint
+     * Test health endpoint.
      */
     public function test_health_endpoint_works(): void
     {

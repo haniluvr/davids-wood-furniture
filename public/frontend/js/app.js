@@ -1,6 +1,20 @@
 // Main Application JavaScript - Updated to use Database API
 // Note: Products are loaded via database API, not static imports
 
+// ── Dynamic Storage URL Helper ──
+function getStorageUrl(path) {
+    if (!path) return null;
+    
+    // Get current protocol, host, and port
+    const protocol = window.location.protocol;
+    const host = window.location.host;
+    
+    // Remove leading slash if present
+    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    
+    return `${protocol}//${host}/storage/${cleanPath}`;
+}
+
 // ── Generic Component Loader ──
 async function loadComponent(url, targetId, initCallback = null) {
     const container = document.getElementById(targetId);
@@ -310,7 +324,7 @@ async function initProductsSection() {
                 name: product.name,
                 description: product.short_description || product.description || product.desc,
                 price: product.price,
-                image: product.primary_image || product.images?.[0]?.url || product.image || 'https://via.placeholder.com/300x300?text=No+Image',
+                image: product.primary_image || (product.images && product.images.length > 0 ? getStorageUrl(product.images[0]) : null) || product.image || 'https://via.placeholder.com/300x300?text=No+Image',
                 average_rating: product.average_rating || product.rating || product.review_rating || 0,
                 reviews_count: product.reviews_count || 0,
                 stock: product.stock_status || product.stock || 'in-stock',
@@ -1100,7 +1114,7 @@ async function fillQuickViewModal(product) {
     const price = document.getElementById('quick-view-price');
     
     if (label) label.textContent = product.name;
-    if (image) image.src = product.primary_image || product.image || '/frontend/assets/chair.png';
+    if (image) image.src = product.primary_image || (product.images && product.images.length > 0 ? getStorageUrl(product.images[0]) : null) || product.image || '/frontend/assets/chair.png';
     if (desc) desc.textContent = product.description || product.short_description || 'No description available';
     if (price) price.textContent = `₱${Math.floor(product.price).toLocaleString('en-US')}`;
     
@@ -1140,7 +1154,7 @@ async function fillQuickViewModal(product) {
     }
     
     // Initialize image carousel with thumbnails
-    const images = product.images || [product.primary_image || product.image];
+    const images = product.images ? product.images.map(img => getStorageUrl(img)) : [product.primary_image || product.image];
     initImageCarouselWithThumbnails(images);
     
     // Set product ID for buttons
@@ -1439,7 +1453,7 @@ function initSearchModal() {
                 id: product.id,
                 name: product.name,
                 price: product.price,
-                image: product.images?.[0]?.url || product.image || 'https://via.placeholder.com/300x300?text=No+Image',
+                image: (product.images && product.images.length > 0 ? getStorageUrl(product.images[0]) : null) || product.image || 'https://via.placeholder.com/300x300?text=No+Image',
                 slug: product.slug
             };
 

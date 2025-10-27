@@ -190,12 +190,6 @@
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const data = await response.json();
-                console.log('API Response:', data);
-                console.log('API Response Type:', typeof data);
-                console.log('Is Array?', Array.isArray(data));
-                if (typeof data === 'object') {
-                    console.log('Object keys:', Object.keys(data));
-                }
                 
                 // Extract array from response
                 if (Array.isArray(data)) {
@@ -230,7 +224,6 @@
                     });
                 }
                 
-                console.log('✅ Regions loaded:', regionsData.length);
             } catch (error) {
                 console.error('❌ Error loading regions:', error);
             }
@@ -279,7 +272,6 @@
                     }
                 }
                 
-                console.log('✅ Provinces loaded:', provinces.length);
             } catch (error) {
                 console.error('❌ Error loading provinces:', error);
             }
@@ -314,7 +306,6 @@
                     }
                 }
                 
-                console.log('✅ Cities/Municipalities loaded:', cities.length);
             } catch (error) {
                 console.error('❌ Error loading cities:', error);
             }
@@ -350,7 +341,6 @@
                     }
                 }
                 
-                console.log('✅ Cities/Municipalities loaded:', cities.length);
             } catch (error) {
                 console.error('❌ Error loading cities:', error);
             }
@@ -384,7 +374,6 @@
                     }
                 }
                 
-                console.log('✅ Barangays loaded:', barangays.length);
             } catch (error) {
                 console.error('❌ Error loading barangays:', error);
             }
@@ -397,7 +386,6 @@
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const data = await response.json();
-                console.log('Billing API Response:', data);
                 
                 // Extract array from response
                 if (Array.isArray(data)) {
@@ -432,7 +420,6 @@
                     });
                 }
                 
-                console.log('✅ Billing Regions loaded:', billingRegionsData.length);
             } catch (error) {
                 console.error('❌ Error loading billing regions:', error);
             }
@@ -480,7 +467,6 @@
                     }
                 }
                 
-                console.log('✅ Billing Provinces loaded:', provinces.length);
             } catch (error) {
                 console.error('❌ Error loading billing provinces:', error);
             }
@@ -514,7 +500,6 @@
                     }
                 }
                 
-                console.log('✅ Billing Cities/Municipalities loaded:', cities.length);
             } catch (error) {
                 console.error('❌ Error loading billing cities:', error);
             }
@@ -549,7 +534,6 @@
                     }
                 }
                 
-                console.log('✅ Billing Cities/Municipalities loaded:', cities.length);
             } catch (error) {
                 console.error('❌ Error loading billing cities:', error);
             }
@@ -582,7 +566,6 @@
                     }
                 }
                 
-                console.log('✅ Billing Barangays loaded:', barangays.length);
             } catch (error) {
                 console.error('❌ Error loading billing barangays:', error);
             }
@@ -658,7 +641,6 @@
                     const regionName = selectedOption.value;
                     const regionCode = selectedOption.getAttribute('data-code');
                     
-                    console.log('🌏 Billing Region selected:', { name: regionName, code: regionCode });
                     
                     // Reset province code (important for regions without provinces)
                     billingCurrentProvinceCode = '';
@@ -689,7 +671,6 @@
                     const provinceName = selectedOption.value;
                     const provinceCode = selectedOption.getAttribute('data-code');
                     
-                    console.log('🏛️ Billing Province selected:', { name: provinceName, code: provinceCode });
                     
                     // Reset city and barangay
                     if (billingCitySelect) {
@@ -713,7 +694,6 @@
                     const cityName = selectedOption.value;
                     const cityCode = selectedOption.getAttribute('data-code');
                     
-                    console.log('🏙️ Billing City selected:', { name: cityName, code: cityCode });
                     
                     // Reset barangay
                     if (billingBarangaySelect) {

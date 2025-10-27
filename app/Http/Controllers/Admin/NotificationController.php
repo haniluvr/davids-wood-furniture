@@ -151,24 +151,28 @@ class NotificationController extends Controller
                     if ($order) {
                         $user->notify(new OrderCreatedNotification($order));
                     }
+
                     break;
                 case 'order_status_changed':
                     $order = Order::latest()->first();
                     if ($order) {
                         $user->notify(new OrderStatusChangedNotification($order, 'Processing'));
                     }
+
                     break;
                 case 'low_stock':
                     $product = \App\Models\Product::where('stock_quantity', '<', 10)->first();
                     if ($product) {
                         $user->notify(new LowStockNotification($product));
                     }
+
                     break;
                 case 'new_review':
                     $review = \App\Models\ProductReview::latest()->first();
                     if ($review) {
                         $user->notify(new NewReviewNotification($review));
                     }
+
                     break;
             }
 

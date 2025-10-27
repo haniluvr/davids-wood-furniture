@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 class ContactController extends Controller
 {
     /**
-     * Store a new contact message
+     * Store a new contact message.
      */
     public function store(Request $request)
     {
@@ -41,7 +41,6 @@ class ContactController extends Controller
                 'success' => true,
                 'message' => 'Thank you for your message! We\'ll respond within 1-2 business days.',
             ]);
-
         } catch (\Exception $e) {
             Log::error('Contact form submission failed', [
                 'error' => $e->getMessage(),
@@ -56,7 +55,7 @@ class ContactController extends Controller
     }
 
     /**
-     * Display all contact messages (admin only)
+     * Display all contact messages (admin only).
      */
     public function index(Request $request)
     {
@@ -76,7 +75,7 @@ class ContactController extends Controller
     }
 
     /**
-     * Display a specific contact message (admin only)
+     * Display a specific contact message (admin only).
      */
     public function show(ContactMessage $contactMessage)
     {
@@ -90,7 +89,7 @@ class ContactController extends Controller
     }
 
     /**
-     * Update contact message status or admin notes (admin only)
+     * Update contact message status or admin notes (admin only).
      */
     public function update(Request $request, ContactMessage $contactMessage)
     {
@@ -110,7 +109,7 @@ class ContactController extends Controller
     }
 
     /**
-     * Delete a contact message (admin only)
+     * Delete a contact message (admin only).
      */
     public function destroy(ContactMessage $contactMessage)
     {

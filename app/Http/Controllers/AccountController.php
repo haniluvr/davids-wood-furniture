@@ -683,7 +683,7 @@ class AccountController extends Controller
     }
 
     /**
-     * Enable two-factor authentication for the user
+     * Enable two-factor authentication for the user.
      */
     public function enableTwoFactor(Request $request)
     {
@@ -723,7 +723,7 @@ class AccountController extends Controller
     }
 
     /**
-     * Disable two-factor authentication for the user
+     * Disable two-factor authentication for the user.
      */
     public function disableTwoFactor(Request $request)
     {
@@ -761,7 +761,7 @@ class AccountController extends Controller
     }
 
     /**
-     * Get the current 2FA status for the user
+     * Get the current 2FA status for the user.
      */
     public function getTwoFactorStatus()
     {

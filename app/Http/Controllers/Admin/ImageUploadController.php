@@ -46,7 +46,7 @@ class ImageUploadController extends Controller
                 $uploadedImages[] = [
                     'filename' => $filename,
                     'path' => $originalPath,
-                    'url' => Storage::url($originalPath),
+                    'url' => Storage::dynamic()->url($originalPath),
                     'thumbnails' => $thumbnails,
                     'size' => $image->getSize(),
                     'mime_type' => $image->getMimeType(),
@@ -58,7 +58,6 @@ class ImageUploadController extends Controller
                 'images' => $uploadedImages,
                 'message' => count($uploadedImages).' image(s) uploaded successfully.',
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -72,8 +71,8 @@ class ImageUploadController extends Controller
         try {
             $imagePath = 'images/'.$image;
 
-            if (Storage::disk('public')->exists($imagePath)) {
-                Storage::disk('public')->delete($imagePath);
+            if (Storage::dynamic()->exists($imagePath)) {
+                Storage::dynamic()->delete($imagePath);
 
                 // Delete thumbnails
                 $this->deleteThumbnails($imagePath);
@@ -88,7 +87,6 @@ class ImageUploadController extends Controller
                 'success' => false,
                 'message' => 'Image not found.',
             ], 404);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -120,7 +118,6 @@ class ImageUploadController extends Controller
                 'success' => true,
                 'message' => 'Image order updated successfully.',
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -181,12 +178,11 @@ class ImageUploadController extends Controller
 
                 $thumbnails[$size] = [
                     'path' => $thumbnailPath,
-                    'url' => Storage::url($thumbnailPath),
+                    'url' => Storage::dynamic()->url($thumbnailPath),
                     'width' => $dimensions[0],
                     'height' => $dimensions[1],
                 ];
             }
-
         } catch (\Exception $e) {
             \Log::error('Thumbnail generation failed: '.$e->getMessage());
         }
@@ -212,8 +208,8 @@ class ImageUploadController extends Controller
 
         foreach ($sizes as $size) {
             $thumbnailPath = $thumbnailDir.$filename."_{$size}.{$extension}";
-            if (Storage::disk('public')->exists($thumbnailPath)) {
-                Storage::disk('public')->delete($thumbnailPath);
+            if (Storage::dynamic()->exists($thumbnailPath)) {
+                Storage::dynamic()->delete($thumbnailPath);
             }
         }
     }
