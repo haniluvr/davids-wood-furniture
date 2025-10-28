@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeMail;
 use App\Models\Admin;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -59,7 +61,7 @@ class UserController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $users = $query->paginate(15);
+        $all_customers = $query->paginate(15);
 
         // Get statistics with lifetime value calculations
         $stats = [
@@ -84,7 +86,7 @@ class UserController extends Controller
             'vip_customers' => 'VIP Customers (15+ orders)',
         ];
 
-        return view('admin.users.index', compact('users', 'stats', 'customerGroups'));
+        return view('admin.users.index', compact('all_customers', 'stats', 'customerGroups'));
     }
 
     /**
@@ -104,77 +106,99 @@ class UserController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
             'phone' => 'nullable|string|max:20',
-            'date_of_birth' => 'nullable|date',
-            'address_line_1' => 'nullable|string|max:255',
-            'address_line_2' => 'nullable|string|max:255',
+            'street' => 'nullable|string|max:255',
+            'barangay' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:20',
-            'country' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+            'zip_code' => 'nullable|string|max:20',
+            'region' => 'nullable|string|max:255',
             'newsletter_subscribed' => 'boolean',
+            'newsletter_product_updates' => 'boolean',
+            'newsletter_special_offers' => 'boolean',
             'marketing_emails' => 'boolean',
-            'email_verified' => 'boolean',
+            'send_welcome_email' => 'boolean',
         ]);
 
-        $userData = $validated;
-        $userData['password'] = Hash::make($validated['password']);
-        $userData['email_verified_at'] = $validated['email_verified'] ? now() : null;
+        $all_customerData = $validated;
+        $all_customerData['is_suspended'] = false; // Default to active
+        $all_customerData['email_verified_at'] = null; // Will be verified via magic link
+        $all_customerData['password'] = Hash::make('temp_password_'.time()); // Temporary password
 
-        // Remove the checkbox field that's not in the database
-        unset($userData['email_verified']);
+        // Set default values for newsletter preferences
+        $all_customerData['newsletter_subscribed'] = $validated['newsletter_subscribed'] ?? false;
+        $all_customerData['newsletter_product_updates'] = $validated['newsletter_product_updates'] ?? true;
+        $all_customerData['newsletter_special_offers'] = $validated['newsletter_special_offers'] ?? false;
+        $all_customerData['marketing_emails'] = $validated['marketing_emails'] ?? false;
 
-        $user = User::create($userData);
+        // Remove fields that are not in the database
+        unset($all_customerData['send_welcome_email']);
 
-        return redirect()->to(admin_route('users.show', $user))
-            ->with('success', 'User created successfully.');
+        $all_customer = User::create($all_customerData);
+
+        // Send welcome email with magic link if requested
+        if ($request->has('send_welcome_email') && $request->send_welcome_email) {
+            try {
+                // Generate magic link for password setup
+                $magicLinkService = new \App\Services\MagicLinkService;
+                $magicLink = $magicLinkService->generateMagicLink($all_customer, 'password-setup');
+
+                // Send welcome email with magic link
+                Mail::to($all_customer->email)->send(new WelcomeMail($all_customer, $magicLink));
+            } catch (\Exception $e) {
+                // Log the error but don't fail the user creation
+                \Log::error('Failed to send welcome email to user '.$all_customer->id.': '.$e->getMessage());
+            }
+        }
+
+        return redirect()->to(admin_route('users.show', ['all_customer' => $all_customer]))
+            ->with('success', 'Customer created successfully. '.($request->has('send_welcome_email') && $request->send_welcome_email ? 'Welcome email sent with password setup link.' : ''));
     }
 
     /**
      * Display the specified user.
      */
-    public function show(User $user)
+    public function show(User $all_customer)
     {
-        $user->load(['orders.orderItems', 'wishlists']);
+        $all_customer->load(['orders.orderItems', 'wishlists']);
 
         // Get user statistics
         $stats = [
-            'total_orders' => $user->orders->count(),
-            'total_spent' => $user->orders->where('payment_status', 'paid')->sum('total_amount'),
-            'average_order_value' => $user->orders->where('payment_status', 'paid')->avg('total_amount') ?? 0,
-            'wishlist_items' => $user->wishlists->count(),
-            'last_order' => $user->orders->sortByDesc('created_at')->first(),
-            'registration_method' => $user->google_id ? 'Google' : 'Email',
+            'total_orders' => $all_customer->orders->count(),
+            'total_spent' => $all_customer->orders->where('payment_status', 'paid')->sum('total_amount'),
+            'average_order_value' => $all_customer->orders->where('payment_status', 'paid')->avg('total_amount') ?? 0,
+            'wishlist_items' => $all_customer->wishlists->count(),
+            'last_order' => $all_customer->orders->sortByDesc('created_at')->first(),
+            'registration_method' => $all_customer->google_id ? 'Google' : 'Email',
         ];
 
         // Recent orders
-        $recentOrders = $user->orders()
+        $recentOrders = $all_customer->orders()
             ->with('orderItems.product')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 
-        return view('admin.users.show', compact('user', 'stats', 'recentOrders'));
+        return view('admin.users.show', compact('all_customer', 'stats', 'recentOrders'));
     }
 
     /**
      * Show the form for editing the specified user.
      */
-    public function edit(User $user)
+    public function edit(User $all_customer)
     {
-        return view('admin.users.edit', compact('user'));
+        return view('admin.users.edit', compact('all_customer'));
     }
 
     /**
      * Update the specified user.
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request, User $all_customer)
     {
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($all_customer->id)],
             'phone' => 'nullable|string|max:20',
             'date_of_birth' => 'nullable|date',
             'address_line_1' => 'nullable|string|max:255',
@@ -188,27 +212,27 @@ class UserController extends Controller
             'is_suspended' => 'boolean',
         ]);
 
-        $user->update($validated);
+        $all_customer->update($validated);
 
-        return redirect()->to(admin_route('users.show', $user))
+        return redirect()->to(admin_route('users.show', $all_customer))
             ->with('success', 'User updated successfully.');
     }
 
     /**
      * Remove the specified user.
      */
-    public function destroy(User $user)
+    public function destroy(User $all_customer)
     {
         // Check if user has orders
-        if ($user->orders()->count() > 0) {
+        if ($all_customer->orders()->count() > 0) {
             return back()->withErrors(['error' => 'Cannot delete user with existing orders. Consider suspending the account instead.']);
         }
 
         // Delete user's wishlist items
-        $user->wishlists()->delete();
+        $all_customer->wishlists()->delete();
 
         // Delete the user
-        $user->delete();
+        $all_customer->delete();
 
         return redirect()->to(admin_route('users.index'))
             ->with('success', 'User deleted successfully.');
@@ -217,9 +241,9 @@ class UserController extends Controller
     /**
      * Suspend a user account.
      */
-    public function suspend(User $user)
+    public function suspend(User $all_customer)
     {
-        $user->update(['is_suspended' => true]);
+        $all_customer->update(['is_suspended' => true]);
 
         return back()->with('success', 'User account suspended successfully.');
     }
@@ -227,9 +251,9 @@ class UserController extends Controller
     /**
      * Unsuspend a user account.
      */
-    public function unsuspend(User $user)
+    public function unsuspend(User $all_customer)
     {
-        $user->update(['is_suspended' => false]);
+        $all_customer->update(['is_suspended' => false]);
 
         return back()->with('success', 'User account unsuspended successfully.');
     }
@@ -237,9 +261,9 @@ class UserController extends Controller
     /**
      * Verify a user's email.
      */
-    public function verifyEmail(User $user)
+    public function verifyEmail(User $all_customer)
     {
-        $user->update(['email_verified_at' => now()]);
+        $all_customer->update(['email_verified_at' => now()]);
 
         return back()->with('success', 'User email verified successfully.');
     }
@@ -247,9 +271,9 @@ class UserController extends Controller
     /**
      * Unverify a user's email.
      */
-    public function unverifyEmail(User $user)
+    public function unverifyEmail(User $all_customer)
     {
-        $user->update(['email_verified_at' => null]);
+        $all_customer->update(['email_verified_at' => null]);
 
         return back()->with('success', 'User email verification removed.');
     }
@@ -257,13 +281,13 @@ class UserController extends Controller
     /**
      * Reset user password.
      */
-    public function resetPassword(Request $request, User $user)
+    public function resetPassword(Request $request, User $all_customer)
     {
         $validated = $request->validate([
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user->update([
+        $all_customer->update([
             'password' => Hash::make($validated['password']),
         ]);
 
@@ -355,14 +379,14 @@ class UserController extends Controller
     {
         $format = $request->get('format', 'csv');
 
-        $users = User::with('orders')
+        $all_customers = User::with('orders')
             ->orderBy('created_at', 'desc')
             ->get();
 
         $filename = 'users-export-'.now()->format('Y-m-d-H-i-s');
 
         if ($format === 'csv') {
-            return $this->exportCsv($users, $filename);
+            return $this->exportCsv($all_customers, $filename);
         }
 
         return back()->with('error', 'Export format not supported.');
@@ -371,14 +395,14 @@ class UserController extends Controller
     /**
      * Export users as CSV.
      */
-    private function exportCsv($users, $filename)
+    private function exportCsv($all_customers, $filename)
     {
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="'.$filename.'.csv"',
         ];
 
-        $callback = function () use ($users) {
+        $callback = function () use ($all_customers) {
             $file = fopen('php://output', 'w');
 
             // CSV headers
@@ -397,20 +421,20 @@ class UserController extends Controller
                 'Last Login',
             ]);
 
-            foreach ($users as $user) {
+            foreach ($all_customers as $all_customer) {
                 fputcsv($file, [
-                    $user->id,
-                    $user->first_name,
-                    $user->last_name,
-                    $user->email,
-                    $user->phone ?? 'N/A',
-                    $user->google_id ? 'Google' : 'Email',
-                    $user->email_verified_at ? 'Yes' : 'No',
-                    $user->is_suspended ? 'Suspended' : 'Active',
-                    $user->orders->count(),
-                    '$'.number_format($user->orders->where('payment_status', 'paid')->sum('total_amount'), 2),
-                    $user->created_at->format('Y-m-d H:i:s'),
-                    $user->last_login_at ? $user->last_login_at->format('Y-m-d H:i:s') : 'Never',
+                    $all_customer->id,
+                    $all_customer->first_name,
+                    $all_customer->last_name,
+                    $all_customer->email,
+                    $all_customer->phone ?? 'N/A',
+                    $all_customer->google_id ? 'Google' : 'Email',
+                    $all_customer->email_verified_at ? 'Yes' : 'No',
+                    $all_customer->is_suspended ? 'Suspended' : 'Active',
+                    $all_customer->orders->count(),
+                    '$'.number_format($all_customer->orders->where('payment_status', 'paid')->sum('total_amount'), 2),
+                    $all_customer->created_at->format('Y-m-d H:i:s'),
+                    $all_customer->last_login_at ? $all_customer->last_login_at->format('Y-m-d H:i:s') : 'Never',
                 ]);
             }
 
@@ -423,17 +447,17 @@ class UserController extends Controller
     /**
      * Add tags to customer.
      */
-    public function addTags(Request $request, User $user)
+    public function addTags(Request $request, User $all_customer)
     {
         $request->validate([
             'tags' => 'required|array',
             'tags.*' => 'string|max:50',
         ]);
 
-        $currentTags = $user->tags ?? [];
+        $currentTags = $all_customer->tags ?? [];
         $newTags = array_unique(array_merge($currentTags, $request->tags));
 
-        $user->update(['tags' => $newTags]);
+        $all_customer->update(['tags' => $newTags]);
 
         return response()->json([
             'success' => true,
@@ -444,18 +468,18 @@ class UserController extends Controller
     /**
      * Remove tag from customer.
      */
-    public function removeTag(Request $request, User $user)
+    public function removeTag(Request $request, User $all_customer)
     {
         $request->validate([
             'tag' => 'required|string',
         ]);
 
-        $currentTags = $user->tags ?? [];
+        $currentTags = $all_customer->tags ?? [];
         $newTags = array_values(array_filter($currentTags, function ($tag) use ($request) {
             return $tag !== $request->tag;
         }));
 
-        $user->update(['tags' => $newTags]);
+        $all_customer->update(['tags' => $newTags]);
 
         return response()->json([
             'success' => true,
@@ -466,13 +490,13 @@ class UserController extends Controller
     /**
      * Update customer notes.
      */
-    public function updateNotes(Request $request, User $user)
+    public function updateNotes(Request $request, User $all_customer)
     {
         $request->validate([
             'admin_notes' => 'nullable|string|max:2000',
         ]);
 
-        $user->update(['admin_notes' => $request->admin_notes]);
+        $all_customer->update(['admin_notes' => $request->admin_notes]);
 
         return response()->json([
             'success' => true,
@@ -483,9 +507,9 @@ class UserController extends Controller
     /**
      * Get customer lifetime value and analytics.
      */
-    public function getCustomerAnalytics(User $user)
+    public function getCustomerAnalytics(User $all_customer)
     {
-        $orders = $user->orders()->where('payment_status', 'paid')->get();
+        $orders = $all_customer->orders()->where('payment_status', 'paid')->get();
 
         $analytics = [
             'total_orders' => $orders->count(),
@@ -494,9 +518,9 @@ class UserController extends Controller
             'first_order_date' => $orders->min('created_at'),
             'last_order_date' => $orders->max('created_at'),
             'days_since_last_order' => $orders->max('created_at') ? now()->diffInDays($orders->max('created_at')) : null,
-            'customer_lifetime_days' => $user->created_at ? now()->diffInDays($user->created_at) : 0,
-            'order_frequency' => $orders->count() > 0 && $user->created_at ?
-                $orders->count() / max(1, now()->diffInDays($user->created_at) / 30) : 0,
+            'customer_lifetime_days' => $all_customer->created_at ? now()->diffInDays($all_customer->created_at) : 0,
+            'order_frequency' => $orders->count() > 0 && $all_customer->created_at ?
+                $orders->count() / max(1, now()->diffInDays($all_customer->created_at) / 30) : 0,
             'customer_group' => $this->getCustomerGroup($orders->count()),
         ];
 
@@ -540,14 +564,14 @@ class UserController extends Controller
             'action' => 'required|in:add,remove,replace',
         ]);
 
-        $userIds = $request->user_ids;
+        $all_customerIds = $request->user_ids;
         $newTags = $request->tags;
         $action = $request->action;
 
-        $users = User::whereIn('id', $userIds)->get();
+        $all_customers = User::whereIn('id', $all_customerIds)->get();
 
-        foreach ($users as $user) {
-            $currentTags = $user->tags ?? [];
+        foreach ($all_customers as $all_customer) {
+            $currentTags = $all_customer->tags ?? [];
 
             switch ($action) {
                 case 'add':
@@ -566,12 +590,12 @@ class UserController extends Controller
                     break;
             }
 
-            $user->update(['tags' => $updatedTags]);
+            $all_customer->update(['tags' => $updatedTags]);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Tags updated for '.count($userIds).' customers',
+            'message' => 'Tags updated for '.count($all_customerIds).' customers',
         ]);
     }
 
@@ -603,16 +627,16 @@ class UserController extends Controller
                 break;
         }
 
-        $users = $query->paginate(20);
+        $all_customers = $query->paginate(20);
 
         return response()->json([
             'success' => true,
-            'users' => $users->items(),
+            'users' => $all_customers->items(),
             'pagination' => [
-                'current_page' => $users->currentPage(),
-                'last_page' => $users->lastPage(),
-                'per_page' => $users->perPage(),
-                'total' => $users->total(),
+                'current_page' => $all_customers->currentPage(),
+                'last_page' => $all_customers->lastPage(),
+                'per_page' => $all_customers->perPage(),
+                'total' => $all_customers->total(),
             ],
         ]);
     }

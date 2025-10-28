@@ -18,7 +18,7 @@
                 <a class="font-medium" href="{{ admin_route('users.index') }}">Users /</a>
             </li>
             <li>
-                <a class="font-medium" href="{{ admin_route('users.show', $user) }}">{{ $user->first_name }} {{ $user->last_name }} /</a>
+                <a class="font-medium" href="{{ admin_route('users.show', $all_customer) }}">{{ $all_customer->first_name }} {{ $all_customer->last_name }} /</a>
             </li>
             <li class="font-medium text-primary">Edit</li>
         </ol>
@@ -35,20 +35,20 @@
                 <div class="relative mb-4">
                     <div class="h-24 w-24 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
                         <span class="text-white font-bold text-2xl">
-                            {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
+                            {{ substr($all_customer->first_name, 0, 1) }}{{ substr($all_customer->last_name, 0, 1) }}
                         </span>
                     </div>
                 </div>
 
                 <!-- User Details -->
                 <h3 class="text-xl font-bold text-black dark:text-white mb-2">
-                    {{ $user->first_name }} {{ $user->last_name }}
+                    {{ $all_customer->first_name }} {{ $all_customer->last_name }}
                 </h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ $user->email }}</p>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ $all_customer->email }}</p>
 
                 <!-- Status Badge -->
                 <div class="mb-6">
-                    @if($user->email_verified_at)
+                    @if($all_customer->email_verified_at)
                         <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
                             <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
                             Verified
@@ -65,15 +65,15 @@
                 <div class="w-full space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="text-gray-600 dark:text-gray-400">Total Orders</span>
-                        <span class="font-semibold text-black dark:text-white">{{ $user->orders->count() }}</span>
+                        <span class="font-semibold text-black dark:text-white">{{ $all_customer->orders->count() }}</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-gray-600 dark:text-gray-400">Total Spent</span>
-                        <span class="font-semibold text-black dark:text-white">₱{{ number_format($user->orders->where('status', '!=', 'cancelled')->sum('total_amount'), 2) }}</span>
+                        <span class="font-semibold text-black dark:text-white">₱{{ number_format($all_customer->orders->where('status', '!=', 'cancelled')->sum('total_amount'), 2) }}</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-gray-600 dark:text-gray-400">Member Since</span>
-                        <span class="font-semibold text-black dark:text-white">{{ $user->created_at->format('M Y') }}</span>
+                        <span class="font-semibold text-black dark:text-white">{{ $all_customer->created_at->format('M Y') }}</span>
                     </div>
                 </div>
             </div>
@@ -82,7 +82,7 @@
 
     <!-- Edit Form -->
     <div class="lg:col-span-2">
-        <form action="{{ admin_route('users.update', $user) }}" method="POST" class="space-y-6">
+        <form action="{{ admin_route('users.update', $all_customer) }}" method="POST" class="space-y-6">
             @csrf
             @method('PUT')
 
@@ -100,7 +100,7 @@
                             type="text"
                             id="first_name"
                             name="first_name"
-                            value="{{ old('first_name', $user->first_name) }}"
+                            value="{{ old('first_name', $all_customer->first_name) }}"
                             class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('first_name') border-red-500 @enderror"
                             required
                         />
@@ -118,7 +118,7 @@
                             type="text"
                             id="last_name"
                             name="last_name"
-                            value="{{ old('last_name', $user->last_name) }}"
+                            value="{{ old('last_name', $all_customer->last_name) }}"
                             class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('last_name') border-red-500 @enderror"
                             required
                         />
@@ -136,7 +136,7 @@
                             type="email"
                             id="email"
                             name="email"
-                            value="{{ old('email', $user->email) }}"
+                            value="{{ old('email', $all_customer->email) }}"
                             class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('email') border-red-500 @enderror"
                             required
                         />
@@ -154,7 +154,7 @@
                             type="tel"
                             id="phone"
                             name="phone"
-                            value="{{ old('phone', $user->phone) }}"
+                            value="{{ old('phone', $all_customer->phone) }}"
                             class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('phone') border-red-500 @enderror"
                         />
                         @error('phone')
@@ -171,7 +171,7 @@
                             type="date"
                             id="date_of_birth"
                             name="date_of_birth"
-                            value="{{ old('date_of_birth', $user->date_of_birth ? $user->date_of_birth->format('Y-m-d') : '') }}"
+                            value="{{ old('date_of_birth', $all_customer->date_of_birth ? $all_customer->date_of_birth->format('Y-m-d') : '') }}"
                             class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('date_of_birth') border-red-500 @enderror"
                         />
                         @error('date_of_birth')
@@ -190,9 +190,9 @@
                             class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('gender') border-red-500 @enderror"
                         >
                             <option value="">Select Gender</option>
-                            <option value="male" {{ old('gender', $user->gender) === 'male' ? 'selected' : '' }}>Male</option>
-                            <option value="female" {{ old('gender', $user->gender) === 'female' ? 'selected' : '' }}>Female</option>
-                            <option value="other" {{ old('gender', $user->gender) === 'other' ? 'selected' : '' }}>Other</option>
+                            <option value="male" {{ old('gender', $all_customer->gender) === 'male' ? 'selected' : '' }}>Male</option>
+                            <option value="female" {{ old('gender', $all_customer->gender) === 'female' ? 'selected' : '' }}>Female</option>
+                            <option value="other" {{ old('gender', $all_customer->gender) === 'other' ? 'selected' : '' }}>Other</option>
                         </select>
                         @error('gender')
                             <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
@@ -216,9 +216,9 @@
                             name="status"
                             class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('status') border-red-500 @enderror"
                         >
-                            <option value="active" {{ old('status', $user->status ?? 'active') === 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="inactive" {{ old('status', $user->status ?? 'active') === 'inactive' ? 'selected' : '' }}>Inactive</option>
-                            <option value="suspended" {{ old('status', $user->status ?? 'active') === 'suspended' ? 'selected' : '' }}>Suspended</option>
+                            <option value="active" {{ old('status', $all_customer->status ?? 'active') === 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ old('status', $all_customer->status ?? 'active') === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                            <option value="suspended" {{ old('status', $all_customer->status ?? 'active') === 'suspended' ? 'selected' : '' }}>Suspended</option>
                         </select>
                         @error('status')
                             <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
@@ -236,7 +236,7 @@
                                     type="radio"
                                     name="email_verified"
                                     value="1"
-                                    {{ old('email_verified', $user->email_verified_at ? '1' : '0') === '1' ? 'checked' : '' }}
+                                    {{ old('email_verified', $all_customer->email_verified_at ? '1' : '0') === '1' ? 'checked' : '' }}
                                     class="mr-2"
                                 />
                                 <span class="text-black dark:text-white">Verified</span>
@@ -246,7 +246,7 @@
                                     type="radio"
                                     name="email_verified"
                                     value="0"
-                                    {{ old('email_verified', $user->email_verified_at ? '1' : '0') === '0' ? 'checked' : '' }}
+                                    {{ old('email_verified', $all_customer->email_verified_at ? '1' : '0') === '0' ? 'checked' : '' }}
                                     class="mr-2"
                                 />
                                 <span class="text-black dark:text-white">Unverified</span>
@@ -316,7 +316,7 @@
 
             <!-- Form Actions -->
             <div class="flex items-center justify-end gap-4">
-                <a href="{{ admin_route('users.show', $user) }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
+                <a href="{{ admin_route('users.show', $all_customer) }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
                     <i data-lucide="x" class="w-4 h-4"></i>
                     Cancel
                 </a>

@@ -70,6 +70,64 @@
                                 {{ ucfirst($order->payment_status) }}
                             </span>
                         </div>
+                        
+                        <!-- Fulfillment Progress Bar -->
+                        @if($order->status !== 'cancelled')
+                            <div class="mt-6">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Fulfillment Progress</h4>
+                                <div class="space-y-3">
+                                    <!-- Progress Bar -->
+                                    <div class="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
+                                        @php
+                                            $progress = 0;
+                                            $steps = ['pending', 'processing', 'shipped', 'delivered'];
+                                            $currentStep = array_search($order->status, $steps);
+                                            if ($currentStep !== false) {
+                                                $progress = (($currentStep + 1) / count($steps)) * 100;
+                                            }
+                                        @endphp
+                                        <div class="bg-gradient-to-r from-emerald-500 to-blue-500 h-3 rounded-full transition-all duration-500" 
+                                             style="width: {{ $progress }}%"></div>
+                                    </div>
+                                    
+                                    <!-- Progress Steps -->
+                                    <div class="flex justify-between text-xs">
+                                        <div class="flex flex-col items-center space-y-1">
+                                            <div class="w-6 h-6 rounded-full flex items-center justify-center {{ $order->status === 'pending' ? 'bg-emerald-500 text-white' : ($order->status === 'processing' || $order->status === 'shipped' || $order->status === 'delivered' ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-600') }}">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                </svg>
+                                            </div>
+                                            <span class="text-gray-600 dark:text-gray-400 {{ $order->status === 'pending' ? 'font-medium text-emerald-600' : '' }}">Order Placed</span>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-1">
+                                            <div class="w-6 h-6 rounded-full flex items-center justify-center {{ $order->status === 'processing' ? 'bg-emerald-500 text-white' : ($order->status === 'shipped' || $order->status === 'delivered' ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-600') }}">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                </svg>
+                                            </div>
+                                            <span class="text-gray-600 dark:text-gray-400 {{ $order->status === 'processing' ? 'font-medium text-emerald-600' : '' }}">Processing</span>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-1">
+                                            <div class="w-6 h-6 rounded-full flex items-center justify-center {{ $order->status === 'shipped' ? 'bg-emerald-500 text-white' : ($order->status === 'delivered' ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-600') }}">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                </svg>
+                                            </div>
+                                            <span class="text-gray-600 dark:text-gray-400 {{ $order->status === 'shipped' ? 'font-medium text-emerald-600' : '' }}">Shipped</span>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-1">
+                                            <div class="w-6 h-6 rounded-full flex items-center justify-center {{ $order->status === 'delivered' ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-600' }}">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                </svg>
+                                            </div>
+                                            <span class="text-gray-600 dark:text-gray-400 {{ $order->status === 'delivered' ? 'font-medium text-emerald-600' : '' }}">Delivered</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Status Update Form -->

@@ -3,107 +3,180 @@
 @section('title', 'Create Order')
 
 @section('content')
-<div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-    <!-- Breadcrumb -->
-    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 class="text-title-md2 font-semibold text-black dark:text-white">
-            Create Order
-        </h2>
-        <nav>
-            <ol class="flex items-center gap-2">
-                <li><a href="{{ admin_route('dashboard') }}" class="font-medium">Dashboard</a></li>
-                <li class="font-medium text-primary">/</li>
-                <li><a href="{{ admin_route('orders.index') }}" class="font-medium">Orders</a></li>
-                <li class="font-medium text-primary">/</li>
-                <li class="font-medium text-primary">Create</li>
-            </ol>
-        </nav>
+<div class="max-w-6xl mx-auto">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
+                    <i data-lucide="shopping-bag" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-stone-900 dark:text-white">Create New Order</h1>
+                    <p class="mt-1 text-sm text-stone-600 dark:text-gray-400">Create a new order for a customer</p>
+                </div>
+            </div>
+            <a href="{{ admin_route('orders.index') }}" 
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to Orders
+            </a>
+        </div>
     </div>
 
-    <form action="{{ admin_route('orders.store') }}" method="POST" class="space-y-6">
+    <form action="{{ admin_route('orders.store') }}" method="POST" class="space-y-8">
         @csrf
 
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <!-- Main Content -->
-            <div class="lg:col-span-2 space-y-6">
                 <!-- Customer Selection -->
-                <div class="rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-                    <h3 class="mb-6 text-xl font-semibold text-black dark:text-white">Customer Information</h3>
-                    
-                    <div class="mb-4">
-                        <label class="mb-2.5 block text-black dark:text-white">
-                            Select Customer <span class="text-meta-1">*</span>
+        <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-hidden">
+            <div class="px-8 py-6 border-b border-stone-200 dark:border-strokedark bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
+                        <i data-lucide="user" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-stone-900 dark:text-white">Customer Selection</h3>
+                            </div>
+                <p class="mt-1 text-sm text-stone-600 dark:text-gray-400">Select an existing customer or create a new one</p>
+                            </div>
+            <div class="p-8 space-y-6">
+                <!-- Customer Search -->
+                <div class="space-y-2">
+                    <label for="customer-search" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                        Search Customer <span class="text-red-500">*</span>
                         </label>
-                        <select
-                            name="user_id"
-                            id="customer-select"
-                            class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                            required
-                        >
-                            <option value="">Search and select customer...</option>
-                            @foreach($users as $user)
-                                <option value="{{ $user->id }}" data-email="{{ $user->email }}" data-phone="{{ $user->phone }}">
-                                    {{ $user->first_name }} {{ $user->last_name }} ({{ $user->email }})
-                                </option>
-                            @endforeach
-                        </select>
+                            <div class="relative">
+                                <input type="text" 
+                                       id="customer-search" 
+                                       placeholder="Search by first name, last name, email, or phone..."
+                                       class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 pl-10 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400 @error('user_id') border-red-300 @enderror">
+                                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                    <input type="hidden" name="user_id" id="selected-customer-id" required>
                         @error('user_id')
-                            <p class="mt-1 text-sm text-meta-1">{{ $message }}</p>
+                        <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Customer Details Display -->
-                    <div id="customer-details" class="hidden rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <!-- Search Results -->
+                <div id="customer-results" class="hidden border border-stone-200 rounded-xl max-h-60 overflow-y-auto dark:border-strokedark">
+                    <!-- Results will be populated here -->
+                    </div>
+
+                <!-- Selected Customer Display -->
+                <div id="selected-customer" class="hidden rounded-xl bg-stone-50 p-4 dark:bg-stone-800">
+                    <div class="flex items-center justify-between">
                             <div>
-                                <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Email</label>
-                                <p id="customer-email" class="text-black dark:text-white"></p>
+                            <h4 class="font-medium text-stone-900 dark:text-white" id="customer-name"></h4>
+                            <p class="text-sm text-stone-500 dark:text-stone-400" id="customer-email"></p>
+                            <p class="text-sm text-stone-500 dark:text-stone-400" id="customer-phone"></p>
+                        </div>
+                        <button type="button" id="clear-customer" class="text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                </div>
+            </div>
+
+                <!-- New Customer Form -->
+                <div id="new-customer-form" class="hidden space-y-4 p-4 border border-stone-200 rounded-xl dark:border-strokedark">
+                    <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span class="font-medium">Create New Customer</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label for="new-first-name" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                                First Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="new-first-name" 
+                                   class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="new-last-name" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                                Last Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="new-last-name" 
+                                   class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white">
                             </div>
-                            <div>
-                                <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Phone</label>
-                                <p id="customer-phone" class="text-black dark:text-white"></p>
+                        <div class="space-y-2 md:col-span-2">
+                            <label for="new-email" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" 
+                                   id="new-email" 
+                                   class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white">
                             </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="button" id="create-customer-btn" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            Create Customer
+                        </button>
+                        <button type="button" id="cancel-new-customer" class="inline-flex items-center gap-2 px-4 py-2 border border-stone-300 text-stone-700 rounded-lg hover:bg-stone-50 transition-colors duration-200 dark:border-strokedark dark:text-white dark:hover:bg-gray-800">
+                            Cancel
+                        </button>
+                    </div>
+                        </div>
+
+                <!-- New Customer Button -->
+                <div class="text-center">
+                    <button type="button" id="show-new-customer" class="text-emerald-600 hover:text-emerald-700 font-medium text-sm transition-colors duration-200">
+                        <i data-lucide="plus" class="w-4 h-4 inline mr-1"></i>
+                        Can't find the customer? Create a new one
+                    </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Order Items -->
-                <div class="rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-                    <div class="mb-6 flex items-center justify-between">
-                        <h3 class="text-xl font-semibold text-black dark:text-white">Order Items</h3>
-                        <button type="button" id="add-item-btn" class="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white hover:bg-opacity-90">
+        <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-hidden">
+            <div class="px-8 py-6 border-b border-stone-200 dark:border-strokedark bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-700">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl">
+                            <i data-lucide="package" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-stone-900 dark:text-white">Order Items</h3>
+                    </div>
+                    <button type="button" id="add-item-btn" class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-white hover:bg-opacity-90 transition-all duration-200">
                             <i data-lucide="plus" class="h-4 w-4"></i>
                             Add Item
                         </button>
                     </div>
-
+                <p class="mt-1 text-sm text-stone-600 dark:text-gray-400">Add products to this order</p>
+            </div>
+            <div class="p-8">
                     <div id="order-items" class="space-y-4">
                         <!-- Items will be added dynamically -->
                     </div>
 
                     <!-- Order Summary -->
-                    <div class="mt-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                        <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="mt-6 rounded-xl bg-stone-50 p-6 dark:bg-stone-800">
+                    <h4 class="text-lg font-semibold text-stone-900 dark:text-white mb-4">Order Summary</h4>
+                    <div class="space-y-3">
                             <div class="flex justify-between">
-                                <span class="text-gray-600 dark:text-gray-400">Subtotal:</span>
-                                <span id="subtotal" class="font-medium text-black dark:text-white">₱0.00</span>
+                            <span class="text-stone-600 dark:text-stone-400">Subtotal:</span>
+                            <span id="subtotal" class="font-medium text-stone-900 dark:text-white">₱0.00</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600 dark:text-gray-400">Tax:</span>
-                                <span id="tax-amount" class="font-medium text-black dark:text-white">₱0.00</span>
+                            <span class="text-stone-600 dark:text-stone-400">Tax:</span>
+                            <span id="tax-amount" class="font-medium text-stone-900 dark:text-white">₱0.00</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600 dark:text-gray-400">Shipping:</span>
-                                <span id="shipping-cost" class="font-medium text-black dark:text-white">₱0.00</span>
+                            <span class="text-stone-600 dark:text-stone-400">Shipping:</span>
+                            <span id="shipping-cost" class="font-medium text-stone-900 dark:text-white">₱0.00</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600 dark:text-gray-400">Discount:</span>
-                                <span id="discount-amount" class="font-medium text-black dark:text-white">₱0.00</span>
+                            <span class="text-stone-600 dark:text-stone-400">Discount:</span>
+                            <span id="discount-amount" class="font-medium text-stone-900 dark:text-white">-₱0.00</span>
                             </div>
-                            <div class="col-span-2 border-t border-gray-300 dark:border-gray-600 pt-2">
+                        <div class="border-t border-stone-200 dark:border-stone-700 pt-3">
                                 <div class="flex justify-between">
-                                    <span class="text-lg font-semibold text-gray-900 dark:text-white">Total:</span>
-                                    <span id="total-amount" class="text-lg font-semibold text-black dark:text-white">₱0.00</span>
+                                <span class="text-lg font-semibold text-stone-900 dark:text-white">Total:</span>
+                                <span id="total-amount" class="text-lg font-bold text-stone-900 dark:text-white">₱0.00</span>
                                 </div>
                             </div>
                         </div>
@@ -111,478 +184,699 @@
                 </div>
             </div>
 
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                <!-- Order Details -->
-                <div class="rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-                    <h3 class="mb-6 text-xl font-semibold text-black dark:text-white">Order Details</h3>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="mb-2.5 block text-black dark:text-white">
-                                Payment Method <span class="text-meta-1">*</span>
+        <!-- Shipping Address -->
+        <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-hidden">
+            <div class="px-8 py-6 border-b border-stone-200 dark:border-strokedark bg-gradient-to-r from-orange-50 to-red-50 dark:from-gray-800 dark:to-gray-700">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl">
+                        <i data-lucide="map-pin" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-stone-900 dark:text-white">Shipping Address</h3>
+                </div>
+                <p class="mt-1 text-sm text-stone-600 dark:text-gray-400">Enter the delivery address for this order</p>
+            </div>
+            <div class="p-8 space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="shipping_street" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            Street Address <span class="text-red-500">*</span>
                             </label>
-                            <select
-                                name="payment_method"
-                                class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                required
-                            >
-                                <option value="">Select Payment Method</option>
-                                <option value="credit_card">Credit Card</option>
-                                <option value="paypal">PayPal</option>
-                                <option value="bank_transfer">Bank Transfer</option>
-                                <option value="cash_on_delivery">Cash on Delivery</option>
-                                <option value="check">Check</option>
-                            </select>
-                            @error('payment_method')
-                                <p class="mt-1 text-sm text-meta-1">{{ $message }}</p>
+                        <input type="text" 
+                               name="shipping_street" 
+                               id="shipping_street"
+                               value="{{ old('shipping_street') }}"
+                               class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('shipping_street') border-red-300 @enderror" 
+                               placeholder="Enter street address"
+                               required>
+                        @error('shipping_street')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <div>
-                            <label class="mb-2.5 block text-black dark:text-white">
-                                Tax Rate (%)
+                    <div class="space-y-2">
+                        <label for="shipping_barangay" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            Barangay <span class="text-red-500">*</span>
                             </label>
-                            <input
-                                type="number"
-                                id="tax-rate"
-                                step="0.01"
-                                min="0"
-                                max="100"
-                                value="8.25"
-                                class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                            >
+                        <select name="shipping_barangay" 
+                                id="shipping_barangay"
+                                class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('shipping_barangay') border-red-300 @enderror" 
+                                required>
+                            <option value="">Select Barangay</option>
+                        </select>
+                        @error('shipping_barangay')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                        </div>
                         </div>
 
-                        <div>
-                            <label class="mb-2.5 block text-black dark:text-white">
-                                Shipping Cost ($)
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="shipping_city" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            City <span class="text-red-500">*</span>
                             </label>
-                            <input
-                                type="number"
-                                id="shipping-cost-input"
-                                step="0.01"
-                                min="0"
-                                value="0"
-                                class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                            >
+                        <select name="shipping_city" 
+                                id="shipping_city"
+                                class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('shipping_city') border-red-300 @enderror" 
+                                required>
+                            <option value="">Select City</option>
+                        </select>
+                        @error('shipping_city')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
                         </div>
 
-                        <div>
-                            <label class="mb-2.5 block text-black dark:text-white">
-                                Discount Amount ($)
+                    <div class="space-y-2">
+                        <label for="shipping_zip_code" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            ZIP Code <span class="text-red-500">*</span>
                             </label>
-                            <input
-                                type="number"
-                                id="discount-amount-input"
-                                step="0.01"
-                                min="0"
-                                value="0"
-                                class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="mb-2.5 block text-black dark:text-white">
-                                Order Notes
-                            </label>
-                            <textarea
-                                name="notes"
-                                rows="4"
-                                class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                placeholder="Any special instructions or notes..."
-                            >{{ old('notes') }}</textarea>
-                            @error('notes')
-                                <p class="mt-1 text-sm text-meta-1">{{ $message }}</p>
+                        <input type="text" 
+                               name="shipping_zip_code" 
+                               id="shipping_zip_code"
+                               value="{{ old('shipping_zip_code') }}"
+                               class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('shipping_zip_code') border-red-300 @enderror" 
+                               placeholder="Enter ZIP code"
+                               required>
+                        @error('shipping_zip_code')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
-                        </div>
                     </div>
                 </div>
 
-                <!-- Billing Address -->
-                <div class="rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-                    <h3 class="mb-6 text-xl font-semibold text-black dark:text-white">Billing Address</h3>
-                    
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">First Name</label>
-                                <input
-                                    type="text"
-                                    name="billing_address[first_name]"
-                                    value="{{ old('billing_address.first_name') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">Last Name</label>
-                                <input
-                                    type="text"
-                                    name="billing_address[last_name]"
-                                    value="{{ old('billing_address.last_name') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="mb-2.5 block text-black dark:text-white">Address Line 1</label>
-                            <input
-                                type="text"
-                                name="billing_address[address_line_1]"
-                                value="{{ old('billing_address.address_line_1') }}"
-                                class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="mb-2.5 block text-black dark:text-white">Address Line 2</label>
-                            <input
-                                type="text"
-                                name="billing_address[address_line_2]"
-                                value="{{ old('billing_address.address_line_2') }}"
-                                class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                            >
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">City</label>
-                                <input
-                                    type="text"
-                                    name="billing_address[city]"
-                                    value="{{ old('billing_address.city') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">State</label>
-                                <input
-                                    type="text"
-                                    name="billing_address[state]"
-                                    value="{{ old('billing_address.state') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">ZIP Code</label>
-                                <input
-                                    type="text"
-                                    name="billing_address[zip_code]"
-                                    value="{{ old('billing_address.zip_code') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">Country</label>
-                                <input
-                                    type="text"
-                                    name="billing_address[country]"
-                                    value="{{ old('billing_address.country', 'United States') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Shipping Address -->
-                <div class="rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-                    <div class="mb-6 flex items-center justify-between">
-                        <h3 class="text-xl font-semibold text-black dark:text-white">Shipping Address</h3>
-                        <label class="flex items-center">
-                            <input
-                                type="checkbox"
-                                id="same-as-billing"
-                                class="h-4 w-4 rounded border-stroke text-primary focus:ring-2 focus:ring-primary dark:border-strokedark dark:bg-form-input"
-                            >
-                            <span class="ml-2 text-sm text-black dark:text-white">Same as billing</span>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="shipping_province" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            Province <span class="text-red-500">*</span>
                         </label>
-                    </div>
-                    
-                    <div class="space-y-4" id="shipping-address-fields">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">First Name</label>
-                                <input
-                                    type="text"
-                                    name="shipping_address[first_name]"
-                                    value="{{ old('shipping_address.first_name') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">Last Name</label>
-                                <input
-                                    type="text"
-                                    name="shipping_address[last_name]"
-                                    value="{{ old('shipping_address.last_name') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
+                        <select name="shipping_province" 
+                                id="shipping_province"
+                                class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('shipping_province') border-red-300 @enderror" 
+                                required>
+                            <option value="">Select Province</option>
+                        </select>
+                        @error('shipping_province')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
                         </div>
 
-                        <div>
-                            <label class="mb-2.5 block text-black dark:text-white">Address Line 1</label>
-                            <input
-                                type="text"
-                                name="shipping_address[address_line_1]"
-                                value="{{ old('shipping_address.address_line_1') }}"
-                                class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="mb-2.5 block text-black dark:text-white">Address Line 2</label>
-                            <input
-                                type="text"
-                                name="shipping_address[address_line_2]"
-                                value="{{ old('shipping_address.address_line_2') }}"
-                                class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                            >
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">City</label>
-                                <input
-                                    type="text"
-                                    name="shipping_address[city]"
-                                    value="{{ old('shipping_address.city') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">State</label>
-                                <input
-                                    type="text"
-                                    name="shipping_address[state]"
-                                    value="{{ old('shipping_address.state') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">ZIP Code</label>
-                                <input
-                                    type="text"
-                                    name="shipping_address[zip_code]"
-                                    value="{{ old('shipping_address.zip_code') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
-                            </div>
-                            <div>
-                                <label class="mb-2.5 block text-black dark:text-white">Country</label>
-                                <input
-                                    type="text"
-                                    name="shipping_address[country]"
-                                    value="{{ old('shipping_address.country', 'United States') }}"
-                                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                                >
+                    <div class="space-y-2">
+                        <label for="shipping_region" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            Region <span class="text-red-500">*</span>
+                        </label>
+                        <select name="shipping_region" 
+                                id="shipping_region"
+                                class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('shipping_region') border-red-300 @enderror" 
+                                required>
+                            <option value="">Select Region</option>
+                        </select>
+                        @error('shipping_region')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Actions -->
-                <div class="rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
-                    <div class="space-y-3">
-                        <button
-                            type="submit"
-                            class="flex w-full justify-center rounded-lg bg-primary p-3 font-medium text-white hover:bg-opacity-90"
-                        >
+        <!-- Order Details -->
+        <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-hidden">
+            <div class="px-8 py-6 border-b border-stone-200 dark:border-strokedark bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
+                        <i data-lucide="settings" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-stone-900 dark:text-white">Order Details</h3>
+                </div>
+                <p class="mt-1 text-sm text-stone-600 dark:text-gray-400">Configure order settings and payment information</p>
+            </div>
+            <div class="p-8 space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="status" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            Order Status <span class="text-red-500">*</span>
+                        </label>
+                        <select name="status" id="status" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('status') border-red-300 @enderror" required>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        @error('status')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label for="payment_status" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            Payment Status <span class="text-red-500">*</span>
+                        </label>
+                        <select name="payment_status" id="payment_status" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('payment_status') border-red-300 @enderror" required>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="failed">Failed</option>
+                            <option value="refunded">Refunded</option>
+                        </select>
+                        @error('payment_status')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                            </div>
+                        </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="shipping_method" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Shipping Method</label>
+                        <select name="shipping_method" id="shipping_method" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white">
+                            <option value="">Select shipping method</option>
+                            <option value="standard">Standard Shipping</option>
+                            <option value="express">Express Shipping</option>
+                            <option value="overnight">Overnight Shipping</option>
+                        </select>
+                        </div>
+
+                    <div class="space-y-2">
+                        <label for="payment_method" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Payment Method</label>
+                        <select name="payment_method" id="payment_method" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white">
+                            <option value="">Select payment method</option>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="debit_card">Debit Card</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="cash_on_delivery">Cash on Delivery</option>
+                        </select>
+                            </div>
+                        </div>
+
+                <div class="space-y-2">
+                    <label for="notes" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Order Notes</label>
+                    <textarea name="notes" id="notes" rows="3" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400" placeholder="Add any special notes for this order..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+        <!-- Form Actions -->
+        <div class="flex items-center justify-end gap-4">
+            <a href="{{ admin_route('orders.index') }}" class="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-6 py-3 text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                <i data-lucide="x" class="w-4 h-4"></i>
+                Cancel
+            </a>
+            <button type="submit" class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 text-white font-medium shadow-lg shadow-blue-600/25 transition-all duration-200 hover:shadow-xl hover:shadow-blue-600/30 hover:scale-105">
+                <i data-lucide="check" class="w-4 h-4"></i>
                             Create Order
                         </button>
-                        
-                        <a
-                            href="{{ admin_route('orders.index') }}"
-                            class="flex w-full justify-center rounded-lg border border-stroke bg-white p-3 font-medium text-black hover:bg-gray-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-boxdark-2"
-                        >
-                            Cancel
-                        </a>
-                    </div>
-                </div>
-            </div>
         </div>
     </form>
 </div>
 
-<!-- Product Selection Modal -->
-<div id="product-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
-    <div class="relative max-w-4xl max-h-full w-full mx-4">
-        <div class="rounded-xl bg-white p-6 shadow-xl dark:bg-boxdark">
-            <div class="mb-6 flex items-center justify-between">
-                <h3 class="text-xl font-semibold text-black dark:text-white">Select Product</h3>
-                <button onclick="closeProductModal()" class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700">
-                    <i data-lucide="x" class="h-5 w-5"></i>
-                </button>
-            </div>
-
-            <div class="mb-4">
-                <input
-                    type="text"
-                    id="product-search"
-                    placeholder="Search products..."
-                    class="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                >
-            </div>
-
-            <div id="product-list" class="max-h-96 overflow-y-auto space-y-2">
-                <!-- Products will be loaded here -->
-            </div>
-        </div>
-    </div>
-</div>
-
 @push('scripts')
 <script>
-let itemCounter = 0;
-let products = @json(\App\Models\Product::where('is_active', true)->get());
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Customer selection
-    document.getElementById('customer-select').addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const customerDetails = document.getElementById('customer-details');
+    const customerSearch = document.getElementById('customer-search');
+    const customerResults = document.getElementById('customer-results');
+    const selectedCustomer = document.getElementById('selected-customer');
+    const selectedCustomerId = document.getElementById('selected-customer-id');
+    const newCustomerForm = document.getElementById('new-customer-form');
+    const showNewCustomer = document.getElementById('show-new-customer');
+    const createCustomerBtn = document.getElementById('create-customer-btn');
+    const cancelNewCustomer = document.getElementById('cancel-new-customer');
+    const addItemBtn = document.getElementById('add-item-btn');
+    const orderItems = document.getElementById('order-items');
+    const subtotalEl = document.getElementById('subtotal');
+    const taxAmountEl = document.getElementById('tax-amount');
+    const shippingCostEl = document.getElementById('shipping-cost');
+    const discountAmountEl = document.getElementById('discount-amount');
+    const totalAmountEl = document.getElementById('total-amount');
+
+    let itemCount = 0;
+    let searchTimeout;
+
+    // Customer search functionality
+    customerSearch.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
         
-        if (this.value) {
-            document.getElementById('customer-email').textContent = selectedOption.dataset.email;
-            document.getElementById('customer-phone').textContent = selectedOption.dataset.phone || 'N/A';
-            customerDetails.classList.remove('hidden');
-        } else {
-            customerDetails.classList.add('hidden');
+        if (query.length < 2) {
+            customerResults.classList.add('hidden');
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            console.log('Searching customers with query:', query);
+            searchCustomers(query);
+        }, 300);
+    });
+
+    // Close customer results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!customerSearch.contains(e.target) && !customerResults.contains(e.target)) {
+            customerResults.classList.add('hidden');
         }
     });
 
-    // Same as billing checkbox
-    document.getElementById('same-as-billing').addEventListener('change', function() {
-        const shippingFields = document.getElementById('shipping-address-fields');
-        if (this.checked) {
-            shippingFields.style.display = 'none';
+    function searchCustomers(query) {
+        const url = `{{ admin_route('customers.search') }}?q=${encodeURIComponent(query)}`;
+        console.log('Fetching URL:', url);
+        
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Customer search results:', data);
+                displayCustomerResults(data);
+            })
+            .catch(error => {
+                console.error('Error searching customers:', error);
+                customerResults.innerHTML = '<div class="p-4 text-center text-red-500">Error searching customers: ' + error.message + '</div>';
+                customerResults.classList.remove('hidden');
+            });
+    }
+
+    function displayCustomerResults(customers) {
+        if (customers.length === 0) {
+            customerResults.innerHTML = '<div class="p-4 text-center text-stone-500">No customers found</div>';
         } else {
-            shippingFields.style.display = 'block';
-        }
-    });
-
-    // Add item button
-    document.getElementById('add-item-btn').addEventListener('click', openProductModal);
-
-    // Tax and shipping calculations
-    document.getElementById('tax-rate').addEventListener('input', calculateTotals);
-    document.getElementById('shipping-cost-input').addEventListener('input', calculateTotals);
-    document.getElementById('discount-amount-input').addEventListener('input', calculateTotals);
-
-    // Product search
-    document.getElementById('product-search').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const productList = document.getElementById('product-list');
-        
-        productList.innerHTML = '';
-        
-        products.filter(product => 
-            product.name.toLowerCase().includes(searchTerm) ||
-            product.sku.toLowerCase().includes(searchTerm)
-        ).forEach(product => {
-            const productItem = document.createElement('div');
-            productItem.className = 'flex items-center justify-between p-3 border border-stroke rounded-lg hover:bg-gray-50 dark:border-strokedark dark:hover:bg-gray-800 cursor-pointer';
-            productItem.innerHTML = `
-                <div>
-                    <h4 class="font-medium text-black dark:text-white">${product.name}</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">SKU: ${product.sku} | Stock: ${product.stock_quantity} | Price: $${parseFloat(product.price).toFixed(2)}</p>
+            customerResults.innerHTML = customers.map(customer => `
+                <div class="p-3 hover:bg-stone-50 cursor-pointer border-b border-stone-100 last:border-b-0 dark:hover:bg-stone-700 dark:border-strokedark" 
+                     onclick="selectCustomer(${customer.id}, '${customer.first_name}', '${customer.last_name}', '${customer.email}', '${customer.phone || ''}')">
+                    <div class="font-medium text-stone-900 dark:text-white">${customer.first_name} ${customer.last_name}</div>
+                    <div class="text-sm text-stone-500 dark:text-stone-400">${customer.email}</div>
+                    ${customer.phone ? `<div class="text-sm text-stone-500 dark:text-stone-400">${customer.phone}</div>` : ''}
                 </div>
-                <button type="button" onclick="selectProduct(${product.id})" class="rounded-lg bg-primary px-3 py-1 text-white text-sm hover:bg-opacity-90">
-                    Select
-                </button>
-            `;
-            productList.appendChild(productItem);
+            `).join('');
+        }
+        customerResults.classList.remove('hidden');
+    }
+
+    window.selectCustomer = function(id, firstName, lastName, email, phone) {
+        selectedCustomerId.value = id;
+        document.getElementById('customer-name').textContent = `${firstName} ${lastName}`;
+        document.getElementById('customer-email').textContent = email;
+        document.getElementById('customer-phone').textContent = phone || 'No phone number';
+        
+        customerSearch.value = '';
+        customerResults.classList.add('hidden');
+        selectedCustomer.classList.remove('hidden');
+        newCustomerForm.classList.add('hidden');
+    };
+
+    // Clear customer selection
+    document.getElementById('clear-customer').addEventListener('click', function() {
+        selectedCustomerId.value = '';
+        selectedCustomer.classList.add('hidden');
+        customerSearch.value = '';
+    });
+
+    // Show new customer form
+    showNewCustomer.addEventListener('click', function() {
+        newCustomerForm.classList.remove('hidden');
+        this.style.display = 'none';
+    });
+
+    // Cancel new customer form
+    cancelNewCustomer.addEventListener('click', function() {
+        newCustomerForm.classList.add('hidden');
+        showNewCustomer.style.display = 'block';
+        document.getElementById('new-first-name').value = '';
+        document.getElementById('new-last-name').value = '';
+        document.getElementById('new-email').value = '';
+    });
+
+    // Create new customer
+    createCustomerBtn.addEventListener('click', function() {
+        const firstName = document.getElementById('new-first-name').value.trim();
+        const lastName = document.getElementById('new-last-name').value.trim();
+        const email = document.getElementById('new-email').value.trim();
+
+        if (!firstName || !lastName || !email) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        // Generate username: first letter of first name + last name
+        const username = (firstName.charAt(0) + lastName).toLowerCase();
+
+                fetch('{{ admin_route('customers.quick-create') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                first_name: firstName,
+                last_name: lastName,
+                email: email,
+                username: username
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                selectCustomer(data.user.id, data.user.first_name, data.user.last_name, data.user.email, '');
+                newCustomerForm.classList.add('hidden');
+                showNewCustomer.style.display = 'block';
+                document.getElementById('new-first-name').value = '';
+                document.getElementById('new-last-name').value = '';
+                document.getElementById('new-email').value = '';
+            } else {
+                alert(data.message || 'Error creating customer');
+            }
+        })
+        .catch(error => {
+            console.error('Error creating customer:', error);
+            alert('Error creating customer');
         });
     });
 
-    // Load initial products
-    document.getElementById('product-search').dispatchEvent(new Event('input'));
-});
+    // Add item functionality
+    addItemBtn.addEventListener('click', function() {
+        addOrderItem();
+    });
 
-function openProductModal() {
-    document.getElementById('product-modal').classList.remove('hidden');
-    document.getElementById('product-modal').classList.add('flex');
-}
-
-function closeProductModal() {
-    document.getElementById('product-modal').classList.add('hidden');
-    document.getElementById('product-modal').classList.remove('flex');
-}
-
-function selectProduct(productId) {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-
-    const orderItems = document.getElementById('order-items');
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'flex items-center gap-4 p-4 border border-stroke rounded-lg dark:border-strokedark';
-    itemDiv.innerHTML = `
-        <div class="flex-1">
-            <h4 class="font-medium text-black dark:text-white">${product.name}</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400">SKU: ${product.sku} | Stock: ${product.stock_quantity}</p>
+    function addOrderItem() {
+        itemCount++;
+        const itemHtml = `
+            <div class="order-item border border-stone-200 rounded-xl p-4 dark:border-strokedark" data-item="${itemCount}">
+                <div class="grid grid-cols-12 gap-4">
+                    <div class="col-span-6 space-y-2">
+                        <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">Product</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   id="product-search-${itemCount}" 
+                                   placeholder="Search products..."
+                                   class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 pl-10 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white">
+                            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
         </div>
-        <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600 dark:text-gray-400">Qty:</label>
-            <input type="number" name="items[${itemCounter}][quantity]" value="1" min="1" max="${product.stock_quantity}" class="w-20 rounded border border-stroke px-2 py-1 text-center dark:border-strokedark dark:bg-form-input" onchange="calculateTotals()">
+                        <div id="product-results-${itemCount}" class="hidden border border-stone-200 rounded-xl max-h-40 overflow-y-auto dark:border-strokedark"></div>
+                        <input type="hidden" name="items[${itemCount}][product_id]" class="product-id-input" required>
         </div>
-        <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600 dark:text-gray-400">Price:</label>
-            <input type="number" name="items[${itemCounter}][price]" value="${product.price}" step="0.01" class="w-24 rounded border border-stroke px-2 py-1 text-center dark:border-strokedark dark:bg-form-input" onchange="calculateTotals()">
+                    <div class="col-span-2 space-y-2">
+                        <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">Quantity</label>
+                        <input type="number" name="items[${itemCount}][quantity]" min="1" value="1" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white" required>
         </div>
-        <div class="text-right">
-            <p class="font-medium text-black dark:text-white">$<span class="item-total">${parseFloat(product.price).toFixed(2)}</span></p>
+                    <div class="col-span-2 space-y-2">
+                        <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">Price</label>
+                        <input type="number" name="items[${itemCount}][price]" step="0.01" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white" required>
         </div>
-        <button type="button" onclick="removeItem(this)" class="text-red-500 hover:text-red-700">
-            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                    <div class="col-span-2 space-y-2">
+                        <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">Actions</label>
+                        <button type="button" onclick="removeOrderItem(${itemCount})" class="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-600 hover:bg-red-100 transition-colors duration-200 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                            <i data-lucide="trash-2" class="w-4 h-4 mx-auto"></i>
         </button>
-        <input type="hidden" name="items[${itemCounter}][product_id]" value="${product.id}">
-    `;
-    
-    orderItems.appendChild(itemDiv);
-    itemCounter++;
-    
-    closeProductModal();
-    calculateTotals();
-}
+                    </div>
+                </div>
+            </div>
+        `;
+        orderItems.insertAdjacentHTML('beforeend', itemHtml);
+        updateOrderSummary();
+        setupProductSearch(itemCount);
+    }
 
-function removeItem(button) {
-    button.closest('div').remove();
-    calculateTotals();
-}
+    function setupProductSearch(itemId) {
+        const searchInput = document.getElementById(`product-search-${itemId}`);
+        const resultsDiv = document.getElementById(`product-results-${itemId}`);
+        let searchTimeout;
 
-function calculateTotals() {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                resultsDiv.classList.add('hidden');
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                searchProducts(query, itemId);
+            }, 300);
+        });
+    }
+
+    function searchProducts(query, itemId) {
+        const url = `{{ admin_route('products.search') }}?q=${encodeURIComponent(query)}`;
+        console.log('Fetching products URL:', url);
+        console.log('Generated route:', '{{ admin_route('products.search') }}');
+        
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+            .then(response => {
+                console.log('Product response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Product search results:', data);
+                displayProductResults(data, itemId);
+            })
+            .catch(error => {
+                console.error('Error searching products:', error);
+                const resultsDiv = document.getElementById(`product-results-${itemId}`);
+                resultsDiv.innerHTML = '<div class="p-4 text-center text-red-500">Error searching products: ' + error.message + '</div>';
+                resultsDiv.classList.remove('hidden');
+            });
+    }
+
+    function displayProductResults(products, itemId) {
+        const resultsDiv = document.getElementById(`product-results-${itemId}`);
+        
+        if (products.length === 0) {
+            resultsDiv.innerHTML = '<div class="p-4 text-center text-stone-500">No products found</div>';
+        } else {
+            resultsDiv.innerHTML = products.map(product => `
+                <div class="p-3 hover:bg-stone-50 cursor-pointer border-b border-stone-100 last:border-b-0 dark:hover:bg-stone-700 dark:border-strokedark" 
+                     onclick="selectProduct(${itemId}, ${product.id}, '${product.name.replace(/'/g, "\\'")}', ${product.price})">
+                    <div class="font-medium text-stone-900 dark:text-white">${product.name}</div>
+                    <div class="text-sm text-stone-500 dark:text-stone-400">SKU: ${product.sku || 'N/A'}</div>
+                    <div class="text-sm text-stone-500 dark:text-stone-400">₱${parseFloat(product.price).toFixed(2)}</div>
+                    ${product.meta_description ? `<div class="text-xs text-stone-400 dark:text-stone-500 mt-1">${product.meta_description.substring(0, 100)}${product.meta_description.length > 100 ? '...' : ''}</div>` : ''}
+                </div>
+            `).join('');
+        }
+        resultsDiv.classList.remove('hidden');
+    }
+
+    window.selectProduct = function(itemId, productId, productName, price) {
+        const searchInput = document.getElementById(`product-search-${itemId}`);
+        const resultsDiv = document.getElementById(`product-results-${itemId}`);
+        const productIdInput = document.querySelector(`[data-item="${itemId}"] .product-id-input`);
+        const priceInput = document.querySelector(`[data-item="${itemId}"] input[name*="[price]"]`);
+
+        searchInput.value = productName;
+        productIdInput.value = productId;
+        priceInput.value = price;
+        
+        resultsDiv.classList.add('hidden');
+        updateOrderSummary();
+    };
+
+    // Remove item function
+    window.removeOrderItem = function(itemId) {
+        const item = document.querySelector(`[data-item="${itemId}"]`);
+        if (item) {
+            item.remove();
+            updateOrderSummary();
+        }
+    };
+
+    // Update order summary
+    function updateOrderSummary() {
     let subtotal = 0;
+        const items = document.querySelectorAll('.order-item');
     
-    document.querySelectorAll('#order-items > div').forEach(item => {
+        items.forEach(item => {
         const quantity = parseFloat(item.querySelector('input[name*="[quantity]"]').value) || 0;
         const price = parseFloat(item.querySelector('input[name*="[price]"]').value) || 0;
-        const itemTotal = quantity * unit_price;
-        subtotal += itemTotal;
-        
-        item.querySelector('.item-total').textContent = itemTotal.toFixed(2);
+            subtotal += quantity * price;
+        });
+
+        const tax = subtotal * 0.12; // 12% tax
+        const shipping = 100; // Fixed shipping cost
+        const discount = 0; // No discount for now
+        const total = subtotal + tax + shipping - discount;
+
+        subtotalEl.textContent = `₱${subtotal.toFixed(2)}`;
+        taxAmountEl.textContent = `₱${tax.toFixed(2)}`;
+        shippingCostEl.textContent = `₱${shipping.toFixed(2)}`;
+        discountAmountEl.textContent = `-₱${discount.toFixed(2)}`;
+        totalAmountEl.textContent = `₱${total.toFixed(2)}`;
+    }
+
+    // Add event listeners for dynamic updates
+    orderItems.addEventListener('input', function(e) {
+        if (e.target.matches('input[name*="[quantity]"], input[name*="[price]"]')) {
+            updateOrderSummary();
+        }
     });
-    
-    const taxRate = parseFloat(document.getElementById('tax-rate').value) || 0;
-    const shippingCost = parseFloat(document.getElementById('shipping-cost-input').value) || 0;
-    const discountAmount = parseFloat(document.getElementById('discount-amount-input').value) || 0;
-    
-    const taxAmount = (subtotal * taxRate) / 100;
-    const total = subtotal + taxAmount + shippingCost - discountAmount;
-    
-    document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
-    document.getElementById('tax-amount').textContent = '$' + taxAmount.toFixed(2);
-    document.getElementById('shipping-cost').textContent = '$' + shippingCost.toFixed(2);
-    document.getElementById('discount-amount').textContent = '$' + discountAmount.toFixed(2);
-    document.getElementById('total-amount').textContent = '$' + total.toFixed(2);
-}
+
+    // PSGC Cloud API for Shipping Address
+    const PSGC_API_BASE = 'https://psgc.cloud/api';
+    const shippingRegion = document.getElementById('shipping_region');
+    const shippingProvince = document.getElementById('shipping_province');
+    const shippingCity = document.getElementById('shipping_city');
+    const shippingBarangay = document.getElementById('shipping_barangay');
+
+    // Add CSS for disabled province field
+    const style = document.createElement('style');
+    style.textContent = `
+        #shipping_province:disabled {
+            background-color: #f9fafb !important;
+            color: #6b7280 !important;
+            cursor: not-allowed;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Load regions
+    loadRegions();
+
+    async function loadRegions() {
+        try {
+            const response = await fetch(`${PSGC_API_BASE}/regions`);
+            const regions = await response.json();
+            
+            shippingRegion.innerHTML = '<option value="">Select Region</option>';
+            regions.forEach(region => {
+                const option = document.createElement('option');
+                option.value = region.name;
+                option.textContent = region.name;
+                shippingRegion.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading regions:', error);
+        }
+    }
+
+    // Region change handler
+    shippingRegion.addEventListener('change', async function() {
+        const regionName = this.value;
+        
+        // Clear existing options
+        shippingProvince.innerHTML = '<option value="">Select Province</option>';
+        shippingCity.innerHTML = '<option value="">Select City</option>';
+        shippingBarangay.innerHTML = '<option value="">Select Barangay</option>';
+        
+        if (!regionName) {
+            shippingProvince.disabled = false;
+            return;
+        }
+        
+        // Special handling for NCR - it doesn't have provinces
+        if (regionName.toLowerCase().includes('ncr') || regionName.toLowerCase().includes('national capital region')) {
+            // For NCR, load cities directly
+            try {
+                const response = await fetch(`${PSGC_API_BASE}/regions/${encodeURIComponent(regionName)}/cities`);
+                const cities = await response.json();
+                
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.name;
+                    option.textContent = city.name;
+                    shippingCity.appendChild(option);
+                });
+                
+                // Disable province field for NCR
+                shippingProvince.disabled = true;
+                shippingProvince.innerHTML = '<option value="">N/A (NCR)</option>';
+                
+                // Clear barangay field
+                shippingBarangay.innerHTML = '<option value="">Select Barangay</option>';
+            } catch (error) {
+                console.error('Error loading NCR cities:', error);
+            }
+        } else {
+            // For other regions, load provinces normally
+            try {
+                const response = await fetch(`${PSGC_API_BASE}/regions/${encodeURIComponent(regionName)}/provinces`);
+                const provinces = await response.json();
+                
+                provinces.forEach(province => {
+                    const option = document.createElement('option');
+                    option.value = province.name;
+                    option.textContent = province.name;
+                    shippingProvince.appendChild(option);
+                });
+                
+                // Enable province field for non-NCR regions
+                shippingProvince.disabled = false;
+            } catch (error) {
+                console.error('Error loading provinces:', error);
+            }
+        }
+    });
+
+    // Province change handler
+    shippingProvince.addEventListener('change', async function() {
+        // Skip if province field is disabled (for NCR)
+        if (this.disabled) return;
+        
+        const provinceName = this.value;
+        
+        // Clear existing options
+        shippingCity.innerHTML = '<option value="">Select City</option>';
+        shippingBarangay.innerHTML = '<option value="">Select Barangay</option>';
+        
+        if (!provinceName) return;
+        
+        try {
+            const response = await fetch(`${PSGC_API_BASE}/provinces/${encodeURIComponent(provinceName)}/cities`);
+            const cities = await response.json();
+            
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.name;
+                option.textContent = city.name;
+                shippingCity.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading cities:', error);
+        }
+    });
+
+    // City change handler
+    shippingCity.addEventListener('change', async function() {
+        const cityName = this.value;
+        
+        // Clear existing options
+        shippingBarangay.innerHTML = '<option value="">Select Barangay</option>';
+        
+        if (!cityName) return;
+        
+        try {
+            const response = await fetch(`${PSGC_API_BASE}/cities/${encodeURIComponent(cityName)}/barangays`);
+            const barangays = await response.json();
+            
+            barangays.forEach(barangay => {
+                const option = document.createElement('option');
+                option.value = barangay.name;
+                option.textContent = barangay.name;
+                shippingBarangay.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading barangays:', error);
+        }
+    });
+});
 </script>
 @endpush
 @endsection
+

@@ -191,7 +191,7 @@
                                 <div class="grid grid-cols-2 gap-4 md:grid-cols-3">
                                     @foreach($review->images as $image)
                                         <div class="relative">
-                                            <img src="{{ Storage::getDynamicUrl($image) }}" alt="Review image" class="w-full h-32 object-cover rounded-lg border border-stroke dark:border-strokedark">
+                                            <img src="{{ asset('storage/' . $image) }}" alt="Review image" class="w-full h-32 object-cover rounded-lg border border-stroke dark:border-strokedark">
                                         </div>
                                     @endforeach
                                 </div>
@@ -245,7 +245,7 @@
                         <h4 class="text-lg font-semibold text-black dark:text-white mb-4">Product Details</h4>
                         <div class="flex items-start gap-4">
                             @if($review->product->images && count($review->product->images) > 0)
-                                <img src="{{ Storage::getDynamicUrl($review->product->images[0]) }}" alt="{{ $review->product->name }}" class="w-20 h-20 object-cover rounded-lg border border-stroke dark:border-strokedark">
+                                <img src="{{ asset('storage/' . $review->product->images[0]) }}" alt="{{ $review->product->name }}" class="w-20 h-20 object-cover rounded-lg border border-stroke dark:border-strokedark">
                             @else
                                 <div class="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg border border-stroke dark:border-strokedark flex items-center justify-center">
                                     <i data-lucide="image" class="w-8 h-8 text-gray-400"></i>

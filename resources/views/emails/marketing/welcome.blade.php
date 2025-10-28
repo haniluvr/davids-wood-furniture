@@ -12,6 +12,17 @@
     <p style="color: #555; line-height: 1.6; margin: 0 0 20px 0;">
         Welcome to David's Wood Furnitures! We're thrilled to have you join our community of furniture enthusiasts and home decor lovers.
     </p>
+    
+    @if(isset($magicLink) && $magicLink)
+    <div style="background: #E8F5E8; border: 1px solid #8B7355; padding: 20px; border-radius: 6px; margin: 20px 0;">
+        <h3 style="color: #8B7355; margin: 0 0 15px 0;">🔐 Complete Your Account Setup</h3>
+        <p style="color: #555; margin: 0 0 15px 0;">To complete your account setup and set your password, please click the button below:</p>
+        <div style="text-align: center; margin: 20px 0;">
+            <a href="{{ $magicLink }}" style="background: linear-gradient(135deg, #8B7355 0%, #A68B5B 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">Set Up Password</a>
+        </div>
+        <p style="margin: 0; color: #8B7355; font-weight: 600; font-size: 14px;">This link will expire in 24 hours for security reasons.</p>
+    </div>
+    @endif
 </div>
 
 <div style="background: #E8F5E8; border: 1px solid #8B7355; padding: 20px; border-radius: 6px; margin: 20px 0;">

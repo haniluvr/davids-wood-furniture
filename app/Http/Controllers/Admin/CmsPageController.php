@@ -91,16 +91,7 @@ class CmsPageController extends Controller
         $cmsPage = CmsPage::create($data);
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'cms_page_created',
-            'model_type' => CmsPage::class,
-            'model_id' => $cmsPage->id,
-            'old_values' => null,
-            'new_values' => $cmsPage->toArray(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        AuditLog::logCreate(Auth::user(), $cmsPage);
 
         return redirect()->to(admin_route('cms-pages.index'))
             ->with('success', 'CMS page created successfully.');
@@ -162,16 +153,7 @@ class CmsPageController extends Controller
         $cmsPage->update($data);
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'cms_page_updated',
-            'model_type' => CmsPage::class,
-            'model_id' => $cmsPage->id,
-            'old_values' => $oldValues,
-            'new_values' => $cmsPage->toArray(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        AuditLog::logUpdate(Auth::user(), $cmsPage, $oldValues);
 
         return redirect()->to(admin_route('cms-pages.index'))
             ->with('success', 'CMS page updated successfully.');
@@ -182,16 +164,7 @@ class CmsPageController extends Controller
         $oldValues = $cmsPage->toArray();
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'cms_page_deleted',
-            'model_type' => CmsPage::class,
-            'model_id' => $cmsPage->id,
-            'old_values' => $oldValues,
-            'new_values' => null,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        AuditLog::logDelete(Auth::user(), $cmsPage);
 
         $cmsPage->delete();
 
@@ -214,16 +187,7 @@ class CmsPageController extends Controller
         $cmsPage->update($updateData);
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'cms_page_status_toggled',
-            'model_type' => CmsPage::class,
-            'model_id' => $cmsPage->id,
-            'old_values' => ['is_active' => $oldStatus],
-            'new_values' => ['is_active' => $cmsPage->is_active],
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        AuditLog::log('cms_page_status_toggled', Auth::user(), $cmsPage, ['is_active' => $oldStatus], ['is_active' => $cmsPage->is_active]);
 
         return response()->json([
             'success' => true,
@@ -242,16 +206,7 @@ class CmsPageController extends Controller
         $newCmsPage->save();
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'cms_page_duplicated',
-            'model_type' => CmsPage::class,
-            'model_id' => $newCmsPage->id,
-            'old_values' => null,
-            'new_values' => $newCmsPage->toArray(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        AuditLog::logCreate(Auth::user(), $newCmsPage);
 
         return redirect()->to(admin_route('cms-pages.edit', $newCmsPage))
             ->with('success', 'CMS page duplicated successfully.');
@@ -280,5 +235,73 @@ class CmsPageController extends Controller
         }
 
         return response()->json(['slug' => $slug]);
+    }
+
+    public function blogs(Request $request)
+    {
+        $query = CmsPage::where('type', 'blog')->with(['creator', 'updater']);
+
+        // Calculate statistics
+        $totalBlogs = CmsPage::where('type', 'blog')->count();
+        $publishedCount = CmsPage::where('type', 'blog')->where('is_active', true)->count();
+        $draftCount = CmsPage::where('type', 'blog')->where('is_active', false)->count();
+        $featuredCount = CmsPage::where('type', 'blog')->where('is_featured', true)->count();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%")
+                    ->orWhere('excerpt', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            switch ($request->status) {
+                case 'published':
+                    $query->where('is_active', true);
+
+                    break;
+                case 'draft':
+                    $query->where('is_active', false);
+
+                    break;
+                case 'featured':
+                    $query->where('is_featured', true);
+
+                    break;
+            }
+        }
+
+        // Filter by date range
+        if ($request->filled('date_range')) {
+            $now = now();
+            switch ($request->date_range) {
+                case 'today':
+                    $query->whereDate('created_at', $now->toDateString());
+
+                    break;
+                case 'week':
+                    $query->where('created_at', '>=', $now->subWeek());
+
+                    break;
+                case 'month':
+                    $query->where('created_at', '>=', $now->subMonth());
+
+                    break;
+            }
+        }
+
+        // Sort
+        $sortBy = $request->get('sort', 'created_at');
+        $sortOrder = $request->get('order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $blogs = $query->paginate(15)->withQueryString();
+
+        return view('admin.blogs.index', compact('blogs', 'totalBlogs', 'publishedCount', 'draftCount', 'featuredCount'));
     }
 }

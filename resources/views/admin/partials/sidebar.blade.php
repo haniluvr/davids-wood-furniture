@@ -14,7 +14,6 @@
         inventoryOpen: false,
         customersOpen: false,
         contactOpen: false,
-        messagesOpen: false,
         shippingOpen: false,
         contentOpen: false,
         reportsOpen: false,
@@ -29,7 +28,6 @@
                 inventoryOpen: inventoryOpen,
                 customersOpen: customersOpen,
                 contactOpen: contactOpen,
-                messagesOpen: messagesOpen,
                 shippingOpen: shippingOpen,
                 contentOpen: contentOpen,
                 reportsOpen: reportsOpen
@@ -44,7 +42,6 @@
             if (except !== 'inventory') inventoryOpen = false;
             if (except !== 'customers') customersOpen = false;
             if (except !== 'contact') contactOpen = false;
-            if (except !== 'messages') messagesOpen = false;
             if (except !== 'shipping') shippingOpen = false;
             if (except !== 'content') contentOpen = false;
             if (except !== 'reports') reportsOpen = false;
@@ -57,7 +54,6 @@
         inventoryOpen = savedStates.inventoryOpen || false;
         customersOpen = savedStates.customersOpen || false;
         contactOpen = savedStates.contactOpen || false;
-        messagesOpen = savedStates.messagesOpen || false;
         shippingOpen = savedStates.shippingOpen || false;
         contentOpen = savedStates.contentOpen || false;
         reportsOpen = savedStates.reportsOpen || false;
@@ -75,7 +71,6 @@
         $watch('inventoryOpen', val => window.saveAccordionStates());
         $watch('customersOpen', val => window.saveAccordionStates());
         $watch('contactOpen', val => window.saveAccordionStates());
-        $watch('messagesOpen', val => window.saveAccordionStates());
         $watch('shippingOpen', val => window.saveAccordionStates());
         $watch('contentOpen', val => window.saveAccordionStates());
         $watch('reportsOpen', val => window.saveAccordionStates());
@@ -89,7 +84,6 @@
                     inventoryOpen = false;
                     customersOpen = false;
                     contactOpen = false;
-                    messagesOpen = false;
                     shippingOpen = false;
                     contentOpen = false;
                     reportsOpen = false;
@@ -219,35 +213,10 @@
                     <ul x-show="customersOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
                         <li><a href="{{ admin_route('users.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.index') ? 'text-primary dark:text-primary' : '' }}">All Customers</a></li>
                         <li><a href="{{ admin_route('users.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.create') ? 'text-primary dark:text-primary' : '' }}">Add Customer</a></li>
+                        <li><a href="{{ admin_route('messages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.messages.index') && !request('status') ? 'text-primary dark:text-primary' : '' }}">Messages</a></li>
                     </ul>
                 </li>
 
-                <!-- Messages Accordion -->
-                <li>
-                    <button
-                        @click="!sidebarCollapsed && (messagesOpen = !messagesOpen, window.closeAllAccordions('messages'))"
-                        class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.messages.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
-                        :title="sidebarCollapsed ? 'Messages' : ''"
-                    >
-                        <div class="flex items-center gap-2.5">
-                            <i data-lucide="message-square" class="w-5 h-5 flex-shrink-0"></i>
-                            <span x-show="!sidebarCollapsed" x-transition>Messages</span>
-                            @php
-                                $newMessagesCount = \App\Models\ContactMessage::where('status', 'new')->count();
-                            @endphp
-                            @if($newMessagesCount > 0)
-                                <span class="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full" x-show="!sidebarCollapsed">{{ $newMessagesCount }}</span>
-                            @endif
-                        </div>
-                        <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="messagesOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
-                    </button>
-                    <ul x-show="messagesOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ admin_route('messages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.messages.index') && !request('status') ? 'text-primary dark:text-primary' : '' }}">All Messages</a></li>
-                        <li><a href="{{ admin_route('messages.index', ['status' => 'new']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'new' ? 'text-primary dark:text-primary' : '' }}">New Messages</a></li>
-                        <li><a href="{{ admin_route('messages.index', ['status' => 'read']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'read' ? 'text-primary dark:text-primary' : '' }}">Read</a></li>
-                        <li><a href="{{ admin_route('messages.index', ['status' => 'responded']) }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request('status') == 'responded' ? 'text-primary dark:text-primary' : '' }}">Responded</a></li>
-                    </ul>
-                </li>
 
                 <!-- Shipping & Logistics Accordion -->
                 <li>
@@ -275,7 +244,7 @@
                 <li>
                     <button
                         @click="!sidebarCollapsed && (contentOpen = !contentOpen, window.closeAllAccordions('content'))"
-                        class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.cms-pages.*') || request()->routeIs('admin.reviews.*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
+                        class="group relative flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.cms-pages.*') || request()->routeIs('admin.reviews.*') || request()->routeIs('admin.blogs.*') || request()->routeIs('admin.media-library*') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
                         :title="sidebarCollapsed ? 'Content' : ''"
                     >
                         <div class="flex items-center gap-2.5">
@@ -286,8 +255,9 @@
                     </button>
                     <ul x-show="contentOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
                         <li><a href="{{ admin_route('cms-pages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.cms-pages*') ? 'text-primary dark:text-primary' : '' }}">CMS Pages</a></li>
+                        <li><a href="{{ admin_route('blogs.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.blogs*') ? 'text-primary dark:text-primary' : '' }}">Blogs</a></li>
+                        <li><a href="{{ admin_route('media-library') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.media-library*') ? 'text-primary dark:text-primary' : '' }}">Media Library</a></li>
                         <li><a href="{{ admin_route('reviews.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.reviews*') ? 'text-primary dark:text-primary' : '' }}">Product Reviews</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Blogs</a></li>
                     </ul>
                 </li>
 

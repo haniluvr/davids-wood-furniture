@@ -17,7 +17,7 @@
             <li>
                 <a class="font-medium" href="{{ admin_route('users.index') }}">Users /</a>
             </li>
-            <li class="font-medium text-primary">{{ $user->first_name }} {{ $user->last_name }}</li>
+            <li class="font-medium text-primary">{{ $all_customer->first_name }} {{ $all_customer->last_name }}</li>
         </ol>
     </nav>
 </div>
@@ -32,7 +32,7 @@
                 <div class="relative mb-4">
                     <div class="h-24 w-24 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
                         <span class="text-white font-bold text-2xl">
-                            {{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}
+                            {{ substr($all_customer->first_name, 0, 1) }}{{ substr($all_customer->last_name, 0, 1) }}
                         </span>
                     </div>
                     <div class="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-green-500 border-2 border-white dark:border-boxdark flex items-center justify-center">
@@ -42,13 +42,13 @@
 
                 <!-- User Details -->
                 <h3 class="text-xl font-bold text-black dark:text-white mb-2">
-                    {{ $user->first_name }} {{ $user->last_name }}
+                    {{ $all_customer->first_name }} {{ $all_customer->last_name }}
                 </h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ $user->email }}</p>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ $all_customer->email }}</p>
 
                 <!-- Status Badge -->
                 <div class="mb-6">
-                    @if($user->email_verified_at)
+                    @if($all_customer->email_verified_at)
                         <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
                             <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
                             Verified
@@ -63,7 +63,7 @@
 
                 <!-- Action Buttons -->
                 <div class="flex gap-2 w-full">
-                    <a href="{{ admin_route('users.edit', $user) }}" class="flex-1 flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
+                    <a href="{{ admin_route('users.edit', $all_customer) }}" class="flex-1 flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
                         <i data-lucide="edit" class="w-4 h-4"></i>
                         Edit
                     </a>
@@ -81,15 +81,15 @@
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <span class="text-gray-600 dark:text-gray-400">Total Orders</span>
-                    <span class="font-semibold text-black dark:text-white">{{ $user->orders->count() }}</span>
+                    <span class="font-semibold text-black dark:text-white">{{ $all_customer->orders->count() }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-gray-600 dark:text-gray-400">Total Spent</span>
-                    <span class="font-semibold text-black dark:text-white">₱{{ number_format($user->orders->where('status', '!=', 'cancelled')->sum('total_amount'), 2) }}</span>
+                    <span class="font-semibold text-black dark:text-white">₱{{ number_format($all_customer->orders->where('status', '!=', 'cancelled')->sum('total_amount'), 2) }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-gray-600 dark:text-gray-400">Member Since</span>
-                    <span class="font-semibold text-black dark:text-white">{{ $user->created_at->format('M Y') }}</span>
+                    <span class="font-semibold text-black dark:text-white">{{ $all_customer->created_at->format('M Y') }}</span>
                 </div>
             </div>
         </div>
@@ -105,7 +105,7 @@
                         Overview
                     </button>
                     <button @click="activeTab = 'orders'" :class="activeTab === 'orders' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'" class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-                        Orders ({{ $user->orders->count() }})
+                        Orders ({{ $all_customer->orders->count() }})
                     </button>
                     <button @click="activeTab = 'addresses'" :class="activeTab === 'addresses' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'" class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
                         Addresses
@@ -124,19 +124,19 @@
                             <div class="space-y-3">
                                 <div>
                                     <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Full Name</label>
-                                    <p class="text-black dark:text-white">{{ $user->first_name }} {{ $user->last_name }}</p>
+                                    <p class="text-black dark:text-white">{{ $all_customer->first_name }} {{ $all_customer->last_name }}</p>
                                 </div>
                                 <div>
                                     <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Email</label>
-                                    <p class="text-black dark:text-white">{{ $user->email }}</p>
+                                    <p class="text-black dark:text-white">{{ $all_customer->email }}</p>
                                 </div>
                                 <div>
                                     <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Phone</label>
-                                    <p class="text-black dark:text-white">{{ $user->phone ?? 'Not provided' }}</p>
+                                    <p class="text-black dark:text-white">{{ $all_customer->phone ?? 'Not provided' }}</p>
                                 </div>
                                 <div>
                                     <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Date of Birth</label>
-                                    <p class="text-black dark:text-white">{{ $user->date_of_birth ? $user->date_of_birth->format('M d, Y') : 'Not provided' }}</p>
+                                    <p class="text-black dark:text-white">{{ $all_customer->date_of_birth ? $all_customer->date_of_birth->format('M d, Y') : 'Not provided' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -147,19 +147,19 @@
                             <div class="space-y-3">
                                 <div>
                                     <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Member Since</label>
-                                    <p class="text-black dark:text-white">{{ $user->created_at->format('M d, Y') }}</p>
+                                    <p class="text-black dark:text-white">{{ $all_customer->created_at->format('M d, Y') }}</p>
                                 </div>
                                 <div>
                                     <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Last Login</label>
-                                    <p class="text-black dark:text-white">{{ $user->last_login_at ? $user->last_login_at->format('M d, Y g:i A') : 'Never' }}</p>
+                                    <p class="text-black dark:text-white">{{ $all_customer->last_login_at ? $all_customer->last_login_at->format('M d, Y g:i A') : 'Never' }}</p>
                                 </div>
                                 <div>
                                     <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Email Verified</label>
-                                    <p class="text-black dark:text-white">{{ $user->email_verified_at ? 'Yes' : 'No' }}</p>
+                                    <p class="text-black dark:text-white">{{ $all_customer->email_verified_at ? 'Yes' : 'No' }}</p>
                                 </div>
                                 <div>
                                     <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Status</label>
-                                    <p class="text-black dark:text-white">{{ ucfirst($user->status ?? 'active') }}</p>
+                                    <p class="text-black dark:text-white">{{ ucfirst($all_customer->status ?? 'active') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -171,7 +171,7 @@
                     <div class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         <div class="px-7.5 py-6">
                             <h4 class="text-lg font-semibold text-black dark:text-white mb-4">Order History</h4>
-                            @if($user->orders->count() > 0)
+                            @if($all_customer->orders->count() > 0)
                                 <div class="overflow-x-auto">
                                     <table class="w-full">
                                         <thead>
@@ -184,7 +184,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($user->orders->take(10) as $order)
+                                            @foreach($all_customer->orders->take(10) as $order)
                                                 <tr class="border-b border-stroke/50 dark:border-strokedark/50 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                                     <td class="py-3 px-4 text-black dark:text-white">#{{ $order->id }}</td>
                                                     <td class="py-3 px-4 text-gray-600 dark:text-gray-400">{{ $order->created_at->format('M d, Y') }}</td>
@@ -209,10 +209,10 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                @if($user->orders->count() > 10)
+                                @if($all_customer->orders->count() > 10)
                                     <div class="mt-4 text-center">
-                                        <a href="{{ admin_route('orders.index', ['user_id' => $user->id]) }}" class="text-primary hover:text-primary/80 transition-colors duration-200">
-                                            View all {{ $user->orders->count() }} orders
+                                        <a href="{{ admin_route('orders.index', ['user_id' => $all_customer->id]) }}" class="text-primary hover:text-primary/80 transition-colors duration-200">
+                                            View all {{ $all_customer->orders->count() }} orders
                                         </a>
                                     </div>
                                 @endif

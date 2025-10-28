@@ -25,7 +25,7 @@
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex items-center gap-4">
                 @if($product->images && count($product->images) > 0)
-                    <img src="{{ Storage::getDynamicUrl($product->images[0]) }}" alt="{{ $product->name }}" class="h-16 w-16 rounded-lg object-cover">
+                    <img src="{{ asset('storage/' . $product->images[0]) }}" alt="{{ $product->name }}" class="h-16 w-16 rounded-lg object-cover">
                 @else
                     <div class="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
                         <i data-lucide="image" class="h-8 w-8 text-gray-400"></i>
@@ -217,9 +217,9 @@
                             <div class="grid grid-cols-2 gap-4">
                                 @foreach($product->images as $image)
                                     <div class="group relative">
-                                        <img src="{{ Storage::getDynamicUrl($image) }}" alt="{{ $product->name }}" class="h-32 w-full rounded-lg object-cover">
+                                        <img src="{{ asset('storage/' . $image) }}" alt="{{ $product->name }}" class="h-32 w-full rounded-lg object-cover">
                                         <div class="absolute inset-0 flex items-center justify-center rounded-lg bg-black bg-opacity-0 transition-all group-hover:bg-opacity-50">
-                                            <button class="hidden text-white group-hover:block" onclick="openImageModal('{{ Storage::getDynamicUrl($image) }}')">
+                                            <button class="hidden text-white group-hover:block" onclick="openImageModal('{{ asset('storage/' . $image) }}')">
                                                 <i data-lucide="zoom-in" class="h-6 w-6"></i>
                                             </button>
                                         </div>

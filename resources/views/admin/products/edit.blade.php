@@ -314,8 +314,8 @@
                                 @foreach($product->images as $index => $image)
                                     <div class="image-preview-item">
                                         <div class="aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-gray-800 border border-stone-200 dark:border-strokedark">
-                                            @if(Storage::dynamic()->exists($image))
-                                                @php $imageUrl = Storage::getDynamicUrl($image); @endphp
+                                            @if(Storage::disk('public')->exists($image))
+                                                @php $imageUrl = asset('storage/' . $image); @endphp
                                                 <img src="{{ $imageUrl }}?v={{ time() }}" alt="Product Image" class="w-full h-full object-cover">
                                             @else
                                                 <div class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-gray-700">
@@ -334,7 +334,7 @@
                                         </button>
                                         </div>
                                         <p class="mt-2 text-xs text-stone-500 dark:text-gray-400 truncate">
-                                            @if(Storage::dynamic()->exists($image))
+                                            @if(Storage::disk('public')->exists($image))
                                                 Current Image {{ $index + 1 }}
                                             @else
                                                 Missing Image {{ $index + 1 }}

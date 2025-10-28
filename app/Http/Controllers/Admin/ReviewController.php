@@ -17,6 +17,12 @@ class ReviewController extends Controller
     {
         $query = ProductReview::with(['product', 'user', 'order']);
 
+        // Calculate statistics
+        $totalReviews = ProductReview::count();
+        $averageRating = ProductReview::avg('rating') ?? 0;
+        $pendingCount = ProductReview::where('is_approved', false)->count();
+        $approvedCount = ProductReview::where('is_approved', true)->count();
+
         // Search functionality
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
@@ -85,7 +91,7 @@ class ReviewController extends Controller
             ->orderBy('name')
             ->pluck('name', 'id');
 
-        return view('admin.reviews.index', compact('reviews', 'products'));
+        return view('admin.reviews.index', compact('reviews', 'products', 'totalReviews', 'averageRating', 'pendingCount', 'approvedCount'));
     }
 
     /**

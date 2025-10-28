@@ -3,300 +3,252 @@
 @section('title', 'Returns & Repairs')
 
 @section('content')
-<!-- Breadcrumb Start -->
-<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+<div class="min-h-screen bg-white">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b border-stone-200">
+        <div class="flex justify-between items-center py-6">
     <div>
-        <h1 class="text-3xl font-bold text-stone-900 dark:text-white">
-            Returns & Repairs
-        </h1>
-        <p class="mt-2 text-stone-600 dark:text-gray-400">
-            Manage customer returns, exchanges, and repair requests.
-        </p>
+                <h1 class="text-2xl font-bold text-stone-900">Returns & Repairs</h1>
+                <p class="mt-1 text-sm text-stone-600">Manage customer returns, exchanges, and repair requests</p>
     </div>
-
-    <div class="flex items-center gap-3">
-        <a href="{{ admin_route('orders.returns-repairs.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">
-            <i data-lucide="plus" class="w-4 h-4"></i>
+            <div class="flex gap-3">
+                <a href="{{ admin_route('orders.returns-repairs.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
             New RMA
         </a>
     </div>
 </div>
-<!-- Breadcrumb End -->
+    </div>
 
-<!-- Stats Cards Start -->
-<div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5 mb-8">
+    <!-- Statistics Cards -->
+    <div class="py-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
     <!-- Requested -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-50 to-yellow-100/50 p-6 shadow-lg shadow-yellow-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/20 dark:from-yellow-900/20 dark:to-yellow-800/10">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-500 shadow-lg">
-                    <i data-lucide="clock" class="w-6 h-6 text-white"></i>
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Requested</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['requested'] ?? 0) }}</p>
                 </div>
-                <div class="mt-4">
-                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($stats['requested']) }}
-                    </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Requested</p>
                 </div>
-            </div>
-        </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-yellow-500/10"></div>
     </div>
 
     <!-- Approved -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 shadow-lg shadow-blue-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 dark:from-blue-900/20 dark:to-blue-800/10">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500 shadow-lg">
-                    <i data-lucide="check-circle" class="w-6 h-6 text-white"></i>
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Approved</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['approved'] ?? 0) }}</p>
                 </div>
-                <div class="mt-4">
-                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($stats['approved']) }}
-                    </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Approved</p>
                 </div>
             </div>
-        </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-blue-500/10"></div>
-    </div>
 
-    <!-- Received -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100/50 p-6 shadow-lg shadow-purple-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/20 dark:from-purple-900/20 dark:to-purple-800/10">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500 shadow-lg">
-                    <i data-lucide="package" class="w-6 h-6 text-white"></i>
-                </div>
-                <div class="mt-4">
-                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($stats['received']) }}
-                    </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Received</p>
-                </div>
-            </div>
+            <!-- In Progress -->
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
         </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-purple-500/10"></div>
+    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">In Progress</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['in_progress'] ?? 0) }}</p>
+                </div>
+                </div>
     </div>
 
     <!-- Completed -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-6 shadow-lg shadow-emerald-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/20 dark:from-emerald-900/20 dark:to-emerald-800/10">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500 shadow-lg">
-                    <i data-lucide="check" class="w-6 h-6 text-white"></i>
-                </div>
-                <div class="mt-4">
-                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($stats['completed']) }}
-                    </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Completed</p>
-                </div>
-            </div>
-        </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-emerald-500/10"></div>
-    </div>
-
-    <!-- Total Refunded -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-50 to-red-100/50 p-6 shadow-lg shadow-red-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-red-500/20 dark:from-red-900/20 dark:to-red-800/10">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500 shadow-lg">
-                    <i data-lucide="dollar-sign" class="w-6 h-6 text-white"></i>
-                </div>
-                <div class="mt-4">
-                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        ₱{{ number_format($stats['total_refunded'], 2) }}
-                    </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Total Refunded</p>
-                </div>
-            </div>
-        </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-red-500/10"></div>
-    </div>
-</div>
-<!-- Stats Cards End -->
-
-<!-- Returns & Repairs Table -->
-<div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h3 class="text-xl font-bold text-stone-900 dark:text-white">All Returns & Repairs</h3>
-            <p class="text-sm text-stone-600 dark:text-gray-400">RMA requests and their current status</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <button class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
-                <i data-lucide="filter" class="w-4 h-4"></i>
-                Filter
-            </button>
-            <button class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
-                <i data-lucide="download" class="w-4 h-4"></i>
-                Export
-            </button>
-        </div>
-    </div>
-
-    <div class="overflow-hidden rounded-xl border border-stone-200/50 dark:border-strokedark/50">
-        <div class="grid grid-cols-6 rounded-t-xl bg-stone-50 dark:bg-stone-800/50">
-            <div class="p-4">
-                <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">RMA #</h5>
-            </div>
-            <div class="p-4">
-                <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Order</h5>
-            </div>
-            <div class="p-4">
-                <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Customer</h5>
-            </div>
-            <div class="p-4">
-                <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Type</h5>
-            </div>
-            <div class="p-4">
-                <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Status</h5>
-            </div>
-            <div class="p-4">
-                <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Actions</h5>
-            </div>
-        </div>
-
-        @forelse($returnsRepairs as $returnRepair)
-        <div class="grid grid-cols-6 border-b border-stone-200/50 dark:border-strokedark/50 transition-colors duration-200 hover:bg-stone-50/50 dark:hover:bg-stone-800/20">
-            <div class="flex items-center gap-3 p-4">
-                <div class="flex-shrink-0">
-                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
-                        <span class="text-white font-semibold text-sm">R</span>
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Completed</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['completed'] ?? 0) }}</p>
                     </div>
                 </div>
-                <div class="flex flex-col">
-                    <p class="font-semibold text-stone-900 dark:text-white">{{ $returnRepair->rma_number }}</p>
-                    <p class="text-xs text-stone-500 dark:text-gray-400">{{ $returnRepair->created_at->format('M d, Y') }}</p>
+            </div>
+
+            <!-- Rejected -->
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Rejected</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['rejected'] ?? 0) }}</p>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="flex items-center p-4">
-                <div class="flex flex-col">
-                    <p class="font-semibold text-stone-900 dark:text-white">{{ $returnRepair->order->order_number }}</p>
-                    <p class="text-xs text-stone-500 dark:text-gray-400">{{ count($returnRepair->products) }} items</p>
+    <!-- Filters -->
+    <div class="py-6">
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+            <form method="GET" action="{{ admin_route('orders.returns-repairs.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                    <label for="search" class="block text-sm font-medium text-stone-700 mb-2">Search</label>
+                    <input type="text" id="search" name="search" value="{{ request('search') }}" 
+                           placeholder="Search RMA numbers..."
+                           class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                 </div>
-            </div>
-
-            <div class="flex items-center p-4">
-                <div class="flex flex-col">
-                    <p class="font-semibold text-stone-900 dark:text-white">{{ $returnRepair->order->user->first_name ?? 'Guest' }} {{ $returnRepair->order->user->last_name ?? '' }}</p>
-                    <p class="text-xs text-stone-500 dark:text-gray-400">{{ $returnRepair->order->user->email ?? 'No email' }}</p>
+                <div>
+                    <label for="status" class="block text-sm font-medium text-stone-700 mb-2">Status</label>
+                    <select id="status" name="status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">All Status</option>
+                        <option value="requested" {{ request('status') === 'requested' ? 'selected' : '' }}>Requested</option>
+                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                        <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                        <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                    </select>
                 </div>
-            </div>
+        <div>
+                    <label for="type" class="block text-sm font-medium text-stone-700 mb-2">Type</label>
+                    <select id="type" name="type" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">All Types</option>
+                        <option value="return" {{ request('type') === 'return' ? 'selected' : '' }}>Return</option>
+                        <option value="exchange" {{ request('type') === 'exchange' ? 'selected' : '' }}>Exchange</option>
+                        <option value="repair" {{ request('type') === 'repair' ? 'selected' : '' }}>Repair</option>
+                    </select>
+        </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
+                        </svg>
+                Filter
+            </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-            <div class="flex items-center p-4">
-                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium
-                    {{ $returnRepair->type === 'return' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : '' }}
-                    {{ $returnRepair->type === 'repair' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : '' }}
-                    {{ $returnRepair->type === 'exchange' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : '' }}">
-                    {{ ucfirst($returnRepair->type) }}
-                </span>
+    <!-- RMA List -->
+    <div class="pb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200">
+            @if($rmas->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-stone-200">
+                        <thead class="bg-stone-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">RMA</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Order</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Customer</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Reason</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Created</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-stone-200">
+                            @foreach($rmas as $rma)
+                                <tr class="hover:bg-stone-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-stone-900">#{{ $rma->rma_number }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-stone-900">#{{ $rma->order->order_number }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-stone-900">{{ $rma->order->user->first_name }} {{ $rma->order->user->last_name }}</div>
+                                        <div class="text-sm text-stone-500">{{ $rma->order->user->email }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($rma->type === 'return')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                Return
+                                            </span>
+                                        @elseif($rma->type === 'exchange')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                Exchange
+                                            </span>
+                                        @elseif($rma->type === 'repair')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                                Repair
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-stone-900 dark:text-white capitalize">
+                                            {{ str_replace('_', ' ', $rma->status) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-stone-900">
+                                        {{ Str::limit($rma->reason, 30) }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-stone-900">
+                                        {{ $rma->created_at->format('M d, Y') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <a href="{{ admin_route('orders.returns-repairs.show', $rma) }}" class="text-emerald-600 hover:text-emerald-900 transition-colors duration-150" title="View">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                </svg>
+                                            </a>
+                                            <a href="{{ admin_route('orders.returns-repairs.edit', $rma) }}" class="text-stone-600 hover:text-stone-900 transition-colors duration-150" title="Edit">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </a>
             </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+        </div>
 
-            <div class="flex items-center p-4">
-                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium
-                    {{ $returnRepair->status === 'requested' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' : '' }}
-                    {{ $returnRepair->status === 'approved' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : '' }}
-                    {{ $returnRepair->status === 'received' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : '' }}
-                    {{ $returnRepair->status === 'processing' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400' : '' }}
-                    {{ $returnRepair->status === 'repaired' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : '' }}
-                    {{ $returnRepair->status === 'refunded' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' : '' }}
-                    {{ $returnRepair->status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : '' }}
-                    {{ $returnRepair->status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : '' }}">
-                    {{ ucfirst($returnRepair->status) }}
-                </span>
-            </div>
-
-            <div class="flex items-center gap-2 p-4">
-                <a href="{{ admin_route('orders.returns-repairs.show', $returnRepair) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400" title="View Details">
-                    <i data-lucide="eye" class="w-4 h-4"></i>
-                </a>
-                @if($returnRepair->status === 'requested')
-                <button onclick="approveReturn({{ $returnRepair->id }})" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-green-100 hover:text-green-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-green-900/20 dark:hover:text-green-400" title="Approve">
-                    <i data-lucide="check" class="w-4 h-4"></i>
-                </button>
-                <button onclick="rejectReturn({{ $returnRepair->id }})" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-red-100 hover:text-red-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-red-900/20 dark:hover:text-red-400" title="Reject">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
+                <!-- Pagination -->
+                @if($rmas->hasPages())
+                    <div class="px-6 py-3 border-t border-stone-200">
+                        {{ $rmas->links() }}
+                    </div>
                 @endif
-            </div>
+            @else
+                <div class="p-8 text-center">
+                    <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4">
+                        <svg class="h-6 w-6 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                </div>
+                    <p class="text-stone-500">No RMA requests found</p>
+                </div>
+                @endif
         </div>
-        @empty
-        <div class="p-8 text-center">
-            <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4 dark:bg-stone-800">
-                <i data-lucide="package" class="w-6 h-6 text-stone-400"></i>
-            </div>
-            <p class="text-stone-500 dark:text-gray-400">No returns or repairs found</p>
-        </div>
-        @endforelse
     </div>
-
-    <!-- Pagination -->
-    @if($returnsRepairs->hasPages())
-    <div class="mt-6">
-        {{ $returnsRepairs->links() }}
-    </div>
-    @endif
 </div>
-
-@push('scripts')
-<script>
-function approveReturn(returnId) {
-    if (confirm('Are you sure you want to approve this return/repair request?')) {
-        fetch(`/admin/orders/returns-repairs/${returnId}/approve`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                admin_notes: ''
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while processing the request.');
-        });
-    }
-}
-
-function rejectReturn(returnId) {
-    const notes = prompt('Please provide a reason for rejection:');
-    if (notes !== null) {
-        fetch(`/admin/orders/returns-repairs/${returnId}/reject`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                admin_notes: notes
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while processing the request.');
-        });
-    }
-}
-</script>
-@endpush
 @endsection

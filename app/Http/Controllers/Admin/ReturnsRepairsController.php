@@ -13,7 +13,7 @@ class ReturnsRepairsController extends Controller
 {
     public function index()
     {
-        $returnsRepairs = ReturnRepair::with(['order.user', 'processedBy'])
+        $rmas = ReturnRepair::with(['order.user', 'processedBy'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -21,12 +21,12 @@ class ReturnsRepairsController extends Controller
         $stats = [
             'requested' => ReturnRepair::where('status', 'requested')->count(),
             'approved' => ReturnRepair::where('status', 'approved')->count(),
-            'received' => ReturnRepair::where('status', 'received')->count(),
+            'in_progress' => ReturnRepair::where('status', 'in_progress')->count(),
             'completed' => ReturnRepair::where('status', 'completed')->count(),
-            'total_refunded' => ReturnRepair::where('status', 'refunded')->sum('refund_amount'),
+            'rejected' => ReturnRepair::where('status', 'rejected')->count(),
         ];
 
-        return view('admin.orders.returns-repairs', compact('returnsRepairs', 'stats'));
+        return view('admin.orders.returns-repairs', compact('rmas', 'stats'));
     }
 
     public function show(ReturnRepair $returnRepair)

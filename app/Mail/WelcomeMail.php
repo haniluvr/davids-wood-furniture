@@ -15,12 +15,15 @@ class WelcomeMail extends Mailable
 
     public $user;
 
+    public $magicLink;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user)
+    public function __construct(User $user, $magicLink = null)
     {
         $this->user = $user;
+        $this->magicLink = $magicLink;
     }
 
     /**

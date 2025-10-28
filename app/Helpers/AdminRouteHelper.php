@@ -20,7 +20,13 @@ class AdminRouteHelper
         $env = config('app.env');
 
         if ($env === 'local') {
-            return 'admin.test.'.$routeName;
+            // Check the current request to determine the correct prefix
+            $httpHost = request()->server->get('HTTP_HOST');
+            if (str_contains($httpHost, 'admin.localhost')) {
+                return 'admin.local.'.$routeName;
+            } else {
+                return 'admin.test.'.$routeName;
+            }
         } else {
             return 'admin.'.$routeName;
         }

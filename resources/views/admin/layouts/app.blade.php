@@ -199,8 +199,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- TinyMCE -->
-    <script src="https://cdn.tiny.cloud/1/m44aoheimxfmxu4q07iimwoq1y6xoiga1gr0bjz6hkl1n7r0/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <!-- Quill Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     
     <!-- Pusher -->
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
@@ -220,33 +221,132 @@
             display: none;  /* Safari and Chrome */
         }
         
-        /* TinyMCE Custom Styles */
-        .tox-tinymce {
-            border-radius: 0.5rem !important;
-            border: 1px solid #e2e8f0 !important;
+        /* Quill Editor Custom Styles */
+        .ql-editor {
+            font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
         }
         
-        .tox-tinymce:hover {
-            border-color: #cbd5e1 !important;
+        .ql-toolbar {
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-bottom: none;
         }
         
-        .tox-tinymce:focus-within {
-            border-color: #3b82f6 !important;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        .ql-container {
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-top: none;
         }
         
-        .dark .tox-tinymce {
-            border-color: #374151 !important;
-            background-color: #1f2937 !important;
+        .ql-toolbar:hover,
+        .ql-container:hover {
+            border-color: #cbd5e1;
         }
         
-        .dark .tox-tinymce:hover {
-            border-color: #4b5563 !important;
+        .ql-toolbar:focus-within,
+        .ql-container:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         
-        .dark .tox-tinymce:focus-within {
-            border-color: #3b82f6 !important;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        .dark .ql-toolbar {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+        
+        .dark .ql-container {
+            background-color: #1f2937;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+        
+        .dark .ql-editor {
+            color: #f9fafb;
+        }
+        
+        .dark .ql-stroke {
+            stroke: #f9fafb;
+        }
+        
+        .dark .ql-fill {
+            fill: #f9fafb;
+        }
+        
+        .dark .ql-picker-label {
+            color: #f9fafb;
+        }
+        
+        .dark .ql-picker-options {
+            background-color: #374151;
+            border-color: #4b5563;
+        }
+        
+        .dark .ql-picker-item {
+            color: #f9fafb;
+        }
+        
+        .dark .ql-picker-item:hover {
+            background-color: #4b5563;
+        }
+        
+        /* Media Library Modal Styles */
+        .media-library-modal {
+            z-index: 999999;
+        }
+        
+        .media-library-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .media-library-content {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        .image-item {
+            position: relative;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .image-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .image-item.selected {
+            border: 2px solid #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .image-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+        
+        .image-item .image-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: white;
+            padding: 0.5rem;
+            font-size: 0.75rem;
         }
     </style>
     
@@ -318,38 +418,219 @@ x-init="
     <!-- Preline UI Script -->
     <script src="https://cdn.jsdelivr.net/npm/preline/dist/preline.min.js"></script>
     
-    <!-- TinyMCE Initialization -->
+    <!-- Quill Editor Initialization -->
     <script>
-        // Initialize TinyMCE
-        function initTinyMCE() {
-            if (typeof tinymce !== 'undefined') {
-                tinymce.init({
-                    selector: 'textarea.tinymce',
-                    height: 400,
-                    menubar: false,
-                    plugins: [
-                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                        'insertdatetime', 'media', 'table', 'help', 'wordcount', 'emoticons'
-                    ],
-                    toolbar: 'undo redo | blocks | ' +
-                        'bold italic forecolor | alignleft aligncenter ' +
-                        'alignright alignjustify | bullist numlist outdent indent | ' +
-                        'removeformat | help | image | link | table | emoticons | code',
-                    content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
-                    skin: 'oxide',
-                    content_css: 'default',
-                    branding: false,
-                    promotion: false,
-                    resize: true,
-                    statusbar: true,
-                    elementpath: true,
-                    paste_data_images: true,
-                    images_upload_handler: function (blobInfo, success, failure) {
-                        // Handle image uploads
-                        const formData = new FormData();
-                        formData.append('image', blobInfo.blob(), blobInfo.filename());
-                        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+        // Initialize Quill Editor
+        function initQuill() {
+            if (typeof Quill !== 'undefined') {
+                // Find all textareas with quill class
+                const quillTextareas = document.querySelectorAll('textarea.quill-editor');
+                
+                quillTextareas.forEach(textarea => {
+                    if (textarea.dataset.quillInitialized) return;
+                    
+                    // Create container for Quill
+                    const quillContainer = document.createElement('div');
+                    quillContainer.className = 'quill-container';
+                    quillContainer.style.height = '400px';
+                    
+                    // Insert container after textarea
+                    textarea.parentNode.insertBefore(quillContainer, textarea.nextSibling);
+                    
+                    // Hide original textarea
+                    textarea.style.display = 'none';
+                    
+                    // Initialize Quill
+                    const quill = new Quill(quillContainer, {
+                        theme: 'snow',
+                        modules: {
+                            toolbar: [
+                                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                ['bold', 'italic', 'underline', 'strike'],
+                                [{ 'color': [] }, { 'background': [] }],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                [{ 'align': [] }],
+                                ['link', 'image', 'video'],
+                                ['blockquote', 'code-block'],
+                                ['clean']
+                            ]
+                        },
+                        placeholder: 'Start writing...'
+                    });
+                    
+                    // Set initial content
+                    if (textarea.value) {
+                        quill.root.innerHTML = textarea.value;
+                    }
+                    
+                    // Update textarea on content change
+                    quill.on('text-change', function() {
+                        textarea.value = quill.root.innerHTML;
+                    });
+                    
+                    // Custom image handler
+                    const toolbar = quill.getModule('toolbar');
+                    toolbar.addHandler('image', function() {
+                        openMediaLibrary(function(imageUrl) {
+                            const range = quill.getSelection();
+                            if (range) {
+                                quill.insertEmbed(range.index, 'image', imageUrl);
+                                quill.setSelection(range.index + 1);
+                            }
+                        });
+                    });
+                    
+                    // Mark as initialized
+                    textarea.dataset.quillInitialized = 'true';
+                    textarea.quillInstance = quill;
+                });
+            }
+        }
+        
+        // Initialize Quill when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initQuill();
+        });
+        
+        // Re-initialize Quill after Alpine updates
+        document.addEventListener('alpine:initialized', () => {
+            setTimeout(() => {
+                initQuill();
+            }, 100);
+        });
+        
+        // Initialize Quill for dynamically loaded content
+        function reinitQuill() {
+            if (typeof Quill !== 'undefined') {
+                initQuill();
+            }
+        }
+        
+        // Make reinitQuill globally available
+        window.reinitQuill = reinitQuill;
+        
+        // Media Library Functions
+        function openMediaLibrary(callback) {
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 media-library-overlay media-library-modal flex items-center justify-center';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-boxdark rounded-lg shadow-xl max-w-4xl w-full mx-4 media-library-content">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Select Image</h3>
+                            <button onclick="closeMediaLibrary()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex gap-2">
+                                <button onclick="uploadNewImage()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    Upload New Image
+                                </button>
+                                <input type="file" id="imageUpload" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
+                            </div>
+                        </div>
+                        
+                        <div id="imageGrid" class="image-grid">
+                            <!-- Images will be loaded here -->
+                        </div>
+                        
+                        <div class="mt-4 flex justify-end gap-2">
+                            <button onclick="closeMediaLibrary()" class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
+                                Cancel
+                            </button>
+                            <button id="selectImageBtn" onclick="selectImage()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50" disabled>
+                                Select Image
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Store callback
+            modal.callback = callback;
+            window.currentMediaLibrary = modal;
+            
+            // Load images
+            loadMediaLibraryImages();
+        }
+        
+        function closeMediaLibrary() {
+            if (window.currentMediaLibrary) {
+                window.currentMediaLibrary.remove();
+                window.currentMediaLibrary = null;
+            }
+        }
+        
+        function loadMediaLibraryImages() {
+            const imageGrid = document.getElementById('imageGrid');
+            if (!imageGrid) return;
+            
+            // Fetch CMS images
+            fetch('/admin/api/cms-images')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        imageGrid.innerHTML = '';
+                        data.images.forEach(image => {
+                            const imageItem = document.createElement('div');
+                            imageItem.className = 'image-item';
+                            imageItem.dataset.imageUrl = image.url;
+                            imageItem.innerHTML = `
+                                <img src="${image.url}" alt="${image.filename}">
+                                <div class="image-info">
+                                    <div class="truncate">${image.filename}</div>
+                                    <div>${(image.size / 1024 / 1024).toFixed(2)} MB</div>
+                                </div>
+                            `;
+                            
+                            imageItem.addEventListener('click', function() {
+                                // Remove previous selection
+                                document.querySelectorAll('.image-item.selected').forEach(item => {
+                                    item.classList.remove('selected');
+                                });
+                                
+                                // Select this image
+                                this.classList.add('selected');
+                                document.getElementById('selectImageBtn').disabled = false;
+                            });
+                            
+                            imageGrid.appendChild(imageItem);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading images:', error);
+                    imageGrid.innerHTML = '<p class="text-gray-500">Error loading images</p>';
+                });
+        }
+        
+        function selectImage() {
+            const selectedItem = document.querySelector('.image-item.selected');
+            if (selectedItem && window.currentMediaLibrary && window.currentMediaLibrary.callback) {
+                const imageUrl = selectedItem.dataset.imageUrl;
+                window.currentMediaLibrary.callback(imageUrl);
+                closeMediaLibrary();
+            }
+        }
+        
+        function uploadNewImage() {
+            document.getElementById('imageUpload').click();
+        }
+        
+        function handleImageUpload(input) {
+            if (input.files && input.files[0]) {
+                const formData = new FormData();
+                formData.append('image', input.files[0]);
+                formData.append('type', 'cms');
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
                         
                         fetch('/admin/images/upload', {
                             method: 'POST',
@@ -361,46 +642,23 @@ x-init="
                         .then(response => response.json())
                         .then(result => {
                             if (result.success) {
-                                success(result.images[0].url);
+                        loadMediaLibraryImages(); // Reload images
                             } else {
-                                failure('Upload failed: ' + result.message);
+                        alert('Upload failed: ' + result.message);
                             }
                         })
                         .catch(error => {
-                            failure('Upload failed: ' + error.message);
-                        });
-                    },
-                    setup: function (editor) {
-                        editor.on('change', function () {
-                            editor.save();
-                        });
-                    }
+                    alert('Upload failed: ' + error.message);
                 });
             }
         }
         
-        // Initialize TinyMCE when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            initTinyMCE();
-        });
-        
-        // Re-initialize TinyMCE after Alpine updates
-        document.addEventListener('alpine:initialized', () => {
-            setTimeout(() => {
-                initTinyMCE();
-            }, 100);
-        });
-        
-        // Initialize TinyMCE for dynamically loaded content
-        function reinitTinyMCE() {
-            if (typeof tinymce !== 'undefined') {
-                tinymce.remove('textarea.tinymce');
-                initTinyMCE();
-            }
-        }
-        
-        // Make reinitTinyMCE globally available
-        window.reinitTinyMCE = reinitTinyMCE;
+        // Make functions globally available
+        window.openMediaLibrary = openMediaLibrary;
+        window.closeMediaLibrary = closeMediaLibrary;
+        window.selectImage = selectImage;
+        window.uploadNewImage = uploadNewImage;
+        window.handleImageUpload = handleImageUpload;
         
         // Real-time Notifications
         function initializeRealtimeNotifications() {

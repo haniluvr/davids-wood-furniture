@@ -12,7 +12,7 @@ class FulfillmentController extends Controller
     public function index()
     {
         // Get orders ready to ship (status: processing or pending)
-        $ordersReadyToShip = Order::with(['user', 'orderItems.product', 'fulfillment'])
+        $orders = Order::with(['user', 'orderItems.product', 'fulfillment'])
             ->whereIn('status', ['processing', 'pending'])
             ->where('fulfillment_status', '!=', 'shipped')
             ->orderBy('created_at', 'asc')
@@ -22,11 +22,11 @@ class FulfillmentController extends Controller
         $stats = [
             'pending_packing' => Order::where('fulfillment_status', 'pending')->count(),
             'packed' => Order::where('fulfillment_status', 'packed')->count(),
-            'ready_to_ship' => Order::where('fulfillment_status', 'packed')->where('status', 'processing')->count(),
-            'shipped_today' => Order::where('fulfillment_status', 'shipped')->whereDate('shipped_at', today())->count(),
+            'shipped' => Order::where('fulfillment_status', 'shipped')->count(),
+            'delivered' => Order::where('fulfillment_status', 'delivered')->count(),
         ];
 
-        return view('admin.orders.fulfillment', compact('ordersReadyToShip', 'stats'));
+        return view('admin.orders.fulfillment', compact('orders', 'stats'));
     }
 
     public function show(Order $order)

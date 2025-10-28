@@ -85,6 +85,8 @@ $adminRoutes = function () {
         Route::get('orders/returns-repairs/create', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'create'])->name('orders.returns-repairs.create');
         Route::post('orders/returns-repairs', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'store'])->name('orders.returns-repairs.store');
         Route::get('orders/returns-repairs/{returnRepair}', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'show'])->name('orders.returns-repairs.show');
+        Route::get('orders/returns-repairs/{returnRepair}/edit', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'edit'])->name('orders.returns-repairs.edit');
+        Route::put('orders/returns-repairs/{returnRepair}', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'update'])->name('orders.returns-repairs.update');
         Route::post('orders/returns-repairs/{returnRepair}/approve', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'approve'])->name('orders.returns-repairs.approve');
         Route::post('orders/returns-repairs/{returnRepair}/reject', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'reject'])->name('orders.returns-repairs.reject');
         Route::post('orders/returns-repairs/{returnRepair}/received', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'markReceived'])->name('orders.returns-repairs.received');
@@ -93,6 +95,11 @@ $adminRoutes = function () {
         Route::post('orders/returns-repairs/{returnRepair}/notes', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'updateNotes'])->name('orders.returns-repairs.notes');
         Route::post('orders/returns-repairs/{returnRepair}/photos', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'uploadPhotos'])->name('orders.returns-repairs.photos');
         Route::delete('orders/returns-repairs/{returnRepair}/photos', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'deletePhoto'])->name('orders.returns-repairs.delete-photo');
+
+        // Search routes for order creation
+        Route::get('customers/search', [App\Http\Controllers\Admin\OrderController::class, 'searchCustomers'])->name('customers.search');
+        Route::get('products/search', [App\Http\Controllers\Admin\OrderController::class, 'searchProducts'])->name('products.search');
+        Route::post('customers/quick-create', [App\Http\Controllers\Admin\OrderController::class, 'quickCreateCustomer'])->name('customers.quick-create');
 
         // Bulk Actions & Export (before resource routes)
         Route::post('orders/bulk-update-status', [App\Http\Controllers\Admin\OrderController::class, 'bulkUpdateStatus'])->name('orders.bulk-update-status');
@@ -119,16 +126,16 @@ $adminRoutes = function () {
                 'update' => 'users.update',
                 'destroy' => 'users.destroy',
             ]);
-            Route::post('all-customers/{user}/suspend', [App\Http\Controllers\Admin\UserController::class, 'suspend'])->name('users.suspend');
-            Route::post('all-customers/{user}/unsuspend', [App\Http\Controllers\Admin\UserController::class, 'unsuspend'])->name('users.unsuspend');
-            Route::post('all-customers/{user}/verify-email', [App\Http\Controllers\Admin\UserController::class, 'verifyEmail'])->name('users.verify-email');
-            Route::post('all-customers/{user}/unverify-email', [App\Http\Controllers\Admin\UserController::class, 'unverifyEmail'])->name('users.unverify-email');
-            Route::post('all-customers/{user}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
+            Route::post('all-customers/{all_customer}/suspend', [App\Http\Controllers\Admin\UserController::class, 'suspend'])->name('users.suspend');
+            Route::post('all-customers/{all_customer}/unsuspend', [App\Http\Controllers\Admin\UserController::class, 'unsuspend'])->name('users.unsuspend');
+            Route::post('all-customers/{all_customer}/verify-email', [App\Http\Controllers\Admin\UserController::class, 'verifyEmail'])->name('users.verify-email');
+            Route::post('all-customers/{all_customer}/unverify-email', [App\Http\Controllers\Admin\UserController::class, 'unverifyEmail'])->name('users.unverify-email');
+            Route::post('all-customers/{all_customer}/reset-password', [App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
             Route::get('all-customers-export', [App\Http\Controllers\Admin\UserController::class, 'export'])->name('users.export');
-            Route::post('all-customers/{user}/tags', [App\Http\Controllers\Admin\UserController::class, 'addTags'])->name('users.add-tags');
-            Route::post('all-customers/{user}/remove-tag', [App\Http\Controllers\Admin\UserController::class, 'removeTag'])->name('users.remove-tag');
-            Route::post('all-customers/{user}/notes', [App\Http\Controllers\Admin\UserController::class, 'updateNotes'])->name('users.update-notes');
-            Route::get('all-customers/{user}/analytics', [App\Http\Controllers\Admin\UserController::class, 'getCustomerAnalytics'])->name('users.analytics');
+            Route::post('all-customers/{all_customer}/tags', [App\Http\Controllers\Admin\UserController::class, 'addTags'])->name('users.add-tags');
+            Route::post('all-customers/{all_customer}/remove-tag', [App\Http\Controllers\Admin\UserController::class, 'removeTag'])->name('users.remove-tag');
+            Route::post('all-customers/{all_customer}/notes', [App\Http\Controllers\Admin\UserController::class, 'updateNotes'])->name('users.update-notes');
+            Route::get('all-customers/{all_customer}/analytics', [App\Http\Controllers\Admin\UserController::class, 'getCustomerAnalytics'])->name('users.analytics');
             Route::post('all-customers/bulk-update-tags', [App\Http\Controllers\Admin\UserController::class, 'bulkUpdateTags'])->name('users.bulk-update-tags');
             Route::get('all-customers/group/{group}', [App\Http\Controllers\Admin\UserController::class, 'getByGroup'])->name('users.by-group');
         });
@@ -199,6 +206,11 @@ $adminRoutes = function () {
             Route::post('cms-pages/generate-slug', [App\Http\Controllers\Admin\CmsPageController::class, 'generateSlug'])->name('cms-pages.generate-slug');
         });
 
+        // Blogs
+        Route::middleware('admin.permission:cms.view')->group(function () {
+            Route::get('blogs', [App\Http\Controllers\Admin\CmsPageController::class, 'blogs'])->name('blogs.index');
+        });
+
         // Analytics
         Route::middleware('admin.permission:analytics.view')->group(function () {
             Route::get('analytics', [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
@@ -265,6 +277,14 @@ $adminRoutes = function () {
             Route::post('images/reorder', [App\Http\Controllers\Admin\ImageUploadController::class, 'reorder'])->name('images.reorder');
         });
 
+        // CMS Media Library
+        Route::middleware('admin.permission:cms.view')->group(function () {
+            Route::get('media-library', function () {
+                return view('admin.cms-pages.media-library');
+            })->name('media-library');
+            Route::get('api/cms-images', [App\Http\Controllers\Admin\ImageUploadController::class, 'getCmsImages'])->name('api.cms-images');
+        });
+
         // API Routes for image upload
         Route::get('api/products', function () {
             return \App\Models\Product::select('id', 'name')->get();
@@ -312,6 +332,9 @@ Route::get('/', function () {
 })->name('home');
 Route::get('/products', [ProductController::class, 'index'])->name('products');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+
+// CMS Pages public routes
+Route::get('/{slug}', [App\Http\Controllers\CmsPageController::class, 'show'])->name('cms.show')->where('slug', '[a-zA-Z0-9\-]+');
 
 // Contact form routes
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');

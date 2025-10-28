@@ -8,9 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\MagicLinkService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class OrderController extends Controller
 {
@@ -90,9 +92,17 @@ class OrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
-            'billing_address' => 'required|array',
-            'shipping_address' => 'required|array',
-            'payment_method' => 'required|string',
+            'items.*.price' => 'required|numeric|min:0',
+            'shipping_street' => 'required|string|max:255',
+            'shipping_barangay' => 'required|string|max:255',
+            'shipping_city' => 'required|string|max:255',
+            'shipping_zip_code' => 'required|string|max:10',
+            'shipping_province' => 'nullable|string|max:255',
+            'shipping_region' => 'required|string|max:255',
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'payment_status' => 'required|in:pending,paid,failed,refunded',
+            'shipping_method' => 'nullable|string',
+            'payment_method' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
 
@@ -106,7 +116,7 @@ class OrderController extends Controller
             foreach ($validated['items'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 $quantity = $item['quantity'];
-                $unitPrice = $product->price;
+                $unitPrice = $item['price']; // Use the price from the form
                 $totalPrice = $unitPrice * $quantity;
 
                 $subtotal += $totalPrice;
@@ -131,22 +141,32 @@ class OrderController extends Controller
             $discountAmount = 0; // No discounts for now
             $totalAmount = $subtotal + $taxAmount + $shippingCost - $discountAmount;
 
+            // Create shipping address array
+            $shippingAddress = [
+                'street' => $validated['shipping_street'],
+                'barangay' => $validated['shipping_barangay'],
+                'city' => $validated['shipping_city'],
+                'zip_code' => $validated['shipping_zip_code'],
+                'province' => $validated['shipping_province'] ?? 'N/A (NCR)',
+                'region' => $validated['shipping_region'],
+            ];
+
             // Create order
             $order = Order::create([
                 'user_id' => $validated['user_id'],
                 'order_number' => 'ORD-'.strtoupper(uniqid()),
-                'status' => 'pending',
+                'status' => $validated['status'],
                 'subtotal' => $subtotal,
                 'tax_amount' => $taxAmount,
                 'shipping_cost' => $shippingCost,
                 'discount_amount' => $discountAmount,
                 'total_amount' => $totalAmount,
                 'currency' => 'PHP',
-                'billing_address' => $validated['billing_address'],
-                'shipping_address' => $validated['shipping_address'],
-                'payment_method' => $validated['payment_method'],
-                'payment_status' => 'pending',
-                'shipping_method' => $shippingCost > 0 ? 'standard' : 'free',
+                'billing_address' => $shippingAddress, // Use shipping address as billing for now
+                'shipping_address' => $shippingAddress,
+                'payment_method' => $validated['payment_method'] ?? 'credit_card',
+                'payment_status' => $validated['payment_status'],
+                'shipping_method' => $validated['shipping_method'] ?? ($shippingCost > 0 ? 'standard' : 'free'),
                 'notes' => $validated['notes'],
             ]);
 
@@ -404,6 +424,7 @@ class OrderController extends Controller
         $stats = [
             'pending_approval' => Order::where('requires_approval', true)->whereNull('approved_at')->count(),
             'approved_today' => Order::where('requires_approval', true)->whereDate('approved_at', today())->count(),
+            'rejected_today' => Order::where('requires_approval', true)->whereDate('rejected_at', today())->count(),
             'total_requiring_approval' => Order::where('requires_approval', true)->count(),
         ];
 
@@ -700,5 +721,102 @@ class OrderController extends Controller
         ]);
 
         return back()->with('success', 'Order marked as shipped.');
+    }
+
+    /**
+     * Search customers for order creation.
+     */
+    public function searchCustomers(Request $request)
+    {
+        $query = $request->get('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $customers = User::where(function ($q) use ($query) {
+            $q->where('first_name', 'like', '%'.$query.'%')
+                ->orWhere('last_name', 'like', '%'.$query.'%')
+                ->orWhere('email', 'like', '%'.$query.'%')
+                ->orWhere('phone', 'like', '%'.$query.'%')
+                ->orWhere('username', 'like', '%'.$query.'%');
+        })
+            ->select('id', 'first_name', 'last_name', 'email', 'phone')
+            ->limit(10)
+            ->get();
+
+        return response()->json($customers);
+    }
+
+    /**
+     * Search products for order creation.
+     */
+    public function searchProducts(Request $request)
+    {
+        $query = $request->get('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $products = Product::where('name', 'like', '%'.$query.'%')
+            ->orWhere('sku', 'like', '%'.$query.'%')
+            ->where('is_active', true)
+            ->select('id', 'name', 'sku', 'price', 'meta_description')
+            ->limit(10)
+            ->get();
+
+        return response()->json($products);
+    }
+
+    /**
+     * Quick create customer for order.
+     */
+    public function quickCreateCustomer(Request $request)
+    {
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'username' => 'required|string|unique:users,username',
+        ]);
+
+        try {
+            $user = User::create([
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'email' => $request->email,
+                'username' => $request->username,
+                'password' => Hash::make('temp_password_'.time()),
+                'email_verified_at' => now(),
+                'is_suspended' => false,
+                'newsletter_subscribed' => false,
+                'newsletter_product_updates' => false,
+                'newsletter_special_offers' => false,
+                'marketing_emails' => false,
+            ]);
+
+            // Send magic link for password setup
+            try {
+                $magicLinkService = new MagicLinkService;
+                $magicLink = $magicLinkService->generateMagicLink($user, 'password-setup');
+
+                // Send welcome email with magic link
+                \Mail::to($user->email)->send(new \App\Mail\WelcomeMail($user, $magicLink));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send magic link for quick customer creation: '.$e->getMessage());
+                // Don't fail the customer creation if email fails
+            }
+
+            return response()->json([
+                'success' => true,
+                'user' => $user,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating customer: '.$e->getMessage(),
+            ], 500);
+        }
     }
 }

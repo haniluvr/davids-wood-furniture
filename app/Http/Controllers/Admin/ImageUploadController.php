@@ -17,7 +17,7 @@ class ImageUploadController extends Controller
         $validator = Validator::make($request->all(), [
             'images' => 'required|array|max:10',
             'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
-            'type' => 'required|in:product,user,general',
+            'type' => 'required|in:product,user,general,cms',
             'product_id' => 'nullable|exists:products,id',
         ]);
 
@@ -46,7 +46,7 @@ class ImageUploadController extends Controller
                 $uploadedImages[] = [
                     'filename' => $filename,
                     'path' => $originalPath,
-                    'url' => Storage::dynamic()->url($originalPath),
+                    'url' => asset('storage/'.$originalPath),
                     'thumbnails' => $thumbnails,
                     'size' => $image->getSize(),
                     'mime_type' => $image->getMimeType(),
@@ -91,6 +91,48 @@ class ImageUploadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Delete failed: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getCmsImages()
+    {
+        try {
+            $cmsPath = 'cms/images';
+            $images = [];
+
+            if (Storage::disk('public')->exists($cmsPath)) {
+                $files = Storage::disk('public')->files($cmsPath);
+
+                foreach ($files as $file) {
+                    // Skip thumbnails directory
+                    if (strpos($file, '/thumbnails/') !== false) {
+                        continue;
+                    }
+
+                    $images[] = [
+                        'filename' => basename($file),
+                        'path' => $file,
+                        'url' => asset('storage/'.$file),
+                        'size' => Storage::disk('public')->size($file),
+                        'created_at' => Storage::disk('public')->lastModified($file),
+                    ];
+                }
+
+                // Sort by creation date (newest first)
+                usort($images, function ($a, $b) {
+                    return $b['created_at'] - $a['created_at'];
+                });
+            }
+
+            return response()->json([
+                'success' => true,
+                'images' => $images,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load images: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -143,6 +185,11 @@ class ImageUploadController extends Controller
             $basePath .= "/product_{$productId}";
         }
 
+        // Special handling for CMS images
+        if ($type === 'cms') {
+            $basePath = 'cms/images';
+        }
+
         return $basePath;
     }
 
@@ -178,7 +225,7 @@ class ImageUploadController extends Controller
 
                 $thumbnails[$size] = [
                     'path' => $thumbnailPath,
-                    'url' => Storage::dynamic()->url($thumbnailPath),
+                    'url' => asset('storage/'.$thumbnailPath),
                     'width' => $dimensions[0],
                     'height' => $dimensions[1],
                 ];
