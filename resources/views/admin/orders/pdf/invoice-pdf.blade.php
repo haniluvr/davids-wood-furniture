@@ -14,28 +14,29 @@
         
         body {
             font-family: 'DejaVu Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+            line-height: 1.4;
             color: #333;
             background: #fff;
+            font-size: 11px;
         }
         
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 15px;
         }
         
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
             border-bottom: 2px solid #3C50E0;
         }
         
         .logo {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #3C50E0;
         }
@@ -45,20 +46,20 @@
         }
         
         .invoice-title h1 {
-            font-size: 28px;
+            font-size: 24px;
             color: #3C50E0;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
         
         .invoice-title p {
             color: #666;
-            font-size: 14px;
+            font-size: 12px;
         }
         
         .billing-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         
         .info-section {
@@ -72,26 +73,28 @@
         
         .info-section h3 {
             color: #3C50E0;
-            margin-bottom: 10px;
-            font-size: 16px;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
         
         .info-section p {
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             color: #666;
+            font-size: 12px;
         }
         
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         
         .items-table th,
         .items-table td {
-            padding: 12px;
+            padding: 8px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            font-size: 12px;
         }
         
         .items-table th {
@@ -111,16 +114,17 @@
         .totals {
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         
         .totals-table {
-            width: 300px;
+            width: 280px;
         }
         
         .totals-table td {
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-bottom: 1px solid #ddd;
+            font-size: 12px;
         }
         
         .totals-table .total-row {
@@ -130,12 +134,12 @@
         }
         
         .footer {
-            margin-top: 40px;
-            padding-top: 20px;
+            margin-top: 20px;
+            padding-top: 15px;
             border-top: 1px solid #ddd;
             text-align: center;
             color: #666;
-            font-size: 12px;
+            font-size: 10px;
         }
         
         .status-badge {
@@ -153,6 +157,19 @@
         .status-shipped { background-color: #d4edda; color: #155724; }
         .status-delivered { background-color: #d1ecf1; color: #0c5460; }
         .status-cancelled { background-color: #f8d7da; color: #721c24; }
+        
+        /* Page break control */
+        .container {
+            page-break-inside: avoid;
+        }
+        
+        .items-table {
+            page-break-inside: avoid;
+        }
+        
+        .totals {
+            page-break-inside: avoid;
+        }
     </style>
 </head>
 <body>

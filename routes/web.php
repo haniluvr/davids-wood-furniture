@@ -98,7 +98,6 @@ $adminRoutes = function () {
 
         // Search routes for order creation
         Route::get('customers/search', [App\Http\Controllers\Admin\OrderController::class, 'searchCustomers'])->name('customers.search');
-        Route::get('products/search', [App\Http\Controllers\Admin\OrderController::class, 'searchProducts'])->name('products.search');
         Route::post('customers/quick-create', [App\Http\Controllers\Admin\OrderController::class, 'quickCreateCustomer'])->name('customers.quick-create');
 
         // Bulk Actions & Export (before resource routes)

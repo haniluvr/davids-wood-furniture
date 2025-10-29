@@ -40,7 +40,7 @@
                             </div>
             <div class="p-8 space-y-6">
                 <!-- Customer Search -->
-                <div class="space-y-2">
+                <div class="space-y-2 relative">
                     <label for="customer-search" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
                         Search Customer <span class="text-red-500">*</span>
                         </label>
@@ -60,7 +60,7 @@
                     </div>
 
                 <!-- Search Results -->
-                <div id="customer-results" class="hidden border border-stone-200 rounded-xl max-h-60 overflow-y-auto dark:border-strokedark">
+                <div id="customer-results" class="hidden absolute z-50 w-full mt-1 border border-stone-200 rounded-xl max-h-60 overflow-y-auto bg-white dark:border-strokedark dark:bg-boxdark">
                     <!-- Results will be populated here -->
                     </div>
 
@@ -407,6 +407,13 @@ document.addEventListener('DOMContentLoaded', function() {
     let itemCount = 0;
     let searchTimeout;
 
+    // Helper function to clear new customer form
+    function clearNewCustomerForm() {
+        document.getElementById('new-first-name').value = '';
+        document.getElementById('new-last-name').value = '';
+        document.getElementById('new-email').value = '';
+    }
+
     // Customer search functionality
     customerSearch.addEventListener('input', function() {
         clearTimeout(searchTimeout);
@@ -431,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function searchCustomers(query) {
-        const url = `{{ admin_route('customers.search') }}?q=${encodeURIComponent(query)}`;
+        const url = `/customers/search?q=${encodeURIComponent(query)}`;
         console.log('Fetching URL:', url);
         
         fetch(url, {
@@ -486,7 +493,14 @@ document.addEventListener('DOMContentLoaded', function() {
         customerSearch.value = '';
         customerResults.classList.add('hidden');
         selectedCustomer.classList.remove('hidden');
+        
+        // Disable create new customer functionality
         newCustomerForm.classList.add('hidden');
+        showNewCustomer.style.display = 'none';
+        showNewCustomer.disabled = true;
+        
+        // Clear new customer form fields
+        clearNewCustomerForm();
     };
 
     // Clear customer selection
@@ -494,21 +508,38 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedCustomerId.value = '';
         selectedCustomer.classList.add('hidden');
         customerSearch.value = '';
+        
+        // Re-enable create new customer functionality
+        showNewCustomer.style.display = 'block';
+        showNewCustomer.disabled = false;
+        newCustomerForm.classList.add('hidden');
+        clearNewCustomerForm();
     });
 
     // Show new customer form
     showNewCustomer.addEventListener('click', function() {
         newCustomerForm.classList.remove('hidden');
         this.style.display = 'none';
+        
+        // Disable search functionality
+        customerSearch.disabled = true;
+        customerSearch.placeholder = 'Search disabled - creating new customer';
+        customerSearch.classList.add('opacity-50', 'cursor-not-allowed');
+        customerResults.classList.add('hidden');
     });
 
     // Cancel new customer form
     cancelNewCustomer.addEventListener('click', function() {
         newCustomerForm.classList.add('hidden');
         showNewCustomer.style.display = 'block';
-        document.getElementById('new-first-name').value = '';
-        document.getElementById('new-last-name').value = '';
-        document.getElementById('new-email').value = '';
+        
+        // Re-enable search functionality
+        customerSearch.disabled = false;
+        customerSearch.placeholder = 'Search by first name, last name, email, or phone...';
+        customerSearch.classList.remove('opacity-50', 'cursor-not-allowed');
+        
+        // Clear form fields
+        clearNewCustomerForm();
     });
 
     // Create new customer
@@ -525,7 +556,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Generate username: first letter of first name + last name
         const username = (firstName.charAt(0) + lastName).toLowerCase();
 
-                fetch('{{ admin_route('customers.quick-create') }}', {
+                fetch('/customers/quick-create', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -541,12 +572,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Use the selectCustomer function which handles all the state management
                 selectCustomer(data.user.id, data.user.first_name, data.user.last_name, data.user.email, '');
-                newCustomerForm.classList.add('hidden');
-                showNewCustomer.style.display = 'block';
-                document.getElementById('new-first-name').value = '';
-                document.getElementById('new-last-name').value = '';
-                document.getElementById('new-email').value = '';
             } else {
                 alert(data.message || 'Error creating customer');
             }
@@ -567,7 +594,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const itemHtml = `
             <div class="order-item border border-stone-200 rounded-xl p-4 dark:border-strokedark" data-item="${itemCount}">
                 <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-6 space-y-2">
+                    <div class="col-span-6 space-y-2 relative">
                         <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">Product</label>
                         <div class="relative">
                             <input type="text" 
@@ -578,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
         </div>
-                        <div id="product-results-${itemCount}" class="hidden border border-stone-200 rounded-xl max-h-40 overflow-y-auto dark:border-strokedark"></div>
+                        <div id="product-results-${itemCount}" class="hidden absolute z-50 w-full mt-1 border border-stone-200 rounded-xl max-h-40 overflow-y-auto bg-white dark:border-strokedark dark:bg-boxdark"></div>
                         <input type="hidden" name="items[${itemCount}][product_id]" class="product-id-input" required>
         </div>
                     <div class="col-span-2 space-y-2">
@@ -592,8 +619,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="col-span-2 space-y-2">
                         <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">Actions</label>
                         <button type="button" onclick="removeOrderItem(${itemCount})" class="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-600 hover:bg-red-100 transition-colors duration-200 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-                            <i data-lucide="trash-2" class="w-4 h-4 mx-auto"></i>
-        </button>
+                            Remove
+                        </button>
                     </div>
                 </div>
             </div>
@@ -624,9 +651,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function searchProducts(query, itemId) {
-        const url = `{{ admin_route('products.search') }}?q=${encodeURIComponent(query)}`;
+        const url = `/api/search?q=${encodeURIComponent(query)}`;
         console.log('Fetching products URL:', url);
-        console.log('Generated route:', '{{ admin_route('products.search') }}');
         
         fetch(url, {
             method: 'GET',
@@ -646,7 +672,11 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 console.log('Product search results:', data);
-                displayProductResults(data, itemId);
+                if (data.success && data.data) {
+                    displayProductResults(data.data, itemId);
+                } else {
+                    displayProductResults([], itemId);
+                }
             })
             .catch(error => {
                 console.error('Error searching products:', error);
@@ -874,6 +904,37 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error loading barangays:', error);
         }
+    });
+
+    // Form validation before submission
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Check if customer is selected
+        const selectedCustomerId = document.getElementById('selected-customer-id').value;
+        if (!selectedCustomerId) {
+            alert('Please select a customer before creating the order.');
+            return;
+        }
+        
+        // Check if at least one product item is added
+        const productInputs = document.querySelectorAll('.product-id-input');
+        let hasValidProduct = false;
+        
+        productInputs.forEach(input => {
+            if (input.value && input.value.trim() !== '') {
+                hasValidProduct = true;
+            }
+        });
+        
+        if (!hasValidProduct) {
+            alert('Please add at least one product item before creating the order.');
+            return;
+        }
+        
+        // If validation passes, submit the form
+        this.submit();
     });
 });
 </script>

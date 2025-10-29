@@ -40,8 +40,8 @@ class RouteHelper
             }
 
             // Fix localhost port issues
-            if ($host === 'admin.localhost' && $port === 8000) {
-                $url = str_replace('admin.localhost:8080', 'admin.localhost:8000', $url);
+            if ($host === 'admin.localhost' && $port === 8080) {
+                $url = str_replace('admin.localhost:8000', 'admin.localhost:8080', $url);
             }
         }
 

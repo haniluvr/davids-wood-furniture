@@ -9,14 +9,33 @@ use Illuminate\Support\Facades\DB;
 
 class FulfillmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // Get orders ready to ship (status: processing or pending)
-        $orders = Order::with(['user', 'orderItems.product', 'fulfillment'])
+        $query = Order::with(['user', 'orderItems.product', 'fulfillment'])
             ->whereIn('status', ['processing', 'pending'])
             ->where('fulfillment_status', '!=', 'shipped')
-            ->orderBy('created_at', 'asc')
-            ->paginate(20);
+            ->orderBy('created_at', 'asc');
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%');
+                    });
+            });
+        }
+
+        // Status filter
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('fulfillment_status', $request->status);
+        }
+
+        $orders = $query->paginate(20);
 
         // Get fulfillment statistics
         $stats = [

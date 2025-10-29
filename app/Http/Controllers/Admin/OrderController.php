@@ -749,27 +749,6 @@ class OrderController extends Controller
     }
 
     /**
-     * Search products for order creation.
-     */
-    public function searchProducts(Request $request)
-    {
-        $query = $request->get('q', '');
-
-        if (strlen($query) < 2) {
-            return response()->json([]);
-        }
-
-        $products = Product::where('name', 'like', '%'.$query.'%')
-            ->orWhere('sku', 'like', '%'.$query.'%')
-            ->where('is_active', true)
-            ->select('id', 'name', 'sku', 'price', 'meta_description')
-            ->limit(10)
-            ->get();
-
-        return response()->json($products);
-    }
-
-    /**
      * Quick create customer for order.
      */
     public function quickCreateCustomer(Request $request)

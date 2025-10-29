@@ -16,9 +16,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             TruncateAllTablesSeeder::class,  // NEW: Truncate all tables first
             CategorySeeder::class,
-            ProductRepopulationSeeder::class, // Use the IKEA-based product seeder with more products
+            ProductSeeder::class, // NEW: 200 products using IKEA data as reference
+            FilipinoUserSeeder::class, // NEW: 150 Filipino users with complete data
+            WishlistItemSeeder::class, // NEW: 300 wishlist items
+            CartItemSeeder::class, // NEW: 400 cart items
             EmployeeSeeder::class,
-            RealisticDataSeeder::class, // Generate realistic customer data (includes users)
             ProductPopularitySeeder::class, // Calculate product popularity from wishlist and cart data
         ]);
     }

@@ -21,11 +21,19 @@ class AdminRouteHelper
 
         if ($env === 'local') {
             // Check the current request to determine the correct prefix
-            $httpHost = request()->server->get('HTTP_HOST');
-            if (str_contains($httpHost, 'admin.localhost')) {
+            $httpHost = request()->getHost();
+
+            // Handle admin.localhost with any port
+            if ($httpHost === 'admin.localhost' || str_contains($httpHost, 'admin.localhost')) {
                 return 'admin.local.'.$routeName;
-            } else {
+            }
+            // Handle admin.davidswood.test with any port
+            elseif ($httpHost === 'admin.davidswood.test' || str_contains($httpHost, 'admin.davidswood.test')) {
                 return 'admin.test.'.$routeName;
+            }
+            // Default fallback for local development
+            else {
+                return 'admin.local.'.$routeName;
             }
         } else {
             return 'admin.'.$routeName;
