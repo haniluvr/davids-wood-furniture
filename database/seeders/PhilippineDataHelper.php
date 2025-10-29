@@ -137,7 +137,7 @@ class PhilippineDataHelper
 
         $regionIndex = array_rand($regions);
         $region = $regions[$regionIndex];
-        $regionName = $region['name'];
+        $regionName = $region['name'] ?? $region['region_name'] ?? $region;
 
         $provinces = self::getProvinces($regionName);
 
@@ -148,7 +148,7 @@ class PhilippineDataHelper
 
         $provinceIndex = array_rand($provinces);
         $province = $provinces[$provinceIndex];
-        $provinceName = $province['name'];
+        $provinceName = $province['name'] ?? $province['province_name'] ?? $province;
 
         $cities = self::getCitiesMunicipalities($regionName, $provinceName);
 
@@ -158,7 +158,7 @@ class PhilippineDataHelper
 
         $cityIndex = array_rand($cities);
         $city = $cities[$cityIndex];
-        $cityName = $city['name'];
+        $cityName = $city['name'] ?? $city['city_name'] ?? $city;
 
         $barangays = self::getBarangays($regionName, $provinceName, $cityName);
 
@@ -168,12 +168,13 @@ class PhilippineDataHelper
 
         $barangayIndex = array_rand($barangays);
         $barangay = $barangays[$barangayIndex];
+        $barangayName = $barangay['name'] ?? $barangay['barangay_name'] ?? $barangay;
 
         return [
             'region' => $regionName,
             'province' => $provinceName,
             'city' => $cityName,
-            'barangay' => $barangay['name'],
+            'barangay' => $barangayName,
             'zip_code' => self::generateZipCode($regionName, $cityName),
             'street' => self::generateStreetName(),
         ];
@@ -255,9 +256,10 @@ class PhilippineDataHelper
         $regions = self::getFallbackRegions();
         $regionIndex = array_rand($regions);
         $region = $regions[$regionIndex];
+        $regionName = $region['name'] ?? $region;
 
         return [
-            'region' => $region['name'],
+            'region' => $regionName,
             'province' => ['Bulacan', 'Pampanga', 'Laguna', 'Cavite', 'Batangas'][array_rand(['Bulacan', 'Pampanga', 'Laguna', 'Cavite', 'Batangas'])],
             'city' => ['Malolos', 'San Fernando', 'Calamba', 'Dasmariñas', 'Batangas City'][array_rand(['Malolos', 'San Fernando', 'Calamba', 'Dasmariñas', 'Batangas City'])],
             'barangay' => ['Poblacion', 'San Agustin', 'Poblacion 1', 'Salitran'][array_rand(['Poblacion', 'San Agustin', 'Poblacion 1', 'Salitran'])],
