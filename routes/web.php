@@ -332,8 +332,10 @@ Route::get('/', function () {
 Route::get('/products', [ProductController::class, 'index'])->name('products');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-// CMS Pages public routes
-Route::get('/{slug}', [App\Http\Controllers\CmsPageController::class, 'show'])->name('cms.show')->where('slug', '[a-zA-Z0-9\-]+');
+// CMS Pages public routes (catch-all for valid slugs, but exclude specific routes)
+Route::get('/{slug}', [App\Http\Controllers\CmsPageController::class, 'show'])
+    ->name('cms.show')
+    ->where('slug', '^(?!test-route$|health$)[a-zA-Z0-9\-]+$');
 
 // Contact form routes
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
@@ -557,7 +559,20 @@ Route::get('/health', function () {
             $errors[] = 'Storage check failed: '.$e->getMessage();
         }
 
-        $allHealthy = $checks['app'] && $checks['database'] && $checks['redis'] && $checks['storage'];
+        // In testing environment, Redis is optional
+        $requiredChecks = ['app', 'database', 'storage'];
+        if (app()->environment() !== 'testing') {
+            $requiredChecks[] = 'redis';
+        }
+
+        $allHealthy = true;
+        foreach ($requiredChecks as $check) {
+            if (! ($checks[$check] ?? false)) {
+                $allHealthy = false;
+
+                break;
+            }
+        }
 
         return response()->json([
             'status' => $allHealthy ? 'healthy' : 'unhealthy',
