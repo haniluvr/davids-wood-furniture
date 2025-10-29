@@ -297,6 +297,7 @@ class PhilippineDataHelper
 
         if (isset($zipPatterns[$cityName])) {
             $pattern = $zipPatterns[$cityName];
+
             return str_replace('#', rand(0, 9), $pattern);
         }
 
