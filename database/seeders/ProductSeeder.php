@@ -127,33 +127,9 @@ class ProductSeeder extends Seeder
             ],
         ];
 
-        // Product name templates based on IKEA style
-        $productNames = [
-            'beds' => [
-                'AURORA', 'NORDIC', 'FOREST', 'RIVER', 'MOUNTAIN', 'VALLEY', 'MEADOW', 'SUNRISE', 'MOONLIGHT', 'STARLIGHT',
-                'BIRCH', 'OAK', 'PINE', 'ASH', 'MAPLE', 'WALNUT', 'CHERRY', 'MAHOGANY', 'TEAK', 'CEDAR',
-            ],
-            'cabinets' => [
-                'STORAGE', 'HARMONY', 'ELEGANCE', 'CLASSIC', 'MODERN', 'VINTAGE', 'RUSTIC', 'CONTEMPORARY', 'TRADITIONAL', 'MINIMALIST',
-                'CHEST', 'WARDROBE', 'CUPBOARD', 'SIDEBOARD', 'DISPLAY', 'CABINET', 'DRESSER', 'COMMODE', 'BUFFET', 'CONSOLE',
-            ],
-            'chairs' => [
-                'COMFORT', 'RELAX', 'DINING', 'OFFICE', 'STUDY', 'LOUNGE', 'PATIO', 'GARDEN', 'BALCONY', 'TERRACE',
-                'SEAT', 'CHAIR', 'STOOL', 'BENCH', 'ROCKER', 'SWIVEL', 'FOLDING', 'STACKING', 'OUTDOOR', 'INDOOR',
-            ],
-            'tables' => [
-                'DINING', 'COFFEE', 'SIDE', 'CONSOLE', 'DESK', 'WORK', 'STUDY', 'NIGHT', 'BEDROOM', 'LIVING',
-                'TABLE', 'DESK', 'STAND', 'SURFACE', 'TOP', 'WORKTOP', 'COUNTER', 'BAR', 'PATIO', 'OUTDOOR',
-            ],
-            'shelves' => [
-                'WALL', 'FLOOR', 'BOOK', 'DISPLAY', 'STORAGE', 'FLOATING', 'CORNER', 'MODULAR', 'ADJUSTABLE', 'FIXED',
-                'SHELF', 'SHELVES', 'BOOKCASE', 'CABINET', 'UNIT', 'RACK', 'STAND', 'HOLDER', 'STORAGE', 'DISPLAY',
-            ],
-            'sofas' => [
-                'COMFORT', 'LUXURY', 'MODERN', 'CLASSIC', 'SECTIONAL', 'LOUNGE', 'RECLINER', 'FUTON', 'LOVESEAT', 'CHAISE',
-                'SOFA', 'COUCH', 'SETTEE', 'DIVAN', 'CHESTERFIELD', 'CHESTER', 'DIVAN', 'OTTOMAN', 'FOOTSTOOL', 'BENCH',
-            ],
-        ];
+        // Product name generation similar to ProductRepopulationSeeder
+        $prefixes = ['Premium', 'Classic', 'Modern', 'Elegant', 'Contemporary', 'Luxury', 'Deluxe', 'Executive', 'Professional', 'Signature'];
+        $materials = ['Oak', 'Pine', 'Walnut', 'Mahogany', 'Teak', 'Maple', 'Cherry', 'Ash', 'Birch', 'Cedar'];
 
         $productCount = 0;
         $targetCount = 200;
@@ -169,12 +145,10 @@ class ProductSeeder extends Seeder
                 $subcategoryId = $faker->randomElement($subcategoryIds);
                 $subcategoryData = $categoryData['subcategories'][$subcategoryId];
 
-                // Generate product name
-                $categoryNames = ['beds', 'cabinets', 'chairs', 'tables', 'shelves', 'sofas'];
-                $categoryName = $categoryNames[$categoryId - 1];
-                $namePrefix = $faker->randomElement($productNames[$categoryName]);
-                $nameSuffix = $faker->randomElement($productNames[$categoryName]);
-                $productName = $namePrefix.' '.$subcategoryData['name'];
+                // Generate product name (similar to ProductRepopulationSeeder)
+                $prefix = $prefixes[($productCount) % count($prefixes)];
+                $material = $materials[($productCount) % count($materials)];
+                $productName = "{$prefix} {$material} {$subcategoryData['name']}";
 
                 // Generate unique slug
                 $baseSlug = Str::slug($productName);
@@ -227,7 +201,7 @@ class ProductSeeder extends Seeder
                 $shortDescription = "Premium {$material} {$subcategoryData['name']} - {$dimensionsString}";
 
                 // Generate unique SKU
-                $skuPrefix = strtoupper(substr($namePrefix, 0, 3));
+                $skuPrefix = strtoupper(substr($prefix, 0, 3));
                 $sku = $skuPrefix.'-'.str_pad($productCount + 1, 4, '0', STR_PAD_LEFT);
                 $counter = 1;
                 while (Product::where('sku', $sku)->exists()) {
