@@ -19,6 +19,7 @@ class TruncateAllTablesSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         // Define tables to truncate in correct order (child tables first)
+        // Note: Excluding 'categories' and 'employees' tables as they contain essential data
         $tables = [
             // User-related tables (child tables first)
             'product_reviews',
@@ -30,13 +31,11 @@ class TruncateAllTablesSeeder extends Seeder
             'wishlists',
             'users',
 
-            // Product and category tables
+            // Product tables (categories excluded)
             'products',
-            'categories',
 
-            // Admin and employee tables
+            // Admin tables (employees excluded)
             'admins',
-            'employees',
 
             // Other system tables
             'audit_logs',

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Product;
+use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -14,6 +15,9 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
+        // Initialize Faker
+        $faker = Faker::create();
+
         // Load IKEA data for reference
         $ikeaData = json_decode(file_get_contents(base_path('ikea_data.json')), true);
 
@@ -162,14 +166,14 @@ class ProductSeeder extends Seeder
             $productsForThisCategory = min($productsPerCategory, $targetCount - $productCount);
 
             for ($i = 0; $i < $productsForThisCategory && $productCount < $targetCount; $i++) {
-                $subcategoryId = fake()->randomElement($subcategoryIds);
+                $subcategoryId = $faker->randomElement($subcategoryIds);
                 $subcategoryData = $categoryData['subcategories'][$subcategoryId];
 
                 // Generate product name
                 $categoryNames = ['beds', 'cabinets', 'chairs', 'tables', 'shelves', 'sofas'];
                 $categoryName = $categoryNames[$categoryId - 1];
-                $namePrefix = fake()->randomElement($productNames[$categoryName]);
-                $nameSuffix = fake()->randomElement($productNames[$categoryName]);
+                $namePrefix = $faker->randomElement($productNames[$categoryName]);
+                $nameSuffix = $faker->randomElement($productNames[$categoryName]);
                 $productName = $namePrefix.' '.$subcategoryData['name'];
 
                 // Generate unique slug
@@ -183,38 +187,38 @@ class ProductSeeder extends Seeder
 
                 // Generate dimensions
                 $dimensions = $categoryData['dimensions_range'];
-                $length = fake()->numberBetween($dimensions['length'][0], $dimensions['length'][1]);
-                $width = fake()->numberBetween($dimensions['width'][0], $dimensions['width'][1]);
-                $height = fake()->numberBetween($dimensions['height'][0], $dimensions['height'][1]);
+                $length = $faker->numberBetween($dimensions['length'][0], $dimensions['length'][1]);
+                $width = $faker->numberBetween($dimensions['width'][0], $dimensions['width'][1]);
+                $height = $faker->numberBetween($dimensions['height'][0], $dimensions['height'][1]);
                 $dimensionsString = "{$length}x{$width}x{$height} cm";
 
                 // Generate weight
-                $weight = fake()->numberBetween($categoryData['weight_range'][0], $categoryData['weight_range'][1]);
+                $weight = $faker->numberBetween($categoryData['weight_range'][0], $categoryData['weight_range'][1]);
 
                 // Generate pricing (in PHP)
-                $basePrice = fake()->numberBetween(1500, 25000);
-                $costPrice = $basePrice * fake()->randomFloat(2, 0.4, 0.7); // 40-70% of base price
-                $salePrice = fake()->optional(0.3)->numberBetween($basePrice * 0.7, $basePrice * 0.9); // 30% chance of sale
+                $basePrice = $faker->numberBetween(1500, 25000);
+                $costPrice = $basePrice * $faker->randomFloat(2, 0.4, 0.7); // 40-70% of base price
+                $salePrice = $faker->optional(0.3)->numberBetween($basePrice * 0.7, $basePrice * 0.9); // 30% chance of sale
 
                 // Generate stock quantity
-                $stockQuantity = fake()->numberBetween($subcategoryData['min_qty'], $subcategoryData['min_qty'] + 20);
+                $stockQuantity = $faker->numberBetween($subcategoryData['min_qty'], $subcategoryData['min_qty'] + 20);
 
                 // Generate room categories (can be multiple)
-                $roomCategories = fake()->randomElements($categoryData['room_categories'], fake()->numberBetween(1, count($categoryData['room_categories'])));
+                $roomCategories = $faker->randomElements($categoryData['room_categories'], $faker->numberBetween(1, count($categoryData['room_categories'])));
 
                 // Generate images (using IKEA data as reference)
-                $ikeaItem = fake()->randomElement($ikeaData);
+                $ikeaItem = $faker->randomElement($ikeaData);
                 $mainImage = $ikeaItem['Plp-image Image'] ?? $ikeaItem['Image'] ?? 'https://via.placeholder.com/400x300?text=Product+Image';
                 $galleryImages = [];
 
                 // Generate 2-4 additional gallery images
-                for ($j = 0; $j < fake()->numberBetween(2, 4); $j++) {
-                    $galleryItem = fake()->randomElement($ikeaData);
+                for ($j = 0; $j < $faker->numberBetween(2, 4); $j++) {
+                    $galleryItem = $faker->randomElement($ikeaData);
                     $galleryImages[] = $galleryItem['Plp-image Image'] ?? $galleryItem['Image'] ?? 'https://via.placeholder.com/400x300?text=Gallery+Image';
                 }
 
                 // Generate description
-                $material = fake()->randomElement($categoryData['materials']);
+                $material = $faker->randomElement($categoryData['materials']);
                 $description = "Beautifully crafted {$subcategoryData['name']} made from premium {$material}. ".
                     "Perfect for {$categoryData['room_categories'][0]} and other living spaces. ".
                     "Dimensions: {$dimensionsString}. ".
@@ -251,7 +255,7 @@ class ProductSeeder extends Seeder
                     'cost_price' => $costPrice,
                     'sale_price' => $salePrice,
                     'sku' => $sku,
-                    'barcode' => fake()->ean13(),
+                    'barcode' => $faker->ean13(),
                     'stock_quantity' => $stockQuantity,
                     'low_stock_threshold' => $subcategoryData['min_qty'],
                     'manage_stock' => true,
@@ -262,7 +266,7 @@ class ProductSeeder extends Seeder
                     'material' => $material,
                     'images' => [$mainImage],
                     'gallery' => $galleryImages,
-                    'featured' => fake()->boolean(20), // 20% chance of being featured
+                    'featured' => $faker->boolean(20), // 20% chance of being featured
                     'is_active' => true,
                     'sort_order' => $productCount + 1,
                     'meta_data' => $metaData,
