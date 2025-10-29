@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Product;
-use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -15,9 +14,6 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        // Initialize Faker
-        $faker = Faker::create();
-
         // Load IKEA data for reference
         $ikeaData = json_decode(file_get_contents(base_path('ikea_data.json')), true);
 
@@ -142,7 +138,7 @@ class ProductSeeder extends Seeder
             $productsForThisCategory = min($productsPerCategory, $targetCount - $productCount);
 
             for ($i = 0; $i < $productsForThisCategory && $productCount < $targetCount; $i++) {
-                $subcategoryId = $faker->randomElement($subcategoryIds);
+                $subcategoryId = $subcategoryIds[array_rand($subcategoryIds)];
                 $subcategoryData = $categoryData['subcategories'][$subcategoryId];
 
                 // Generate product name (similar to ProductRepopulationSeeder)
@@ -161,38 +157,40 @@ class ProductSeeder extends Seeder
 
                 // Generate dimensions
                 $dimensions = $categoryData['dimensions_range'];
-                $length = $faker->numberBetween($dimensions['length'][0], $dimensions['length'][1]);
-                $width = $faker->numberBetween($dimensions['width'][0], $dimensions['width'][1]);
-                $height = $faker->numberBetween($dimensions['height'][0], $dimensions['height'][1]);
+                $length = rand($dimensions['length'][0], $dimensions['length'][1]);
+                $width = rand($dimensions['width'][0], $dimensions['width'][1]);
+                $height = rand($dimensions['height'][0], $dimensions['height'][1]);
                 $dimensionsString = "{$length}x{$width}x{$height} cm";
 
                 // Generate weight
-                $weight = $faker->numberBetween($categoryData['weight_range'][0], $categoryData['weight_range'][1]);
+                $weight = rand($categoryData['weight_range'][0], $categoryData['weight_range'][1]);
 
                 // Generate pricing (in PHP)
-                $basePrice = $faker->numberBetween(1500, 25000);
-                $costPrice = $basePrice * $faker->randomFloat(2, 0.4, 0.7); // 40-70% of base price
-                $salePrice = $faker->optional(0.3)->numberBetween($basePrice * 0.7, $basePrice * 0.9); // 30% chance of sale
+                $basePrice = rand(1500, 25000);
+                $costPrice = $basePrice * (rand(40, 70) / 100); // 40-70% of base price
+                $salePrice = (rand(1, 100) <= 30) ? rand($basePrice * 0.7, $basePrice * 0.9) : null; // 30% chance of sale
 
                 // Generate stock quantity
-                $stockQuantity = $faker->numberBetween($subcategoryData['min_qty'], $subcategoryData['min_qty'] + 20);
+                $stockQuantity = rand($subcategoryData['min_qty'], $subcategoryData['min_qty'] + 20);
 
                 // Generate room categories (can be multiple)
-                $roomCategories = $faker->randomElements($categoryData['room_categories'], $faker->numberBetween(1, count($categoryData['room_categories'])));
+                $roomCount = rand(1, count($categoryData['room_categories']));
+                $roomCategories = array_slice($categoryData['room_categories'], 0, $roomCount);
 
                 // Generate images (using IKEA data as reference)
-                $ikeaItem = $faker->randomElement($ikeaData);
+                $ikeaItem = $ikeaData[array_rand($ikeaData)];
                 $mainImage = $ikeaItem['Plp-image Image'] ?? $ikeaItem['Image'] ?? 'https://via.placeholder.com/400x300?text=Product+Image';
                 $galleryImages = [];
 
                 // Generate 2-4 additional gallery images
-                for ($j = 0; $j < $faker->numberBetween(2, 4); $j++) {
-                    $galleryItem = $faker->randomElement($ikeaData);
+                $galleryCount = rand(2, 4);
+                for ($j = 0; $j < $galleryCount; $j++) {
+                    $galleryItem = $ikeaData[array_rand($ikeaData)];
                     $galleryImages[] = $galleryItem['Plp-image Image'] ?? $galleryItem['Image'] ?? 'https://via.placeholder.com/400x300?text=Gallery+Image';
                 }
 
                 // Generate description
-                $material = $faker->randomElement($categoryData['materials']);
+                $material = $categoryData['materials'][array_rand($categoryData['materials'])];
                 $description = "Beautifully crafted {$subcategoryData['name']} made from premium {$material}. ".
                     "Perfect for {$categoryData['room_categories'][0]} and other living spaces. ".
                     "Dimensions: {$dimensionsString}. ".
@@ -229,7 +227,7 @@ class ProductSeeder extends Seeder
                     'cost_price' => $costPrice,
                     'sale_price' => $salePrice,
                     'sku' => $sku,
-                    'barcode' => $faker->ean13(),
+                    'barcode' => str_pad(rand(100000000000, 999999999999), 13, '0', STR_PAD_LEFT),
                     'stock_quantity' => $stockQuantity,
                     'low_stock_threshold' => $subcategoryData['min_qty'],
                     'manage_stock' => true,
@@ -240,7 +238,7 @@ class ProductSeeder extends Seeder
                     'material' => $material,
                     'images' => [$mainImage],
                     'gallery' => $galleryImages,
-                    'featured' => $faker->boolean(20), // 20% chance of being featured
+                    'featured' => (rand(1, 100) <= 20), // 20% chance of being featured
                     'is_active' => true,
                     'sort_order' => $productCount + 1,
                     'meta_data' => $metaData,

@@ -34,8 +34,8 @@ class WishlistItemSeeder extends Seeder
             $attempts++;
 
             // Get random user and product
-            $userId = fake()->randomElement($userIds);
-            $productId = fake()->randomElement($productIds);
+            $userId = $userIds[array_rand($userIds)];
+            $productId = $productIds[array_rand($productIds)];
 
             // Check if this combination already exists
             $existingItem = WishlistItem::where('user_id', $userId)

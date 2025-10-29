@@ -135,7 +135,7 @@ class PhilippineDataHelper
             return self::getFallbackAddress();
         }
 
-        $region = fake()->randomElement($regions);
+        $region = $regions[array_rand($regions)];
         $regionName = $region['name'];
 
         $provinces = self::getProvinces($regionName);
@@ -145,7 +145,7 @@ class PhilippineDataHelper
             return self::getNCRAddress($regionName);
         }
 
-        $province = fake()->randomElement($provinces);
+        $province = $provinces[array_rand($provinces)];
         $provinceName = $province['name'];
 
         $cities = self::getCitiesMunicipalities($regionName, $provinceName);
@@ -154,7 +154,7 @@ class PhilippineDataHelper
             return self::getFallbackAddress();
         }
 
-        $city = fake()->randomElement($cities);
+        $city = $cities[array_rand($cities)];
         $cityName = $city['name'];
 
         $barangays = self::getBarangays($regionName, $provinceName, $cityName);
@@ -163,7 +163,7 @@ class PhilippineDataHelper
             return self::getFallbackAddress();
         }
 
-        $barangay = fake()->randomElement($barangays);
+        $barangay = $barangays[array_rand($barangays)];
 
         return [
             'region' => $regionName,
@@ -191,11 +191,11 @@ class PhilippineDataHelper
         $cleanLast = preg_replace('/[^a-z]/', '', $cleanLast);
 
         // Add some randomization
-        $randomSuffix = fake()->optional(0.3)->numerify('###');
-        $separator = fake()->randomElement(['.', '_', '']);
+        $randomSuffix = (rand(1, 100) <= 30) ? str_pad(rand(100, 999), 3, '0', STR_PAD_LEFT) : '';
+        $separator = ['.', '_', ''][array_rand(['.', '_', ''])];
 
         $email = $cleanFirst.$separator.$cleanLast.$randomSuffix;
-        $domain = fake()->randomElement($domains);
+        $domain = $domains[array_rand($domains)];
 
         return $email.'@'.$domain;
     }
@@ -230,13 +230,13 @@ class PhilippineDataHelper
             'Mandaluyong', 'San Juan', 'Marikina', 'Las Piñas', 'Parañaque',
         ];
 
-        $city = fake()->randomElement($ncrCities);
+        $city = $ncrCities[array_rand($ncrCities)];
 
         return [
             'region' => $regionName,
             'province' => null,
             'city' => $city,
-            'barangay' => fake()->randomElement(['Poblacion', 'Diliman', 'Ermita', 'Bel-Air', 'Fort Bonifacio', 'Ortigas Center']),
+            'barangay' => ['Poblacion', 'Diliman', 'Ermita', 'Bel-Air', 'Fort Bonifacio', 'Ortigas Center'][array_rand(['Poblacion', 'Diliman', 'Ermita', 'Bel-Air', 'Fort Bonifacio', 'Ortigas Center'])],
             'zip_code' => self::generateZipCode($regionName, $city),
             'street' => self::generateStreetName(),
         ];
@@ -248,14 +248,14 @@ class PhilippineDataHelper
     private static function getFallbackAddress()
     {
         $regions = self::getFallbackRegions();
-        $region = fake()->randomElement($regions);
+        $region = $regions[array_rand($regions)];
 
         return [
             'region' => $region['name'],
-            'province' => fake()->randomElement(['Bulacan', 'Pampanga', 'Laguna', 'Cavite', 'Batangas']),
-            'city' => fake()->randomElement(['Malolos', 'San Fernando', 'Calamba', 'Dasmariñas', 'Batangas City']),
-            'barangay' => fake()->randomElement(['Poblacion', 'San Agustin', 'Poblacion 1', 'Salitran']),
-            'zip_code' => fake()->numerify('####'),
+            'province' => ['Bulacan', 'Pampanga', 'Laguna', 'Cavite', 'Batangas'][array_rand(['Bulacan', 'Pampanga', 'Laguna', 'Cavite', 'Batangas'])],
+            'city' => ['Malolos', 'San Fernando', 'Calamba', 'Dasmariñas', 'Batangas City'][array_rand(['Malolos', 'San Fernando', 'Calamba', 'Dasmariñas', 'Batangas City'])],
+            'barangay' => ['Poblacion', 'San Agustin', 'Poblacion 1', 'Salitran'][array_rand(['Poblacion', 'San Agustin', 'Poblacion 1', 'Salitran'])],
+            'zip_code' => str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT),
             'street' => self::generateStreetName(),
         ];
     }
@@ -273,7 +273,7 @@ class PhilippineDataHelper
             'Real', 'Climaco', 'Velez', 'Roxas', 'Pioneer', 'Sinsuat',
         ];
 
-        return fake()->randomElement($streetNames).' '.fake()->randomElement($streetTypes);
+        return $streetNames[array_rand($streetNames)].' '.$streetTypes[array_rand($streetTypes)];
     }
 
     /**
@@ -296,11 +296,12 @@ class PhilippineDataHelper
         ];
 
         if (isset($zipPatterns[$cityName])) {
-            return fake()->numerify($zipPatterns[$cityName]);
+            $pattern = $zipPatterns[$cityName];
+            return str_replace('#', rand(0, 9), $pattern);
         }
 
         // Default pattern
-        return fake()->numerify('####');
+        return str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
     }
 
     public static function getRandomFilipinoName()
@@ -308,8 +309,8 @@ class PhilippineDataHelper
         $names = self::getFilipinoNames();
 
         return [
-            'first_name' => fake()->randomElement($names['first_names']),
-            'last_name' => fake()->randomElement($names['last_names']),
+            'first_name' => $names['first_names'][array_rand($names['first_names'])],
+            'last_name' => $names['last_names'][array_rand($names['last_names'])],
         ];
     }
 
@@ -318,8 +319,8 @@ class PhilippineDataHelper
         // Philippine mobile number format: +63 9XX XXX XXXX
         $prefixes = ['917', '918', '919', '920', '921', '922', '923', '924', '925', '926', '927', '928', '929', '930', '931', '932', '933', '934', '935', '936', '937', '938', '939', '940', '941', '942', '943', '944', '945', '946', '947', '948', '949', '950', '951', '952', '953', '954', '955', '956', '957', '958', '959', '960', '961', '962', '963', '964', '965', '966', '967', '968', '969', '970', '971', '972', '973', '974', '975', '976', '977', '978', '979', '980', '981', '982', '983', '984', '985', '986', '987', '988', '989', '990', '991', '992', '993', '994', '995', '996', '997', '998', '999'];
 
-        $prefix = fake()->randomElement($prefixes);
-        $number = fake()->numerify('### ####');
+        $prefix = $prefixes[array_rand($prefixes)];
+        $number = str_pad(rand(100, 999), 3, '0', STR_PAD_LEFT).' '.str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
 
         return '+63 '.$prefix.' '.$number;
     }

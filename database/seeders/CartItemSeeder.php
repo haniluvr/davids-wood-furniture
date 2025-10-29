@@ -34,8 +34,8 @@ class CartItemSeeder extends Seeder
             $attempts++;
 
             // Get random user and product
-            $userId = fake()->randomElement($userIds);
-            $productId = fake()->randomElement($productIds);
+            $userId = $userIds[array_rand($userIds)];
+            $productId = $productIds[array_rand($productIds)];
 
             // Check if this combination already exists
             $existingItem = CartItem::where('user_id', $userId)
@@ -51,7 +51,7 @@ class CartItemSeeder extends Seeder
                 }
 
                 // Generate random quantity (1-5 items)
-                $quantity = fake()->numberBetween(1, 5);
+                $quantity = rand(1, 5);
 
                 // Use current price (sale price if available, otherwise regular price)
                 $unitPrice = $product->sale_price ?? $product->price;
