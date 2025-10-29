@@ -135,7 +135,8 @@ class PhilippineDataHelper
             return self::getFallbackAddress();
         }
 
-        $region = $regions[array_rand($regions)];
+        $regionIndex = array_rand($regions);
+        $region = $regions[$regionIndex];
         $regionName = $region['name'];
 
         $provinces = self::getProvinces($regionName);
@@ -145,7 +146,8 @@ class PhilippineDataHelper
             return self::getNCRAddress($regionName);
         }
 
-        $province = $provinces[array_rand($provinces)];
+        $provinceIndex = array_rand($provinces);
+        $province = $provinces[$provinceIndex];
         $provinceName = $province['name'];
 
         $cities = self::getCitiesMunicipalities($regionName, $provinceName);
@@ -154,7 +156,8 @@ class PhilippineDataHelper
             return self::getFallbackAddress();
         }
 
-        $city = $cities[array_rand($cities)];
+        $cityIndex = array_rand($cities);
+        $city = $cities[$cityIndex];
         $cityName = $city['name'];
 
         $barangays = self::getBarangays($regionName, $provinceName, $cityName);
@@ -163,7 +166,8 @@ class PhilippineDataHelper
             return self::getFallbackAddress();
         }
 
-        $barangay = $barangays[array_rand($barangays)];
+        $barangayIndex = array_rand($barangays);
+        $barangay = $barangays[$barangayIndex];
 
         return [
             'region' => $regionName,
@@ -230,7 +234,8 @@ class PhilippineDataHelper
             'Mandaluyong', 'San Juan', 'Marikina', 'Las Piñas', 'Parañaque',
         ];
 
-        $city = $ncrCities[array_rand($ncrCities)];
+        $cityIndex = array_rand($ncrCities);
+        $city = $ncrCities[$cityIndex];
 
         return [
             'region' => $regionName,
@@ -248,7 +253,8 @@ class PhilippineDataHelper
     private static function getFallbackAddress()
     {
         $regions = self::getFallbackRegions();
-        $region = $regions[array_rand($regions)];
+        $regionIndex = array_rand($regions);
+        $region = $regions[$regionIndex];
 
         return [
             'region' => $region['name'],

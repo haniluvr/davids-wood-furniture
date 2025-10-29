@@ -34,16 +34,16 @@ class FilipinoUserSeeder extends Seeder
             $address = PhilippineDataHelper::getRandomPhilippineAddress();
 
             // Generate email verification (85% verified)
-            $emailVerifiedAt = fake()->boolean(85) ? fake()->dateTimeBetween('-2 years', 'now') : null;
+            $emailVerifiedAt = (rand(1, 100) <= 85) ? date('Y-m-d H:i:s', rand(strtotime('-2 years'), time())) : null;
 
             // Generate newsletter preferences (randomized)
-            $newsletterSubscribed = fake()->boolean(60);
-            $newsletterProductUpdates = fake()->boolean(70);
-            $newsletterSpecialOffers = fake()->boolean(50);
-            $marketingEmails = fake()->boolean(40);
+            $newsletterSubscribed = (rand(1, 100) <= 60);
+            $newsletterProductUpdates = (rand(1, 100) <= 70);
+            $newsletterSpecialOffers = (rand(1, 100) <= 50);
+            $marketingEmails = (rand(1, 100) <= 40);
 
             // Generate additional address details
-            $streetNumber = fake()->numberBetween(1, 999);
+            $streetNumber = rand(1, 999);
             $streetName = $address['street'];
             $fullStreet = $streetNumber.' '.$streetName;
 
@@ -66,8 +66,8 @@ class FilipinoUserSeeder extends Seeder
                 'marketing_emails' => $marketingEmails,
                 'email_verified_at' => $emailVerifiedAt,
                 'is_suspended' => false,
-                'two_factor_enabled' => fake()->boolean(15), // 15% have 2FA enabled
-                'two_factor_verified_at' => fake()->boolean(15) ? fake()->dateTimeBetween('-1 year', 'now') : null,
+                'two_factor_enabled' => (rand(1, 100) <= 15), // 15% have 2FA enabled
+                'two_factor_verified_at' => (rand(1, 100) <= 15) ? date('Y-m-d H:i:s', rand(strtotime('-1 year'), time())) : null,
             ]);
         }
 

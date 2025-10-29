@@ -196,7 +196,7 @@ class ProductSeeder extends Seeder
                     "Dimensions: {$dimensionsString}. ".
                     'Features solid construction and elegant design that complements any interior style.';
 
-                $shortDescription = "Premium {$material} {$subcategoryData['name']} - {$dimensionsString}";
+                $shortDescription = "Premium {$subcategoryData['name']} with elegant design and superior quality materials.";
 
                 // Generate unique SKU
                 $skuPrefix = strtoupper(substr($prefix, 0, 3));
