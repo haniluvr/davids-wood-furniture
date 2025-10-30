@@ -103,7 +103,7 @@
                                         $firstImage = is_array($images) && count($images) > 0 ? $images[0] : null;
                                     @endphp
                                     @if($firstImage)
-                                        <img src="{{ asset('storage/' . $firstImage) }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover rounded-lg">
+                                        <img src="{{ Storage::url($firstImage) }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover rounded-lg">
                                     @else
                                         <i data-lucide="package" class="w-6 h-6 text-gray-400"></i>
                                     @endif

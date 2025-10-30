@@ -4,15 +4,20 @@
 // ── Dynamic Storage URL Helper ──
 function getStorageUrl(path) {
     if (!path) return null;
-    
-    // Get current protocol, host, and port
-    const protocol = window.location.protocol;
-    const host = window.location.host;
-    
-    // Remove leading slash if present
+    // If already absolute (S3/HTTP), return as is
+    if (/^https?:\/\//i.test(path)) return path;
+
+    // Use meta-provided base if available (S3/CloudFront)
+    const meta = document.querySelector('meta[name="storage-base-url"]');
+    const base = meta && meta.content ? meta.content.replace(/\/+$/, '') : '';
+
+    // Remove any leading slash
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    
-    return `${protocol}//${host}/storage/${cleanPath}`;
+
+    if (base) return `${base}/${cleanPath}`;
+
+    // Fallback to local public storage
+    return `${location.protocol}//${location.host}/storage/${cleanPath}`;
 }
 
 // ── Generic Component Loader ──
@@ -172,14 +177,16 @@ async function initProductsSection() {
     const pageType = grid.getAttribute('data-page');
     const perPage = pageType === 'home' ? 8 : 28; // Show 8 on home, 28 on products page
     
-    // Get page from URL parameter (for server-side pagination)
+    // Get page/filter/sort from URL parameters (for server-side navigation persistence)
     const urlParams = new URLSearchParams(window.location.search);
     const currentPage = parseInt(urlParams.get('page')) || 1;
+    const initialCategory = urlParams.get('category') || 'all';
+    const initialSort = urlParams.get('sort') || 'popularity';
     
-    // Store current pagination state
+    // Store current pagination/filter/sort state
     window.currentProductsPage = currentPage;
-    window.currentProductsFilter = 'all';
-    window.currentProductsSort = 'popularity';
+    window.currentProductsFilter = initialCategory;
+    window.currentProductsSort = initialSort;
     window.productsPerPage = perPage;
     window.isProductsPage = pageType === 'products';
 
@@ -190,8 +197,14 @@ async function initProductsSection() {
             return;
         }
 
-        // Load products from API with current page
-        const response = await window.api.getProducts({ per_page: perPage, page: currentPage });
+        // Load products from API with current page and persisted filter/sort
+        const initialFilterParams = initialCategory === 'all' ? {} : { category: initialCategory };
+        const response = await window.api.getProducts({ 
+            ...initialFilterParams,
+            sort: initialSort,
+            per_page: perPage, 
+            page: currentPage 
+        });
         
         // Check the actual response structure - API returns data directly
         const apiProducts = response.data || [];
@@ -207,8 +220,33 @@ async function initProductsSection() {
             renderPagination(response.meta);
         }
 
-        // Filter buttons
+        // Sync UI with URL-derived filter/sort
         const filterButtons = document.querySelectorAll('.filter-btn');
+        const sortSelect = document.getElementById('sort-select');
+        
+        // Set active filter button based on URL
+        if (filterButtons && filterButtons.length) {
+            let foundActive = false;
+            filterButtons.forEach(btn => {
+                const val = btn.getAttribute('data-filter');
+                if (val === initialCategory) {
+                    btn.classList.add('active');
+                    foundActive = true;
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            if (!foundActive) {
+                // fallback to 'all'
+                const allBtn = document.querySelector('.filter-btn[data-filter="all"]');
+                if (allBtn) allBtn.classList.add('active');
+            }
+        }
+        
+        // Set sort dropdown based on URL
+        if (sortSelect) {
+            sortSelect.value = initialSort;
+        }
         
         filterButtons.forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -237,6 +275,24 @@ async function initProductsSection() {
                     if (window.isProductsPage && response.meta) {
                         renderPagination(response.meta);
                     }
+
+                    // Update URL to persist state
+                    if (window.isProductsPage) {
+                        const params = new URLSearchParams(window.location.search);
+                        if (filter && filter !== 'all') {
+                            params.set('category', filter);
+                        } else {
+                            params.delete('category');
+                        }
+                        if (currentSort && currentSort !== 'popularity') {
+                            params.set('sort', currentSort);
+                        } else {
+                            params.delete('sort');
+                        }
+                        params.set('page', '1');
+                        const newUrl = window.location.pathname + '?' + params.toString();
+                        window.history.replaceState({}, '', newUrl);
+                    }
                 } catch (error) {
                     // Filter error, show empty results
                     renderProductsWithFilter([]);
@@ -248,7 +304,6 @@ async function initProductsSection() {
         });
 
         // Sort dropdown
-        const sortSelect = document.getElementById('sort-select');
         
         if (sortSelect) {
             sortSelect.addEventListener('change', async () => {
@@ -274,6 +329,24 @@ async function initProductsSection() {
                     // Update pagination
                     if (window.isProductsPage && response.meta) {
                         renderPagination(response.meta);
+                    }
+
+                    // Update URL to persist state
+                    if (window.isProductsPage) {
+                        const params = new URLSearchParams(window.location.search);
+                        if (currentFilter && currentFilter !== 'all') {
+                            params.set('category', currentFilter);
+                        } else {
+                            params.delete('category');
+                        }
+                        if (sort && sort !== 'popularity') {
+                            params.set('sort', sort);
+                        } else {
+                            params.delete('sort');
+                        }
+                        params.set('page', '1');
+                        const newUrl = window.location.pathname + '?' + params.toString();
+                        window.history.replaceState({}, '', newUrl);
                     }
                 } catch (error) {
                     // Show error message instead of fallback
@@ -426,12 +499,22 @@ function renderPagination(meta) {
         return;
     }
     
-    // Get current URL params
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // Helper function to build URL with page parameter
+    // Helper function to build URL with page + current filter/sort parameters
     function buildPageUrl(page) {
         const params = new URLSearchParams(window.location.search);
+        // Ensure current filter/sort are preserved
+        const category = window.currentProductsFilter || params.get('category') || 'all';
+        const sort = window.currentProductsSort || params.get('sort') || 'popularity';
+        if (category && category !== 'all') {
+            params.set('category', category);
+        } else {
+            params.delete('category');
+        }
+        if (sort && sort !== 'popularity') {
+            params.set('sort', sort);
+        } else {
+            params.delete('sort');
+        }
         params.set('page', page);
         return window.location.pathname + '?' + params.toString();
     }

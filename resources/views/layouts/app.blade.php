@@ -37,6 +37,7 @@
         </style>
         
         @stack('styles')
+        <meta name="storage-base-url" content="{{ config('filesystems.disks.s3.url') }}">
     </head>
     <body>
         <!-- navbar -->

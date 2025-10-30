@@ -589,7 +589,7 @@
             <div class="main-image-container">
                 @php
                     $mainImage = $product->images && is_array($product->images) && count($product->images) > 0 
-                        ? asset('storage/' . $product->images[0]) 
+                        ? Storage::url($product->images[0]) 
                         : asset('frontend/assets/placeholder.jpg');
                 @endphp
                 <img 
@@ -625,8 +625,8 @@
             @if($product->images && is_array($product->images) && count($product->images) > 1)
                 <div class="thumbnail-grid">
                     @foreach($product->images as $index => $image)
-                        <div class="thumbnail {{ $index === 0 ? 'active' : '' }}" onclick="changeImage('{{ asset('storage/' . $image) }}', this)">
-                            <img src="{{ asset('storage/' . $image) }}" alt="{{ $product->name }} - Image {{ $index + 1 }}">
+                        <div class="thumbnail {{ $index === 0 ? 'active' : '' }}" onclick="changeImage('{{ Storage::url($image) }}', this)">
+                            <img src="{{ Storage::url($image) }}" alt="{{ $product->name }} - Image {{ $index + 1 }}">
                         </div>
                     @endforeach
                 </div>
@@ -979,7 +979,7 @@
                         <div class="relative">
                             @php
                                 $relatedImage = $relatedProduct->images && is_array($relatedProduct->images) && count($relatedProduct->images) > 0 
-                                    ? asset('storage/' . $relatedProduct->images[0]) 
+                                    ? Storage::url($relatedProduct->images[0]) 
                                     : asset('frontend/assets/placeholder.jpg');
                             @endphp
                             <img src="{{ $relatedImage }}" class="w-full h-64 object-cover rounded-t-2xl" alt="{{ $relatedProduct->name }}">
