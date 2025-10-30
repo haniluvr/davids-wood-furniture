@@ -415,7 +415,7 @@ async function initProductsSection() {
             col.innerHTML = `
                 <div class="card product-card flex flex-col h-full rounded-2xl border bg-white">
                     <div class="relative">
-                        <img src="${productData.image}" class="w-full h-64 object-cover" alt="${productData.name}">
+                        <img src="${getStorageUrl((productData.images && productData.images[0]) || productData.primary_image || productData.image)}" class="w-full h-64 object-cover" alt="${productData.name}">
                         <div class="absolute inset-0 flex p-4 h-full">
                             <div class="flex-1">
                                 <div class="rounded-full stock-badge ${productData.stock === 'low' ? 'low' : 'in-stock'} px-3 py-1 text-xs font-medium">
@@ -1547,7 +1547,7 @@ function initSearchModal() {
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3">
                             <div class="w-12 h-12 flex-shrink-0">
-                                <img src="${productData.image}" alt="${productData.name}" 
+                                <img src="${getStorageUrl((productData.images && productData.images[0]) || productData.primary_image || productData.image)}" alt="${productData.name}" 
                                      class="w-full h-full object-cover rounded-lg">
                             </div>
                             <div>
@@ -2666,7 +2666,7 @@ async function performLoadCartItems() {
                 let cartItemsHTML = '';
                 items.forEach((item, index) => {
                     const productData = item.product_data || {};
-                    const image = productData.image || '/frontend/assets/chair.png';
+                    const image = getStorageUrl((productData.images && productData.images[0]) || productData.primary_image || productData.image) || '/frontend/assets/chair.png';
                     
                     cartItemsHTML += `
                         <div class="cart-item-new border-b py-3" data-product-id="${item.product_id}">
