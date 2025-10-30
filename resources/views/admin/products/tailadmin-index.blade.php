@@ -125,7 +125,7 @@
                             <div class="flex items-center gap-3">
                                 <div class="flex-shrink-0">
                                     @if($product->images && count($product->images) > 0)
-                                        <img src="{{ asset('storage/' . $product->images[0]) }}" alt="{{ $product->name }}" class="h-12 w-12 rounded object-cover" />
+                                        <img src="{{ Storage::url($product->images[0]) }}" alt="{{ $product->name }}" class="h-12 w-12 rounded object-cover" />
                                     @else
                                         <div class="h-12 w-12 rounded bg-gray-200 flex items-center justify-center">
                                             <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

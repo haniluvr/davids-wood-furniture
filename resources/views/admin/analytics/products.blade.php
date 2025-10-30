@@ -208,7 +208,7 @@
                 <div class="flex items-center gap-3 p-4">
                     <div class="h-10 w-10 rounded-lg bg-stone-100 flex items-center justify-center dark:bg-stone-800">
                         @if($product->images && count($product->images) > 0)
-                            <img class="h-8 w-8 object-cover rounded" src="{{ asset('storage/' . $product->images[0]) }}" alt="{{ $product->name }}" />
+                            <img class="h-8 w-8 object-cover rounded" src="{{ Storage::url($product->images[0]) }}" alt="{{ $product->name }}" />
                         @else
                             <i data-lucide="package" class="w-4 h-4 text-stone-400"></i>
                         @endif

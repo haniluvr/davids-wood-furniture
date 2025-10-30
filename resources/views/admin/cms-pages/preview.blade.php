@@ -50,7 +50,7 @@
                 
                 @if($cmsPage->featured_image)
                     <div class="mb-6">
-                        <img src="{{ asset('storage/' . $cmsPage->featured_image) }}" 
+                        <img src="{{ Storage::url($cmsPage->featured_image) }}" 
                              alt="{{ $cmsPage->title }}" 
                              class="w-full h-64 object-cover rounded-xl border border-stone-200 dark:border-strokedark">
                     </div>

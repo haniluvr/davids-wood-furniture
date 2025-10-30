@@ -25,7 +25,7 @@
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex items-center gap-4">
                 @if($product->images && count($product->images) > 0)
-                    <img src="{{ asset('storage/' . $product->images[0]) }}" alt="{{ $product->name }}" class="h-16 w-16 rounded-lg object-cover">
+                    <img src="{{ Storage::url($product->images[0]) }}" alt="{{ $product->name }}" class="h-16 w-16 rounded-lg object-cover">
                 @else
                     <div class="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
                         <i data-lucide="package" class="h-8 w-8 text-gray-400"></i>
