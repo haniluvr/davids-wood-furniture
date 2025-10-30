@@ -570,7 +570,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add to DataTransfer accumulator
             filesDT.items.add(file);
             fileInput.files = filesDT.files;
-
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 processedCount++;

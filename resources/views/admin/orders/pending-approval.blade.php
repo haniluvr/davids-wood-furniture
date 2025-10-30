@@ -7,25 +7,25 @@
     <!-- Header -->
     <div class="bg-white shadow-sm border-b border-stone-200">
         <div class="flex justify-between items-center py-6">
-            <div>
+    <div>
                 <h1 class="text-2xl font-bold text-stone-900">Pending Approval</h1>
                 <p class="mt-1 text-sm text-stone-600">Review orders that require manual approval before processing</p>
-            </div>
+    </div>
             <div class="flex gap-3">
                 <button id="bulk-approve-btn" class="inline-flex items-center px-4 py-2 border border-stone-300 rounded-lg text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500" disabled>
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    Bulk Approve
-                </button>
-            </div>
-        </div>
+            Bulk Approve
+        </button>
+    </div>
+</div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="py-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <!-- Pending Approval -->
+    <!-- Pending Approval -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -34,15 +34,15 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-                    </div>
+                </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-stone-500">Pending Approval</p>
                         <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['pending_approval'] ?? 0) }}</p>
-                    </div>
                 </div>
             </div>
+    </div>
 
-            <!-- Approved Today -->
+    <!-- Approved Today -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -50,14 +50,14 @@
                             <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                        </div>
-                    </div>
+                </div>
+            </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-stone-500">Approved Today</p>
                         <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['approved_today'] ?? 0) }}</p>
-                    </div>
                 </div>
             </div>
+        </div>
 
             <!-- Rejected Today -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
@@ -67,16 +67,16 @@
                             <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
-                        </div>
-                    </div>
+    </div>
+</div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-stone-500">Rejected Today</p>
                         <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['rejected_today'] ?? 0) }}</p>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
+            </div>
+            </div>
+        </div>
 
     <!-- Filters -->
     <div class="py-6">
@@ -87,7 +87,7 @@
                     <input type="text" id="search" name="search" value="{{ request('search') }}" 
                            placeholder="Search orders..."
                            class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                </div>
+            </div>
                 <div>
                     <label for="priority" class="block text-sm font-medium text-stone-700 mb-2">Priority</label>
                     <select id="priority" name="priority" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
@@ -96,7 +96,7 @@
                         <option value="medium" {{ request('priority') === 'medium' ? 'selected' : '' }}>Medium</option>
                         <option value="low" {{ request('priority') === 'low' ? 'selected' : '' }}>Low</option>
                     </select>
-                </div>
+                    </div>
                 <div class="flex items-end gap-2">
                     <button type="submit" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,8 +112,8 @@
                     </a>
                 </div>
             </form>
-        </div>
-    </div>
+                </div>
+            </div>
 
     <!-- Orders List -->
     <div class="pb-8">
@@ -165,32 +165,32 @@
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
-                                            </button>
+                </button>
                                             <button onclick="rejectOrder({{ $order->id }})" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Reject">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                 </svg>
-                                            </button>
+                </button>
                                             <a href="{{ admin_route('orders.show', $order) }}" class="text-emerald-600 hover:text-emerald-900 transition-colors duration-150" title="View">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
                                             </a>
-                                        </div>
+            </div>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+    </div>
 
-                <!-- Pagination -->
-                @if($orders->hasPages())
+    <!-- Pagination -->
+    @if($orders->hasPages())
                     <div class="px-6 py-3 border-t border-stone-200">
-                        {{ $orders->links() }}
-                    </div>
-                @endif
+        {{ $orders->links() }}
+    </div>
+    @endif
             @else
                 <div class="p-8 text-center">
                     <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4">
@@ -214,12 +214,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Select all functionality
     if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            orderCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-            updateBulkApproveButton();
+    selectAllCheckbox.addEventListener('change', function() {
+        orderCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
         });
+        updateBulkApproveButton();
+    });
     }
 
     // Individual checkbox change
@@ -249,9 +249,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
         const totalBoxes = orderCheckboxes.length;
         if (selectAllCheckbox) {
-            selectAllCheckbox.checked = checkedBoxes.length === totalBoxes;
-            selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < totalBoxes;
-        }
+        selectAllCheckbox.checked = checkedBoxes.length === totalBoxes;
+        selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < totalBoxes;
+    }
     }
 });
 

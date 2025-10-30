@@ -7,25 +7,25 @@
     <!-- Header -->
     <div class="bg-white shadow-sm border-b border-stone-200">
         <div class="flex justify-between items-center py-6">
-            <div>
+    <div>
                 <h1 class="text-2xl font-bold text-stone-900">Order Fulfillment</h1>
                 <p class="mt-1 text-sm text-stone-600">Manage packing and shipping workflow for orders</p>
-            </div>
+    </div>
             <div class="flex gap-3">
                 <button id="bulk-ship-btn" class="inline-flex items-center px-4 py-2 border border-stone-300 rounded-lg text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500" disabled>
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                     </svg>
-                    Bulk Mark Shipped
-                </button>
-            </div>
-        </div>
+            Bulk Mark Shipped
+        </button>
+    </div>
+</div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="py-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <!-- Pending Packing -->
+    <!-- Pending Packing -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -34,15 +34,15 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                             </svg>
                         </div>
-                    </div>
+                </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-stone-500">Pending Packing</p>
                         <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['pending_packing'] ?? 0) }}</p>
-                    </div>
                 </div>
             </div>
+    </div>
 
-            <!-- Packed -->
+    <!-- Packed -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -51,13 +51,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-                    </div>
+                </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-stone-500">Packed</p>
                         <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['packed'] ?? 0) }}</p>
-                    </div>
                 </div>
             </div>
+    </div>
 
             <!-- Shipped -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
@@ -67,14 +67,14 @@
                             <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                             </svg>
-                        </div>
-                    </div>
+                </div>
+            </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-stone-500">Shipped</p>
                         <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['shipped'] ?? 0) }}</p>
-                    </div>
                 </div>
             </div>
+        </div>
 
             <!-- Delivered -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
@@ -84,16 +84,16 @@
                             <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
-                        </div>
-                    </div>
+    </div>
+</div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-stone-500">Delivered</p>
                         <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['delivered'] ?? 0) }}</p>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
+            </div>
+            </div>
+        </div>
 
     <!-- Filters -->
     <div class="py-6">
@@ -104,7 +104,7 @@
                     <input type="text" id="search" name="search" value="{{ request('search') }}" 
                            placeholder="Search orders..."
                            class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                </div>
+            </div>
                 <div>
                     <label for="status" class="block text-sm font-medium text-stone-700 mb-2">Status</label>
                     <select id="status" name="status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
@@ -114,7 +114,7 @@
                         <option value="shipped" {{ request('status') === 'shipped' ? 'selected' : '' }}>Shipped</option>
                         <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
                     </select>
-                </div>
+                    </div>
                 <div class="flex items-end gap-2">
                     <button type="submit" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,8 +130,8 @@
                     </a>
                 </div>
             </form>
-        </div>
-    </div>
+                </div>
+            </div>
 
     <!-- Orders List -->
     <div class="pb-8">
@@ -197,16 +197,16 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
-                                            </a>
-                                        </div>
+                </a>
+            </div>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
-                </div>
+    </div>
 
-                <!-- Pagination -->
+    <!-- Pagination -->
                 @if($orders->hasPages())
                     <div class="px-6 py-3 border-t border-stone-200">
                         {{ $orders->links() }}
@@ -220,8 +220,8 @@
                         </svg>
                     </div>
                     <p class="text-stone-500">No orders found</p>
-                </div>
-            @endif
+    </div>
+    @endif
         </div>
     </div>
 </div>
@@ -235,12 +235,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Select all functionality
     if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            orderCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-            updateBulkShipButton();
+    selectAllCheckbox.addEventListener('change', function() {
+        orderCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
         });
+        updateBulkShipButton();
+    });
     }
 
     // Individual checkbox change
@@ -270,9 +270,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
         const totalBoxes = orderCheckboxes.length;
         if (selectAllCheckbox) {
-            selectAllCheckbox.checked = checkedBoxes.length === totalBoxes;
-            selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < totalBoxes;
-        }
+        selectAllCheckbox.checked = checkedBoxes.length === totalBoxes;
+        selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < totalBoxes;
+    }
     }
 });
 
