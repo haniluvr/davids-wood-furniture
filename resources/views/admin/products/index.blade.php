@@ -179,7 +179,7 @@
                         <div class="group relative overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md">
                         <!-- Product Image -->
             <div class="relative h-48 overflow-hidden">
-                @if($product->images && count($product->images) > 0 && Storage::disk('public')->exists($product->images[0]))
+                @if($product->images && count($product->images) > 0)
                     <img src="{{ Storage::url($product->images[0]) }}?v={{ time() }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105">
                             @else
                                     <div class="flex h-full w-full items-center justify-center bg-stone-100">
