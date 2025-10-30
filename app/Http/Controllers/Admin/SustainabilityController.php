@@ -57,3 +57,4 @@ class SustainabilityController extends Controller
             ->with('success', 'Sustainability settings saved.');
     }
 }
+
