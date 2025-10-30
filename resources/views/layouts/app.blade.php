@@ -37,7 +37,10 @@
         </style>
         
         @stack('styles')
-        <meta name="storage-base-url" content="{{ config('filesystems.disks.s3.url') }}">
+        <meta name="storage-base-url" content="{{
+            config('filesystems.disks.s3.url')
+                ?: ('https://' . config('filesystems.disks.s3.bucket') . '.s3.' . config('filesystems.disks.s3.region') . '.amazonaws.com')
+        }}">
     </head>
     <body>
         <!-- navbar -->
