@@ -26,7 +26,6 @@ class WishlistItemSeeder extends Seeder
             return;
         }
 
-        
         $createdItems = 0;
         $attempts = 0;
         $maxAttempts = $wishlistItemCount * 3; // Prevent infinite loop

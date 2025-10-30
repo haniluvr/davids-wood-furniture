@@ -338,11 +338,11 @@
                             Permissions
                         </a>
                         <hr class="my-2 border-stroke dark:border-strokedark">
-                        <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <a href="{{ admin_route('settings.sustainability') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.settings.sustainability') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="leaf" class="w-4 h-4"></i>
                             Sustainability Settings
                         </a>
-                        <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <a href="{{ admin_route('integrations.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.integrations*') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="plug" class="w-4 h-4"></i>
                             Integrations
                         </a>

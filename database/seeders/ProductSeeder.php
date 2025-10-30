@@ -130,6 +130,20 @@ class ProductSeeder extends Seeder
         $productCount = 0;
         $targetCount = 200;
 
+        // SKU helpers: map main category to starting subcategory code (per CategoryStructureSeeder order)
+        // Beds: 07-13, Cabinets: 14-18, Chairs: 19-23, Tables: 24-32, Shelves: 33-34, Sofas: 35-36
+        $subcategoryCodeStart = [
+            1 => 7,   // Beds
+            2 => 14,  // Cabinets
+            3 => 19,  // Chairs
+            4 => 24,  // Tables
+            5 => 33,  // Shelves
+            6 => 35,  // Sofas
+        ];
+
+        // Keep per-subcategory item counters to generate nn (item no.)
+        $skuItemCounters = [];
+
         // Distribute products across categories
         $productsPerCategory = ceil($targetCount / 6);
 
@@ -198,14 +212,28 @@ class ProductSeeder extends Seeder
 
                 $shortDescription = "Premium {$subcategoryData['name']} with elegant design and superior quality materials.";
 
-                // Generate unique SKU
-                $skuPrefix = strtoupper(substr($prefix, 0, 3));
-                $sku = $skuPrefix.'-'.str_pad($productCount + 1, 4, '0', STR_PAD_LEFT);
-                $counter = 1;
-                while (Product::where('sku', $sku)->exists()) {
-                    $sku = $skuPrefix.'-'.str_pad($productCount + 1, 3, '0', STR_PAD_LEFT).$counter;
-                    $counter++;
-                }
+                // Generate SKU in format nnnnn (A-BB-CC):
+                // A = main category (1-6), BB = subcategory code (07-36), CC = item number (01-99)
+                $subCodeStart = $subcategoryCodeStart[$categoryId] ?? 0;
+                $subCode = $subCodeStart + ($subcategoryId - 1);
+
+                // Next item number for this subcategory code
+                $nextItem = ($skuItemCounters[$subCode] ?? 0) + 1;
+
+                // Ensure uniqueness just in case by incrementing until free (cap at 99)
+                do {
+                    if ($nextItem > 99) {
+                        $nextItem = 1;
+                    }
+                    $candidateSku = sprintf('%d%02d%02d', $categoryId, $subCode, $nextItem);
+                    $exists = Product::where('sku', $candidateSku)->exists();
+                    if ($exists) {
+                        $nextItem++;
+                    }
+                } while ($exists && $nextItem <= 100);
+
+                $skuItemCounters[$subCode] = $nextItem;
+                $sku = sprintf('%d%02d%02d', (int) $categoryId, (int) $subCode, (int) $nextItem);
 
                 // Generate meta data
                 $metaData = [

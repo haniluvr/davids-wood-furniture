@@ -12,7 +12,16 @@ class PermissionController extends Controller
 {
     public function index()
     {
-        $roles = ['super_admin', 'admin', 'manager', 'staff', 'viewer'];
+        $roles = [
+            'super_admin',
+            'admin',
+            'sales_support_manager',
+            'inventory_fulfillment_manager',
+            'product_content_manager',
+            'finance_reporting_analyst',
+            'staff',
+            'viewer',
+        ];
         $permissions = AdminPermission::getAllPermissions();
 
         $rolePermissions = [];

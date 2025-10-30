@@ -421,6 +421,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadArea = document.getElementById('image-upload-area');
     const fileInput = document.getElementById('images');
     const previewContainer = document.getElementById('image-preview-container');
+    // Accumulator for files across multiple selections/drops
+    const filesDT = new DataTransfer();
     
     // SKU Generation and Subcategory Loading
     const categorySelect = document.getElementById('category_id');
@@ -537,9 +539,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Clear previous previews
         const previewGrid = document.getElementById('image-preview-grid');
-        previewGrid.innerHTML = '';
         previewContainer.classList.remove('hidden');
         
         // Show loading state
@@ -561,6 +561,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Skip duplicates (by name+size)
+            const exists = Array.from(filesDT.files).some(f => f.name === file.name && f.size === file.size);
+            if (exists) {
+                return;
+            }
+
+            // Add to DataTransfer accumulator
+            filesDT.items.add(file);
+            fileInput.files = filesDT.files;
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 processedCount++;
@@ -572,6 +582,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const previewDiv = document.createElement('div');
                 previewDiv.className = 'image-preview-item';
+                previewDiv.dataset.filename = file.name;
                 previewDiv.innerHTML = `
                     <div class="aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-gray-800 border border-stone-200 dark:border-strokedark">
                         <img src="${e.target.result}" alt="Preview ${index + 1}" class="w-full h-full object-cover">
@@ -585,13 +596,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="mt-2 space-y-1">
                         <p class="text-xs text-stone-500 dark:text-gray-400 truncate font-medium">${file.name}</p>
-                        <p class="text-xs text-green-600 dark:text-green-400">✓ Uploaded</p>
+                        <p class="text-xs text-green-600 dark:text-green-400">✓ Ready</p>
                     </div>
                 `;
                 previewGrid.appendChild(previewDiv);
-                
-                // Update file input to include this file
-                updateFileInput();
             };
             reader.readAsDataURL(file);
         });
@@ -605,11 +613,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make removeImagePreview globally available
     window.removeImagePreview = function(button) {
         const previewDiv = button.closest('.image-preview-item');
+        const filename = previewDiv.dataset.filename;
+        // Rebuild DataTransfer without this file
+        const newDT = new DataTransfer();
+        Array.from(filesDT.files).forEach(f => {
+            if (f.name !== filename) newDT.items.add(f);
+        });
+        fileInput.files = newDT.files;
+        // Also update our accumulator
+        filesDT.items.clear();
+        Array.from(newDT.files).forEach(f => filesDT.items.add(f));
+
         previewDiv.remove();
-        
-        // Hide preview container if no images left
-        const remainingImages = document.getElementById('image-preview-grid').querySelectorAll('.image-preview-item');
-        if (remainingImages.length === 0) {
+        if (document.getElementById('image-preview-grid').querySelectorAll('.image-preview-item').length === 0) {
             previewContainer.classList.add('hidden');
         }
     };

@@ -175,6 +175,16 @@ $adminRoutes = function () {
             Route::post('settings/test-email', [App\Http\Controllers\Admin\SettingController::class, 'testEmail'])->name('settings.test-email');
             Route::post('settings/clear-cache', [App\Http\Controllers\Admin\SettingController::class, 'clearCache'])->name('settings.clear-cache');
 
+            // Sustainability Settings
+            Route::get('settings/sustainability', [App\Http\Controllers\Admin\SustainabilityController::class, 'index'])->name('settings.sustainability');
+            Route::post('settings/sustainability', [App\Http\Controllers\Admin\SustainabilityController::class, 'update'])->name('settings.sustainability.update');
+
+            // Integrations
+            Route::get('integrations', [App\Http\Controllers\Admin\IntegrationController::class, 'index'])->name('integrations.index');
+            Route::get('integrations/{integration}', [App\Http\Controllers\Admin\IntegrationController::class, 'edit'])->name('integrations.edit');
+            Route::post('integrations/{integration}', [App\Http\Controllers\Admin\IntegrationController::class, 'update'])->name('integrations.update');
+            Route::post('integrations/{integration}/test', [App\Http\Controllers\Admin\IntegrationController::class, 'testConnection'])->name('integrations.test');
+
             // Email preview routes
             Route::get('emails/preview', [App\Http\Controllers\Admin\EmailPreviewController::class, 'index'])->name('emails.preview');
             Route::get('emails/preview/{type}', [App\Http\Controllers\Admin\EmailPreviewController::class, 'preview'])->name('emails.preview.type');

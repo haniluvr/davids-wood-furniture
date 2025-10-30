@@ -90,7 +90,7 @@
                                 class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('subcategory_id') border-red-300 @enderror">
                             <option value="">Select a subcategory</option>
                             @foreach($subcategories as $subcategory)
-                                <option value="{{ $subcategory->id }}" {{ old('subcategory_id', $product->subcategory_id) == $subcategory->id ? 'selected' : '' }}>
+                                <option value="{{ $subcategory->id }}" {{ (old('subcategory_id', $selectedSubcategoryId ?? $product->subcategory_id) == $subcategory->id) ? 'selected' : '' }}>
                                     {{ $subcategory->name }}
                                 </option>
                             @endforeach
@@ -314,17 +314,8 @@
                                 @foreach($product->images as $index => $image)
                                     <div class="image-preview-item">
                                         <div class="aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-gray-800 border border-stone-200 dark:border-strokedark">
-                                            @if(Storage::disk('public')->exists($image))
-                                                @php $imageUrl = asset('storage/' . $image); @endphp
-                                                <img src="{{ $imageUrl }}?v={{ time() }}" alt="Product Image" class="w-full h-full object-cover">
-                                            @else
-                                                <div class="w-full h-full flex items-center justify-center bg-stone-200 dark:bg-gray-700">
-                                                    <div class="text-center">
-                                                        <i data-lucide="image" class="w-8 h-8 text-stone-400 dark:text-gray-500 mx-auto mb-2"></i>
-                                                        <p class="text-xs text-stone-500 dark:text-gray-400">Image not found</p>
-                                                    </div>
-                                                </div>
-                                            @endif
+                                            @php $imageUrl = Storage::url($image); @endphp
+                                            <img src="{{ $imageUrl }}?v={{ time() }}" alt="Product Image" class="w-full h-full object-cover">
                                         </div>
                                         <div class="delete-overlay absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center">
                                             <button type="button" class="delete-button" onclick="removeCurrentImage({{ $index }})" title="Click to mark/unmark for removal" id="delete-btn-{{ $index }}">
@@ -333,13 +324,7 @@
                                                 </svg>
                                         </button>
                                         </div>
-                                        <p class="mt-2 text-xs text-stone-500 dark:text-gray-400 truncate">
-                                            @if(Storage::disk('public')->exists($image))
-                                                Current Image {{ $index + 1 }}
-                                            @else
-                                                Missing Image {{ $index + 1 }}
-                                            @endif
-                                        </p>
+                                        <p class="mt-2 text-xs text-stone-500 dark:text-gray-400 truncate">Current Image {{ $index + 1 }}</p>
                                     </div>
                                 @endforeach
                             </div>
@@ -467,9 +452,27 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Ensure subcategory is preselected based on SKU if empty
+    try {
+        const subcatSelect = document.getElementById('subcategory_id');
+        if (subcatSelect && !subcatSelect.value) {
+            const skuHidden = document.querySelector('input[name="sku"]');
+            const sku = skuHidden ? (skuHidden.value || '').replace(/[^0-9]/g, '') : '';
+            if (sku.length >= 3) {
+                const derivedSubId = parseInt(sku.substring(1, 3), 10).toString();
+                const option = Array.from(subcatSelect.options).find(o => o.value === derivedSubId);
+                if (option) {
+                    subcatSelect.value = derivedSubId;
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Subcategory preselect failed:', e);
+    }
     const uploadArea = document.getElementById('image-upload-area');
     const fileInput = document.getElementById('images');
     const previewContainer = document.getElementById('image-preview-container');
+    const filesDT = new DataTransfer();
     
     // SKU Generation and Subcategory Loading
     const categorySelect = document.getElementById('category_id');
@@ -546,9 +549,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Clear previous previews
         const previewGrid = document.getElementById('image-preview-grid');
-        previewGrid.innerHTML = '';
         previewContainer.classList.remove('hidden');
         
         // Show loading state
@@ -570,7 +571,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-                const reader = new FileReader();
+            const exists = Array.from(filesDT.files).some(f => f.name === file.name && f.size === file.size);
+            if (exists) return;
+            filesDT.items.add(file);
+            fileInput.files = filesDT.files;
+
+            const reader = new FileReader();
             reader.onload = function(e) {
                 processedCount++;
                 
@@ -581,6 +587,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const previewDiv = document.createElement('div');
                 previewDiv.className = 'image-preview-item';
+                previewDiv.dataset.filename = file.name;
                 previewDiv.innerHTML = `
                     <div class="aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-gray-800 border border-stone-200 dark:border-strokedark">
                         <img src="${e.target.result}" alt="Preview ${index + 1}" class="w-full h-full object-cover">
@@ -594,7 +601,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="mt-2 space-y-1">
                         <p class="text-xs text-stone-500 dark:text-gray-400 truncate font-medium">${file.name}</p>
-                        <p class="text-xs text-green-600 dark:text-green-400">✓ Ready to upload</p>
+                        <p class="text-xs text-green-600 dark:text-green-400">✓ Ready</p>
                     </div>
                     `;
                 previewGrid.appendChild(previewDiv);
@@ -606,11 +613,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make removeImagePreview globally available
     window.removeImagePreview = function(button) {
         const previewDiv = button.closest('.image-preview-item');
+        const filename = previewDiv.dataset.filename;
+        const newDT = new DataTransfer();
+        Array.from(filesDT.files).forEach(f => {
+            if (f.name !== filename) newDT.items.add(f);
+        });
+        fileInput.files = newDT.files;
+        filesDT.items.clear();
+        Array.from(newDT.files).forEach(f => filesDT.items.add(f));
         previewDiv.remove();
-        
-        // Hide preview container if no images left
-        const remainingImages = document.getElementById('image-preview-grid').querySelectorAll('.image-preview-item');
-        if (remainingImages.length === 0) {
+        if (document.getElementById('image-preview-grid').querySelectorAll('.image-preview-item').length === 0) {
             previewContainer.classList.add('hidden');
         }
     };
@@ -653,37 +665,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     deleteIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
                 }
                 
-        // Add hidden input to mark image for removal
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'remove_images[]';
-        input.value = index;
-                input.setAttribute('data-image-index', index);
-        form.appendChild(input);
+        // Defer creating hidden inputs to submit time; visual mark only here
             }
         }
     };
     
     // Function to ensure all marked images are added to form
     function ensureRemoveImagesInputs() {
-        const form = document.querySelector('form');
+        const form = document.getElementById('product-edit-form');
         const currentImages = document.getElementById('current-images');
         const markedImages = currentImages.querySelectorAll('[data-marked-for-removal="true"]');
         
         // Remove existing remove_images inputs to avoid duplicates
-        const existingInputs = form.querySelectorAll('input[name="remove_images[]"]');
-        existingInputs.forEach(input => input.remove());
+        form.querySelectorAll('input[name="remove_images"], input[name="remove_images[]"]').forEach(i => i.remove());
         
-        // Add inputs for all marked images
-        markedImages.forEach((imageElement, index) => {
-            const imageIndex = Array.from(currentImages.children).indexOf(imageElement);
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'remove_images[]';
-            input.value = imageIndex;
-            input.setAttribute('data-image-index', imageIndex);
-            form.appendChild(input);
-        });
+        // Build comma-delimited list of indices to remove
+        const indices = Array.from(markedImages).map(el => Array.from(currentImages.children).indexOf(el)).filter(i => i >= 0);
+        if (indices.length > 0) {
+            const compressed = document.createElement('input');
+            compressed.type = 'hidden';
+            compressed.name = 'remove_images';
+            compressed.value = indices.join(',');
+            form.appendChild(compressed);
+        }
         
     }
     

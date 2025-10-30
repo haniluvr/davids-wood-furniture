@@ -43,4 +43,12 @@ return [
     'openweather' => [
         'key' => env('OPENWEATHER_API_KEY'),
     ],
+
+    // Xendit payment gateway configuration
+    'xendit' => [
+        'public_key' => env('XENDIT_PUBLIC_KEY'),
+        'secret_key' => env('XENDIT_SECRET_KEY'),
+        'callback_token' => env('XENDIT_CALLBACK_TOKEN'),
+        'environment' => env('XENDIT_ENV', 'test'), // test|live
+    ],
 ];

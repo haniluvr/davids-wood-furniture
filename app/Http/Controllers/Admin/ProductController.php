@@ -15,6 +15,23 @@ use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
+    private const PLACEHOLDER_PATH = 'products/landscape-placeholder.svg';
+
+    private function deleteImagePath(string $path): void
+    {
+        if ($path === self::PLACEHOLDER_PATH || $path === '.') {
+            return;
+        }
+        if (Storage::exists($path)) {
+            Storage::delete($path);
+
+            return;
+        }
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -154,12 +171,17 @@ class ProductController extends Controller
         // Handle images
         if ($request->hasFile('images')) {
             $images = [];
+            $storeDisk = config('filesystems.default') === 'local' ? 'public' : config('filesystems.default');
             foreach ($request->file('images') as $image) {
-                $path = $image->store('products', 'public');
+                $path = $image->store('products', $storeDisk);
                 $images[] = $path;
             }
             $validated['images'] = $images;
             $validated['gallery'] = $images;
+        } else {
+            // Default to file placeholder when no images uploaded
+            $validated['images'] = [self::PLACEHOLDER_PATH];
+            $validated['gallery'] = [self::PLACEHOLDER_PATH];
         }
 
         $product = Product::create($validated);
@@ -188,16 +210,33 @@ class ProductController extends Controller
     {
         $categories = Category::whereNull('parent_id')->where('is_active', true)->orderBy('sort_order')->get();
 
-        // Load subcategories for the product's current category
-        $subcategories = collect();
-        if ($product->category_id) {
-            $subcategories = Category::where('parent_id', $product->category_id)
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->get();
+        // Derive category and subcategory from SKU when missing
+        $derivedCategoryId = null;
+        $derivedSubcategoryId = null;
+        if ((! $product->category_id || ! $product->subcategory_id) && ! empty($product->sku)) {
+            $sku = preg_replace('/[^0-9]/', '', (string) $product->sku);
+            if (strlen($sku) >= 3) {
+                $derivedCategoryId = (int) substr($sku, 0, 1);     // n - main category
+                $derivedSubcategoryId = (int) substr($sku, 1, 2);  // nn - subcategory
+
+                if (! $product->category_id) {
+                    $product->category_id = $derivedCategoryId;
+                }
+                if (! $product->subcategory_id) {
+                    $product->subcategory_id = $derivedSubcategoryId;
+                }
+            }
         }
 
-        return view('admin.products.edit', compact('product', 'categories', 'subcategories'));
+        // Load subcategories strictly under the selected/derived main category
+        $subcategories = Category::where('parent_id', $product->category_id ?: $derivedCategoryId)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $selectedSubcategoryId = $product->subcategory_id ?: $derivedSubcategoryId;
+
+        return view('admin.products.edit', compact('product', 'categories', 'subcategories', 'selectedSubcategoryId'));
     }
 
     /**
@@ -237,45 +276,57 @@ class ProductController extends Controller
         // Set updated_by
         $validated['updated_by'] = Auth::guard('admin')->id();
 
-        // Handle images
-        if ($request->hasFile('images') || $request->has('remove_images')) {
-            // Get existing images
-            $existingImages = $product->images ?: [];
+        // Handle images (always evaluate so removals without uploads persist)
+        // Get existing images exactly as stored so indices match the client
+        $existingImages = $product->images ?: [];
 
-            // Handle images to remove
-            if ($request->has('remove_images')) {
-                $imagesToRemove = $request->input('remove_images', []);
-                $removedCount = 0;
-                $failedToRemove = [];
-                $imagesAfterRemoval = [];
+        // Handle images to remove if any indices were posted
+        $imagesToRemove = $request->input('remove_images');
+        if (! is_null($imagesToRemove)) {
+            // Normalize payload into int indices; support comma-delimited strings and arrays
+            $indices = collect(is_array($imagesToRemove) ? $imagesToRemove : [$imagesToRemove])
+                ->flatMap(function ($v) {
+                    return is_string($v) && str_contains($v, ',') ? explode(',', $v) : [$v];
+                })
+                ->map(fn ($v) => (int) $v)
+                ->unique()
+                ->sortDesc() // remove higher indices first to avoid shifting
+                ->values()
+                ->all();
 
-                foreach ($existingImages as $index => $imagePath) {
-                    if (in_array($index, $imagesToRemove)) {
-                        if (Storage::dynamic()->exists($imagePath)) {
-                            Storage::dynamic()->delete($imagePath);
-                            $removedCount++;
-                        } else {
-                            $removedCount++; // Consider it removed
-                        }
-                    } else {
-                        $imagesAfterRemoval[] = $imagePath; // Keep images not marked for removal
-                    }
+            foreach ($indices as $idx) {
+                if (! isset($existingImages[$idx])) {
+                    continue;
                 }
-
-                $existingImages = $imagesAfterRemoval;
+                $this->deleteImagePath($existingImages[$idx]);
             }
-
-            // Add new images
-            $newImages = [];
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $path = $image->store('products', 'public');
-                    $newImages[] = $path;
-                }
+            // Remove by index while preserving order of the rest
+            foreach ($indices as $idx) {
+                unset($existingImages[$idx]);
             }
+            $existingImages = array_values($existingImages);
+        }
 
-            // Merge existing and new images
-            $allImages = array_merge($existingImages, $newImages);
+        // Add new images
+        $newImages = [];
+        if ($request->hasFile('images')) {
+            $storeDisk = config('filesystems.default') === 'local' ? 'public' : config('filesystems.default');
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('products', $storeDisk);
+                $newImages[] = $path;
+            }
+        }
+
+        // Merge existing and new images, and normalize legacy '.' to placeholder
+        $allImages = array_merge($existingImages, $newImages);
+        $allImages = array_values(array_map(function ($path) {
+            return $path === '.' ? self::PLACEHOLDER_PATH : $path;
+        }, $allImages));
+        if (empty($allImages)) {
+            // Maintain placeholder when all images removed
+            $validated['images'] = [self::PLACEHOLDER_PATH];
+            $validated['gallery'] = [self::PLACEHOLDER_PATH];
+        } else {
             $validated['images'] = $allImages;
             $validated['gallery'] = $allImages;
         }
@@ -297,7 +348,7 @@ class ProductController extends Controller
         // Delete images
         if ($product->images) {
             foreach ($product->images as $image) {
-                Storage::dynamic()->delete($image);
+                $this->deleteImagePath($image);
             }
         }
 

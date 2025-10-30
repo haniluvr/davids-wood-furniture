@@ -190,25 +190,55 @@ class AdminPermission extends Model
                 'notifications.view' => true,
                 'notifications.edit' => true,
             ],
-            'manager' => [
+            // Sales & Customer Support Manager
+            'sales_support_manager' => [
+                'orders.view' => true,
+                'orders.create' => true,
+                'orders.update_status' => true,
+                'orders.process_refund' => true,
+                'reviews.view' => true,
+                'reviews.moderate' => true,
+                'users.view' => true,
+                'cms.view' => true,
+                'notifications.view' => true,
+                'settings.view' => true,
+            ],
+
+            // Inventory & Fulfillment Manager
+            'inventory_fulfillment_manager' => [
+                'inventory.view' => true,
+                'inventory.adjust' => true,
+                'inventory.export' => true,
+                'shipping.view' => true,
+                'shipping.edit' => true,
+                'orders.view' => true,
+                'orders.update_status' => true, // fulfillment actions
+                'products.view' => true,
+            ],
+
+            // Product & Content Manager
+            'product_content_manager' => [
                 'products.view' => true,
                 'products.create' => true,
                 'products.edit' => true,
-                'orders.view' => true,
-                'orders.edit' => true,
-                'orders.update_status' => true,
-                'inventory.view' => true,
-                'inventory.adjust' => true,
-                'users.view' => true,
-                'users.edit' => true,
-                'shipping.view' => true,
-                'shipping.edit' => true,
-                'analytics.view' => true,
                 'reviews.view' => true,
                 'reviews.moderate' => true,
-                'settings.view' => true,
-                'notifications.view' => true,
+                'cms.view' => true,
+                'cms.create' => true,
+                'cms.edit' => true,
+                'analytics.view' => true, // product reports
             ],
+
+            // Finance & Reporting Analyst
+            'finance_reporting_analyst' => [
+                'analytics.view' => true,
+                'analytics.export' => true,
+                'orders.view' => true,
+                'users.view' => true,
+                'cms.view' => true,
+            ],
+
+            // Staff (limited ops)
             'staff' => [
                 'products.view' => true,
                 'orders.view' => true,
@@ -220,6 +250,20 @@ class AdminPermission extends Model
                 'analytics.view' => true,
                 'reviews.view' => true,
                 'reviews.moderate' => true,
+            ],
+            // Viewer (read-only)
+            'viewer' => [
+                'products.view' => true,
+                'orders.view' => true,
+                'inventory.view' => true,
+                'users.view' => true,
+                'shipping.view' => true,
+                'analytics.view' => true,
+                'reviews.view' => true,
+                'cms.view' => true,
+                'settings.view' => true,
+                'audit_logs.view' => true,
+                'notifications.view' => true,
             ],
         ];
     }

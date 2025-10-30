@@ -28,7 +28,7 @@
         @csrf
 
                 <!-- Customer Selection -->
-        <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-hidden">
+        <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-visible">
             <div class="px-8 py-6 border-b border-stone-200 dark:border-strokedark bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
                 <div class="flex items-center gap-3">
                     <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
@@ -53,16 +53,16 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                             </div>
+                    <!-- Results dropdown (positioned within relative container) -->
+                    <div id="customer-results" class="hidden absolute left-0 right-0 z-50 w-full mt-1 border border-stone-200 rounded-xl max-h-60 overflow-y-auto bg-white dark:border-strokedark dark:bg-boxdark"></div>
+
                     <input type="hidden" name="user_id" id="selected-customer-id" required>
                         @error('user_id')
                         <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
 
-                <!-- Search Results -->
-                <div id="customer-results" class="hidden absolute z-50 w-full mt-1 border border-stone-200 rounded-xl max-h-60 overflow-y-auto bg-white dark:border-strokedark dark:bg-boxdark">
-                    <!-- Results will be populated here -->
-                    </div>
+                <!-- Search Results placeholder removed; moved inside relative container -->
 
                 <!-- Selected Customer Display -->
                 <div id="selected-customer" class="hidden rounded-xl bg-stone-50 p-4 dark:bg-stone-800">
@@ -620,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">Actions</label>
                         <button type="button" onclick="removeOrderItem(${itemCount})" class="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-600 hover:bg-red-100 transition-colors duration-200 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                             Remove
-                        </button>
+        </button>
                     </div>
                 </div>
             </div>
