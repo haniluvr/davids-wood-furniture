@@ -100,7 +100,8 @@ class ReturnsRepairsSeeder extends Seeder
             }
 
             // Use order's return_status as base, or determine based on order age
-            $orderAge = time() - strtotime($order->created_at);
+            $orderCreatedAt = strtotime($order->created_at);
+            $orderAge = time() - $orderCreatedAt;
             $daysOld = $orderAge / 86400;
 
             // Start with order's return_status if set, otherwise calculate
