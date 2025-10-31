@@ -15,76 +15,30 @@ class PaymentGatewaySeeder extends Seeder
     {
         $paymentGateways = [
             [
-                'name' => 'Stripe',
-                'gateway_key' => 'stripe',
-                'display_name' => 'Stripe',
-                'description' => 'Accept credit cards, debit cards, and digital wallets',
+                'name' => 'Xendit',
+                'gateway_key' => 'xendit',
+                'display_name' => 'Xendit',
+                'description' => 'Accept multiple payment methods: Credit Cards (Visa, Mastercard, Amex, JCB), Debit Cards, E-Wallets (GCash, PayMaya, GrabPay, ShopeePay), Bank Transfer (BPI, BDO, Metrobank), Retail Outlet (7-Eleven, Cebuana, LBC), QR Code (QRPH), and Direct Debit (BPI, RCBC, Chinabank, UBP)',
                 'config' => [
-                    'publishable_key' => 'pk_test_...',
-                    'api_key' => Crypt::encryptString('sk_test_...'),
-                    'webhook_secret' => Crypt::encryptString('whsec_...'),
+                    'api_key' => Crypt::encryptString('xnd_development_...'),
+                    'callback_token' => Crypt::encryptString('your_callback_token_here'),
+                    'payment_methods' => [
+                        'CREDIT_CARD',
+                        'DEBIT_CARD',
+                        'EWALLET',
+                        'BANK_TRANSFER',
+                        'RETAIL_OUTLET',
+                        'QR_CODE',
+                        'DIRECT_DEBIT',
+                    ],
                 ],
-                'supported_currencies' => ['USD', 'EUR', 'GBP', 'CAD', 'AUD'],
-                'supported_countries' => ['US', 'CA', 'GB', 'AU', 'DE', 'FR'],
-                'transaction_fee_percentage' => 2.9,
-                'transaction_fee_fixed' => 0.30,
+                'supported_currencies' => ['PHP'],
+                'supported_countries' => ['PH'],
+                'transaction_fee_percentage' => 3.5,
+                'transaction_fee_fixed' => 0.00,
                 'is_active' => true,
                 'is_test_mode' => true,
                 'sort_order' => 1,
-            ],
-            [
-                'name' => 'PayPal',
-                'gateway_key' => 'paypal',
-                'display_name' => 'PayPal',
-                'description' => 'Accept PayPal payments and credit cards',
-                'config' => [
-                    'client_id' => 'test_client_id',
-                    'client_secret' => Crypt::encryptString('test_client_secret'),
-                    'webhook_id' => 'test_webhook_id',
-                ],
-                'supported_currencies' => ['USD', 'EUR', 'GBP', 'CAD', 'AUD'],
-                'supported_countries' => ['US', 'CA', 'GB', 'AU', 'DE', 'FR'],
-                'transaction_fee_percentage' => 3.4,
-                'transaction_fee_fixed' => 0.30,
-                'is_active' => true,
-                'is_test_mode' => true,
-                'sort_order' => 2,
-            ],
-            [
-                'name' => 'Square',
-                'gateway_key' => 'square',
-                'display_name' => 'Square',
-                'description' => 'Accept payments online and in-person',
-                'config' => [
-                    'application_id' => 'test_app_id',
-                    'access_token' => Crypt::encryptString('test_access_token'),
-                    'location_id' => 'test_location_id',
-                ],
-                'supported_currencies' => ['USD', 'CAD', 'GBP', 'AUD'],
-                'supported_countries' => ['US', 'CA', 'GB', 'AU'],
-                'transaction_fee_percentage' => 2.9,
-                'transaction_fee_fixed' => 0.30,
-                'is_active' => false,
-                'is_test_mode' => true,
-                'sort_order' => 3,
-            ],
-            [
-                'name' => 'Authorize.Net',
-                'gateway_key' => 'authorize_net',
-                'display_name' => 'Authorize.Net',
-                'description' => 'Reliable payment processing for businesses',
-                'config' => [
-                    'login_id' => 'test_login_id',
-                    'transaction_key' => Crypt::encryptString('test_transaction_key'),
-                    'signature_key' => Crypt::encryptString('test_signature_key'),
-                ],
-                'supported_currencies' => ['USD', 'CAD'],
-                'supported_countries' => ['US', 'CA'],
-                'transaction_fee_percentage' => 2.9,
-                'transaction_fee_fixed' => 0.30,
-                'is_active' => false,
-                'is_test_mode' => true,
-                'sort_order' => 4,
             ],
             [
                 'name' => 'Cash on Delivery',
@@ -93,20 +47,23 @@ class PaymentGatewaySeeder extends Seeder
                 'description' => 'Pay with cash when your order is delivered',
                 'config' => [
                     'enabled' => true,
-                    'max_amount' => 500.00,
+                    'max_amount' => 3000.00,
                 ],
-                'supported_currencies' => ['USD'],
-                'supported_countries' => ['US'],
+                'supported_currencies' => ['PHP'],
+                'supported_countries' => ['PH'],
                 'transaction_fee_percentage' => 0,
                 'transaction_fee_fixed' => 0,
                 'is_active' => true,
                 'is_test_mode' => false,
-                'sort_order' => 5,
+                'sort_order' => 2,
             ],
         ];
 
         foreach ($paymentGateways as $gateway) {
-            PaymentGateway::create($gateway);
+            PaymentGateway::updateOrCreate(
+                ['gateway_key' => $gateway['gateway_key']],
+                $gateway
+            );
         }
 
         $this->command->info('Payment gateways seeded successfully.');

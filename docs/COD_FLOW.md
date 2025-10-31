@@ -122,3 +122,5 @@ To test the COD flow:
 6. Should immediately see summary page
 7. Check email inbox for order confirmation (or check logs if using `MAIL_MAILER=log`)
 
+
+

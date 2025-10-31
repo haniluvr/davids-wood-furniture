@@ -45,13 +45,11 @@ class WishlistItemSeeder extends Seeder
             if (! $existingItem) {
                 // Generate random created_at date (within last 2 years)
                 $createdAt = date('Y-m-d H:i:s', rand(strtotime('-2 years'), time()));
-                $updatedAt = date('Y-m-d H:i:s', rand(strtotime($createdAt), time()));
 
                 WishlistItem::create([
                     'user_id' => $userId,
                     'product_id' => $productId,
                     'created_at' => $createdAt,
-                    'updated_at' => $updatedAt,
                 ]);
 
                 $createdItems++;
