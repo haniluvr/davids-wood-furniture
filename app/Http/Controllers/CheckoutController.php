@@ -320,8 +320,13 @@ class CheckoutController extends Controller
 
             DB::commit();
 
-            return redirect()->route('checkout.confirmation', ['order' => $order->order_number])
-                ->with('success', 'Order placed successfully!');
+            // If payment is COD, go straight to confirmation. Otherwise, redirect to Xendit payment.
+            if (($paymentInfo['payment_method'] ?? 'cod') === 'cod') {
+                return redirect()->route('checkout.confirmation', ['order' => $order->order_number])
+                    ->with('success', 'Order placed successfully!');
+            }
+
+            return redirect()->route('payments.xendit.pay', ['order' => $order->id]);
         } catch (\Exception $e) {
             DB::rollBack();
 

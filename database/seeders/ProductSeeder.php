@@ -127,6 +127,52 @@ class ProductSeeder extends Seeder
         $prefixes = ['Premium', 'Classic', 'Modern', 'Elegant', 'Contemporary', 'Luxury', 'Deluxe', 'Executive', 'Professional', 'Signature'];
         $materials = ['Oak', 'Pine', 'Walnut', 'Mahogany', 'Teak', 'Maple', 'Cherry', 'Ash', 'Birch', 'Cedar'];
 
+        // Reasonable PHP price ranges per category/subcategory (min, max)
+        $priceRanges = [
+            1 => [ // Beds
+                1 => [18000, 45000], // King/Queen Sized Bed
+                2 => [12000, 25000], // Bunk Bed
+                3 => [18000, 40000], // Bed with Storage
+                4 => [14000, 26000], // Loft Bed
+                5 => [14000, 30000], // Sofa Bed
+                6 => [10000, 18000], // Day Bed
+                7 => [8000, 15000], // Nursery Bed
+            ],
+            2 => [ // Cabinets
+                1 => [7000, 15000], // Chest Drawer
+                2 => [15000, 35000], // Wardrobe
+                3 => [6000, 14000], // Cupboard
+                4 => [9000, 22000], // Sideboard
+                5 => [12000, 28000], // Display Cabinet
+            ],
+            3 => [ // Chairs
+                1 => [5000, 15000], // Armchair
+                2 => [2000,  7000], // Dining Chair
+                3 => [800,  3000], // Stool
+                4 => [1500,  5000], // Outdoor Chair
+                5 => [6000, 15000], // Sunlounge
+            ],
+            4 => [ // Tables
+                1 => [8000, 18000], // Dressing Table
+                2 => [6000, 15000], // Console Table
+                3 => [12000, 35000], // Dining Table
+                4 => [3000,  9000], // Coffee Table
+                5 => [1500,  5000], // Night Table
+                6 => [2000,  6000], // Side Table
+                7 => [7000, 20000], // Desk
+                8 => [6000, 15000], // Bar Table
+                9 => [4000, 12000], // Outdoor Table
+            ],
+            5 => [ // Shelves
+                1 => [1500,  6000], // Wall Shelf
+                2 => [5000, 15000], // Bookcase
+            ],
+            6 => [ // Sofas
+                1 => [20000, 60000], // Indoor Sofa
+                2 => [15000, 40000], // Outdoor Sofa
+            ],
+        ];
+
         $productCount = 0;
         $targetCount = 200;
 
@@ -179,10 +225,17 @@ class ProductSeeder extends Seeder
                 // Generate weight
                 $weight = rand($categoryData['weight_range'][0], $categoryData['weight_range'][1]);
 
-                // Generate pricing (in PHP)
-                $basePrice = rand(1500, 25000);
-                $costPrice = $basePrice * (rand(40, 70) / 100); // 40-70% of base price
-                $salePrice = (rand(1, 100) <= 30) ? rand($basePrice * 0.7, $basePrice * 0.9) : null; // 30% chance of sale
+                // Generate pricing (in PHP) — subcategory-specific, reasonable
+                $range = $priceRanges[$categoryId][$subcategoryId] ?? [5000, 20000];
+                $basePrice = rand($range[0], $range[1]);
+                $costPrice = (int) round($basePrice * (rand(50, 70) / 100), 2); // 50–70% of base
+                // 25% chance of sale; 10–20% discount if on sale
+                if (rand(1, 100) <= 25) {
+                    $discountPercent = rand(10, 20);
+                    $salePrice = (int) round($basePrice * (100 - $discountPercent) / 100, 2);
+                } else {
+                    $salePrice = null;
+                }
 
                 // Generate stock quantity
                 $stockQuantity = rand($subcategoryData['min_qty'], $subcategoryData['min_qty'] + 20);
@@ -203,14 +256,54 @@ class ProductSeeder extends Seeder
                     $galleryImages[] = $galleryItem['Plp-image Image'] ?? $galleryItem['Image'] ?? 'https://via.placeholder.com/400x300?text=Gallery+Image';
                 }
 
-                // Generate description
+                // Generate description: 3 sentences, category-aware, no dimensions
                 $material = $categoryData['materials'][array_rand($categoryData['materials'])];
-                $description = "Beautifully crafted {$subcategoryData['name']} made from premium {$material}. ".
-                    "Perfect for {$categoryData['room_categories'][0]} and other living spaces. ".
-                    "Dimensions: {$dimensionsString}. ".
-                    'Features solid construction and elegant design that complements any interior style.';
+                switch ($categoryId) {
+                    case 1: // Beds
+                        $description = "This {$subcategoryData['name']} is crafted from quality {$material} to deliver lasting comfort. ".
+                            'Its refined profile blends easily with both modern and classic bedrooms. '.
+                            'Built for nightly use with sturdy joinery and a smooth, low-maintenance finish.';
 
-                $shortDescription = "Premium {$subcategoryData['name']} with elegant design and superior quality materials.";
+                        break;
+                    case 2: // Cabinets
+                        $description = "Organize your space with this {$subcategoryData['name']} in durable {$material}. ".
+                            'Clean lines and thoughtful storage make it easy to keep essentials within reach. '.
+                            'Finished to resist daily wear while complementing a wide range of interiors.';
+
+                        break;
+                    case 3: // Chairs
+                        $description = "Enjoy comfortable seating with this {$subcategoryData['name']} made from reliable {$material}. ".
+                            'The balanced proportions support everyday use at home or in shared spaces. '.
+                            'A versatile silhouette that pairs well with contemporary and traditional décor.';
+
+                        break;
+                    case 4: // Tables
+                        $description = "A dependable {$subcategoryData['name']} built from sturdy {$material} for daily tasks and gatherings. ".
+                            'The design focuses on stability and a clean look that suits many room styles. '.
+                            'Finished for easy care to keep surfaces looking fresh.';
+
+                        break;
+                    case 5: // Shelves
+                        $description = "Display and store with this {$subcategoryData['name']} crafted from {$material}. ".
+                            'Its straightforward form showcases books, décor, and essentials without clutter. '.
+                            'Designed for simple installation and a tidy, balanced look.';
+
+                        break;
+                    case 6: // Sofas
+                        $description = "Settle in with this {$subcategoryData['name']} constructed on a robust {$material} frame. ".
+                            'Cushions and support are tuned for everyday comfort in living spaces. '.
+                            'A timeless profile that holds up to frequent use.';
+
+                        break;
+                    default:
+                        $description = "Thoughtfully built from {$material} for everyday reliability. ".
+                            'A clean design that blends into a variety of interiors. '.
+                            'Finished to be easy to live with and simple to maintain.';
+
+                        break;
+                }
+
+                $shortDescription = "Premium {$subcategoryData['name']} in {$material} with a clean, versatile design.";
 
                 // Generate SKU in format nnnnn (A-BB-CC):
                 // A = main category (1-6), BB = subcategory code (07-36), CC = item number (01-99)

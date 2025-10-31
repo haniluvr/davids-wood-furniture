@@ -342,10 +342,7 @@ Route::get('/', function () {
 Route::get('/products', [ProductController::class, 'index'])->name('products');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-// CMS Pages public routes (catch-all for valid slugs, but exclude specific routes)
-Route::get('/{slug}', [App\Http\Controllers\CmsPageController::class, 'show'])
-    ->name('cms.show')
-    ->where('slug', '^(?!test-route$|health$)[a-zA-Z0-9\-]+$');
+// NOTE: The CMS catch-all route must come AFTER specific public/auth routes
 
 // Contact form routes
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
@@ -373,6 +370,12 @@ Route::middleware(['api.session'])->group(function () {
     Route::get('/api/check-email/{email}', [AuthController::class, 'checkEmail'])->name('check.email');
     Route::post('/api/store-intended-url', [AuthController::class, 'storeIntendedUrl'])->name('store.intended.url');
 });
+
+// CMS Pages public routes (catch-all for valid slugs, but exclude specific routes)
+// Keep this BELOW specific routes like auth, products, etc., to avoid shadowing
+Route::get('/{slug}', [App\Http\Controllers\CmsPageController::class, 'show'])
+    ->name('cms.show')
+    ->where('slug', '^(?!test-route$|health$|login$|verify-email-sent$|verify-email$|reset-password$|auth$)[a-zA-Z0-9\-]+$');
 
 // Cart routes (using web middleware for proper session handling)
 Route::middleware(['web'])->group(function () {
@@ -504,6 +507,14 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
     Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processOrder'])->name('checkout.process');
     Route::get('/checkout/confirmation/{order}', [App\Http\Controllers\CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
 
+    // Xendit payment routes (customer-facing redirects)
+    Route::get('/payments/xendit/pay/{order}', [App\Http\Controllers\Payments\XenditPaymentController::class, 'pay'])
+        ->name('payments.xendit.pay');
+    Route::get('/payments/xendit/return/success', [App\Http\Controllers\Payments\XenditPaymentController::class, 'returnSuccess'])
+        ->name('payments.xendit.return.success');
+    Route::get('/payments/xendit/return/failed', [App\Http\Controllers\Payments\XenditPaymentController::class, 'returnFailed'])
+        ->name('payments.xendit.return.failed');
+
     // Payment Methods API routes
     Route::get('/api/payment-methods', [App\Http\Controllers\PaymentMethodController::class, 'index'])->name('payment-methods.index');
     Route::post('/api/payment-methods', [App\Http\Controllers\PaymentMethodController::class, 'store'])->name('payment-methods.store');
@@ -601,6 +612,10 @@ Route::get('/health', function () {
         ], 500);
     }
 });
+
+// Xendit webhook (no auth)
+Route::post('/webhooks/xendit', [App\Http\Controllers\Payments\XenditPaymentController::class, 'webhook'])
+    ->name('webhooks.xendit');
 
 // Public API routes
 Route::get('/api/user/check', function () {
