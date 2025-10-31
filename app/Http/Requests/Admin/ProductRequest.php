@@ -41,7 +41,7 @@ class ProductRequest extends FormRequest
             'meta_description' => 'nullable|string|max:160',
             'meta_keywords' => 'nullable|string|max:255',
             'images' => 'nullable|array|max:10',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp,avif|max:5120',
+            'images.*' => 'mimetypes:image/jpeg,image/png,image/gif,image/webp,image/avif|mimes:jpeg,png,jpg,gif,webp,avif|max:5120',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
             'sort_order' => 'nullable|integer|min:0',

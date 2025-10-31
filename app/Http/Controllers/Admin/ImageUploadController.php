@@ -16,7 +16,7 @@ class ImageUploadController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'images' => 'required|array|max:10',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp,avif|max:5120', // 5MB max
+            'images.*' => 'required|mimetypes:image/jpeg,image/png,image/gif,image/webp,image/avif|mimes:jpeg,png,jpg,gif,webp,avif|max:5120', // 5MB max
             'type' => 'required|in:product,user,general,cms',
             'product_id' => 'nullable|exists:products,id',
         ]);

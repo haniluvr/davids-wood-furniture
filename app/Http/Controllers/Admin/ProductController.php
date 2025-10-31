@@ -159,7 +159,7 @@ class ProductController extends Controller
             'manage_stock' => 'boolean',
             'is_active' => 'boolean',
             'featured' => 'boolean',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
+            'images.*' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,image/avif|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
         ]);
 
         // Generate slug
@@ -265,7 +265,7 @@ class ProductController extends Controller
             'manage_stock' => 'boolean',
             'is_active' => 'boolean',
             'featured' => 'boolean',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
+            'images.*' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,image/avif|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
         ]);
 
         // Generate slug if name changed

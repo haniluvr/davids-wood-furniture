@@ -30,7 +30,7 @@ class CmsPageRequest extends FormRequest
             'template' => 'nullable|string|max:100',
             'sort_order' => 'nullable|integer|min:0',
             'published_at' => 'nullable|date',
-            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif|max:5120',
+            'featured_image' => 'nullable|mimetypes:image/jpeg,image/png,image/gif,image/webp,image/avif|mimes:jpeg,png,jpg,gif,webp,avif|max:5120',
         ];
     }
 
