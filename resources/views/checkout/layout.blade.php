@@ -12,6 +12,10 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- jQuery (required for app.js) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
@@ -74,6 +78,28 @@
                         </div>
                         <span class="ml-2 text-sm font-medium {{ $currentStep >= 3 ? 'text-[#8b7355]' : 'text-gray-500' }}">Review</span>
                     </div>
+                    
+                    <!-- Arrow -->
+                    <div class="w-8 h-px bg-gray-300"></div>
+                    
+                    <!-- Step 4: Confirmation -->
+                    <div class="flex items-center">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full {{ $currentStep >= 4 ? 'bg-[#8b7355] text-white' : 'bg-gray-200 text-gray-500' }}">
+                            <i data-lucide="clock" class="w-4 h-4"></i>
+                        </div>
+                        <span class="ml-2 text-sm font-medium {{ $currentStep >= 4 ? 'text-[#8b7355]' : 'text-gray-500' }}">Confirmation</span>
+                    </div>
+                    
+                    <!-- Arrow -->
+                    <div class="w-8 h-px bg-gray-300"></div>
+                    
+                    <!-- Step 5: Summary -->
+                    <div class="flex items-center">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full {{ $currentStep >= 5 ? 'bg-[#8b7355] text-white' : 'bg-gray-200 text-gray-500' }}">
+                            <i data-lucide="file-check" class="w-4 h-4"></i>
+                        </div>
+                        <span class="ml-2 text-sm font-medium {{ $currentStep >= 5 ? 'text-[#8b7355]' : 'text-gray-500' }}">Summary</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -81,32 +107,32 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 {{ $currentStep == 5 ? 'lg:grid-cols-1' : 'lg:grid-cols-3' }} gap-8">
             <!-- Checkout Form -->
-            <div class="lg:col-span-2">
+            <div class="{{ $currentStep == 5 ? 'lg:col-span-1' : 'lg:col-span-2' }}">
                 @yield('content')
             </div>
             
-            <!-- Order Summary Sidebar -->
+            <!-- Order Summary Sidebar (Hidden on Summary page) -->
+            @if($currentStep != 5)
             <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg shadow-sm p-6 sticky top-8">
+                <div class="bg-white rounded-lg shadow-sm p-6 sticky top-8 order-summary-sidebar">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
                     
                     <!-- Cart Items -->
                     <div class="space-y-3 mb-4">
-                        @foreach($cartItems as $item)
+                        @foreach(($cartItems ?? []) as $item)
                         <div class="flex items-center space-x-3">
                             <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                                @if($item->product && $item->product->images)
-                                    @php
-                                        $images = is_string($item->product->images) ? json_decode($item->product->images, true) : $item->product->images;
-                                        $firstImage = is_array($images) && count($images) > 0 ? $images[0] : null;
-                                    @endphp
-                                    @if($firstImage)
-                                        <img src="{{ Storage::url($firstImage) }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover rounded-lg">
-                                    @else
-                                        <i data-lucide="package" class="w-6 h-6 text-gray-400"></i>
-                                    @endif
+                                @php
+                                    $product = $item->product ?? null;
+                                    $images = $product && $product->images 
+                                        ? (is_string($product->images) ? json_decode($product->images, true) : $product->images)
+                                        : null;
+                                    $firstImage = is_array($images) && count($images) > 0 ? $images[0] : null;
+                                @endphp
+                                @if($firstImage)
+                                    <img src="{{ Storage::url($firstImage) }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover rounded-lg">
                                 @else
                                     <i data-lucide="package" class="w-6 h-6 text-gray-400"></i>
                                 @endif
@@ -130,11 +156,14 @@
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600">Shipping</span>
-                            <span class="text-gray-900">
-                                @if($shippingCost == 0)
+                            <span class="text-gray-900 shipping-cost-display">
+                                @php
+                                    $shippingCostValue = $defaultShippingCost ?? $shippingCost ?? Session::get('checkout.shipping.shipping_cost', 0);
+                                @endphp
+                                @if($shippingCostValue == 0)
                                     <span class="text-green-600">Free</span>
                                 @else
-                                    ₱{{ number_format($shippingCost, 2) }}
+                                    ₱{{ number_format($shippingCostValue, 2) }}
                                 @endif
                             </span>
                         </div>
@@ -144,11 +173,14 @@
                         </div>
                         <div class="flex justify-between text-lg font-semibold border-t pt-2">
                             <span class="text-gray-900">Total</span>
-                            <span class="text-[#8b7355]">₱{{ number_format($total, 2) }}</span>
+                            <span class="text-[#8b7355] order-summary-total total-display" data-total="{{ $total }}">₱{{ number_format($total, 2) }}</span>
                         </div>
                     </div>
                     
-                    @if($shippingCost == 0)
+                    @php
+                        $shippingCostValue = $defaultShippingCost ?? $shippingCost ?? Session::get('checkout.shipping.shipping_cost', 0);
+                    @endphp
+                    @if($shippingCostValue == 0 && ($subtotal ?? 0) >= 5000)
                     <div class="mt-4 p-3 bg-green-50 rounded-lg">
                         <div class="flex items-center">
                             <i data-lucide="truck" class="w-5 h-5 text-green-600 mr-2"></i>
@@ -158,6 +190,7 @@
                     @endif
                 </div>
             </div>
+            @endif
         </div>
     </main>
 
@@ -215,6 +248,18 @@
                 const regionSelect = document.getElementById('region');
                 if (regionSelect) {
                     regionSelect.innerHTML = '<option value="">Select Region</option>';
+                    regionSelect.disabled = false;
+                    
+                    // Only set required if the new address form is visible
+                    if (regionSelect.hasAttribute('data-required')) {
+                        const newAddressForm = document.getElementById('new-address-form');
+                        if (newAddressForm && !newAddressForm.classList.contains('hidden')) {
+                            regionSelect.setAttribute('required', 'required');
+                        } else {
+                            regionSelect.removeAttribute('required');
+                        }
+                    }
+                    
                     regionsData.forEach(region => {
                         const option = document.createElement('option');
                         option.value = region.name;
@@ -243,20 +288,35 @@
                 const data = await response.json();
                 const provinces = data.data || data;
                 
-                // Special case: Some regions (like NCR) have no provinces, go directly to cities
-                if (!Array.isArray(provinces) || provinces.length === 0) {
-                    const provinceSelect = document.getElementById('province');
+                const provinceSelect = document.getElementById('province');
+                
+                // Special case: NCR or regions with no provinces - disable province and go directly to cities
+                if (!Array.isArray(provinces) || provinces.length === 0 || 
+                    regionCodeOrName.toLowerCase().includes('national capital region') ||
+                    regionCodeOrName.toLowerCase().includes('ncr')) {
                     if (provinceSelect) {
-                        provinceSelect.innerHTML = '<option value="">No provinces (loading cities...)</option>';
+                        provinceSelect.innerHTML = '<option value="">N/A (No provinces)</option>';
                         provinceSelect.disabled = true;
+                        provinceSelect.removeAttribute('required');
+                        // Clear any validation requirements
+                        provinceSelect.value = '';
                     }
                     
-                    // Load cities directly for this region
+                    // Load cities directly for this region (NCR)
                     await loadCitiesDirectly(regionCodeOrName);
                     return;
                 }
                 
-                const provinceSelect = document.getElementById('province');
+                // Remove required from city/barangay when province is available (will be set when city is enabled)
+                const citySelect = document.getElementById('city');
+                const barangaySelect = document.getElementById('barangay');
+                if (citySelect) {
+                    citySelect.removeAttribute('required');
+                }
+                if (barangaySelect) {
+                    barangaySelect.removeAttribute('required');
+                }
+                
                 if (provinceSelect) {
                     provinceSelect.innerHTML = '<option value="">Select Province</option>';
                     provinceSelect.disabled = false;
@@ -295,6 +355,11 @@
                     citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
                     citySelect.disabled = false;
                     
+                    // Set required attribute only when enabled
+                    if (citySelect.hasAttribute('data-required')) {
+                        citySelect.setAttribute('required', 'required');
+                    }
+                    
                     if (Array.isArray(cities)) {
                         cities.forEach(city => {
                             const option = document.createElement('option');
@@ -330,6 +395,11 @@
                     citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
                     citySelect.disabled = false;
                     
+                    // Set required attribute only when enabled
+                    if (citySelect.hasAttribute('data-required')) {
+                        citySelect.setAttribute('required', 'required');
+                    }
+                    
                     if (Array.isArray(cities)) {
                         cities.forEach(city => {
                             const option = document.createElement('option');
@@ -363,6 +433,11 @@
                 if (barangaySelect) {
                     barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
                     barangaySelect.disabled = false;
+                    
+                    // Set required attribute only when enabled
+                    if (barangaySelect.hasAttribute('data-required')) {
+                        barangaySelect.setAttribute('required', 'required');
+                    }
                     
                     if (Array.isArray(barangays)) {
                         barangays.forEach(barangay => {

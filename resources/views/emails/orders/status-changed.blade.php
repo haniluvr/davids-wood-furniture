@@ -11,7 +11,19 @@
     <h2>Order Information</h2>
     <p><strong>Order Number:</strong> #{{ $order->order_number }}</p>
     <p><strong>Previous Status:</strong> {{ ucfirst($oldStatus ?? 'Unknown') }}</p>
-    <p><strong>New Status:</strong> {{ ucfirst($newStatus) }}</p>
+    <p><strong>New Status:</strong> 
+        @if($newStatus === 'shipped')
+            <span style="color: #3b82f6; font-weight: 600;">Shipped</span>
+        @elseif($newStatus === 'delivered')
+            <span style="color: #10b981; font-weight: 600;">Delivered</span>
+        @elseif($newStatus === 'cancelled')
+            <span style="color: #ef4444; font-weight: 600;">Cancelled</span>
+        @elseif($newStatus === 'processing')
+            <span style="color: #f59e0b; font-weight: 600;">Processing</span>
+        @else
+            <span style="font-weight: 600;">{{ ucfirst($newStatus) }}</span>
+        @endif
+    </p>
     <p><strong>Updated:</strong> {{ now()->format('M d, Y \a\t g:i A') }}</p>
 </div>
 

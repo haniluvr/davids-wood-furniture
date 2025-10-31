@@ -58,7 +58,7 @@ class NotificationController extends Controller
             })
                 ->orWhere('recipient_type', 'all');
         })
-            ->where('status', 'sent')
+            ->whereNull('read_at')
             ->count();
 
         return response()->json(['count' => $count]);

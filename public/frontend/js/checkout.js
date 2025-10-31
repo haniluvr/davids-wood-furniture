@@ -124,10 +124,28 @@ class CheckoutFlow {
         }
         
         form.addEventListener('submit', (e) => {
+            const selectedMethod = form.querySelector('input[name="payment_method"]:checked');
+            
+            // For COD, always allow submission (server will validate eligibility)
+            if (selectedMethod && selectedMethod.value === 'cod') {
+                // Just ensure payment_method_id is cleared
+                const paymentMethodIdField = document.getElementById('payment_method_id');
+                if (paymentMethodIdField) {
+                    paymentMethodIdField.value = '';
+                }
+                // Allow form to submit - don't run validation, don't prevent default
+                console.log('COD selected - allowing form submission');
+                return true;
+            }
+            
+            // For other payment methods, run validation
             if (!this.validatePaymentForm()) {
                 e.preventDefault();
                 this.showError('Please complete all required payment information.');
+                return false;
             }
+            
+            return true;
         });
     }
     
@@ -198,6 +216,58 @@ class CheckoutFlow {
         if (!selectedMethod) {
             this.showError('Please select a payment method.');
             return false;
+        }
+        
+        // For COD, ensure payment_method_id is cleared and validate eligibility
+        if (selectedMethod.value === 'cod') {
+            const paymentMethodIdField = document.getElementById('payment_method_id');
+            if (paymentMethodIdField) {
+                paymentMethodIdField.value = '';
+            }
+            
+            // Validate COD eligibility from Order Summary total
+            const orderSummaryTotal = document.querySelector('[data-total], .order-summary-total');
+            let total = 0;
+            
+            if (orderSummaryTotal) {
+                // First try to get from data attribute
+                const dataTotal = orderSummaryTotal.getAttribute('data-total');
+                if (dataTotal) {
+                    total = parseFloat(dataTotal);
+                } else {
+                    // Fallback: extract from text like "₱61.20"
+                    const totalText = orderSummaryTotal.textContent || orderSummaryTotal.innerText;
+                    const totalMatch = totalText.match(/[\d,]+\.?\d*/);
+                    if (totalMatch) {
+                        total = parseFloat(totalMatch[0].replace(/,/g, ''));
+                    }
+                }
+            }
+            
+            // If we still don't have a total, try calculateTotal as fallback
+            if (!total || isNaN(total)) {
+                total = this.calculateTotal();
+            }
+            
+            // Validate COD limit if we have a valid total
+            if (total && !isNaN(total) && total > 0) {
+                if (total > this.codLimit) {
+                    this.showError(`Cash on Delivery is only available for orders ₱${this.codLimit.toLocaleString()} and below. Your order total is ₱${total.toLocaleString()}.`);
+                    return false;
+                }
+            }
+            // If we can't determine total, let server-side validation handle it
+            
+            return true;
+        }
+        
+        if (selectedMethod.value === 'existing') {
+            const paymentMethodIdField = document.getElementById('payment_method_id');
+            if (!paymentMethodIdField || !paymentMethodIdField.value) {
+                this.showError('Please select a payment method.');
+                return false;
+            }
+            return true;
         }
         
         if (selectedMethod.value === 'new') {

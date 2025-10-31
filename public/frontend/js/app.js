@@ -1022,10 +1022,11 @@ async function updateWishlistOffcanvas() {
         let html = '<div class="wishlist-items">';
         wishlistItems.forEach(item => {
             const p = item.product;
+            const image = getStorageUrl((p.images && p.images[0]) || p.primary_image || p.image) || '/frontend/assets/chair.png';
             html += `
                 <div class="wishlist-item flex items-center py-4 border-b border-gray-200" data-product-id="${p.id}">
-                    <div class="flex-shrink-0 w-16 h-16">
-                        <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover rounded">
+                    <div class="flex-shrink-0 w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
+                        <img src="${image}" alt="${p.name}" class="w-full h-full object-cover">
                     </div>
                     <div class="flex-1 ml-4">
                         <h6 class="text-sm font-medium text-gray-900">${p.name}</h6>
@@ -2682,9 +2683,9 @@ async function performLoadCartItems() {
                                                checked>
                                     </div>
                                     
-                                    <!-- Material Label -->
-                                    <div class="material-label">
-                                        <span class="text-sm text-gray-600 font-medium">${productData.material || 'Wood'}</span>
+                                    <!-- Product Image -->
+                                    <div class="flex-shrink-0 w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
+                                        <img src="${image}" alt="${item.product_name}" class="w-full h-full object-cover">
                                     </div>
                                     
                                     <!-- Item Info -->
@@ -2981,6 +2982,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Load notification count for authenticated users
     try {
         await updateNotificationCount();
+        
+        // Refresh notification count every 30 seconds for authenticated users
+        setInterval(function() {
+            updateNotificationCount().catch(function(err) {
+                console.warn('Failed to refresh notification count:', err);
+            });
+        }, 30000); // Refresh every 30 seconds
     } catch (error) {
     }
 

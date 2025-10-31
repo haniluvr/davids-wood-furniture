@@ -68,6 +68,10 @@ class CartItemSeeder extends Seeder
                     'weight' => $product->weight,
                 ];
 
+                // Generate random created_at date (within last 2 years)
+                $createdAt = date('Y-m-d H:i:s', rand(strtotime('-2 years'), time()));
+                $updatedAt = date('Y-m-d H:i:s', rand(strtotime($createdAt), time()));
+
                 CartItem::create([
                     'user_id' => $userId,
                     'product_id' => $productId,
@@ -77,6 +81,8 @@ class CartItemSeeder extends Seeder
                     'product_name' => $product->name,
                     'product_sku' => $product->sku,
                     'product_data' => $productData,
+                    'created_at' => $createdAt,
+                    'updated_at' => $updatedAt,
                 ]);
 
                 $createdItems++;

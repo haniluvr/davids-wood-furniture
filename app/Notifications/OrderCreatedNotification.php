@@ -25,18 +25,8 @@ class OrderCreatedNotification extends Notification
 
     public function toMail($notifiable)
     {
-        return (new MailMessage)
-            ->subject('Order Confirmation - #'.$this->order->order_number)
-            ->greeting('Hello '.$notifiable->name.'!')
-            ->line('Thank you for your order! We have received your order and are processing it.')
-            ->line('Order Details:')
-            ->line('Order Number: #'.$this->order->order_number)
-            ->line('Order Date: '.$this->order->created_at->format('M d, Y'))
-            ->line('Total Amount: $'.number_format($this->order->total_amount, 2))
-            ->line('Status: '.ucfirst($this->order->status))
-            ->action('View Order', url('/account/orders/'.$this->order->id))
-            ->line('We will send you another email when your order ships.')
-            ->line('If you have any questions, please contact our support team.');
+        // Use the branded email template instead of default MailMessage
+        return new \App\Mail\OrderCreatedMail($this->order);
     }
 
     public function toArray($notifiable)

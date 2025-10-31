@@ -375,7 +375,7 @@ Route::middleware(['api.session'])->group(function () {
 // Keep this BELOW specific routes like auth, products, etc., to avoid shadowing
 Route::get('/{slug}', [App\Http\Controllers\CmsPageController::class, 'show'])
     ->name('cms.show')
-    ->where('slug', '^(?!test-route$|health$|login$|verify-email-sent$|verify-email$|reset-password$|auth$)[a-zA-Z0-9\-]+$');
+    ->where('slug', '^(?!test-route$|health$|login$|verify-email-sent$|verify-email$|reset-password$|auth$|checkout$|account$|products$|api$|contact$)[a-zA-Z0-9\-]+$');
 
 // Cart routes (using web middleware for proper session handling)
 Route::middleware(['web'])->group(function () {
@@ -506,6 +506,7 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
     Route::get('/checkout/review', [App\Http\Controllers\CheckoutController::class, 'showReview'])->name('checkout.review');
     Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processOrder'])->name('checkout.process');
     Route::get('/checkout/confirmation/{order}', [App\Http\Controllers\CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
+    Route::get('/checkout/summary/{order}', [App\Http\Controllers\CheckoutController::class, 'summary'])->name('checkout.summary');
 
     // Xendit payment routes (customer-facing redirects)
     Route::get('/payments/xendit/pay/{order}', [App\Http\Controllers\Payments\XenditPaymentController::class, 'pay'])

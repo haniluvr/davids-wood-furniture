@@ -88,6 +88,19 @@
                             </p>
                         </div>
                     </div>
+                @elseif($paymentInfo['payment_method'] === 'xendit')
+                    <div class="flex items-center">
+                        <i data-lucide="credit-card" class="w-5 h-5 text-gray-600 mr-3"></i>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium text-gray-900">Online Payment</p>
+                                    <p class="text-sm text-gray-600">Pay securely via Xendit (Credit/Debit Card, GCash, PayMaya, etc.)</p>
+                                </div>
+                                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">Powered by Xendit</span>
+                            </div>
+                        </div>
+                    </div>
                 @elseif($paymentInfo['payment_method'] === 'new')
                     <div class="flex items-center">
                         @if($paymentInfo['new_payment_type'] === 'card')

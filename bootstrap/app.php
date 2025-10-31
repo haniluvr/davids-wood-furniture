@@ -35,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/wishlist/*',
             'api/products/*',
             'api/check-username/*',
+            'webhooks/xendit', // Xendit webhook - external service cannot provide CSRF token
         ]);
 
         // Add CORS middleware to API routes

@@ -33,8 +33,17 @@ class FilipinoUserSeeder extends Seeder
             // Get random Philippine address
             $address = $this->getRandomPhilippineAddress();
 
+            // Generate random created_at date (within last 2 years)
+            $createdAt = date('Y-m-d H:i:s', rand(strtotime('-2 years'), time()));
+            $updatedAt = date('Y-m-d H:i:s', rand(strtotime($createdAt), time()));
+
             // Generate email verification (85% verified)
-            $emailVerifiedAt = (rand(1, 100) <= 85) ? date('Y-m-d H:i:s', rand(strtotime('-2 years'), time())) : null;
+            // Email verification should be after account creation but not in the future
+            $emailVerifiedAt = null;
+            if (rand(1, 100) <= 85) {
+                $emailVerifiedTimestamp = rand(strtotime($createdAt), min(time(), strtotime($createdAt) + (7 * 24 * 60 * 60))); // Within 7 days of creation
+                $emailVerifiedAt = date('Y-m-d H:i:s', $emailVerifiedTimestamp);
+            }
 
             // Generate newsletter preferences (randomized)
             $newsletterSubscribed = (rand(1, 100) <= 60);
@@ -67,7 +76,9 @@ class FilipinoUserSeeder extends Seeder
                 'email_verified_at' => $emailVerifiedAt,
                 'is_suspended' => false,
                 'two_factor_enabled' => (rand(1, 100) <= 15), // 15% have 2FA enabled
-                'two_factor_verified_at' => (rand(1, 100) <= 15) ? date('Y-m-d H:i:s', rand(strtotime('-1 year'), time())) : null,
+                'two_factor_verified_at' => (rand(1, 100) <= 15) ? date('Y-m-d H:i:s', rand(strtotime($createdAt), time())) : null,
+                'created_at' => $createdAt,
+                'updated_at' => $updatedAt,
             ]);
         }
 

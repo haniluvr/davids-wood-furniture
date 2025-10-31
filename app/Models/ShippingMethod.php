@@ -66,57 +66,63 @@ class ShippingMethod extends Model
 
         switch ($this->type) {
             case 'flat_rate':
-                return $this->cost;
+                return (float) $this->cost;
 
             case 'free_shipping':
-                return 0;
+                return 0.0;
 
             case 'weight_based':
-                return $this->calculateWeightBasedCost($weight);
+                return (float) $this->calculateWeightBasedCost($weight);
 
             case 'price_based':
-                return $this->calculatePriceBasedCost($orderAmount);
+                return (float) $this->calculatePriceBasedCost($orderAmount);
 
             default:
-                return $this->cost;
+                return (float) $this->cost;
         }
     }
 
     private function calculateWeightBasedCost($weight): float
     {
         if (! $this->weight_rates || ! is_array($this->weight_rates)) {
-            return $this->cost;
+            return (float) $this->cost;
         }
 
-        $totalCost = 0;
-        $remainingWeight = $weight;
-
+        // Handle both formats: ['weight' => X, 'cost' => Y] or ['min_weight' => X, 'max_weight' => Y, 'rate' => Z]
         foreach ($this->weight_rates as $rate) {
-            if ($remainingWeight <= 0) {
-                break;
+            // New format: min_weight, max_weight, rate
+            if (isset($rate['min_weight']) && isset($rate['rate'])) {
+                $minWeight = $rate['min_weight'] ?? 0;
+                $maxWeight = $rate['max_weight'] ?? null;
+                $rateValue = $rate['rate'] ?? 0;
+
+                // Check if weight falls in this range
+                if ($weight >= $minWeight && ($maxWeight === null || $weight <= $maxWeight)) {
+                    return $rateValue;
+                }
             }
+            // Old format: weight, cost (cumulative)
+            elseif (isset($rate['weight']) && isset($rate['cost'])) {
+                $rateWeight = $rate['weight'] ?? 0;
+                $rateCost = $rate['cost'] ?? 0;
 
-            $rateWeight = $rate['weight'] ?? 0;
-            $rateCost = $rate['cost'] ?? 0;
-
-            if ($remainingWeight >= $rateWeight) {
-                $totalCost += $rateCost;
-                $remainingWeight -= $rateWeight;
-            } else {
-                $totalCost += $rateCost;
-
-                break;
+                if ($weight >= $rateWeight) {
+                    // For cumulative rates, we need to handle differently
+                    // This assumes the last matching rate applies
+                    return $rateCost;
+                }
             }
         }
 
-        return $totalCost;
+        // If no match found, return base cost
+        return (float) $this->cost;
     }
 
     private function calculatePriceBasedCost($orderAmount): float
     {
         // This would be implemented based on specific business rules
         // For now, return the base cost
-        return $this->cost;
+        return (float) $this->cost;
     }
 
     public function isAvailableFor($orderAmount = 0, $weight = 0, $zone = null): bool
