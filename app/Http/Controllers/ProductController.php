@@ -66,59 +66,81 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        $sessionIdAtStart = session()->getId();
+        try {
+            $sessionIdAtStart = session()->getId();
 
-        \Log::info('Product show method called', [
-            'product_id' => $product->id,
-            'product_slug' => $product->slug,
-            'session_id_at_start' => $sessionIdAtStart,
-            'auth_check' => \Auth::check(),
-            'user_id' => \Auth::id(),
-            'url' => request()->url(),
-            'referer' => request()->header('referer'),
-            'route_parameters' => request()->route()->parameters(),
-        ]);
+            \Log::info('Product show method called', [
+                'product_id' => $product->id,
+                'product_slug' => $product->slug,
+                'session_id_at_start' => $sessionIdAtStart,
+                'auth_check' => \Auth::check(),
+                'user_id' => \Auth::id(),
+                'url' => request()->url(),
+                'referer' => request()->header('referer'),
+                'route_parameters' => request()->route()->parameters(),
+            ]);
 
-        $relatedProducts = Product::where('category_id', $product->category_id)
-            ->where('id', '!=', $product->id)
-            ->where('is_active', true)
-            ->addSelect([
-                'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
-                    ->whereColumn('product_id', 'products.id')
-                    ->where('is_approved', true),
-            ])
-            ->orderBy('avg_rating', 'desc')
-            ->orderBy('sort_order', 'asc')
-            ->orderBy('created_at', 'desc')
-            ->limit(4)
-            ->get();
+            // Get related products only if category_id exists
+            $relatedProducts = collect();
+            if ($product->category_id) {
+                $relatedProducts = Product::where('category_id', $product->category_id)
+                    ->where('id', '!=', $product->id)
+                    ->where('is_active', true)
+                    ->addSelect([
+                        'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
+                            ->whereColumn('product_id', 'products.id')
+                            ->where('is_approved', true),
+                    ])
+                    ->orderBy('avg_rating', 'desc')
+                    ->orderBy('sort_order', 'asc')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(4)
+                    ->get();
+            }
 
-        // Load approved reviews with user information
-        $reviews = $product->approvedReviews()
-            ->with('user')
-            ->orderBy('created_at', 'desc')
-            ->paginate(5);
+            // Load approved reviews with user information
+            $reviews = $product->approvedReviews()
+                ->with('user')
+                ->orderBy('created_at', 'desc')
+                ->paginate(5);
 
-        // Calculate rating distribution
-        $ratingDistribution = [
-            5 => $product->approvedReviews()->where('rating', 5)->count(),
-            4 => $product->approvedReviews()->where('rating', 4)->count(),
-            3 => $product->approvedReviews()->where('rating', 3)->count(),
-            2 => $product->approvedReviews()->where('rating', 2)->count(),
-            1 => $product->approvedReviews()->where('rating', 1)->count(),
-        ];
+            // Calculate rating distribution
+            $ratingDistribution = [
+                5 => $product->approvedReviews()->where('rating', 5)->count(),
+                4 => $product->approvedReviews()->where('rating', 4)->count(),
+                3 => $product->approvedReviews()->where('rating', 3)->count(),
+                2 => $product->approvedReviews()->where('rating', 2)->count(),
+                1 => $product->approvedReviews()->where('rating', 1)->count(),
+            ];
 
-        $sessionIdAtEnd = session()->getId();
+            $sessionIdAtEnd = session()->getId();
 
-        \Log::info('Product show method completed', [
-            'product_id' => $product->id,
-            'session_id_at_start' => $sessionIdAtStart,
-            'session_id_at_end' => $sessionIdAtEnd,
-            'session_changed' => $sessionIdAtStart !== $sessionIdAtEnd,
-            'auth_check' => \Auth::check(),
-            'user_id' => \Auth::id(),
-        ]);
+            \Log::info('Product show method completed', [
+                'product_id' => $product->id,
+                'session_id_at_start' => $sessionIdAtStart,
+                'session_id_at_end' => $sessionIdAtEnd,
+                'session_changed' => $sessionIdAtStart !== $sessionIdAtEnd,
+                'auth_check' => \Auth::check(),
+                'user_id' => \Auth::id(),
+            ]);
 
-        return view('product.show', compact('product', 'relatedProducts', 'reviews', 'ratingDistribution'));
+            return view('product.show', compact('product', 'relatedProducts', 'reviews', 'ratingDistribution'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            \Log::warning('Product not found', [
+                'product_slug' => request()->route('product'),
+            ]);
+
+            abort(404, 'Product not found.');
+        } catch (\Exception $e) {
+            \Log::error('Error displaying product', [
+                'product_id' => $product->id ?? null,
+                'product_slug' => request()->route('product'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Re-throw to let Laravel's exception handler deal with it
+            throw $e;
+        }
     }
 }

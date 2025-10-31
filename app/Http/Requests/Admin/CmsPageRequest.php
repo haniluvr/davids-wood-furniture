@@ -30,7 +30,7 @@ class CmsPageRequest extends FormRequest
             'template' => 'nullable|string|max:100',
             'sort_order' => 'nullable|integer|min:0',
             'published_at' => 'nullable|date',
-            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif|max:5120',
         ];
     }
 
@@ -52,7 +52,7 @@ class CmsPageRequest extends FormRequest
             'sort_order.min' => 'Sort order cannot be negative.',
             'published_at.date' => 'Please enter a valid publication date.',
             'featured_image.image' => 'Featured image must be an image file.',
-            'featured_image.mimes' => 'Featured image must be in JPEG, PNG, JPG, GIF, or WebP format.',
+            'featured_image.mimes' => 'Featured image must be in JPEG, PNG, JPG, GIF, WebP, or AVIF format.',
             'featured_image.max' => 'Featured image cannot exceed 5MB.',
         ];
     }

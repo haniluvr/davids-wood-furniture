@@ -53,7 +53,7 @@
                             </div>
                             <div>
                                 <p class="text-lg font-medium text-gray-900 dark:text-white">Drop images here or click to browse</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Supports: JPEG, PNG, JPG, GIF, WebP (Max 5MB each)</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Supports: JPEG, PNG, JPG, GIF, WebP, AVIF (Max 5MB each)</p>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Maximum 10 images at once</p>
                             </div>
                             <input type="file" id="images" name="images[]" multiple accept="image/*" class="hidden">

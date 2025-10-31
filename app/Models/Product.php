@@ -17,6 +17,23 @@ class Product extends Model
         return 'slug';
     }
 
+    /**
+     * Retrieve the model for route model binding.
+     * Only allows active products to be accessed.
+     *
+     * @param mixed $value
+     * @param string|null $field
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $field = $field ?: $this->getRouteKeyName();
+
+        return $this->where($field, $value)
+            ->where('is_active', true)
+            ->first();
+    }
+
     protected $fillable = [
         'category_id',
         'subcategory_id',

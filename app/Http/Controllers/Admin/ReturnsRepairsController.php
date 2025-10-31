@@ -56,7 +56,7 @@ class ReturnsRepairsController extends Controller
             'products.*.quantity' => 'required|integer|min:1',
             'customer_notes' => 'nullable|string|max:1000',
             'photos' => 'nullable|array|max:5',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -218,7 +218,7 @@ class ReturnsRepairsController extends Controller
     {
         $request->validate([
             'photos' => 'required|array|max:5',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
         ]);
 
         $photoPaths = $returnRepair->photos ?? [];

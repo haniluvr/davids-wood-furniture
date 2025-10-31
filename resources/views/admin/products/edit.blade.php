@@ -345,7 +345,7 @@
                                 <span class="mx-2">or</span>
                                 <span class="font-medium">drag and drop</span>
                             </div>
-                            <p class="text-xs text-stone-500 dark:text-gray-500">PNG, JPG, GIF up to 2MB each • Multiple files supported</p>
+                            <p class="text-xs text-stone-500 dark:text-gray-500">PNG, JPG, GIF, WebP, AVIF up to 2MB each • Multiple files supported</p>
                         </div>
                     </label>
                     
