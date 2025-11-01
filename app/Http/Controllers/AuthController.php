@@ -33,6 +33,13 @@ class AuthController extends Controller
         }
         $baseUsername = preg_replace('/[^a-zA-Z0-9]/', '', $baseUsername); // Remove non-alphanumeric characters
 
+        // Ensure minimum length of 3 characters
+        if (strlen($baseUsername) < 3) {
+            // If too short, pad with random numbers
+            $randomNumbers = str_pad(rand(100, 999), 3, '0', STR_PAD_LEFT);
+            $baseUsername = $baseUsername.$randomNumbers;
+        }
+
         // Check if username exists
         $username = $baseUsername;
         $counter = 1;
@@ -443,7 +450,17 @@ class AuthController extends Controller
                 ]);
                 $sessionWishlistService->migrateGuestToUser($existingUser->id, $guestSessionId);
 
+                // Login the user
                 Auth::login($existingUser);
+
+                // Force session save to ensure authentication persists after redirect
+                session()->save();
+
+                \Log::info('Google OAuth - Existing user logged in', [
+                    'user_id' => $existingUser->id,
+                    'authenticated' => Auth::check(),
+                    'session_id' => session()->getId(),
+                ]);
             } else {
                 // Use the immediately captured session ID for migration
                 $guestSessionId = $originalSessionId;
@@ -452,27 +469,62 @@ class AuthController extends Controller
                     'guest_session_id' => $guestSessionId,
                     'has_guest_cart' => \App\Models\CartItem::where('session_id', $guestSessionId)->exists(),
                     'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists(),
+                    'google_email' => $googleUser->email,
+                    'google_id' => $googleUser->id,
+                    'google_name' => $googleUser->name,
                 ]);
 
                 // Generate username for Google user
                 $username = $this->generateUsername($googleUser->name ?? 'User');
+                
+                // Ensure username is not empty (fallback to email-based username if needed)
+                if (empty($username)) {
+                    $emailParts = explode('@', $googleUser->email);
+                    $username = $this->generateUsername($emailParts[0] ?? 'user'.rand(1000, 9999));
+                }
 
                 // Split Google name into first and last name
                 $nameParts = explode(' ', trim($googleUser->name ?? 'User'));
                 $firstName = $nameParts[0] ?? '';
                 $lastName = implode(' ', array_slice($nameParts, 1)) ?? '';
 
-                // Create new user from Google data
-                $newUser = User::create([
+                \Log::info('Google OAuth - User data prepared', [
+                    'username' => $username,
                     'first_name' => $firstName,
                     'last_name' => $lastName,
                     'email' => $googleUser->email,
-                    'username' => $username,
-                    'password' => null, // No password for Google OAuth users
-                    'google_id' => $googleUser->id,
-                    'avatar' => $googleUser->avatar ?? null,
-                    'provider' => 'google',
+                    'username_length' => strlen($username),
                 ]);
+
+                // Create new user from Google data
+                try {
+                    $newUser = User::create([
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'email' => $googleUser->email,
+                        'username' => $username,
+                        'password' => null, // No password for Google OAuth users
+                        'google_id' => $googleUser->id,
+                        'avatar' => $googleUser->avatar ?? null,
+                        'provider' => 'google',
+                    ]);
+
+                    \Log::info('Google OAuth - User created successfully', [
+                        'user_id' => $newUser->id,
+                        'email' => $newUser->email,
+                        'username' => $newUser->username,
+                    ]);
+                } catch (\Exception $createException) {
+                    \Log::error('Google OAuth - User creation failed', [
+                        'error' => $createException->getMessage(),
+                        'trace' => $createException->getTraceAsString(),
+                        'email' => $googleUser->email,
+                        'username' => $username,
+                        'google_id' => $googleUser->id,
+                    ]);
+
+                    throw new \Exception('Failed to create user account: '.$createException->getMessage(), 0, $createException);
+                }
 
                 // Migrate guest data BEFORE authentication to prevent session loss
                 $cartController = new CartController;
@@ -481,11 +533,30 @@ class AuthController extends Controller
                 $sessionWishlistService = new \App\Services\SessionWishlistService;
                 $sessionWishlistService->migrateGuestToUser($newUser->id, $guestSessionId);
 
+                // Login the user
                 Auth::login($newUser);
+
+                // Force session save to ensure authentication persists after redirect
+                session()->save();
+
+                \Log::info('Google OAuth - User logged in', [
+                    'user_id' => $newUser->id,
+                    'authenticated' => Auth::check(),
+                    'session_id' => session()->getId(),
+                ]);
             }
 
             // Get intended redirect URL from session, fallback to home
             $intendedUrl = session()->pull('url.intended', route('home'));
+
+            // Final session save before redirect
+            session()->save();
+
+            \Log::info('Google OAuth - Redirecting user', [
+                'intended_url' => $intendedUrl,
+                'authenticated' => Auth::check(),
+                'user_id' => Auth::id(),
+            ]);
 
             return redirect($intendedUrl)->with('google_signin_success', 'Welcome! Please remember to add a password in your account settings for added security.');
         } catch (\Exception $e) {
