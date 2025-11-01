@@ -18,8 +18,13 @@ class TruncateAllTablesSeeder extends Seeder
         // Disable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
+        // Define tables to exclude from truncation
+        $excludedTables = [
+            'employees',    // Exclude employees table - contains essential data
+            'categories',   // Exclude categories table - contains essential data
+        ];
+
         // Define tables to truncate in correct order (child tables first)
-        // Note: Excluding 'categories' and 'employees' tables as they contain essential data
         $tables = [
             // User-related tables (child tables first)
             'product_reviews',
@@ -50,8 +55,17 @@ class TruncateAllTablesSeeder extends Seeder
         ];
 
         $truncatedCount = 0;
+        $skippedCount = 0;
 
         foreach ($tables as $table) {
+            // Skip if table is in excluded list
+            if (in_array($table, $excludedTables)) {
+                $this->command->info("⏭️ Skipped table (excluded): {$table}");
+                $skippedCount++;
+
+                continue;
+            }
+
             if (Schema::hasTable($table)) {
                 DB::table($table)->truncate();
                 $this->command->info("✅ Truncated table: {$table}");
@@ -65,5 +79,8 @@ class TruncateAllTablesSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $this->command->info("🎉 Successfully truncated {$truncatedCount} tables");
+        if ($skippedCount > 0) {
+            $this->command->info("⏭️ Skipped {$skippedCount} excluded table(s): ".implode(', ', $excludedTables));
+        }
     }
 }
