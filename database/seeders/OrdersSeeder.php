@@ -7,6 +7,9 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\User;
+
+use function fake;
+
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
