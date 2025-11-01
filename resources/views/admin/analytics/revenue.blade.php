@@ -30,7 +30,7 @@
         
         <a href="{{ admin_route('analytics.export', ['type' => 'revenue', 'start_date' => request('start_date', $startDate->format('Y-m-d')), 'end_date' => request('end_date', $endDate->format('Y-m-d'))]) }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">
             <i data-lucide="download" class="w-4 h-4"></i>
-            Export All Data
+            Export
         </a>
     </div>
 </div>
@@ -53,9 +53,16 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +15.3%
+                @php
+                    $change = $percentageChanges['total_revenue'] ?? 0;
+                    $isPositive = $change >= 0;
+                    $bgColor = $isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30';
+                    $textColor = $isPositive ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400';
+                    $icon = $isPositive ? 'trending-up' : 'trending-down';
+                @endphp
+                <span class="inline-flex items-center gap-1 rounded-full {{ $bgColor }} px-2.5 py-1 text-xs font-medium {{ $textColor }}">
+                    <i data-lucide="{{ $icon }}" class="w-3 h-3"></i>
+                    {{ $isPositive ? '+' : '' }}{{ number_format($change, 1) }}%
                 </span>
             </div>
         </div>
@@ -77,9 +84,16 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +2.1%
+                @php
+                    $change = $percentageChanges['growth_rate'] ?? 0;
+                    $isPositive = $change >= 0;
+                    $bgColor = $isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30';
+                    $textColor = $isPositive ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400';
+                    $icon = $isPositive ? 'trending-up' : 'trending-down';
+                @endphp
+                <span class="inline-flex items-center gap-1 rounded-full {{ $bgColor }} px-2.5 py-1 text-xs font-medium {{ $textColor }}">
+                    <i data-lucide="{{ $icon }}" class="w-3 h-3"></i>
+                    {{ $isPositive ? '+' : '' }}{{ number_format($change, 1) }}%
                 </span>
             </div>
         </div>
@@ -101,9 +115,16 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +5.7%
+                @php
+                    $change = $percentageChanges['avg_order_value'] ?? 0;
+                    $isPositive = $change >= 0;
+                    $bgColor = $isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30';
+                    $textColor = $isPositive ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400';
+                    $icon = $isPositive ? 'trending-up' : 'trending-down';
+                @endphp
+                <span class="inline-flex items-center gap-1 rounded-full {{ $bgColor }} px-2.5 py-1 text-xs font-medium {{ $textColor }}">
+                    <i data-lucide="{{ $icon }}" class="w-3 h-3"></i>
+                    {{ $isPositive ? '+' : '' }}{{ number_format($change, 1) }}%
                 </span>
             </div>
         </div>
@@ -125,9 +146,16 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +8.4%
+                @php
+                    $change = $percentageChanges['revenue_per_customer'] ?? 0;
+                    $isPositive = $change >= 0;
+                    $bgColor = $isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30';
+                    $textColor = $isPositive ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400';
+                    $icon = $isPositive ? 'trending-up' : 'trending-down';
+                @endphp
+                <span class="inline-flex items-center gap-1 rounded-full {{ $bgColor }} px-2.5 py-1 text-xs font-medium {{ $textColor }}">
+                    <i data-lucide="{{ $icon }}" class="w-3 h-3"></i>
+                    {{ $isPositive ? '+' : '' }}{{ number_format($change, 1) }}%
                 </span>
             </div>
         </div>
@@ -146,17 +174,28 @@
                     <p class="text-sm text-stone-600 dark:text-gray-400">Daily revenue performance over time</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <button id="revenue-period-prev" class="revenue-period-nav inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 transition-colors duration-200 hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700" title="Previous period">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
                     <div class="inline-flex items-center rounded-xl bg-stone-100 p-1 dark:bg-stone-800">
-                        <button id="period-day" class="period-toggle rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors duration-200 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white">
+                        <button id="revenue-period-day" class="revenue-period-toggle rounded-lg px-3 py-1.5 text-xs font-medium {{ ($revenueCurrentPeriod ?? 'month') == 'day' ? 'bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-white' : 'text-stone-600 dark:text-stone-400' }} transition-colors duration-200 hover:text-stone-900 dark:hover:text-white">
                             Day
                         </button>
-                        <button id="period-week" class="period-toggle rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-900 shadow-sm transition-all duration-200 hover:shadow-md dark:bg-stone-700 dark:text-white active">
+                        <button id="revenue-period-week" class="revenue-period-toggle rounded-lg px-3 py-1.5 text-xs font-medium {{ ($revenueCurrentPeriod ?? 'month') == 'week' ? 'bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-white' : 'text-stone-600 dark:text-stone-400' }} transition-colors duration-200 hover:text-stone-900 dark:hover:text-white">
                             Week
                         </button>
-                        <button id="period-month" class="period-toggle rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors duration-200 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white">
+                        <button id="revenue-period-month" class="revenue-period-toggle rounded-lg px-3 py-1.5 text-xs font-medium {{ ($revenueCurrentPeriod ?? 'month') == 'month' ? 'bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-white' : 'text-stone-600 dark:text-stone-400' }} transition-colors duration-200 hover:text-stone-900 dark:hover:text-white">
                             Month
                         </button>
                     </div>
+                    <button id="revenue-period-next" class="revenue-period-nav inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 transition-colors duration-200 hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700" title="Next period" disabled>
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                    @if(request('revenue_period_offset') || request('revenue_current_period'))
+                    <button id="revenue-period-clear" class="revenue-period-clear inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 transition-colors duration-200 hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700" title="Clear period filter">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                    @endif
                 </div>
             </div>
 
@@ -300,12 +339,29 @@
                 <!-- Legend on Right -->
                 <div class="flex-1 space-y-3 w-full lg:w-auto">
                     @php
-                        $paymentColors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+                        // Extended color palette to ensure all payment methods get unique colors
+                        $paymentColors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1'];
+                        
+                        // Assign colors based on payment method name to ensure consistency
+                        $paymentMethodColorMap = [
+                            'bank_transfer' => '#3B82F6',      // Blue
+                            'cod' => '#10B981',                // Green
+                            'cash_on_delivery' => '#10B981',   // Green (alternative name)
+                            'debit_card' => '#F59E0B',         // Amber
+                            'direct_debit' => '#EF4444',        // Red
+                            'gcash' => '#8B5CF6',               // Purple
+                            'qr_code' => '#EC4899',             // Pink
+                            'retail_outlet' => '#06B6D4',       // Cyan (different from bank_transfer blue)
+                        ];
                     @endphp
                     @foreach($revenueByPaymentMethod as $index => $method)
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="h-3 w-3 rounded-full" style="background-color: {{ $paymentColors[$index % count($paymentColors)] }}"></div>
+                            @php
+                                $methodKey = strtolower($method->payment_method ?? 'unknown');
+                                $color = $paymentMethodColorMap[$methodKey] ?? $paymentColors[$index % count($paymentColors)];
+                            @endphp
+                            <div class="h-3 w-3 rounded-full" style="background-color: {{ $color }}"></div>
                             <span class="text-sm font-medium text-stone-900 dark:text-white">{{ ucfirst(str_replace('_', ' ', $method->payment_method ?? 'Unknown')) }}</span>
                         </div>
                         <div class="text-right">
@@ -462,24 +518,32 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-// Revenue Trend Chart
-@php
-    // Generate weekly labels for default view
-    $defaultWeeklyLabels = [];
-    $current = $startDate->copy()->startOfWeek();
-    while ($current->lte($endDate)) {
-        $weekEnd = $current->copy()->endOfWeek();
-        if ($weekEnd->gt($endDate)) {
-            $weekEnd = $endDate->copy();
-        }
-        $defaultWeeklyLabels[] = $current->format('M d') . ' - ' . $weekEnd->format('M d');
-        $current->addWeek();
+// Prepare period data for Revenue Trend chart
+const revenuePeriodData = {
+    day: {
+        labels: @json($dailyLabels ?? []),
+        revenue: @json($dailyRevenue ?? [])
+    },
+    week: {
+        labels: @json($weeklyLabels ?? []),
+        revenue: @json($weeklyRevenue ?? [])
+    },
+    month: {
+        labels: @json($monthlyLabels ?? []),
+        revenue: @json($monthlyRevenue ?? [])
     }
-@endphp
+};
+
+// Set default to month view
+let currentRevenuePeriod = '{{ $revenueCurrentPeriod ?? 'month' }}';
+let revenuePeriodOffset = {{ $revenuePeriodOffset ?? 0 }};
+const maxRevenuePeriodOffset = 0; // Cannot go forward past today
+
+// Revenue Trend Chart - Area Chart
 const revenueTrendOptions = {
     series: [{
         name: 'Revenue',
-        data: @json($weeklyRevenue ?? [])
+        data: revenuePeriodData[currentRevenuePeriod]?.revenue || []
     }],
     chart: {
         type: 'area',
@@ -504,7 +568,7 @@ const revenueTrendOptions = {
         }
     },
     xaxis: {
-        categories: @json($defaultWeeklyLabels),
+        categories: revenuePeriodData[currentRevenuePeriod]?.labels || [],
         axisBorder: {
             show: false
         },
@@ -536,100 +600,153 @@ const revenueTrendOptions = {
 };
 
 const revenueTrendChart = new ApexCharts(document.querySelector('#revenueTrendChart'), revenueTrendOptions);
-revenueTrendChart.render();
 
-// Force chart to resize to fill container on initial load
-function resizeChart() {
-    const chartContainer = document.querySelector('#revenueTrendChart');
-    if (chartContainer && chartContainer.parentElement) {
-        const parentContainer = chartContainer.parentElement;
-        const containerHeight = parentContainer.offsetHeight;
-        
-        if (containerHeight > 0) {
-            revenueTrendChart.updateOptions({
-                chart: {
-                    height: containerHeight
-                }
-            }, false, false); // false = redraw, false = no animate
-        }
+// Function to resize chart to fill container
+function resizeRevenueTrendChart() {
+    const container = document.querySelector('#revenueTrendChart').parentElement;
+    const height = container.offsetHeight;
+    if (height > 0) {
+        revenueTrendChart.updateOptions({ chart: { height: height } });
     }
 }
 
-// Resize after render
-setTimeout(resizeChart, 100);
-setTimeout(resizeChart, 300);
+revenueTrendChart.render();
+setTimeout(resizeRevenueTrendChart, 100);
+setTimeout(resizeRevenueTrendChart, 500);
+window.addEventListener('resize', resizeRevenueTrendChart);
 
-// Also trigger resize on window load
-window.addEventListener('load', function() {
-    setTimeout(resizeChart, 150);
-});
+// Update navigation buttons state
+function updateRevenuePeriodNavigation() {
+    const prevBtn = document.getElementById('revenue-period-prev');
+    const nextBtn = document.getElementById('revenue-period-next');
+    
+    // Can always go back
+    if (prevBtn) prevBtn.disabled = false;
+    
+    // Cannot go forward past today (offset must be >= 0)
+    if (nextBtn) nextBtn.disabled = revenuePeriodOffset <= maxRevenuePeriodOffset;
+}
 
-// Period toggle functionality
-let currentPeriod = 'week';
-@php
-    // Generate weekly labels
-    $weeklyLabels = [];
-    $current = $startDate->copy()->startOfWeek();
-    while ($current->lte($endDate)) {
-        $weekEnd = $current->copy()->endOfWeek();
-        if ($weekEnd->gt($endDate)) {
-            $weekEnd = $endDate->copy();
-        }
-        $weeklyLabels[] = $current->format('M d') . ' - ' . $weekEnd->format('M d');
-        $current->addWeek();
-    }
-
-    // Generate monthly labels
-    $monthlyLabels = [];
-    $current = $startDate->copy()->startOfMonth();
-    while ($current->lte($endDate)) {
-        $monthEnd = $current->copy()->endOfMonth();
-        if ($monthEnd->gt($endDate)) {
-            $monthEnd = $endDate->copy();
-        }
-        $monthlyLabels[] = $current->format('M Y');
-        $current->addMonth();
-    }
-@endphp
-const periodData = {
-    day: {
-        labels: @json($chartLabels),
-        revenue: @json($dailyRevenue)
-    },
-    week: {
-        labels: @json($weeklyLabels),
-        revenue: @json($weeklyRevenue ?? [])
-    },
-    month: {
-        labels: @json($monthlyLabels),
-        revenue: @json($monthlyRevenue ?? [])
-    }
-};
-
-document.querySelectorAll('.period-toggle').forEach(button => {
-    button.addEventListener('click', function() {
-        const period = this.id.replace('period-', '');
-        currentPeriod = period;
+// Navigate to previous period
+// Logic: 
+// - Month backward: Show past year (12 months back, so offset += 12)
+// - Week backward: Show past month's 4 previous weeks (4 weeks back, so offset += 4)
+// - Day backward: Show last week's per day (7 days back, so offset += 7)
+const revenuePrevBtn = document.getElementById('revenue-period-prev');
+if (revenuePrevBtn) {
+    revenuePrevBtn.addEventListener('click', function() {
+        let offsetIncrement = 1; // Default increment
         
-        // Update button states
-        document.querySelectorAll('.period-toggle').forEach(btn => {
-            btn.classList.remove('bg-white', 'text-stone-900', 'shadow-sm', 'dark:bg-stone-700', 'dark:text-white', 'active');
-            btn.classList.add('text-stone-600', 'dark:text-stone-400');
-        });
-        this.classList.add('bg-white', 'text-stone-900', 'shadow-sm', 'dark:bg-stone-700', 'dark:text-white', 'active');
-        this.classList.remove('text-stone-600', 'dark:text-stone-400');
+        if (currentRevenuePeriod === 'month') {
+            offsetIncrement = 12; // Go back 12 months (a full year)
+        } else if (currentRevenuePeriod === 'week') {
+            offsetIncrement = 4; // Go back 4 weeks (a full month of weeks)
+        } else if (currentRevenuePeriod === 'day') {
+            offsetIncrement = 7; // Go back 7 days (a full week)
+        }
         
-        // Update chart
-        const data = periodData[period];
-        revenueTrendChart.updateOptions({
-            xaxis: { categories: data.labels },
-            series: [{
-                name: 'Revenue',
-                data: data.revenue
-            }]
-        });
+        revenuePeriodOffset += offsetIncrement;
+        updateRevenuePeriodNavigation();
+        loadRevenuePeriodData();
     });
-});
+}
+
+// Navigate to next period
+// Logic: Reverse of backward navigation
+const revenueNextBtn = document.getElementById('revenue-period-next');
+if (revenueNextBtn) {
+    revenueNextBtn.addEventListener('click', function() {
+        let offsetDecrement = 1; // Default decrement
+        
+        if (currentRevenuePeriod === 'month') {
+            offsetDecrement = 12; // Go forward 12 months (a full year)
+        } else if (currentRevenuePeriod === 'week') {
+            offsetDecrement = 4; // Go forward 4 weeks (a full month of weeks)
+        } else if (currentRevenuePeriod === 'day') {
+            offsetDecrement = 7; // Go forward 7 days (a full week)
+        }
+        
+        if (revenuePeriodOffset >= offsetDecrement) {
+            revenuePeriodOffset -= offsetDecrement;
+            updateRevenuePeriodNavigation();
+            loadRevenuePeriodData();
+        }
+    });
+}
+
+// Load period data from server
+function loadRevenuePeriodData() {
+    // Get current date filter values
+    const urlParams = new URLSearchParams(window.location.search);
+    const startDate = urlParams.get('start_date') || '';
+    const endDate = urlParams.get('end_date') || '';
+    
+    // Build URL with period parameters
+    const params = new URLSearchParams({
+        revenue_period_offset: revenuePeriodOffset,
+        revenue_current_period: currentRevenuePeriod,
+        start_date: startDate,
+        end_date: endDate
+    });
+    
+    // Reload page with new period offset
+    window.location.href = '{{ admin_route('analytics.revenue') }}?' + params.toString();
+}
+
+// Period toggle handler for Revenue Trend chart
+// Wait for DOM to be ready
+(function() {
+    function initRevenuePeriodToggles() {
+        const buttons = document.querySelectorAll('.revenue-period-toggle');
+        if (buttons.length === 0) {
+            // Buttons not ready yet, try again
+            setTimeout(initRevenuePeriodToggles, 100);
+            return;
+        }
+        
+        buttons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const period = this.id.replace('revenue-period-', '');
+                currentRevenuePeriod = period;
+                
+                // Reset offset to 0 when switching period types and reload to get fresh data
+                revenuePeriodOffset = 0;
+                loadRevenuePeriodData();
+            });
+        });
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRevenuePeriodToggles);
+    } else {
+        initRevenuePeriodToggles();
+    }
+})();
+
+// Initialize navigation state
+updateRevenuePeriodNavigation();
+
+// Clear period filter button handler
+const revenueClearBtn = document.getElementById('revenue-period-clear');
+if (revenueClearBtn) {
+    revenueClearBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Get current date filter values
+        const urlParams = new URLSearchParams(window.location.search);
+        const startDate = urlParams.get('start_date') || '';
+        const endDate = urlParams.get('end_date') || '';
+        
+        // Build URL without period parameters
+        const params = new URLSearchParams();
+        if (startDate) params.set('start_date', startDate);
+        if (endDate) params.set('end_date', endDate);
+        
+        // Reload page without period filter
+        const url = '{{ admin_route('analytics.revenue') }}' + (params.toString() ? '?' + params.toString() : '');
+        window.location.href = url;
+    });
+}
 
 // Revenue Sources Chart
 const revenueSourcesOptions = {
@@ -661,6 +778,22 @@ const revenueSourcesChart = new ApexCharts(document.querySelector('#revenueSourc
 revenueSourcesChart.render();
 
 // Payment Method Distribution Chart
+@php
+    $paymentMethodColorMap = [
+        'bank_transfer' => '#3B82F6',
+        'cod' => '#10B981',
+        'cash_on_delivery' => '#10B981',
+        'debit_card' => '#F59E0B',
+        'direct_debit' => '#EF4444',
+        'gcash' => '#8B5CF6',
+        'qr_code' => '#EC4899',
+        'retail_outlet' => '#06B6D4',
+    ];
+    $paymentMethodColors = $revenueByPaymentMethod->pluck('payment_method')->map(function($method) use ($paymentMethodColorMap) {
+        $methodKey = strtolower($method ?? 'unknown');
+        return $paymentMethodColorMap[$methodKey] ?? '#6366F1';
+    })->toArray();
+@endphp
 const paymentMethodOptions = {
     series: @json($revenueByPaymentMethod->pluck('revenue')->map(function($val) { return (float) ($val ?? 0); })->toArray()),
     chart: {
@@ -668,7 +801,7 @@ const paymentMethodOptions = {
         width: 300,
         height: 300,
     },
-    colors: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'],
+    colors: @json($paymentMethodColors),
     labels: @json($revenueByPaymentMethod->pluck('payment_method')->map(function($method) { return ucfirst(str_replace('_', ' ', $method ?? 'Unknown')); })->toArray()),
     legend: {
         show: false,

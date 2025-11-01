@@ -21,12 +21,14 @@
             <button type="submit" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-900 shadow-sm hover:bg-stone-50 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white dark:hover:bg-stone-700">
                 <i data-lucide="filter" class="w-4 h-4"></i>
             </button>
-            @if(request('start_date') || request('end_date'))
-            <a href="{{ admin_route('analytics.products') }}" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-900 shadow-sm hover:bg-stone-50 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white dark:hover:bg-stone-700" title="Clear date filter">
-                <i data-lucide="x" class="w-4 h-4"></i>
-            </a>
-            @endif
         </form>
+        
+        @if(request('start_date') || request('end_date') || request('category') || request('sort_by') || request('period_offset') || request('current_period'))
+        <a href="{{ admin_route('analytics.products') }}" class="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-900 shadow-sm hover:bg-stone-50 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white dark:hover:bg-stone-700" title="Clear all filters">
+            <i data-lucide="x-circle" class="w-4 h-4"></i>
+            Clear All Filters
+        </a>
+        @endif
         
         <a href="{{ admin_route('analytics.export', ['type' => 'products', 'start_date' => request('start_date', $startDate->format('Y-m-d')), 'end_date' => request('end_date', $endDate->format('Y-m-d'))]) }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">
             <i data-lucide="download" class="w-4 h-4"></i>
@@ -53,9 +55,16 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +5.2%
+                @php
+                    $change = $percentageChanges['total_products'] ?? 0;
+                    $isPositive = $change >= 0;
+                    $bgColor = $isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30';
+                    $textColor = $isPositive ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400';
+                    $icon = $isPositive ? 'trending-up' : 'trending-down';
+                @endphp
+                <span class="inline-flex items-center gap-1 rounded-full {{ $bgColor }} px-2.5 py-1 text-xs font-medium {{ $textColor }}">
+                    <i data-lucide="{{ $icon }}" class="w-3 h-3"></i>
+                    {{ $isPositive ? '+' : '' }}{{ number_format($change, 1) }}%
                 </span>
             </div>
         </div>
@@ -77,9 +86,16 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +12.8%
+                @php
+                    $change = $percentageChanges['units_sold'] ?? 0;
+                    $isPositive = $change >= 0;
+                    $bgColor = $isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30';
+                    $textColor = $isPositive ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400';
+                    $icon = $isPositive ? 'trending-up' : 'trending-down';
+                @endphp
+                <span class="inline-flex items-center gap-1 rounded-full {{ $bgColor }} px-2.5 py-1 text-xs font-medium {{ $textColor }}">
+                    <i data-lucide="{{ $icon }}" class="w-3 h-3"></i>
+                    {{ $isPositive ? '+' : '' }}{{ number_format($change, 1) }}%
                 </span>
             </div>
         </div>
@@ -101,9 +117,16 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +8.5%
+                @php
+                    $change = $percentageChanges['product_revenue'] ?? 0;
+                    $isPositive = $change >= 0;
+                    $bgColor = $isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30';
+                    $textColor = $isPositive ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400';
+                    $icon = $isPositive ? 'trending-up' : 'trending-down';
+                @endphp
+                <span class="inline-flex items-center gap-1 rounded-full {{ $bgColor }} px-2.5 py-1 text-xs font-medium {{ $textColor }}">
+                    <i data-lucide="{{ $icon }}" class="w-3 h-3"></i>
+                    {{ $isPositive ? '+' : '' }}{{ number_format($change, 1) }}%
                 </span>
             </div>
         </div>
@@ -125,9 +148,16 @@
                 </div>
             </div>
             <div class="text-right">
-                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    <i data-lucide="trending-up" class="w-3 h-3"></i>
-                    +3.2%
+                @php
+                    $change = $percentageChanges['avg_product_price'] ?? 0;
+                    $isPositive = $change >= 0;
+                    $bgColor = $isPositive ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30';
+                    $textColor = $isPositive ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400';
+                    $icon = $isPositive ? 'trending-up' : 'trending-down';
+                @endphp
+                <span class="inline-flex items-center gap-1 rounded-full {{ $bgColor }} px-2.5 py-1 text-xs font-medium {{ $textColor }}">
+                    <i data-lucide="{{ $icon }}" class="w-3 h-3"></i>
+                    {{ $isPositive ? '+' : '' }}{{ number_format($change, 1) }}%
                 </span>
             </div>
         </div>
@@ -144,6 +174,25 @@
                 <div>
                     <h3 class="text-xl font-bold text-stone-900 dark:text-white">Product Performance</h3>
                     <p class="text-sm text-stone-600 dark:text-gray-400">Top performing products by revenue</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="product-period-prev" class="product-period-nav inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 transition-colors duration-200 hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700" title="Previous period">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    <div class="inline-flex items-center rounded-xl bg-stone-100 p-1 dark:bg-stone-800">
+                        <button id="product-period-day" class="product-period-toggle rounded-lg px-3 py-1.5 text-xs font-medium {{ ($currentPeriod ?? 'week') == 'day' ? 'bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-white' : 'text-stone-600 dark:text-stone-400' }} transition-colors duration-200 hover:text-stone-900 dark:hover:text-white">
+                            Day
+                        </button>
+                        <button id="product-period-week" class="product-period-toggle rounded-lg px-3 py-1.5 text-xs font-medium {{ ($currentPeriod ?? 'week') == 'week' ? 'bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-white' : 'text-stone-600 dark:text-stone-400' }} transition-colors duration-200 hover:text-stone-900 dark:hover:text-white">
+                            Week
+                        </button>
+                        <button id="product-period-month" class="product-period-toggle rounded-lg px-3 py-1.5 text-xs font-medium {{ ($currentPeriod ?? 'week') == 'month' ? 'bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-white' : 'text-stone-600 dark:text-stone-400' }} transition-colors duration-200 hover:text-stone-900 dark:hover:text-white">
+                            Month
+                        </button>
+                    </div>
+                    <button id="product-period-next" class="product-period-nav inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 transition-colors duration-200 hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700" title="Next period" disabled>
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
                 </div>
             </div>
 
@@ -464,11 +513,32 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
+// Prepare period data - get top products for each period
+const productPeriodData = {
+    day: {
+        labels: @json($topProductsDaily->pluck('name')->toArray() ?? []),
+        revenue: @json($topProductsDaily->pluck('total_revenue')->map(function($val) { return (float) ($val ?? 0); })->toArray())
+    },
+    week: {
+        labels: @json($topProductsWeekly->pluck('name')->toArray() ?? []),
+        revenue: @json($topProductsWeekly->pluck('total_revenue')->map(function($val) { return (float) ($val ?? 0); })->toArray())
+    },
+    month: {
+        labels: @json($topProductsMonthly->pluck('name')->toArray() ?? []),
+        revenue: @json($topProductsMonthly->pluck('total_revenue')->map(function($val) { return (float) ($val ?? 0); })->toArray())
+    }
+};
+
+// Set default to week view
+let currentProductPeriod = '{{ $currentPeriod ?? 'week' }}';
+let periodOffset = {{ $periodOffset ?? 0 }};
+const maxPeriodOffset = 0; // Cannot go forward past today
+
 // Product Performance Chart
 const productPerformanceOptions = {
     series: [{
         name: 'Revenue',
-        data: @json($topProducts->pluck('total_revenue')->toArray())
+        data: productPeriodData[currentProductPeriod].revenue
     }],
     chart: {
         type: 'bar',
@@ -483,10 +553,39 @@ const productPerformanceOptions = {
         bar: {
             borderRadius: 8,
             horizontal: false,
+            columnWidth: '60%',
+            dataLabels: {
+                position: 'top'
+            }
+        }
+    },
+    fill: {
+        type: 'gradient',
+        gradient: {
+            shade: 'dark',
+            type: 'vertical',
+            shadeIntensity: 0.5,
+            gradientToColors: ['#60A5FA'],
+            inverseColors: false,
+            opacityFrom: 1,
+            opacityTo: 0.8,
+            stops: [0, 100]
+        }
+    },
+    dataLabels: {
+        enabled: true,
+        offsetY: -20,
+        style: {
+            fontSize: '12px',
+            fontWeight: 600,
+            colors: ['#3B82F6']
+        },
+        formatter: function (val) {
+            return '₱' + parseFloat(val).toLocaleString();
         }
     },
     xaxis: {
-        categories: @json($topProducts->pluck('name')->toArray()),
+        categories: productPeriodData[currentProductPeriod].labels,
         axisBorder: {
             show: false
         },
@@ -532,6 +631,71 @@ productPerformanceChart.render();
 setTimeout(resizeProductPerformanceChart, 100);
 setTimeout(resizeProductPerformanceChart, 500);
 window.addEventListener('resize', resizeProductPerformanceChart);
+
+// Update navigation buttons state
+function updatePeriodNavigation() {
+    const prevBtn = document.getElementById('product-period-prev');
+    const nextBtn = document.getElementById('product-period-next');
+    
+    // Can always go back
+    prevBtn.disabled = false;
+    
+    // Cannot go forward past today (offset must be >= 0)
+    nextBtn.disabled = periodOffset <= maxPeriodOffset;
+}
+
+// Navigate to previous period
+document.getElementById('product-period-prev').addEventListener('click', function() {
+    periodOffset += 1;
+    updatePeriodNavigation();
+    loadPeriodData();
+});
+
+// Navigate to next period
+document.getElementById('product-period-next').addEventListener('click', function() {
+    if (periodOffset > maxPeriodOffset) {
+        periodOffset -= 1;
+        updatePeriodNavigation();
+        loadPeriodData();
+    }
+});
+
+// Load period data from server
+function loadPeriodData() {
+    // Get current date filter values
+    const urlParams = new URLSearchParams(window.location.search);
+    const startDate = urlParams.get('start_date') || '';
+    const endDate = urlParams.get('end_date') || '';
+    
+    // Build URL with period parameters
+    const params = new URLSearchParams({
+        period_offset: periodOffset,
+        current_period: currentProductPeriod,
+        start_date: startDate,
+        end_date: endDate,
+        category: urlParams.get('category') || '',
+        sort_by: urlParams.get('sort_by') || '',
+        sort_order: urlParams.get('sort_order') || ''
+    });
+    
+    // Reload page with new period offset
+    window.location.href = '{{ admin_route('analytics.products') }}?' + params.toString();
+}
+
+// Period toggle handler for Product Performance chart
+document.querySelectorAll('.product-period-toggle').forEach(button => {
+    button.addEventListener('click', function() {
+        const period = this.id.replace('product-period-', '');
+        currentProductPeriod = period;
+        
+        // Reset offset to 0 when switching period types and reload to get fresh data
+        periodOffset = 0;
+        loadPeriodData();
+    });
+});
+
+// Initialize navigation state
+updatePeriodNavigation();
 
 // Category Breakdown Chart
 const categoryBreakdownOptions = {

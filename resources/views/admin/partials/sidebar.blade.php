@@ -119,7 +119,7 @@
 
     <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
         <!-- Sidebar Menu -->
-        <nav class="mt-5 px-4 py-4 lg:mt-9 lg:px-6">
+        <nav class="mt-2 px-4 py-0 lg:mt-9 lg:px-6">
             <ul class="mb-6 flex flex-col gap-1.5">
                 
                 <!-- Dashboard (Top-level) -->
