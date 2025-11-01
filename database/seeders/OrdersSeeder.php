@@ -12,16 +12,11 @@ use Illuminate\Support\Facades\DB;
 
 class OrdersSeeder extends Seeder
 {
-    protected $faker;
-
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // Initialize Faker instance
-        $this->faker = \Faker\Factory::create();
-
         $this->command->info('📦 Generating orders with realistic data...');
 
         // Clear existing data
@@ -80,10 +75,10 @@ class OrdersSeeder extends Seeder
                 'tracking_number' => null, // Will be generated for shipped/delivered orders
                 'subtotal' => 0, // Will be calculated
                 'tax_amount' => 0, // Will be calculated
-                'shipping_amount' => $this->faker->randomFloat(2, 50, 200),
+                'shipping_amount' => fake()->randomFloat(2, 50, 200),
                 'total_amount' => 0, // Will be calculated
-                'payment_status' => $this->faker->randomElement(['pending', 'paid', 'failed', 'refunded']),
-                'payment_method' => $this->faker->randomElement(['credit_card', 'debit_card', 'paypal', 'bank_transfer']),
+                'payment_status' => fake()->randomElement(['pending', 'paid', 'failed', 'refunded']),
+                'payment_method' => fake()->randomElement(['credit_card', 'debit_card', 'paypal', 'bank_transfer']),
                 'shipping_address' => json_encode([
                     'name' => $user->first_name.' '.$user->last_name,
                     'street' => $user->street,
@@ -100,8 +95,8 @@ class OrdersSeeder extends Seeder
                     'zip_code' => $user->zip_code,
                     'region' => $user->region,
                 ]),
-                'notes' => $this->faker->optional(0.3)->sentence(),
-                'created_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
+                'notes' => fake()->optional(0.3)->sentence(),
+                'created_at' => fake()->dateTimeBetween('-1 year', 'now'),
                 'updated_at' => now(),
             ]);
 
@@ -203,20 +198,20 @@ class OrdersSeeder extends Seeder
 
             // 60-80% chance of leaving a review for each item
             foreach ($orderItems as $orderItem) {
-                if ($this->faker->boolean(70)) { // 70% chance
-                    $rating = $this->faker->numberBetween(3, 5); // Mostly positive reviews (3-5 stars)
-                    $reviewText = $this->faker->randomElement($reviewTemplates);
+                if (fake()->boolean(70)) { // 70% chance
+                    $rating = fake()->numberBetween(3, 5); // Mostly positive reviews (3-5 stars)
+                    $reviewText = fake()->randomElement($reviewTemplates);
 
                     // Add some variation to reviews
                     if ($rating >= 4) {
-                        $reviewText = $this->faker->randomElement([
+                        $reviewText = fake()->randomElement([
                             'Amazing quality! '.$reviewText,
                             'Perfect! '.$reviewText,
                             'Love it! '.$reviewText,
                             'Excellent! '.$reviewText,
                         ]);
                     } else {
-                        $reviewText = $this->faker->randomElement([
+                        $reviewText = fake()->randomElement([
                             'Good product. '.$reviewText,
                             'Decent quality. '.$reviewText,
                             'Satisfied with purchase. '.$reviewText,
@@ -228,7 +223,7 @@ class OrdersSeeder extends Seeder
                         'user_id' => $order->user_id,
                         'order_id' => $order->id,
                         'rating' => $rating,
-                        'title' => $this->faker->randomElement([
+                        'title' => fake()->randomElement([
                             'Great product!',
                             'Excellent quality',
                             'Very satisfied',
@@ -243,7 +238,7 @@ class OrdersSeeder extends Seeder
                         'review' => $reviewText,
                         'is_verified_purchase' => true,
                         'is_approved' => true,
-                        'created_at' => $this->faker->dateTimeBetween($order->created_at, 'now'),
+                        'created_at' => fake()->dateTimeBetween($order->created_at, 'now'),
                         'updated_at' => now(),
                     ]);
 
