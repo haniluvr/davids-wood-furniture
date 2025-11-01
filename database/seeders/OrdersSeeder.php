@@ -7,7 +7,6 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\User;
-use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -15,16 +14,14 @@ class OrdersSeeder extends Seeder
 {
     protected $faker;
 
-    public function __construct()
-    {
-        $this->faker = Faker::create();
-    }
-
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
+        // Initialize Faker instance
+        $this->faker = \Faker\Factory::create();
+
         $this->command->info('📦 Generating orders with realistic data...');
 
         // Clear existing data
