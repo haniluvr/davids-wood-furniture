@@ -386,9 +386,51 @@ class AuthController extends Controller
         \Log::info('AuthController: Google OAuth callback started - IMMEDIATE session capture', [
             'immediate_session_id' => $originalSessionId,
             'authenticated' => \Auth::check(),
+            'request_params' => $request->all(),
+            'request_url' => $request->fullUrl(),
+            'has_code' => $request->has('code'),
+            'has_error' => $request->has('error'),
+            'error_param' => $request->input('error'),
+            'error_description' => $request->input('error_description'),
         ]);
 
+        // Check for OAuth errors from Google
+        if ($request->has('error')) {
+            \Log::error('Google OAuth - Error received from Google', [
+                'error' => $request->input('error'),
+                'error_description' => $request->input('error_description'),
+                'error_uri' => $request->input('error_uri'),
+            ]);
+
+            return redirect()->route('home')->withErrors([
+                'error' => 'Google authentication failed: '.($request->input('error_description') ?? $request->input('error')),
+            ]);
+        }
+
         try {
+            // Verify Google OAuth configuration
+            $clientId = config('services.google.client_id');
+            $clientSecret = config('services.google.client_secret');
+            $redirectUrl = config('services.google.redirect');
+
+            \Log::info('Google OAuth - Configuration check', [
+                'client_id_set' => ! empty($clientId),
+                'client_id_length' => $clientId ? strlen($clientId) : 0,
+                'client_secret_set' => ! empty($clientSecret),
+                'redirect_url' => $redirectUrl,
+                'app_env' => config('app.env'),
+                'app_debug' => config('app.debug'),
+            ]);
+
+            if (empty($clientId) || empty($clientSecret)) {
+                \Log::error('Google OAuth - Missing configuration', [
+                    'client_id_set' => ! empty($clientId),
+                    'client_secret_set' => ! empty($clientSecret),
+                ]);
+
+                throw new \Exception('Google OAuth is not properly configured. Please check your environment variables.');
+            }
+
             // Configure the Socialite driver to handle SSL issues in development
             /** @var \Laravel\Socialite\Two\GoogleProvider $googleDriver */
             $googleDriver = Socialite::driver('google');
@@ -404,8 +446,19 @@ class AuthController extends Controller
                 ]));
             }
 
+            \Log::info('Google OAuth - Attempting to get user from Google', [
+                'has_code' => $request->has('code'),
+                'has_state' => $request->has('state'),
+            ]);
+
             /** @var \Laravel\Socialite\Two\User $googleUser */
             $googleUser = $googleDriver->user();
+
+            \Log::info('Google OAuth - Successfully retrieved user from Google', [
+                'google_id' => $googleUser->id,
+                'email' => $googleUser->email,
+                'name' => $googleUser->name,
+            ]);
 
             $existingUser = User::where('google_id', $googleUser->id)
                 ->orWhere('email', $googleUser->email)
@@ -559,10 +612,41 @@ class AuthController extends Controller
             ]);
 
             return redirect($intendedUrl)->with('google_signin_success', 'Welcome! Please remember to add a password in your account settings for added security.');
-        } catch (\Exception $e) {
-            \Log::error('Google OAuth error:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+            \Log::error('Google OAuth - InvalidStateException (usually session mismatch)', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'session_id' => session()->getId(),
+            ]);
 
-            return redirect()->route('home')->withErrors(['error' => 'Google authentication failed: '.$e->getMessage()]);
+            return redirect()->route('home')->withErrors([
+                'error' => 'Session expired. Please try signing in with Google again.',
+            ]);
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $response = $e->getResponse();
+            $body = $response ? $response->getBody()->getContents() : 'No response body';
+
+            \Log::error('Google OAuth - HTTP Client Exception', [
+                'error' => $e->getMessage(),
+                'status_code' => $response ? $response->getStatusCode() : null,
+                'response_body' => $body,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->route('home')->withErrors([
+                'error' => 'Google authentication failed. Please check your Google OAuth configuration.',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Google OAuth error:', [
+                'error' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+                'request_params' => $request->all(),
+            ]);
+
+            return redirect()->route('home')->withErrors([
+                'error' => 'Google authentication failed: '.$e->getMessage(),
+            ]);
         }
     }
 
