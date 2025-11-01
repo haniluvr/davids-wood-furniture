@@ -476,7 +476,7 @@ class AuthController extends Controller
 
                 // Generate username for Google user
                 $username = $this->generateUsername($googleUser->name ?? 'User');
-                
+
                 // Ensure username is not empty (fallback to email-based username if needed)
                 if (empty($username)) {
                     $emailParts = explode('@', $googleUser->email);
