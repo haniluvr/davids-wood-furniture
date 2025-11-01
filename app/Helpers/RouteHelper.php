@@ -43,6 +43,15 @@ class RouteHelper
             if ($host === 'admin.localhost' && $port === 8080) {
                 $url = str_replace('admin.localhost:8000', 'admin.localhost:8080', $url);
             }
+        } elseif ($env === 'production') {
+            // Ensure production URLs always use HTTPS
+            if ($scheme === 'http' && (str_contains($host, 'davidswood.shop'))) {
+                $url = str_replace('http://', 'https://', $url);
+            }
+            // Remove port from HTTPS URLs in production (standard HTTPS port 443)
+            if (str_contains($url, 'https://') && preg_match('/https:\/\/[^:]+:\d+/', $url)) {
+                $url = preg_replace('/https:\/\/([^:]+):\d+/', 'https://$1', $url);
+            }
         }
 
         return $url;

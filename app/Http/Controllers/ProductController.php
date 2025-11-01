@@ -113,6 +113,9 @@ class ProductController extends Controller
                 1 => $product->approvedReviews()->where('rating', 1)->count(),
             ];
 
+            // Increment view count for product detail page
+            $product->increment('view_count');
+
             $sessionIdAtEnd = session()->getId();
 
             \Log::info('Product show method completed', [

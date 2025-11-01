@@ -228,7 +228,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <img src="https://davidswood.shop/frontend/assets/favicon.png" alt="David's Wood Furniture" class="logo">
+            <img src="{{ asset('frontend/assets/favicon.png') }}" alt="David's Wood Furniture" class="logo">
             <h1 class="company-name">DAVID'S WOOD FURNITURES</h1>
             <p class="tagline">Nature's grain shaped by artistry</p>
         </div>

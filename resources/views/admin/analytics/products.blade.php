@@ -13,14 +13,25 @@
     </div>
 
     <div class="flex items-center gap-3">
-        <div class="text-right">
-            <p class="text-sm text-stone-500 dark:text-gray-400">Report Period</p>
-            <p class="text-sm font-medium text-stone-900 dark:text-white">{{ $startDate->format('M d') }} - {{ $endDate->format('M d, Y') }}</p>
-        </div>
-        <button class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">
+        <!-- Date Range Filter -->
+        <form method="GET" action="{{ admin_route('analytics.products') }}" class="flex items-center gap-2">
+            <input type="date" name="start_date" value="{{ request('start_date', $startDate->format('Y-m-d')) }}" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white">
+            <span class="text-sm text-stone-600 dark:text-gray-400">to</span>
+            <input type="date" name="end_date" value="{{ request('end_date', $endDate->format('Y-m-d')) }}" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white">
+            <button type="submit" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-900 shadow-sm hover:bg-stone-50 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white dark:hover:bg-stone-700">
+                <i data-lucide="filter" class="w-4 h-4"></i>
+            </button>
+            @if(request('start_date') || request('end_date'))
+            <a href="{{ admin_route('analytics.products') }}" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-900 shadow-sm hover:bg-stone-50 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white dark:hover:bg-stone-700" title="Clear date filter">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </a>
+            @endif
+        </form>
+        
+        <a href="{{ admin_route('analytics.export', ['type' => 'products', 'start_date' => request('start_date', $startDate->format('Y-m-d')), 'end_date' => request('end_date', $endDate->format('Y-m-d'))]) }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">
             <i data-lucide="download" class="w-4 h-4"></i>
             Export
-        </button>
+        </a>
     </div>
 </div>
 <!-- Breadcrumb End -->
@@ -125,10 +136,10 @@
 </div>
 
 <!-- Charts Section -->
-<div class="grid grid-cols-12 gap-6">
+<div class="grid grid-cols-12 gap-6 items-stretch mb-8">
     <!-- Product Performance Chart -->
     <div class="col-span-12 xl:col-span-8">
-        <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
+        <div class="flex flex-col rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80 h-full" style="min-height: 550px;">
             <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h3 class="text-xl font-bold text-stone-900 dark:text-white">Product Performance</h3>
@@ -136,15 +147,15 @@
                 </div>
             </div>
 
-            <div>
-                <div id="productPerformanceChart" class="h-[400px] w-full"></div>
+            <div class="flex-1 flex flex-col">
+                <div id="productPerformanceChart" class="w-full flex-1"></div>
             </div>
         </div>
     </div>
 
     <!-- Category Breakdown -->
     <div class="col-span-12 xl:col-span-4">
-        <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
+        <div class="flex flex-col rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80 h-full" style="min-height: 550px;">
             <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h3 class="text-xl font-bold text-stone-900 dark:text-white">Category Breakdown</h3>
@@ -152,8 +163,8 @@
                 </div>
             </div>
 
-            <div class="mb-6">
-                <div id="categoryBreakdownChart" class="mx-auto flex justify-center"></div>
+            <div class="mb-6 flex-1 flex items-center justify-center">
+                <div id="categoryBreakdownChart" class="mx-auto flex justify-center w-full"></div>
             </div>
 
             <div class="space-y-3">
@@ -171,87 +182,280 @@
     </div>
 </div>
 
-<!-- Top Products Table -->
-<div class="mt-8">
+<!-- Comprehensive Product Performance Table -->
+<div class="mb-8" id="product-performance-report">
     <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h3 class="text-xl font-bold text-stone-900 dark:text-white">Top Selling Products</h3>
-                <p class="text-sm text-stone-600 dark:text-gray-400">Best performing products this period</p>
+                <h3 class="text-xl font-bold text-stone-900 dark:text-white">Product Performance Report</h3>
+                <p class="text-sm text-stone-600 dark:text-gray-400">Comprehensive product analytics with all key metrics</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <form method="GET" action="{{ admin_route('analytics.products') }}" id="productReportFilterForm" class="flex items-center gap-2">
+                    <input type="hidden" name="start_date" value="{{ request('start_date', $startDate->format('Y-m-d')) }}">
+                    <input type="hidden" name="end_date" value="{{ request('end_date', $endDate->format('Y-m-d')) }}">
+                    <input type="hidden" name="sort_by" value="{{ $sortBy }}">
+                    <input type="hidden" name="sort_order" value="{{ $sortOrder }}">
+                    <select name="category" onchange="sessionStorage.setItem('scrollToProductReport', 'true'); this.form.action = this.form.action.split('#')[0] + '#product-performance-report'; this.form.submit();" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white">
+                        <option value="all" {{ ($categoryFilter ?? 'all') == 'all' ? 'selected' : '' }}>All Categories</option>
+                        @foreach($mainCategories as $category)
+                        <option value="{{ $category->id }}" {{ ($categoryFilter ?? 'all') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </form>
+                @if(($categoryFilter && $categoryFilter !== 'all') || ($sortBy != 'units_sold' || $sortOrder != 'desc'))
+                <a href="{{ admin_route('analytics.products', ['start_date' => request('start_date', $startDate->format('Y-m-d')), 'end_date' => request('end_date', $endDate->format('Y-m-d'))]) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-900 shadow-sm hover:bg-stone-50 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white dark:hover:bg-stone-700" title="Clear filters and sort">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                    Clear
+                </a>
+                @endif
             </div>
         </div>
 
-        <div class="overflow-hidden rounded-xl border border-stone-200/50 dark:border-strokedark/50">
-            <div class="grid grid-cols-6 rounded-t-xl bg-stone-50 dark:bg-stone-800/50">
-                <div class="p-4">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Product</h5>
+        <div class="overflow-x-auto">
+            <div class="overflow-y-auto" style="max-height: 600px;">
+                <table class="w-full text-sm">
+                    <thead class="sticky top-0 bg-stone-50 dark:bg-stone-800/50 z-10">
+                        <tr class="border-b border-stone-200 dark:border-strokedark">
+                            <th class="text-left p-4 font-semibold text-stone-700 dark:text-stone-300">Product</th>
+                            <th class="text-center p-4 font-semibold text-stone-700 dark:text-stone-300">SKU</th>
+                            <th class="text-center p-4 font-semibold text-stone-700 dark:text-stone-300">
+                                <div class="flex items-center justify-center gap-2">
+                                    Units Sold
+                                    <div class="flex flex-col">
+                                        <a href="{{ admin_route('analytics.products', array_merge(request()->all(), ['sort_by' => 'units_sold', 'sort_order' => $sortBy == 'units_sold' && $sortOrder == 'asc' ? 'desc' : 'asc'])) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 {{ $sortBy == 'units_sold' && $sortOrder == 'asc' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                            <i data-lucide="chevron-up" class="w-3 h-3"></i>
+                                        </a>
+                                        <a href="{{ admin_route('analytics.products', array_merge(request()->all(), ['sort_by' => 'units_sold', 'sort_order' => $sortBy == 'units_sold' && $sortOrder == 'desc' ? 'asc' : 'desc'])) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 {{ $sortBy == 'units_sold' && $sortOrder == 'desc' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                            <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </th>
+                            <th class="text-center p-4 font-semibold text-stone-700 dark:text-stone-300">
+                                <div class="flex items-center justify-center gap-2">
+                                    Revenue
+                                    <div class="flex flex-col">
+                                        <a href="{{ admin_route('analytics.products', array_merge(request()->all(), ['sort_by' => 'revenue', 'sort_order' => $sortBy == 'revenue' && $sortOrder == 'asc' ? 'desc' : 'asc'])) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 {{ $sortBy == 'revenue' && $sortOrder == 'asc' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                            <i data-lucide="chevron-up" class="w-3 h-3"></i>
+                                        </a>
+                                        <a href="{{ admin_route('analytics.products', array_merge(request()->all(), ['sort_by' => 'revenue', 'sort_order' => $sortBy == 'revenue' && $sortOrder == 'desc' ? 'asc' : 'desc'])) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 {{ $sortBy == 'revenue' && $sortOrder == 'desc' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                            <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                                        </a>
+                                    </div>
                 </div>
-                <div class="p-4 text-center">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">SKU</h5>
+                            </th>
+                            <th class="text-center p-4 font-semibold text-stone-700 dark:text-stone-300">
+                                <div class="flex items-center justify-center gap-2">
+                                    Profit Margin
+                                    <div class="flex flex-col">
+                                        <a href="{{ admin_route('analytics.products', array_merge(request()->all(), ['sort_by' => 'profit_margin', 'sort_order' => $sortBy == 'profit_margin' && $sortOrder == 'asc' ? 'desc' : 'asc'])) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 {{ $sortBy == 'profit_margin' && $sortOrder == 'asc' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                            <i data-lucide="chevron-up" class="w-3 h-3"></i>
+                                        </a>
+                                        <a href="{{ admin_route('analytics.products', array_merge(request()->all(), ['sort_by' => 'profit_margin', 'sort_order' => $sortBy == 'profit_margin' && $sortOrder == 'desc' ? 'asc' : 'desc'])) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 {{ $sortBy == 'profit_margin' && $sortOrder == 'desc' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                            <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                                        </a>
                 </div>
-                <div class="p-4 text-center">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Price</h5>
                 </div>
-                <div class="p-4 text-center">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Units Sold</h5>
+                            </th>
+                            <th class="text-center p-4 font-semibold text-stone-700 dark:text-stone-300">
+                                <div class="flex items-center justify-center gap-2">
+                                    Views
+                                    <div class="flex flex-col">
+                                        <a href="{{ admin_route('analytics.products', array_merge(request()->all(), ['sort_by' => 'views', 'sort_order' => $sortBy == 'views' && $sortOrder == 'asc' ? 'desc' : 'asc'])) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 {{ $sortBy == 'views' && $sortOrder == 'asc' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                            <i data-lucide="chevron-up" class="w-3 h-3"></i>
+                                        </a>
+                                        <a href="{{ admin_route('analytics.products', array_merge(request()->all(), ['sort_by' => 'views', 'sort_order' => $sortBy == 'views' && $sortOrder == 'desc' ? 'asc' : 'desc'])) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 {{ $sortBy == 'views' && $sortOrder == 'desc' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                            <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                                        </a>
                 </div>
-                <div class="p-4 text-center">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Revenue</h5>
                 </div>
-                <div class="p-4 text-center">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Performance</h5>
+                            </th>
+                            <th class="text-center p-4 font-semibold text-stone-700 dark:text-stone-300">
+                                <div class="flex items-center justify-center gap-2">
+                                    Conversion
+                                    <div class="flex flex-col">
+                                        <a href="{{ admin_route('analytics.products', array_merge(request()->all(), ['sort_by' => 'conversion_rate', 'sort_order' => $sortBy == 'conversion_rate' && $sortOrder == 'asc' ? 'desc' : 'asc'])) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 {{ $sortBy == 'conversion_rate' && $sortOrder == 'asc' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                            <i data-lucide="chevron-up" class="w-3 h-3"></i>
+                                        </a>
+                                        <a href="{{ admin_route('analytics.products', array_merge(request()->all(), ['sort_by' => 'conversion_rate', 'sort_order' => $sortBy == 'conversion_rate' && $sortOrder == 'desc' ? 'asc' : 'desc'])) }}#product-performance-report" onclick="sessionStorage.setItem('scrollToProductReport', 'true');" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 {{ $sortBy == 'conversion_rate' && $sortOrder == 'desc' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                            <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                                        </a>
                 </div>
             </div>
-
-            @forelse($topProducts as $product)
-            <div class="grid grid-cols-6 border-b border-stone-200/50 dark:border-strokedark/50 transition-colors duration-200 hover:bg-stone-50/50 dark:hover:bg-stone-800/20">
-                <div class="flex items-center gap-3 p-4">
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($productPerformanceData as $product)
+                        <tr class="border-b border-stone-100 dark:border-strokedark/50 transition-colors duration-200 hover:bg-stone-50/50 dark:hover:bg-stone-800/20">
+                            <td class="p-4">
+                                <div class="flex items-center gap-3">
                     <div class="h-10 w-10 rounded-lg bg-stone-100 flex items-center justify-center dark:bg-stone-800">
-                        @if($product->images && count($product->images) > 0)
-                            <img class="h-8 w-8 object-cover rounded" src="{{ Storage::url($product->images[0]) }}" alt="{{ $product->name }}" />
-                        @else
                             <i data-lucide="package" class="w-4 h-4 text-stone-400"></i>
-                        @endif
                     </div>
                     <div>
-                        <p class="font-semibold text-stone-900 dark:text-white">{{ $product->name }}</p>
-                        <p class="text-xs text-stone-500 dark:text-gray-400">{{ $product->category->name ?? 'Uncategorized' }}</p>
+                                        <p class="font-semibold text-stone-900 dark:text-white">{{ $product['name'] }}</p>
+                                        <p class="text-xs text-stone-500 dark:text-gray-400">{{ $product['category'] }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-4 text-center text-stone-900 dark:text-white">{{ $product['sku'] }}</td>
+                            <td class="p-4 text-center font-bold text-stone-900 dark:text-white">{{ number_format($product['units_sold']) }}</td>
+                            <td class="p-4 text-center font-bold text-emerald-600 dark:text-emerald-400">₱{{ number_format($product['revenue'], 2) }}</td>
+                            <td class="p-4 text-center">
+                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {{ $product['profit_margin'] >= 30 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' : ($product['profit_margin'] >= 20 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400') }}">
+                                    {{ number_format($product['profit_margin'], 1) }}%
+                                </span>
+                            </td>
+                            <td class="p-4 text-center text-stone-600 dark:text-gray-400">{{ number_format($product['views']) }}</td>
+                            <td class="p-4 text-center text-stone-600 dark:text-gray-400">{{ number_format($product['conversion_rate'], 2) }}%</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="p-8 text-center">
+                                <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4 dark:bg-stone-800">
+                                    <i data-lucide="package" class="w-6 h-6 text-stone-400"></i>
+                                </div>
+                                <p class="text-stone-500 dark:text-gray-400">No product data available</p>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-center p-4">
-                    <p class="text-sm font-medium text-stone-900 dark:text-white">{{ $product->sku }}</p>
+<!-- Rankings Section -->
+<div class="grid grid-cols-12 gap-6 mb-8">
+    <!-- Best Sellers -->
+    <div class="col-span-12 md:col-span-4">
+        <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-stone-900 dark:text-white">Best Sellers</h3>
+                    <p class="text-sm text-stone-600 dark:text-gray-400">Top performing products</p>
+                </div>
                 </div>
 
-                <div class="flex items-center justify-center p-4">
-                    <p class="font-bold text-stone-900 dark:text-white">₱{{ number_format($product->price, 2) }}</p>
+            <div class="space-y-3">
+                @forelse($bestSellers->take(5) as $index => $product)
+                <div class="flex items-center gap-3 p-3 rounded-xl border border-stone-200/50 transition-all duration-200 hover:border-emerald-200 hover:bg-emerald-50/50 dark:border-strokedark/50 dark:hover:border-emerald-800/50 dark:hover:bg-emerald-900/10">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 font-bold text-sm dark:bg-emerald-900/30 dark:text-emerald-400">
+                        {{ $index + 1 }}
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-stone-900 dark:text-white text-sm">{{ Str::limit($product->name, 30) }}</p>
+                        <p class="text-xs text-stone-500 dark:text-gray-400">{{ $product->total_sold ?? 0 }} sold</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-stone-900 dark:text-white text-sm">₱{{ number_format($product->total_revenue ?? 0, 2) }}</p>
+                    </div>
+                </div>
+                @empty
+                <p class="text-sm text-stone-500 dark:text-gray-400 text-center py-4">No data available</p>
+                @endforelse
+            </div>
+        </div>
                 </div>
 
-                <div class="flex items-center justify-center p-4">
-                    <p class="font-bold text-stone-900 dark:text-white">{{ number_format($product->total_sold) }}</p>
+    <!-- Worst Performers -->
+    <div class="col-span-12 md:col-span-4">
+        <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-stone-900 dark:text-white">Worst Performers</h3>
+                    <p class="text-sm text-stone-600 dark:text-gray-400">Products needing attention</p>
+                </div>
                 </div>
 
-                <div class="flex items-center justify-center p-4">
-                    <p class="font-bold text-emerald-600 dark:text-emerald-400">₱{{ number_format($product->total_revenue, 2) }}</p>
-                </div>
-
-                <div class="flex items-center justify-center p-4">
-                    <div class="flex items-center gap-2">
-                        <div class="h-2 w-16 bg-stone-200 rounded-full dark:bg-stone-700">
-                            <div class="h-2 bg-emerald-500 rounded-full" style="width: {{ min(100, ($product->total_revenue / $topProducts->first()->total_revenue) * 100) }}%"></div>
+            <div class="space-y-3">
+                @forelse($worstPerformers->take(5) as $index => $product)
+                <div class="flex items-center gap-3 p-3 rounded-xl border border-stone-200/50 transition-all duration-200 hover:border-red-200 hover:bg-red-50/50 dark:border-strokedark/50 dark:hover:border-red-800/50 dark:hover:bg-red-900/10">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 text-red-600 font-bold text-sm dark:bg-red-900/30 dark:text-red-400">
+                        {{ $index + 1 }}
                         </div>
-                        <span class="text-xs text-stone-500 dark:text-gray-400">{{ number_format(($product->total_revenue / $topProducts->first()->total_revenue) * 100, 1) }}%</span>
+                    <div class="flex-1">
+                        <p class="font-semibold text-stone-900 dark:text-white text-sm">{{ Str::limit($product->name, 30) }}</p>
+                        <p class="text-xs text-stone-500 dark:text-gray-400">{{ $product->total_sold ?? 0 }} sold</p>
                     </div>
+                    <div class="text-right">
+                        <p class="font-bold text-stone-900 dark:text-white text-sm">₱{{ number_format($product->total_revenue ?? 0, 2) }}</p>
                 </div>
             </div>
             @empty
-            <div class="p-8 text-center">
-                <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4 dark:bg-stone-800">
-                    <i data-lucide="package" class="w-6 h-6 text-stone-400"></i>
-                </div>
-                <p class="text-stone-500 dark:text-gray-400">No product data available</p>
+                <p class="text-sm text-stone-500 dark:text-gray-400 text-center py-4">No data available</p>
+                @endforelse
             </div>
+        </div>
+    </div>
+
+    <!-- Most Viewed -->
+    <div class="col-span-12 md:col-span-4">
+        <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-stone-900 dark:text-white">Most Viewed</h3>
+                    <p class="text-sm text-stone-600 dark:text-gray-400">Highest interest products</p>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                @forelse($mostViewed->take(5) as $index => $product)
+                <div class="flex items-center gap-3 p-3 rounded-xl border border-stone-200/50 transition-all duration-200 hover:border-blue-200 hover:bg-blue-50/50 dark:border-strokedark/50 dark:hover:border-blue-800/50 dark:hover:bg-blue-900/10">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 font-bold text-sm dark:bg-blue-900/30 dark:text-blue-400">
+                        {{ $index + 1 }}
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-stone-900 dark:text-white text-sm">{{ Str::limit($product->name, 30) }}</p>
+                        <p class="text-xs text-stone-500 dark:text-gray-400">{{ $product->view_count ?? 0 }} views</p>
+                </div>
+            </div>
+                @empty
+                <p class="text-sm text-stone-500 dark:text-gray-400 text-center py-4">No data available</p>
             @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stock Turnover Rate -->
+<div class="mb-8">
+    <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h3 class="text-xl font-bold text-stone-900 dark:text-white">Stock Turnover Rate</h3>
+                <p class="text-sm text-stone-600 dark:text-gray-400">Inventory efficiency metrics</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-6 rounded-xl bg-blue-50 dark:bg-blue-900/20">
+                <div class="mb-2 flex items-center gap-2">
+                    <i data-lucide="dollar-sign" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Cost of Goods Sold</p>
+                </div>
+                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">₱{{ number_format($stockTurnoverRate['cogs'] ?? 0, 2) }}</p>
+            </div>
+            
+            <div class="p-6 rounded-xl bg-emerald-50 dark:bg-emerald-900/20">
+                <div class="mb-2 flex items-center gap-2">
+                    <i data-lucide="package" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Average Inventory</p>
+                </div>
+                <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">₱{{ number_format($stockTurnoverRate['average_inventory'] ?? 0, 2) }}</p>
+            </div>
+            
+            <div class="p-6 rounded-xl bg-amber-50 dark:bg-amber-900/20">
+                <div class="mb-2 flex items-center gap-2">
+                    <i data-lucide="refresh-cw" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
+                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Turnover Rate</p>
+                </div>
+                <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ number_format($stockTurnoverRate['turnover_rate'] ?? 0, 2) }}x</p>
+                <p class="text-xs text-stone-500 dark:text-gray-400 mt-1">Times inventory turned over</p>
+            </div>
         </div>
     </div>
 </div>
@@ -268,13 +472,13 @@ const productPerformanceOptions = {
     }],
     chart: {
         type: 'bar',
-        height: 400,
+        height: '100%',
         fontFamily: 'Inter, sans-serif',
         toolbar: {
             show: false
         }
     },
-    colors: ['#10B981'],
+    colors: ['#3B82F6'],
     plotOptions: {
         bar: {
             borderRadius: 8,
@@ -293,14 +497,14 @@ const productPerformanceOptions = {
     yaxis: {
         labels: {
             formatter: function (val) {
-                return '$' + val.toLocaleString()
+                return '₱' + val.toLocaleString()
             }
         }
     },
     tooltip: {
         y: {
             formatter: function (val) {
-                return '$' + val.toLocaleString()
+                return '₱' + val.toLocaleString()
             }
         }
     },
@@ -314,15 +518,28 @@ const productPerformanceOptions = {
 };
 
 const productPerformanceChart = new ApexCharts(document.querySelector('#productPerformanceChart'), productPerformanceOptions);
+
+// Function to resize chart to fill container
+function resizeProductPerformanceChart() {
+    const container = document.querySelector('#productPerformanceChart').parentElement;
+    const height = container.offsetHeight;
+    if (height > 0) {
+        productPerformanceChart.updateOptions({ chart: { height: height } });
+    }
+}
+
 productPerformanceChart.render();
+setTimeout(resizeProductPerformanceChart, 100);
+setTimeout(resizeProductPerformanceChart, 500);
+window.addEventListener('resize', resizeProductPerformanceChart);
 
 // Category Breakdown Chart
 const categoryBreakdownOptions = {
     series: @json($categorySales->pluck('total_revenue')->toArray()),
     chart: {
         type: 'donut',
-        width: 300,
-        height: 300,
+        height: '100%',
+        fontFamily: 'Inter, sans-serif',
     },
     colors: @json($categorySales->pluck('color')->map(function($color) { return $color ?? '#3B82F6'; })->toArray()),
     labels: @json($categorySales->pluck('name')->toArray()),
@@ -343,6 +560,47 @@ const categoryBreakdownOptions = {
 };
 
 const categoryBreakdownChart = new ApexCharts(document.querySelector('#categoryBreakdownChart'), categoryBreakdownOptions);
+
+// Function to resize category chart to fill container
+function resizeCategoryBreakdownChart() {
+    const container = document.querySelector('#categoryBreakdownChart').parentElement;
+    const height = container.offsetHeight;
+    if (height > 0) {
+        const size = Math.min(height * 0.8, 300);
+        categoryBreakdownChart.updateOptions({ chart: { height: size } });
+    }
+}
+
 categoryBreakdownChart.render();
+setTimeout(resizeCategoryBreakdownChart, 100);
+setTimeout(resizeCategoryBreakdownChart, 500);
+window.addEventListener('resize', resizeCategoryBreakdownChart);
+
+// Scroll to product performance report when product performance filters/sort are changed (NOT date filter)
+(function() {
+    // Only scroll if the flag was set by Product Performance Report actions (category filter or sort)
+    // The date filter does NOT set this flag, so scrolling won't happen when only the date changes
+    const shouldScroll = sessionStorage.getItem('scrollToProductReport') === 'true';
+    
+    if (shouldScroll) {
+        // Wait for page to fully load and render
+        setTimeout(function() {
+            const element = document.getElementById('product-performance-report');
+            if (element) {
+                const offset = 100; // Offset from top
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - offset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+                
+                // Clear the flag
+                sessionStorage.removeItem('scrollToProductReport');
+            }
+        }, 300);
+    }
+})();
 </script>
 @endpush

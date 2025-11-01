@@ -270,6 +270,37 @@ Route::post('/cart/migrate', function (Request $request) {
 // Wishlist migration endpoint
 Route::post('/wishlist/migrate', [WishlistController::class, 'migrate'])->middleware('auth');
 
+// Track product view (for quick view modal)
+Route::post('/products/{id}/track-view', function ($id) {
+    try {
+        $product = \App\Models\Product::where('id', $id)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found',
+            ], 404);
+        }
+
+        // Increment view count
+        $product->increment('view_count');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'View tracked successfully',
+            'view_count' => $product->view_count,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error tracking view',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+});
+
 // Cleanup old guest carts (for testing/debugging)
 Route::post('/cart/cleanup', function (Request $request) {
     try {

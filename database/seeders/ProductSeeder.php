@@ -190,6 +190,9 @@ class ProductSeeder extends Seeder
         // Keep per-subcategory item counters to generate nn (item no.)
         $skuItemCounters = [];
 
+        // Track used product names to ensure uniqueness
+        $usedProductNames = [];
+
         // Distribute products across categories
         $productsPerCategory = ceil($targetCount / 6);
 
@@ -201,10 +204,39 @@ class ProductSeeder extends Seeder
                 $subcategoryId = $subcategoryIds[array_rand($subcategoryIds)];
                 $subcategoryData = $categoryData['subcategories'][$subcategoryId];
 
-                // Generate product name (similar to ProductRepopulationSeeder)
-                $prefix = $prefixes[($productCount) % count($prefixes)];
-                $material = $materials[($productCount) % count($materials)];
-                $productName = "{$prefix} {$material} {$subcategoryData['name']}";
+                // Generate unique product name
+                $attempts = 0;
+                $maxAttempts = 100;
+                do {
+                    // Use random selection instead of modulo to avoid predictable patterns
+                    $prefix = $prefixes[array_rand($prefixes)];
+                    $material = $materials[array_rand($materials)];
+                    $productName = "{$prefix} {$material} {$subcategoryData['name']}";
+                    $attempts++;
+
+                    // If we've tried many times and still duplicate, add a variant indicator
+                    if ($attempts > 50 && in_array($productName, $usedProductNames)) {
+                        $variantNumber = 1;
+                        $originalName = $productName;
+                        do {
+                            $productName = "{$prefix} {$material} {$subcategoryData['name']} ".($variantNumber > 1 ? "(Variant {$variantNumber})" : 'II');
+                            $variantNumber++;
+                        } while (in_array($productName, $usedProductNames) && $variantNumber < 10);
+                    }
+                } while (in_array($productName, $usedProductNames) && $attempts < $maxAttempts);
+
+                // Also check database for existing names (in case seeding multiple times)
+                if (Product::where('name', $productName)->exists()) {
+                    $counter = 1;
+                    $originalName = $productName;
+                    do {
+                        $productName = "{$originalName} (Set {$counter})";
+                        $counter++;
+                    } while (Product::where('name', $productName)->exists() && $counter < 100);
+                }
+
+                // Mark this name as used
+                $usedProductNames[] = $productName;
 
                 // Generate unique slug
                 $baseSlug = Str::slug($productName);
@@ -336,6 +368,9 @@ class ProductSeeder extends Seeder
                     'og_image' => $mainImage,
                 ];
 
+                // Generate random view count between 3,000 and 25,000
+                $viewCount = rand(3000, 25000);
+
                 Product::create([
                     'category_id' => $categoryId,
                     'subcategory_id' => $subcategoryId,
@@ -361,6 +396,7 @@ class ProductSeeder extends Seeder
                     'gallery' => $galleryImages,
                     'featured' => (rand(1, 100) <= 20), // 20% chance of being featured
                     'is_active' => true,
+                    'view_count' => $viewCount,
                     'sort_order' => $productCount + 1,
                     'meta_data' => $metaData,
                     'created_by' => 1, // Assuming admin user ID 1

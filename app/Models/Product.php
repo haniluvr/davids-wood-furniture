@@ -59,6 +59,7 @@ class Product extends Model
         'gallery',
         'featured',
         'is_active',
+        'view_count',
         'sort_order',
         'meta_data',
         'created_by',

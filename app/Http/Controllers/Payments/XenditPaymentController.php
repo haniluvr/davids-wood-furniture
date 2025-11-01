@@ -158,10 +158,12 @@ class XenditPaymentController extends Controller
         Log::info('Xendit returnSuccess called', ['order_number' => $orderNumber]);
 
         if ($orderNumber) {
-            $order = Order::where('order_number', $orderNumber)->first();
+            $order = Order::where('order_number', $orderNumber)->with('orderItems')->first();
             if ($order && $order->user_id === Auth::id()) {
                 // Reload order to get latest payment status from webhook (webhook may have already updated it)
                 $order->refresh();
+                // Reload orderItems relationship after refresh
+                $order->load('orderItems');
 
                 Log::info('Xendit returnSuccess: Order found', [
                     'order_number' => $order->order_number,
@@ -188,6 +190,29 @@ class XenditPaymentController extends Controller
                                     $order->payment_status = 'paid';
                                     $order->status = $order->status === 'pending' ? 'processing' : $order->status;
                                     $order->save();
+
+                                    // Decrement stock for all items in the order
+                                    try {
+                                        foreach ($order->orderItems as $orderItem) {
+                                            // Record inventory movement (this also decrements stock)
+                                            \App\Models\InventoryMovement::recordStockOut(
+                                                $orderItem->product_id,
+                                                $orderItem->quantity,
+                                                'order',
+                                                "Order #{$order->order_number} - Xendit payment confirmed",
+                                                'App\Models\Order',
+                                                $order->id,
+                                                $order->user_id
+                                            );
+                                        }
+                                        Log::info('Stock decremented for paid Xendit order (returnSuccess)', ['order_id' => $order->id]);
+                                    } catch (\Exception $e) {
+                                        Log::warning('Failed to decrement stock for Xendit order (returnSuccess)', [
+                                            'order_id' => $order->id,
+                                            'error' => $e->getMessage(),
+                                        ]);
+                                        // Don't fail the order if stock update fails
+                                    }
 
                                     // Clear only the cart items that were included in this order
                                     $this->clearOrderedCartItems($order);
@@ -322,7 +347,7 @@ class XenditPaymentController extends Controller
         ]);
 
         if ($externalId) {
-            $order = Order::where('order_number', $externalId)->first();
+            $order = Order::where('order_number', $externalId)->with('orderItems')->first();
             if ($order) {
                 $previousStatus = $order->payment_status;
 
@@ -335,6 +360,29 @@ class XenditPaymentController extends Controller
                         'previous_status' => $previousStatus,
                         'new_status' => 'paid',
                     ]);
+
+                    // Decrement stock for all items in the order
+                    try {
+                        foreach ($order->orderItems as $orderItem) {
+                            // Record inventory movement (this also decrements stock)
+                            \App\Models\InventoryMovement::recordStockOut(
+                                $orderItem->product_id,
+                                $orderItem->quantity,
+                                'order',
+                                "Order #{$order->order_number} - Xendit payment confirmed",
+                                'App\Models\Order',
+                                $order->id,
+                                $order->user_id
+                            );
+                        }
+                        Log::info('Stock decremented for paid Xendit order', ['order_id' => $order->id]);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to decrement stock for Xendit order', [
+                            'order_id' => $order->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                        // Don't fail the order if stock update fails
+                    }
 
                     // Clear only the cart items that were included in this order
                     $this->clearOrderedCartItems($order);

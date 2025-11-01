@@ -13,14 +13,25 @@
     </div>
 
     <div class="flex items-center gap-3">
-        <div class="text-right">
-            <p class="text-sm text-stone-500 dark:text-gray-400">Report Period</p>
-            <p class="text-sm font-medium text-stone-900 dark:text-white">{{ $startDate->format('M d') }} - {{ $endDate->format('M d, Y') }}</p>
-        </div>
-        <button class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">
+        <!-- Date Range Filter -->
+        <form method="GET" action="{{ admin_route('analytics.sales') }}" class="flex items-center gap-2">
+            <input type="date" name="start_date" value="{{ request('start_date', $startDate->format('Y-m-d')) }}" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white">
+            <span class="text-sm text-stone-600 dark:text-gray-400">to</span>
+            <input type="date" name="end_date" value="{{ request('end_date', $endDate->format('Y-m-d')) }}" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white">
+            <button type="submit" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-900 shadow-sm hover:bg-stone-50 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white dark:hover:bg-stone-700">
+                <i data-lucide="filter" class="w-4 h-4"></i>
+            </button>
+            @if(request('start_date') || request('end_date'))
+            <a href="{{ admin_route('analytics.sales') }}" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm font-medium text-stone-900 shadow-sm hover:bg-stone-50 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-stone-800 dark:border-stone-600 dark:text-white dark:hover:bg-stone-700" title="Clear date filter">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </a>
+            @endif
+        </form>
+        
+        <a href="{{ admin_route('analytics.export', ['type' => 'sales', 'start_date' => request('start_date', $startDate->format('Y-m-d')), 'end_date' => request('end_date', $endDate->format('Y-m-d'))]) }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">
             <i data-lucide="download" class="w-4 h-4"></i>
             Export
-        </button>
+        </a>
     </div>
 </div>
 <!-- Breadcrumb End -->
@@ -136,13 +147,13 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="inline-flex items-center rounded-xl bg-stone-100 p-1 dark:bg-stone-800">
-                        <button class="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-900 shadow-sm transition-all duration-200 hover:shadow-md dark:bg-stone-700 dark:text-white">
+                        <button id="period-day" class="period-toggle rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-900 shadow-sm transition-all duration-200 hover:shadow-md dark:bg-stone-700 dark:text-white active">
                             Day
                         </button>
-                        <button class="rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors duration-200 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white">
+                        <button id="period-week" class="period-toggle rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors duration-200 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white">
                             Week
                         </button>
-                        <button class="rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors duration-200 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white">
+                        <button id="period-month" class="period-toggle rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 transition-colors duration-200 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white">
                             Month
                         </button>
                     </div>
@@ -204,6 +215,162 @@
                     <p class="text-sm text-stone-500 dark:text-gray-400">No sales data available</p>
                 </div>
                 @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Charts Section -->
+<div class="grid grid-cols-12 gap-6 mb-8">
+    <!-- Sales by Category -->
+    <div class="col-span-12 xl:col-span-6">
+        <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-stone-900 dark:text-white">Sales by Product Category</h3>
+                    <p class="text-sm text-stone-600 dark:text-gray-400">Revenue breakdown by category</p>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div id="categorySalesChart" class="h-[300px] w-full"></div>
+            </div>
+
+            <div class="space-y-3">
+                @foreach($salesByCategory as $category)
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="h-3 w-3 rounded-full" style="background-color: {{ $category->color ?? '#3B82F6' }}"></div>
+                        <span class="text-sm font-medium text-stone-900 dark:text-white">{{ $category->name }}</span>
+                    </div>
+                    <span class="text-sm font-bold text-stone-900 dark:text-white">₱{{ number_format($category->total_revenue ?? 0, 2) }}</span>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    <!-- Discount Usage -->
+    <div class="col-span-12 xl:col-span-6">
+        <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-stone-900 dark:text-white">Discount Usage</h3>
+                    <p class="text-sm text-stone-600 dark:text-gray-400">Promotion and discount analysis</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20">
+                        <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Total Discounts</p>
+                        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">₱{{ number_format($discountUsage['total_discounts'] ?? 0, 2) }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20">
+                        <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Orders with Discount</p>
+                        <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($discountUsage['orders_with_discount'] ?? 0) }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20">
+                        <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Average Discount</p>
+                        <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">₱{{ number_format($discountUsage['average_discount'] ?? 0, 2) }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20">
+                        <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Discount Rate</p>
+                        <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                            @if(($discountUsage['total_orders'] ?? 0) > 0)
+                                {{ number_format((($discountUsage['orders_with_discount'] ?? 0) / $discountUsage['total_orders']) * 100, 1) }}%
+                            @else
+                                0%
+                            @endif
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Period Comparison -->
+<div class="mb-8">
+    <div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h3 class="text-xl font-bold text-stone-900 dark:text-white">Period Comparison</h3>
+                <p class="text-sm text-stone-600 dark:text-gray-400">Compare current period with previous periods</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <!-- Month over Month -->
+            <div class="rounded-xl border border-stone-200/50 bg-stone-50/50 p-6 dark:border-strokedark/50 dark:bg-stone-800/30">
+                <div class="mb-4 flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-5 h-5 text-stone-600 dark:text-gray-400"></i>
+                    <h4 class="text-lg font-bold text-stone-900 dark:text-white">Month over Month</h4>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-stone-600 dark:text-gray-400">Revenue</span>
+                            <span class="text-sm font-bold {{ ($periodComparison['mom']['revenue']['change'] ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                                {{ ($periodComparison['mom']['revenue']['change'] ?? 0) >= 0 ? '+' : '' }}{{ number_format($periodComparison['mom']['revenue']['change'] ?? 0, 1) }}%
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-stone-500 dark:text-gray-500">Current: ₱{{ number_format($periodComparison['mom']['revenue']['current'] ?? 0, 2) }}</span>
+                            <span class="text-xs text-stone-500 dark:text-gray-500">Previous: ₱{{ number_format($periodComparison['mom']['revenue']['previous'] ?? 0, 2) }}</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-stone-600 dark:text-gray-400">Orders</span>
+                            <span class="text-sm font-bold {{ ($periodComparison['mom']['orders']['change'] ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                                {{ ($periodComparison['mom']['orders']['change'] ?? 0) >= 0 ? '+' : '' }}{{ number_format($periodComparison['mom']['orders']['change'] ?? 0, 1) }}%
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-stone-500 dark:text-gray-500">Current: {{ number_format($periodComparison['mom']['orders']['current'] ?? 0) }}</span>
+                            <span class="text-xs text-stone-500 dark:text-gray-500">Previous: {{ number_format($periodComparison['mom']['orders']['previous'] ?? 0) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Year over Year -->
+            <div class="rounded-xl border border-stone-200/50 bg-stone-50/50 p-6 dark:border-strokedark/50 dark:bg-stone-800/30">
+                <div class="mb-4 flex items-center gap-2">
+                    <i data-lucide="calendar-days" class="w-5 h-5 text-stone-600 dark:text-gray-400"></i>
+                    <h4 class="text-lg font-bold text-stone-900 dark:text-white">Year over Year</h4>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-stone-600 dark:text-gray-400">Revenue</span>
+                            <span class="text-sm font-bold {{ ($periodComparison['yoy']['revenue']['change'] ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                                {{ ($periodComparison['yoy']['revenue']['change'] ?? 0) >= 0 ? '+' : '' }}{{ number_format($periodComparison['yoy']['revenue']['change'] ?? 0, 1) }}%
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-stone-500 dark:text-gray-500">Current: ₱{{ number_format($periodComparison['yoy']['revenue']['current'] ?? 0, 2) }}</span>
+                            <span class="text-xs text-stone-500 dark:text-gray-500">Previous: ₱{{ number_format($periodComparison['yoy']['revenue']['previous'] ?? 0, 2) }}</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-stone-600 dark:text-gray-400">Orders</span>
+                            <span class="text-sm font-bold {{ ($periodComparison['yoy']['orders']['change'] ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                                {{ ($periodComparison['yoy']['orders']['change'] ?? 0) >= 0 ? '+' : '' }}{{ number_format($periodComparison['yoy']['orders']['change'] ?? 0, 1) }}%
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-stone-500 dark:text-gray-500">Current: {{ number_format($periodComparison['yoy']['orders']['current'] ?? 0) }}</span>
+                            <span class="text-xs text-stone-500 dark:text-gray-500">Previous: {{ number_format($periodComparison['yoy']['orders']['previous'] ?? 0) }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -276,7 +443,116 @@ const salesTrendOptions = {
     }
 };
 
-const salesTrendChart = new ApexCharts(document.querySelector('#salesTrendChart'), salesTrendOptions);
+let salesTrendChart = new ApexCharts(document.querySelector('#salesTrendChart'), salesTrendOptions);
 salesTrendChart.render();
+
+// Period toggle functionality
+let currentPeriod = 'day';
+@php
+    // Generate weekly labels
+    $weeklyLabels = [];
+    $current = $startDate->copy()->startOfWeek();
+    while ($current->lte($endDate)) {
+        $weekEnd = $current->copy()->endOfWeek();
+        if ($weekEnd->gt($endDate)) {
+            $weekEnd = $endDate->copy();
+        }
+        $weeklyLabels[] = $current->format('M d') . ' - ' . $weekEnd->format('M d');
+        $current->addWeek();
+    }
+
+    // Generate monthly labels
+    $monthlyLabels = [];
+    $current = $startDate->copy()->startOfMonth();
+    while ($current->lte($endDate)) {
+        $monthEnd = $current->copy()->endOfMonth();
+        if ($monthEnd->gt($endDate)) {
+            $monthEnd = $endDate->copy();
+        }
+        $monthlyLabels[] = $current->format('M Y');
+        $current->addMonth();
+    }
+@endphp
+const periodData = {
+    day: {
+        labels: @json($chartLabels),
+        revenue: @json($dailyRevenue),
+        orders: @json($dailyOrders)
+    },
+    week: {
+        labels: @json($weeklyLabels),
+        revenue: @json($weeklyRevenue ?? []),
+        orders: []
+    },
+    month: {
+        labels: @json($monthlyLabels),
+        revenue: @json($monthlyRevenue ?? []),
+        orders: []
+    }
+};
+
+document.querySelectorAll('.period-toggle').forEach(button => {
+    button.addEventListener('click', function() {
+        const period = this.id.replace('period-', '');
+        currentPeriod = period;
+        
+        // Update button states
+        document.querySelectorAll('.period-toggle').forEach(btn => {
+            btn.classList.remove('bg-white', 'text-stone-900', 'shadow-sm', 'dark:bg-stone-700', 'dark:text-white', 'active');
+            btn.classList.add('text-stone-600', 'dark:text-stone-400');
+        });
+        this.classList.add('bg-white', 'text-stone-900', 'shadow-sm', 'dark:bg-stone-700', 'dark:text-white', 'active');
+        this.classList.remove('text-stone-600', 'dark:text-stone-400');
+        
+        // Update chart
+        const data = periodData[period];
+        salesTrendChart.updateOptions({
+            xaxis: { categories: data.labels },
+            series: [{
+                name: 'Revenue',
+                data: data.revenue
+            }, {
+                name: 'Orders',
+                data: data.orders.length > 0 ? data.orders : []
+            }]
+        });
+    });
+});
+
+// Category Sales Chart
+const categorySalesOptions = {
+    series: @json($salesByCategory->pluck('total_revenue')->map(function($val) { return (float) ($val ?? 0); })->toArray()),
+    chart: {
+        type: 'donut',
+        height: 300,
+        fontFamily: 'Inter, sans-serif',
+    },
+    colors: @json($salesByCategory->pluck('color')->map(function($color) { return $color ?? '#3B82F6'; })->toArray()),
+    labels: @json($salesByCategory->pluck('name')->toArray()),
+    legend: {
+        show: false,
+    },
+    plotOptions: {
+        pie: {
+            donut: {
+                size: '70%',
+                background: 'transparent',
+            },
+        },
+    },
+    dataLabels: {
+        enabled: false,
+    },
+    tooltip: {
+        y: {
+            formatter: function (val) {
+                return '₱' + val.toLocaleString()
+            }
+        }
+    },
+};
+
+const categorySalesChart = new ApexCharts(document.querySelector('#categorySalesChart'), categorySalesOptions);
+categorySalesChart.render();
 </script>
 @endpush

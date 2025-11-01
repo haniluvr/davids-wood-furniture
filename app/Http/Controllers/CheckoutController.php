@@ -483,7 +483,7 @@ class CheckoutController extends Controller
             // Store as JSON in admin_notes so we can retrieve them later when payment is confirmed
             $orderedCartItemIds = [];
 
-            // Create order items
+            // Create order items and decrement stock
             foreach ($cartItems as $cartItem) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -496,6 +496,30 @@ class CheckoutController extends Controller
                 ]);
                 // Track which cart items were included in this order
                 $orderedCartItemIds[] = $cartItem->id;
+
+                // Decrement stock immediately for COD orders (payment is confirmed)
+                // For Xendit orders, stock will be decremented when payment is confirmed via webhook
+                if (($paymentInfo['payment_method'] ?? 'cod') === 'cod') {
+                    try {
+                        // Record inventory movement (this also decrements stock)
+                        \App\Models\InventoryMovement::recordStockOut(
+                            $cartItem->product_id,
+                            $cartItem->quantity,
+                            'order',
+                            "Order #{$order->order_number} - COD payment confirmed",
+                            'App\Models\Order',
+                            $order->id,
+                            $user->id
+                        );
+                    } catch (\Exception $e) {
+                        \Log::warning('Failed to decrement stock for COD order', [
+                            'order_id' => $order->id,
+                            'product_id' => $cartItem->product_id,
+                            'error' => $e->getMessage(),
+                        ]);
+                        // Don't fail the order if stock update fails
+                    }
+                }
             }
 
             // Store ordered cart item IDs in order for later cart clearing

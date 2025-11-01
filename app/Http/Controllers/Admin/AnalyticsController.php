@@ -35,6 +35,7 @@ class AnalyticsController extends Controller
         $orderStats = $this->getOrderStats($startDate, $endDate);
         $productStats = $this->getProductStats($startDate, $endDate);
         $customerStats = $this->getCustomerStats($startDate, $endDate);
+        $topProducts = $this->getTopProducts($startDate, $endDate);
 
         // Enhanced metrics
         $conversionMetrics = $this->getConversionMetrics($startDate, $endDate);
@@ -49,6 +50,7 @@ class AnalyticsController extends Controller
             'orderStats',
             'productStats',
             'customerStats',
+            'topProducts',
             'conversionMetrics',
             'trafficSources',
             'geographicData',
@@ -66,8 +68,12 @@ class AnalyticsController extends Controller
     public function sales(Request $request)
     {
         $dateRange = $request->get('date_range', '30');
-        $startDate = Carbon::now()->subDays($dateRange);
-        $endDate = Carbon::now();
+        $startDate = $request->get('start_date') ? Carbon::parse($request->get('start_date')) : Carbon::now()->subDays($dateRange);
+        $endDate = $request->get('end_date') ? Carbon::parse($request->get('end_date')) : Carbon::now();
+
+        if ($endDate->isFuture()) {
+            $endDate = Carbon::now();
+        }
 
         // Get all required data
         $salesData = $this->getSalesData($startDate, $endDate);
@@ -78,12 +84,18 @@ class AnalyticsController extends Controller
 
         // Calculate metrics for the view
         $totalSales = $orderStats['total_orders'] ?? 0;
-        $totalRevenue = $revenueData['total_revenue'] ?? 0;
-        $averageOrderValue = $totalSales > 0 ? $totalRevenue / $totalSales : 0;
+        $totalRevenue = $salesData['total_revenue'] ?? 0;
+        $averageOrderValue = $salesData['average_order_value'] ?? 0;
         $conversionRate = $this->calculateConversionRate($startDate, $endDate);
+
+        // Period comparison
+        $periodComparison = $this->getPeriodComparison($startDate, $endDate);
+        $discountUsage = $this->getDiscountUsage($startDate, $endDate);
 
         // Generate chart data
         $dailyRevenue = $this->generateDailyRevenueData($startDate, $endDate);
+        $weeklyRevenue = $this->generateWeeklyRevenueData($startDate, $endDate);
+        $monthlyRevenue = $this->generateMonthlyRevenueData($startDate, $endDate);
         $dailyOrders = $this->generateDailyOrdersData($startDate, $endDate);
         $chartLabels = $this->generateChartLabels($startDate, $endDate);
 
@@ -100,8 +112,12 @@ class AnalyticsController extends Controller
             'averageOrderValue',
             'conversionRate',
             'dailyRevenue',
+            'weeklyRevenue',
+            'monthlyRevenue',
             'dailyOrders',
-            'chartLabels'
+            'chartLabels',
+            'periodComparison',
+            'discountUsage'
         ));
     }
 
@@ -111,13 +127,21 @@ class AnalyticsController extends Controller
     public function customers(Request $request)
     {
         $dateRange = $request->get('date_range', '30');
-        $startDate = Carbon::now()->subDays($dateRange);
-        $endDate = Carbon::now();
+        $startDate = $request->get('start_date') ? Carbon::parse($request->get('start_date')) : Carbon::now()->subDays($dateRange);
+        $endDate = $request->get('end_date') ? Carbon::parse($request->get('end_date')) : Carbon::now();
+
+        if ($endDate->isFuture()) {
+            $endDate = Carbon::now();
+        }
 
         $customerStats = $this->getCustomerStats($startDate, $endDate);
         $newCustomers = $this->getNewCustomers($startDate, $endDate);
         $topCustomers = $this->getTopCustomers($startDate, $endDate);
         $customerSegments = $this->getCustomerSegments();
+        $newVsReturning = $this->getNewVsReturningCustomers($startDate, $endDate);
+        $clvData = $this->getCustomerLifetimeValueData();
+        $geographicData = $this->getGeographicData($startDate, $endDate);
+        $cohortAnalysis = $this->getCohortAnalysis();
 
         // Calculate metrics for the view
         $totalCustomers = User::count();
@@ -129,10 +153,8 @@ class AnalyticsController extends Controller
         $dailyNewCustomers = $this->generateDailyNewCustomersData($startDate, $endDate);
         $chartLabels = $this->generateChartLabels($startDate, $endDate);
 
-        // Customer segments
-        $highValueCustomers = 25; // Placeholder
-        $mediumValueCustomers = 45; // Placeholder
-        $lowValueCustomers = 30; // Placeholder
+        // Customer segments - calculate from actual data
+        $customerSegmentsCalculated = $this->calculateCustomerSegments();
 
         return view('admin.analytics.customers', compact(
             'customerStats',
@@ -148,9 +170,11 @@ class AnalyticsController extends Controller
             'repeatPurchaseRate',
             'dailyNewCustomers',
             'chartLabels',
-            'highValueCustomers',
-            'mediumValueCustomers',
-            'lowValueCustomers'
+            'newVsReturning',
+            'clvData',
+            'geographicData',
+            'cohortAnalysis',
+            'customerSegmentsCalculated'
         ));
     }
 
@@ -160,8 +184,12 @@ class AnalyticsController extends Controller
     public function products(Request $request)
     {
         $dateRange = $request->get('date_range', '30');
-        $startDate = Carbon::now()->subDays($dateRange);
-        $endDate = Carbon::now();
+        $startDate = $request->get('start_date') ? Carbon::parse($request->get('start_date')) : Carbon::now()->subDays($dateRange);
+        $endDate = $request->get('end_date') ? Carbon::parse($request->get('end_date')) : Carbon::now();
+
+        if ($endDate->isFuture()) {
+            $endDate = Carbon::now();
+        }
 
         $productStats = $this->getProductStats();
         $topProducts = $this->getTopProducts($startDate, $endDate);
@@ -185,6 +213,21 @@ class AnalyticsController extends Controller
         // Category sales data
         $categorySales = $this->getSalesByCategory($startDate, $endDate);
 
+        // Get main categories for filter
+        $mainCategories = Category::whereNull('parent_id')->where('is_active', true)->orderBy('sort_order')->get();
+
+        // Get filter and sort parameters
+        $categoryFilter = $request->get('category');
+        $sortBy = $request->get('sort_by', 'units_sold');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        // Enhanced product data with all metrics
+        $productPerformanceData = $this->getProductPerformanceData($startDate, $endDate, $categoryFilter, $sortBy, $sortOrder);
+        $bestSellers = $this->getBestSellers($startDate, $endDate);
+        $worstPerformers = $this->getWorstPerformers($startDate, $endDate);
+        $mostViewed = $this->getMostViewedProducts($startDate, $endDate);
+        $stockTurnoverRate = $this->calculateStockTurnoverRate($startDate, $endDate);
+
         return view('admin.analytics.products', compact(
             'productStats',
             'topProducts',
@@ -197,7 +240,16 @@ class AnalyticsController extends Controller
             'totalUnitsSold',
             'totalProductRevenue',
             'averageProductPrice',
-            'categorySales'
+            'categorySales',
+            'productPerformanceData',
+            'bestSellers',
+            'worstPerformers',
+            'mostViewed',
+            'stockTurnoverRate',
+            'mainCategories',
+            'categoryFilter',
+            'sortBy',
+            'sortOrder'
         ));
     }
 
@@ -207,8 +259,12 @@ class AnalyticsController extends Controller
     public function revenue(Request $request)
     {
         $dateRange = $request->get('date_range', '30');
-        $startDate = Carbon::now()->subDays($dateRange);
-        $endDate = Carbon::now();
+        $startDate = $request->get('start_date') ? Carbon::parse($request->get('start_date')) : Carbon::now()->subDays($dateRange);
+        $endDate = $request->get('end_date') ? Carbon::parse($request->get('end_date')) : Carbon::now();
+
+        if ($endDate->isFuture()) {
+            $endDate = Carbon::now();
+        }
 
         $revenueData = $this->getRevenueData($startDate, $endDate);
         $revenueByMonth = $this->getRevenueByMonth();
@@ -216,19 +272,25 @@ class AnalyticsController extends Controller
         $averageOrderValue = $this->getAverageOrderValue($startDate, $endDate);
 
         // Calculate metrics for the view
-        $totalRevenue = $revenueData['total_revenue'] ?? 0;
+        $grossNetRevenue = $this->getGrossNetRevenue($startDate, $endDate);
+        $totalRevenue = $grossNetRevenue['net_revenue'] ?? 0;
         $revenueGrowth = $this->calculateRevenueGrowth($startDate, $endDate);
         $revenuePerCustomer = $this->calculateRevenuePerCustomer($startDate, $endDate);
+        $revenueByChannel = $this->getRevenueByChannel($startDate, $endDate);
+        $taxCollected = $this->getTaxCollected($startDate, $endDate);
+        $profitability = $this->getProfitabilityAnalysis($startDate, $endDate);
 
         // Generate chart data
         $dailyRevenue = $this->generateDailyRevenueData($startDate, $endDate);
+        $weeklyRevenue = $this->generateWeeklyRevenueData($startDate, $endDate);
+        $monthlyRevenue = $this->generateMonthlyRevenueData($startDate, $endDate);
         $chartLabels = $this->generateChartLabels($startDate, $endDate);
 
         // Revenue by category
         $revenueByCategory = $this->getSalesByCategory($startDate, $endDate);
 
         // Previous period comparison
-        $previousStartDate = $startDate->copy()->subDays($dateRange);
+        $previousStartDate = $startDate->copy()->subDays($startDate->diffInDays($endDate));
         $previousEndDate = $startDate->copy();
         $previousPeriodRevenue = Order::whereBetween('created_at', [$previousStartDate, $previousEndDate])
             ->where('status', '!=', 'cancelled')
@@ -247,12 +309,18 @@ class AnalyticsController extends Controller
             'revenueGrowth',
             'revenuePerCustomer',
             'dailyRevenue',
+            'weeklyRevenue',
+            'monthlyRevenue',
             'chartLabels',
             'revenueByCategory',
             'previousStartDate',
             'previousEndDate',
             'previousPeriodRevenue',
-            'currentPeriodRevenue'
+            'currentPeriodRevenue',
+            'grossNetRevenue',
+            'revenueByChannel',
+            'taxCollected',
+            'profitability'
         ));
     }
 
@@ -262,9 +330,21 @@ class AnalyticsController extends Controller
     public function export(Request $request)
     {
         $type = $request->get('type', 'sales');
-        $dateRange = $request->get('date_range', '30');
-        $startDate = Carbon::now()->subDays($dateRange);
-        $endDate = Carbon::now();
+
+        // Handle custom date range from date picker
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = Carbon::parse($request->get('start_date'));
+            $endDate = Carbon::parse($request->get('end_date'));
+        } else {
+            $dateRange = $request->get('date_range', '30');
+            $startDate = Carbon::now()->subDays($dateRange);
+            $endDate = Carbon::now();
+        }
+
+        // Ensure end date is not in the future
+        if ($endDate->isFuture()) {
+            $endDate = Carbon::now();
+        }
 
         $filename = $type.'-analytics-'.now()->format('Y-m-d-H-i-s').'.csv';
 
@@ -290,7 +370,7 @@ class AnalyticsController extends Controller
 
                     break;
                 case 'revenue':
-                    $this->exportRevenueData($file, $startDate, $endDate);
+                    $this->exportAllRevenueData($file, $startDate, $endDate);
 
                     break;
             }
@@ -319,6 +399,10 @@ class AnalyticsController extends Controller
 
     private function getRevenueData($startDate, $endDate)
     {
+        $totalRevenue = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount');
+
         $revenue = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
             ->selectRaw('DATE(created_at) as date, SUM(total_amount) as revenue')
@@ -326,12 +410,18 @@ class AnalyticsController extends Controller
             ->orderBy('date')
             ->get();
 
-        return $revenue->pluck('revenue', 'date');
+        return [
+            'total_revenue' => $totalRevenue,
+            'by_date' => $revenue->pluck('revenue', 'date'),
+        ];
     }
 
     private function getOrderStats($startDate, $endDate)
     {
+        $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])->count();
+
         return [
+            'total_orders' => $totalOrders,
             'pending' => Order::whereBetween('created_at', [$startDate, $endDate])->where('status', 'pending')->count(),
             'processing' => Order::whereBetween('created_at', [$startDate, $endDate])->where('status', 'processing')->count(),
             'shipped' => Order::whereBetween('created_at', [$startDate, $endDate])->where('status', 'shipped')->count(),
@@ -340,7 +430,7 @@ class AnalyticsController extends Controller
         ];
     }
 
-    private function getProductStats()
+    private function getProductStats($startDate = null, $endDate = null)
     {
         return [
             'total_products' => Product::count(),
@@ -385,14 +475,42 @@ class AnalyticsController extends Controller
 
     private function getSalesByCategory($startDate, $endDate)
     {
-        return Category::withCount(['products as total_sold' => function ($query) use ($startDate, $endDate) {
-            $query->whereHas('orderItems.order', function ($orderQuery) use ($startDate, $endDate) {
-                $orderQuery->whereBetween('created_at', [$startDate, $endDate])
-                    ->where('status', '!=', 'cancelled');
-            });
-        }])
-            ->orderBy('total_sold', 'desc')
-            ->get();
+        // Only get main categories (parent_id is null)
+        $categories = Category::whereNull('parent_id')
+            ->with(['products' => function ($query) use ($startDate, $endDate) {
+                $query->withCount(['orderItems as total_sold' => function ($q) use ($startDate, $endDate) {
+                    $q->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
+                        $orderQuery->whereBetween('created_at', [$startDate, $endDate])
+                            ->where('status', '!=', 'cancelled');
+                    });
+                }])
+                    ->withSum(['orderItems as total_revenue' => function ($q) use ($startDate, $endDate) {
+                        $q->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
+                            $orderQuery->whereBetween('created_at', [$startDate, $endDate])
+                                ->where('status', '!=', 'cancelled');
+                        });
+                    }], 'total_price');
+            }])->get();
+
+        return $categories->map(function ($category) {
+            $totalSold = $category->products->sum('total_sold');
+            $totalRevenue = $category->products->sum('total_revenue');
+
+            return (object) [
+                'id' => $category->id,
+                'name' => $category->name,
+                'total_sold' => $totalSold,
+                'total_revenue' => $totalRevenue ?? 0,
+                'color' => $this->getCategoryColor($category->id),
+            ];
+        })->sortByDesc('total_revenue')->take(6)->values();
+    }
+
+    private function getCategoryColor($categoryId)
+    {
+        $colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
+
+        return $colors[$categoryId % count($colors)];
     }
 
     private function getNewCustomers($startDate, $endDate)
@@ -473,14 +591,6 @@ class AnalyticsController extends Controller
         return Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
             ->avg('total_amount');
-    }
-
-    private function calculateConversionRate($startDate, $endDate)
-    {
-        $totalVisitors = 1000; // This would come from analytics service
-        $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])->count();
-
-        return $totalVisitors > 0 ? ($totalOrders / $totalVisitors) * 100 : 0;
     }
 
     private function exportSalesData($file, $startDate, $endDate)
@@ -568,13 +678,87 @@ class AnalyticsController extends Controller
             ->get();
 
         foreach ($revenueData as $data) {
+            // Format date as mm-dd-yyyy string for Excel compatibility
+            $dateValue = $data->date;
+            if ($dateValue instanceof \Carbon\Carbon) {
+                $formattedDate = $dateValue->format('m-d-Y');
+            } elseif (is_string($dateValue)) {
+                // Parse and format as m-d-Y for Excel compatibility
+                $formattedDate = Carbon::parse($dateValue)->format('m-d-Y');
+            } else {
+                $formattedDate = Carbon::parse($dateValue)->format('m-d-Y');
+            }
+
             fputcsv($file, [
-                $data->date,
-                $data->revenue,
-                $data->orders,
-                $data->avg_order_value,
+                $formattedDate,
+                round($data->revenue ?? 0, 2),
+                $data->orders ?? 0,
+                round($data->avg_order_value ?? 0, 2),
             ]);
         }
+    }
+
+    /**
+     * Export all comprehensive revenue data for the period.
+     */
+    private function exportAllRevenueData($file, $startDate, $endDate)
+    {
+        // Summary Section
+        fputcsv($file, ['REVENUE ANALYTICS SUMMARY']);
+        fputcsv($file, ['Period', $startDate->format('Y-m-d').' to '.$endDate->format('Y-m-d')]);
+        fputcsv($file, []);
+
+        $grossNetRevenue = $this->getGrossNetRevenue($startDate, $endDate);
+        $revenueByChannel = $this->getRevenueByChannel($startDate, $endDate);
+        $taxCollected = $this->getTaxCollected($startDate, $endDate);
+        $profitability = $this->getProfitabilityAnalysis($startDate, $endDate);
+
+        fputcsv($file, ['Gross Revenue', round($grossNetRevenue['gross_revenue'] ?? 0, 2)]);
+        fputcsv($file, ['Discounts', round($grossNetRevenue['discounts'] ?? 0, 2)]);
+        fputcsv($file, ['Refunds', round($grossNetRevenue['refunds'] ?? 0, 2)]);
+        fputcsv($file, ['Net Revenue', round($grossNetRevenue['net_revenue'] ?? 0, 2)]);
+        fputcsv($file, ['Tax Collected', round($taxCollected ?? 0, 2)]);
+        fputcsv($file, ['Total Cost', round($profitability['total_cost'] ?? 0, 2)]);
+        fputcsv($file, ['Net Profit', round($profitability['total_profit'] ?? 0, 2)]);
+        fputcsv($file, ['Profit Margin', round($profitability['profit_margin'] ?? 0, 2).'%']);
+        fputcsv($file, []);
+
+        // Revenue by Channel
+        fputcsv($file, ['REVENUE BY CHANNEL']);
+        fputcsv($file, ['Channel', 'Revenue', 'Percentage']);
+        fputcsv($file, ['Online', round($revenueByChannel['online'] ?? 0, 2), round($revenueByChannel['online_percentage'] ?? 0, 2).'%']);
+        fputcsv($file, ['Phone', round($revenueByChannel['phone'] ?? 0, 2), round($revenueByChannel['phone_percentage'] ?? 0, 2).'%']);
+        fputcsv($file, ['Wholesale', round($revenueByChannel['wholesale'] ?? 0, 2), round($revenueByChannel['wholesale_percentage'] ?? 0, 2).'%']);
+        fputcsv($file, []);
+
+        // Revenue by Payment Method
+        fputcsv($file, ['REVENUE BY PAYMENT METHOD']);
+        fputcsv($file, ['Payment Method', 'Revenue']);
+        $revenueByPaymentMethod = $this->getRevenueByPaymentMethod($startDate, $endDate);
+        foreach ($revenueByPaymentMethod as $method) {
+            fputcsv($file, [
+                ucfirst(str_replace('_', ' ', $method->payment_method ?? 'Unknown')),
+                round($method->revenue ?? 0, 2),
+            ]);
+        }
+        fputcsv($file, []);
+
+        // Revenue by Category
+        fputcsv($file, ['REVENUE BY CATEGORY']);
+        fputcsv($file, ['Category', 'Revenue', 'Units Sold']);
+        $revenueByCategory = $this->getSalesByCategory($startDate, $endDate);
+        foreach ($revenueByCategory as $category) {
+            fputcsv($file, [
+                $category->name,
+                round($category->total_revenue ?? 0, 2),
+                $category->total_sold ?? 0,
+            ]);
+        }
+        fputcsv($file, []);
+
+        // Daily Revenue Breakdown
+        fputcsv($file, ['DAILY REVENUE BREAKDOWN']);
+        $this->exportRevenueData($file, $startDate, $endDate);
     }
 
     /**
@@ -731,11 +915,44 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Get traffic sources (simulated - would integrate with analytics service).
+     * Get traffic sources (inferred from order patterns and user registration).
      */
     private function getTrafficSources($startDate, $endDate)
     {
-        // This would typically come from Google Analytics or similar
+        // Infer from user registration patterns and order metadata
+        $totalUsers = User::whereBetween('created_at', [$startDate, $endDate])->count();
+
+        // Direct traffic: users who registered and placed order same day
+        $directUsers = User::whereBetween('created_at', [$startDate, $endDate])
+            ->whereHas('orders', function ($query) {
+                $query->whereRaw('DATE(users.created_at) = DATE(orders.created_at)');
+            })
+            ->count();
+
+        // Social media: users with specific patterns (can be enhanced with tracking)
+        $socialUsers = User::whereBetween('created_at', [$startDate, $endDate])
+            ->whereNotNull('avatar')
+            ->count();
+
+        // Email marketing: users with newsletter subscribed
+        $emailUsers = User::whereBetween('created_at', [$startDate, $endDate])
+            ->where('newsletter_subscribed', true)
+            ->count();
+
+        // Organic search: remainder
+        $organicUsers = max(0, $totalUsers - $directUsers - $socialUsers - $emailUsers);
+
+        if ($totalUsers > 0) {
+            return [
+                'organic_search' => ($organicUsers / $totalUsers) * 100,
+                'direct_traffic' => ($directUsers / $totalUsers) * 100,
+                'social_media' => ($socialUsers / $totalUsers) * 100,
+                'email_marketing' => ($emailUsers / $totalUsers) * 100,
+                'paid_search' => max(0, 100 - (($organicUsers + $directUsers + $socialUsers + $emailUsers) / $totalUsers) * 100),
+            ];
+        }
+
+        // Default fallback
         return [
             'organic_search' => 45.2,
             'direct_traffic' => 28.7,
@@ -933,5 +1150,540 @@ class AnalyticsController extends Controller
                 ];
             }),
         ]);
+    }
+
+    /**
+     * Get period comparison data (MoM, YoY).
+     */
+    private function getPeriodComparison($startDate, $endDate)
+    {
+        $currentRevenue = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount');
+
+        $currentOrders = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->count();
+
+        $periodDays = $startDate->diffInDays($endDate);
+
+        // Month over Month
+        $previousMonthStart = $startDate->copy()->subMonth();
+        $previousMonthEnd = $endDate->copy()->subMonth();
+        $previousMonthRevenue = Order::whereBetween('created_at', [$previousMonthStart, $previousMonthEnd])
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount');
+        $previousMonthOrders = Order::whereBetween('created_at', [$previousMonthStart, $previousMonthEnd])
+            ->where('status', '!=', 'cancelled')
+            ->count();
+
+        // Year over Year
+        $previousYearStart = $startDate->copy()->subYear();
+        $previousYearEnd = $endDate->copy()->subYear();
+        $previousYearRevenue = Order::whereBetween('created_at', [$previousYearStart, $previousYearEnd])
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount');
+        $previousYearOrders = Order::whereBetween('created_at', [$previousYearStart, $previousYearEnd])
+            ->where('status', '!=', 'cancelled')
+            ->count();
+
+        return [
+            'mom' => [
+                'revenue' => [
+                    'current' => $currentRevenue,
+                    'previous' => $previousMonthRevenue,
+                    'change' => $previousMonthRevenue > 0 ? (($currentRevenue - $previousMonthRevenue) / $previousMonthRevenue) * 100 : 0,
+                ],
+                'orders' => [
+                    'current' => $currentOrders,
+                    'previous' => $previousMonthOrders,
+                    'change' => $previousMonthOrders > 0 ? (($currentOrders - $previousMonthOrders) / $previousMonthOrders) * 100 : 0,
+                ],
+            ],
+            'yoy' => [
+                'revenue' => [
+                    'current' => $currentRevenue,
+                    'previous' => $previousYearRevenue,
+                    'change' => $previousYearRevenue > 0 ? (($currentRevenue - $previousYearRevenue) / $previousYearRevenue) * 100 : 0,
+                ],
+                'orders' => [
+                    'current' => $currentOrders,
+                    'previous' => $previousYearOrders,
+                    'change' => $previousYearOrders > 0 ? (($currentOrders - $previousYearOrders) / $previousYearOrders) * 100 : 0,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Get discount usage statistics.
+     */
+    private function getDiscountUsage($startDate, $endDate)
+    {
+        $ordersWithDiscount = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->where('discount_amount', '>', 0)
+            ->get();
+
+        return [
+            'total_discounts' => $ordersWithDiscount->sum('discount_amount'),
+            'orders_with_discount' => $ordersWithDiscount->count(),
+            'average_discount' => $ordersWithDiscount->count() > 0 ? $ordersWithDiscount->avg('discount_amount') : 0,
+            'total_orders' => Order::whereBetween('created_at', [$startDate, $endDate])
+                ->where('status', '!=', 'cancelled')
+                ->count(),
+        ];
+    }
+
+    /**
+     * Generate weekly revenue data.
+     */
+    private function generateWeeklyRevenueData($startDate, $endDate)
+    {
+        $data = [];
+        $current = $startDate->copy()->startOfWeek();
+
+        while ($current->lte($endDate)) {
+            $weekEnd = $current->copy()->endOfWeek();
+            if ($weekEnd->gt($endDate)) {
+                $weekEnd = $endDate->copy();
+            }
+
+            $weekRevenue = Order::whereBetween('created_at', [$current, $weekEnd])
+                ->where('status', '!=', 'cancelled')
+                ->sum('total_amount');
+
+            $data[] = (float) $weekRevenue;
+            $current->addWeek();
+        }
+
+        return $data;
+    }
+
+    /**
+     * Generate monthly revenue data.
+     */
+    private function generateMonthlyRevenueData($startDate, $endDate)
+    {
+        $data = [];
+        $current = $startDate->copy()->startOfMonth();
+
+        while ($current->lte($endDate)) {
+            $monthEnd = $current->copy()->endOfMonth();
+            if ($monthEnd->gt($endDate)) {
+                $monthEnd = $endDate->copy();
+            }
+
+            $monthRevenue = Order::whereBetween('created_at', [$current, $monthEnd])
+                ->where('status', '!=', 'cancelled')
+                ->sum('total_amount');
+
+            $data[] = (float) $monthRevenue;
+            $current->addMonth();
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get new vs returning customers.
+     */
+    private function getNewVsReturningCustomers($startDate, $endDate)
+    {
+        $newCustomers = User::whereBetween('created_at', [$startDate, $endDate])->count();
+
+        $returningCustomers = User::whereHas('orders', function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate])
+                ->where('status', '!=', 'cancelled');
+        })->where('created_at', '<', $startDate)->count();
+
+        $totalActiveCustomers = $newCustomers + $returningCustomers;
+
+        return [
+            'new' => $newCustomers,
+            'returning' => $returningCustomers,
+            'total' => $totalActiveCustomers,
+            'new_percentage' => $totalActiveCustomers > 0 ? ($newCustomers / $totalActiveCustomers) * 100 : 0,
+            'returning_percentage' => $totalActiveCustomers > 0 ? ($returningCustomers / $totalActiveCustomers) * 100 : 0,
+        ];
+    }
+
+    /**
+     * Get customer lifetime value data.
+     */
+    private function getCustomerLifetimeValueData()
+    {
+        $customers = User::withSum('orders as total_spent', 'total_amount')
+            ->withCount('orders')
+            ->whereHas('orders', function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            })
+            ->get();
+
+        $clvData = $customers->map(function ($customer) {
+            $lifetimeDays = $customer->created_at ? now()->diffInDays($customer->created_at) : 1;
+
+            return [
+                'customer_id' => $customer->id,
+                'name' => trim($customer->first_name.' '.$customer->last_name),
+                'email' => $customer->email,
+                'total_spent' => $customer->total_spent ?? 0,
+                'order_count' => $customer->orders_count,
+                'avg_order_value' => $customer->orders_count > 0 ? ($customer->total_spent ?? 0) / $customer->orders_count : 0,
+                'lifetime_days' => $lifetimeDays,
+                'clv' => $customer->total_spent ?? 0,
+            ];
+        })->sortByDesc('clv')->take(10)->values();
+
+        return $clvData;
+    }
+
+    /**
+     * Get cohort analysis.
+     */
+    private function getCohortAnalysis()
+    {
+        $cohorts = [];
+        $months = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $monthStart = Carbon::now()->subMonths($i)->startOfMonth();
+            $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
+            $months[] = $monthStart->format('M Y');
+
+            $cohortCustomers = User::whereBetween('created_at', [$monthStart, $monthEnd])->get();
+
+            $cohortData = [];
+            foreach ($cohortCustomers as $customer) {
+                $customerOrders = $customer->orders()
+                    ->where('status', '!=', 'cancelled')
+                    ->orderBy('created_at')
+                    ->get();
+
+                if ($customerOrders->count() > 0) {
+                    $firstOrderDate = $customerOrders->first()->created_at;
+                    $cohortMonth = $firstOrderDate->format('M Y');
+
+                    if (! isset($cohortData[$cohortMonth])) {
+                        $cohortData[$cohortMonth] = 0;
+                    }
+                    $cohortData[$cohortMonth]++;
+                }
+            }
+
+            $cohorts[] = [
+                'month' => $monthStart->format('M Y'),
+                'customers' => $cohortCustomers->count(),
+                'repeat_customers' => $cohortData,
+            ];
+        }
+
+        return [
+            'months' => $months,
+            'cohorts' => $cohorts,
+        ];
+    }
+
+    /**
+     * Calculate customer segments.
+     */
+    private function calculateCustomerSegments()
+    {
+        $customers = User::withSum('orders as total_spent', 'total_amount')
+            ->whereHas('orders', function ($query) {
+                $query->where('status', '!=', 'cancelled');
+            })
+            ->get();
+
+        $totalSpent = $customers->sum('total_spent');
+        $avgSpent = $customers->count() > 0 ? $totalSpent / $customers->count() : 0;
+
+        $highValue = $customers->filter(function ($customer) use ($avgSpent) {
+            return ($customer->total_spent ?? 0) >= $avgSpent * 2;
+        })->count();
+
+        $mediumValue = $customers->filter(function ($customer) use ($avgSpent) {
+            return ($customer->total_spent ?? 0) >= $avgSpent && ($customer->total_spent ?? 0) < $avgSpent * 2;
+        })->count();
+
+        $lowValue = $customers->filter(function ($customer) use ($avgSpent) {
+            return ($customer->total_spent ?? 0) < $avgSpent;
+        })->count();
+
+        $total = $highValue + $mediumValue + $lowValue;
+
+        return [
+            'high' => $total > 0 ? ($highValue / $total) * 100 : 0,
+            'medium' => $total > 0 ? ($mediumValue / $total) * 100 : 0,
+            'low' => $total > 0 ? ($lowValue / $total) * 100 : 0,
+        ];
+    }
+
+    /**
+     * Get product performance data with all metrics.
+     */
+    private function getProductPerformanceData($startDate, $endDate, $categoryFilter = null, $sortBy = 'units_sold', $sortOrder = 'desc')
+    {
+        $query = Product::select('products.*') // Explicitly select all product columns including view_count
+            ->withCount(['orderItems as units_sold' => function ($query) use ($startDate, $endDate) {
+                $query->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
+                    $orderQuery->whereBetween('created_at', [$startDate, $endDate])
+                        ->where('status', '!=', 'cancelled');
+                });
+            }])
+            ->withCount(['orderItems as order_count' => function ($query) use ($startDate, $endDate) {
+                $query->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
+                    $orderQuery->whereBetween('created_at', [$startDate, $endDate])
+                        ->where('status', '!=', 'cancelled');
+                })->distinct('order_id');
+            }])
+            ->withSum(['orderItems as revenue' => function ($query) use ($startDate, $endDate) {
+                $query->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
+                    $orderQuery->whereBetween('created_at', [$startDate, $endDate])
+                        ->where('status', '!=', 'cancelled');
+                });
+            }], 'total_price')
+            ->with(['category']);
+
+        // Filter by category if provided
+        if ($categoryFilter && $categoryFilter !== 'all') {
+            $query->whereHas('category', function ($q) use ($categoryFilter) {
+                $q->where('id', $categoryFilter)
+                    ->orWhere('parent_id', $categoryFilter);
+            });
+        }
+
+        $products = $query->get();
+
+        $mappedProducts = $products->map(function ($product) {
+            $profitMargin = 0;
+            if ($product->cost_price && $product->price > 0) {
+                $profitMargin = (($product->price - $product->cost_price) / $product->price) * 100;
+            } elseif ($product->price > 0) {
+                // Default 40% margin if no cost data
+                $profitMargin = 40;
+            }
+
+            // Use actual view count from database (always use it if it exists, even if 0)
+            // Only fall back to estimate if view_count is truly null (not set yet)
+            $actualViews = $product->view_count;
+            $orderCount = $product->order_count ?? 0;
+            $estimatedViews = $orderCount * 10; // Estimate 10 views per order as fallback
+            // Use actual views if it's not null, otherwise use estimate
+            $views = $actualViews !== null ? $actualViews : $estimatedViews;
+
+            // Conversion rate: units sold / views
+            $conversionRate = $views > 0 ? (($product->units_sold ?? 0) / $views) * 100 : 0;
+
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'price' => $product->price,
+                'units_sold' => $product->units_sold ?? 0,
+                'revenue' => $product->revenue ?? 0,
+                'profit_margin' => round($profitMargin, 2),
+                'views' => $views,
+                'conversion_rate' => round($conversionRate, 2),
+                'category' => $product->category->name ?? 'Uncategorized',
+                'category_id' => $product->category_id ?? null,
+            ];
+        });
+
+        // Sort the collection
+        $mappedProducts = $mappedProducts->sortBy(function ($product) use ($sortBy) {
+            return $product[$sortBy];
+        }, SORT_REGULAR, $sortOrder === 'desc');
+
+        return $mappedProducts->values();
+    }
+
+    /**
+     * Get best sellers.
+     */
+    private function getBestSellers($startDate, $endDate)
+    {
+        return $this->getTopProducts($startDate, $endDate);
+    }
+
+    /**
+     * Get worst performers.
+     */
+    private function getWorstPerformers($startDate, $endDate)
+    {
+        return Product::withCount(['orderItems as total_sold' => function ($query) use ($startDate, $endDate) {
+            $query->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
+                $orderQuery->whereBetween('created_at', [$startDate, $endDate])
+                    ->where('status', '!=', 'cancelled');
+            });
+        }])
+            ->withSum(['orderItems as total_revenue' => function ($query) use ($startDate, $endDate) {
+                $query->whereHas('order', function ($orderQuery) use ($startDate, $endDate) {
+                    $orderQuery->whereBetween('created_at', [$startDate, $endDate])
+                        ->where('status', '!=', 'cancelled');
+                });
+            }], 'total_price')
+            ->orderBy('total_sold', 'asc')
+            ->take(10)
+            ->get();
+    }
+
+    /**
+     * Get most viewed products (using order frequency as proxy).
+     */
+    private function getMostViewedProducts($startDate, $endDate)
+    {
+        // Use actual view_count from database column, sorted by view_count descending
+        return Product::where('is_active', true)
+            ->orderBy('view_count', 'desc')
+            ->take(10)
+            ->get();
+    }
+
+    /**
+     * Calculate stock turnover rate.
+     */
+    private function calculateStockTurnoverRate($startDate, $endDate)
+    {
+        // Cost of Goods Sold
+        $cogs = OrderItem::whereHas('order', function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate])
+                ->where('status', '!=', 'cancelled');
+        })
+            ->with('product')
+            ->get()
+            ->sum(function ($item) {
+                return ($item->product && $item->product->cost_price)
+                    ? $item->product->cost_price * $item->quantity
+                    : ($item->unit_price * $item->quantity * 0.6); // Default 60% cost
+            });
+
+        // Average Inventory (using current stock value)
+        $averageInventory = Product::where('manage_stock', true)
+            ->get()
+            ->sum(function ($product) {
+                $cost = $product->cost_price ?? ($product->price * 0.6);
+
+                return $cost * $product->stock_quantity;
+            });
+
+        $turnoverRate = $averageInventory > 0 ? $cogs / $averageInventory : 0;
+
+        return [
+            'cogs' => $cogs,
+            'average_inventory' => $averageInventory,
+            'turnover_rate' => round($turnoverRate, 2),
+        ];
+    }
+
+    /**
+     * Get gross vs net revenue.
+     */
+    private function getGrossNetRevenue($startDate, $endDate)
+    {
+        $grossRevenue = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount');
+
+        $totalDiscounts = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->sum('discount_amount');
+
+        // Refunds: orders with return_status
+        $refundedOrders = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->whereIn('return_status', ['requested', 'approved', 'received', 'completed'])
+            ->sum('total_amount');
+
+        $netRevenue = $grossRevenue - $totalDiscounts - ($refundedOrders * 0.5); // Assume 50% of returned orders are refunded
+
+        return [
+            'gross_revenue' => $grossRevenue,
+            'discounts' => $totalDiscounts,
+            'refunds' => $refundedOrders * 0.5,
+            'net_revenue' => max(0, $netRevenue),
+        ];
+    }
+
+    /**
+     * Get revenue by channel.
+     */
+    private function getRevenueByChannel($startDate, $endDate)
+    {
+        // Infer channels from payment method or order source
+        $onlineRevenue = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->whereIn('payment_method', ['card', 'online', 'paypal', 'gcash', 'paymaya', 'bank_transfer'])
+            ->sum('total_amount');
+
+        $phoneRevenue = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->where('payment_method', 'cash_on_delivery')
+            ->sum('total_amount');
+
+        $wholesaleRevenue = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->where('payment_method', 'wholesale')
+            ->sum('total_amount');
+
+        // If no wholesale, assume it's mostly online
+        if ($wholesaleRevenue == 0) {
+            $wholesaleRevenue = Order::whereBetween('created_at', [$startDate, $endDate])
+                ->where('status', '!=', 'cancelled')
+                ->whereNotNull('notes')
+                ->where('notes', 'like', '%wholesale%')
+                ->sum('total_amount');
+        }
+
+        $totalRevenue = $onlineRevenue + $phoneRevenue + $wholesaleRevenue;
+
+        return [
+            'online' => $onlineRevenue,
+            'phone' => $phoneRevenue,
+            'wholesale' => $wholesaleRevenue,
+            'total' => $totalRevenue,
+            'online_percentage' => $totalRevenue > 0 ? ($onlineRevenue / $totalRevenue) * 100 : 0,
+            'phone_percentage' => $totalRevenue > 0 ? ($phoneRevenue / $totalRevenue) * 100 : 0,
+            'wholesale_percentage' => $totalRevenue > 0 ? ($wholesaleRevenue / $totalRevenue) * 100 : 0,
+        ];
+    }
+
+    /**
+     * Get tax collected.
+     */
+    private function getTaxCollected($startDate, $endDate)
+    {
+        return Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->sum('tax_amount');
+    }
+
+    /**
+     * Enhanced conversion rate calculation.
+     */
+    private function calculateConversionRate($startDate, $endDate)
+    {
+        // Use registered users who made purchases vs total registered users
+        $totalUsers = User::whereBetween('created_at', [$startDate, $endDate])->count();
+        $usersWithOrders = User::whereBetween('created_at', [$startDate, $endDate])
+            ->whereHas('orders', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate])
+                    ->where('status', '!=', 'cancelled');
+            })
+            ->count();
+
+        // If we have visitor data, use it, otherwise use user registration as proxy
+        if ($totalUsers > 0) {
+            return ($usersWithOrders / $totalUsers) * 100;
+        }
+
+        // Fallback: assume 1000 visitors and calculate from orders
+        $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->distinct('user_id')
+            ->count('user_id');
+
+        $estimatedVisitors = max(100, $totalOrders * 20); // Assume 5% conversion rate
+
+        return $estimatedVisitors > 0 ? ($totalOrders / $estimatedVisitors) * 100 : 0;
     }
 }

@@ -1168,6 +1168,20 @@ function initModalQuickView() {
                     return;
                 }
 
+                // Track view for quick view modal
+                try {
+                    await fetch(`/api/products/${productId}/track-view`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                        },
+                    });
+                } catch (error) {
+                    // Silently fail view tracking - don't interrupt user experience
+                    console.debug('View tracking failed:', error);
+                }
+
                 // Fill modal with product information
                 await fillQuickViewModal(product);
 
