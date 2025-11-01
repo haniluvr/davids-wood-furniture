@@ -1005,9 +1005,14 @@
         
         <form id="delete-account-form">
             <div class="mb-4">
-                <label class="form-label block">CONFIRM PASSWORD</label>
-                <input type="password" id="delete-account-password" class="w-full form-input" required placeholder="Enter your password">
-                <p id="delete-password-error" class="text-sm text-red-600 mt-1 hidden">Incorrect password</p>
+                @if($user->isSsoUser() && !$user->hasPassword())
+                    <label class="form-label block">CONFIRM EMAIL</label>
+                    <input type="email" id="delete-account-confirmation" class="w-full form-input" required placeholder="Enter your email address">
+                @else
+                    <label class="form-label block">CONFIRM PASSWORD</label>
+                    <input type="password" id="delete-account-confirmation" class="w-full form-input" required placeholder="Enter your password">
+                @endif
+                <p id="delete-confirmation-error" class="text-sm text-red-600 mt-1 hidden"></p>
             </div>
             
             <div class="mb-6">
@@ -2629,9 +2634,9 @@
             document.body.style.overflow = '';
             
             // Clear form
-            document.getElementById('delete-account-password').value = '';
+            document.getElementById('delete-account-confirmation').value = '';
             document.getElementById('delete-account-reason').value = '';
-            document.getElementById('delete-password-error').classList.add('hidden');
+            document.getElementById('delete-confirmation-error').classList.add('hidden');
         }
     }
 
@@ -2641,9 +2646,10 @@
         deleteAccountForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const password = document.getElementById('delete-account-password').value;
+            const isGoogleSso = {{ $user->isSsoUser() && !$user->hasPassword() ? 'true' : 'false' }};
+            const confirmationValue = document.getElementById('delete-account-confirmation').value;
             const reason = document.getElementById('delete-account-reason').value;
-            const errorElement = document.getElementById('delete-password-error');
+            const errorElement = document.getElementById('delete-confirmation-error');
             
             // Hide previous errors
             if (errorElement) {
@@ -2651,16 +2657,24 @@
             }
             
             try {
+                const requestBody = {
+                    reason: reason
+                };
+                
+                // Add password or email based on user type
+                if (isGoogleSso) {
+                    requestBody.email = confirmationValue;
+                } else {
+                    requestBody.password = confirmationValue;
+                }
+                
                 const response = await fetch('/api/account/archive', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
-                    body: JSON.stringify({ 
-                        password: password,
-                        reason: reason
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 const result = await response.json();
@@ -2673,7 +2687,7 @@
                         window.location.href = result.redirect || '/';
                     }, 1500);
                 } else {
-                    if (result.message && result.message.toLowerCase().includes('password')) {
+                    if (result.message && (result.message.toLowerCase().includes('password') || result.message.toLowerCase().includes('email'))) {
                         if (errorElement) {
                             errorElement.textContent = result.message;
                             errorElement.classList.remove('hidden');

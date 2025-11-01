@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\WelcomeMail;
 use App\Models\User;
 use App\Services\MagicLinkService;
 use GuzzleHttp\Client;
@@ -9,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -300,20 +302,27 @@ class AuthController extends Controller
             $guestSessionId = session()->getId();
 
             if ($existingUser) {
+                $updateData = [];
+
                 // Update existing user with Google ID if not already set
                 if (! $existingUser->google_id) {
-                    $updateData = [
-                        'google_id' => $googleUser->id,
-                        'provider' => 'google',
-                        'avatar' => $googleUser->avatar ?? null,
-                    ];
+                    $updateData['google_id'] = $googleUser->id;
+                    $updateData['provider'] = 'google';
+                    $updateData['avatar'] = $googleUser->avatar ?? null;
+                }
 
-                    // Generate username if user doesn't have one
-                    if (empty($existingUser->username)) {
-                        $username = $this->generateUsername($googleUser->name ?? 'User');
-                        $updateData['username'] = $username;
-                    }
+                // Generate username if user doesn't have one
+                if (empty($existingUser->username)) {
+                    $username = $this->generateUsername($googleUser->name ?? 'User');
+                    $updateData['username'] = $username;
+                }
 
+                // Verify email if not already verified
+                if (! $existingUser->email_verified_at) {
+                    $updateData['email_verified_at'] = now();
+                }
+
+                if (! empty($updateData)) {
                     $existingUser->update($updateData);
                 }
 
@@ -344,7 +353,7 @@ class AuthController extends Controller
                 $firstName = $nameParts[0] ?? '';
                 $lastName = implode(' ', array_slice($nameParts, 1)) ?? '';
 
-                // Create new user from Google data
+                // Create new user from Google data with email verified
                 $newUser = User::create([
                     'first_name' => $firstName,
                     'last_name' => $lastName,
@@ -354,6 +363,7 @@ class AuthController extends Controller
                     'google_id' => $googleUser->id,
                     'avatar' => $googleUser->avatar ?? null,
                     'provider' => 'google',
+                    'email_verified_at' => now(), // Email is already verified through Google
                 ]);
 
                 // Migrate guest data BEFORE authentication to prevent session loss
@@ -368,6 +378,13 @@ class AuthController extends Controller
 
                 // Force session save to ensure authentication persists after redirect
                 session()->save();
+
+                // Send welcome email to new Google OAuth users
+                try {
+                    Mail::to($newUser->email)->send(new WelcomeMail($newUser));
+                } catch (\Exception $e) {
+                    // Continue even if welcome email fails
+                }
             }
 
             // Get intended redirect URL from session, fallback to home

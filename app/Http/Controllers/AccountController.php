@@ -481,25 +481,51 @@ class AccountController extends Controller
     {
         $user = Auth::user();
 
-        $validator = Validator::make($request->all(), [
-            'password' => 'required',
-            'reason' => 'nullable|string|max:255',
-        ]);
+        // For Google SSO users without password, require email instead
+        $isGoogleSsoUser = $user->isSsoUser() && ! $user->hasPassword();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+        if ($isGoogleSsoUser) {
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email',
+                'reason' => 'nullable|string|max:255',
+            ]);
 
-        // Verify password
-        if (! Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Incorrect password',
-            ], 400);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            // Verify email matches user's email
+            if ($request->email !== $user->email) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email does not match your account email',
+                ], 400);
+            }
+        } else {
+            $validator = Validator::make($request->all(), [
+                'password' => 'required',
+                'reason' => 'nullable|string|max:255',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            // Verify password
+            if (! Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Incorrect password',
+                ], 400);
+            }
         }
 
         try {
