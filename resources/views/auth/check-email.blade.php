@@ -189,7 +189,7 @@
                 <input type="text" class="form-input" value="Magic link sent" readonly>
             </div>
             
-            <button type="button" class="btn-primary" onclick="window.location.href='{{ route('user.login.form') }}'">
+            <button type="button" class="btn-primary" onclick="window.location.href='{{ route('login') }}'">
                 Back to Login
             </button>
         </div>

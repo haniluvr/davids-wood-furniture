@@ -236,7 +236,7 @@
             </form>
             
             <!-- Action Buttons -->
-            <a href="{{ route('user.login.form') }}" class="btn-secondary">
+            <a href="{{ route('login') }}" class="btn-secondary">
                 Sign In Instead
             </a>
             <a href="{{ route('home') }}" class="btn-secondary">

@@ -347,10 +347,11 @@ Route::get('/products/{product}', [ProductController::class, 'show'])->name('pro
 // Contact form routes
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
 
-// Login page route (for admin redirects) - redirect to home with login modal
+// Login page route (for admin redirects and Authenticate middleware) - redirect to home with login modal
+// Note: 'login' route name is required by Laravel's Authenticate middleware
 Route::get('/login', function () {
     return redirect()->route('home')->with('show_login_modal', true);
-})->name('user.login.form');
+})->name('login');
 
 // Authentication routes (using api.session middleware for guest session capture)
 Route::middleware(['api.session'])->group(function () {

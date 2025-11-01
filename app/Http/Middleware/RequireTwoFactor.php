@@ -29,7 +29,7 @@ class RequireTwoFactor
                 }
 
                 // If no pending 2FA, redirect to login
-                return redirect()->route('user.login.form')
+                return redirect()->route('login')
                     ->with('error', 'Two-factor authentication required');
             }
         }

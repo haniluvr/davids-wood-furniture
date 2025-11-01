@@ -73,7 +73,7 @@
                     <div class="text-center mt-4">
                         <p class="text-sm text-gray-500">
                             Already verified?
-                            <a href="{{ route('user.login.form') }}" class="font-medium text-orange-600 hover:text-orange-500" onclick="closeVerifyEmailModal()">
+                            <a href="{{ route('login') }}" class="font-medium text-orange-600 hover:text-orange-500" onclick="closeVerifyEmailModal()">
                                 Sign in here
                             </a>
                         </p>

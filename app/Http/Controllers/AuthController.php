@@ -65,15 +65,7 @@ class AuthController extends Controller
      */
     public function checkUsername($username): JsonResponse
     {
-        \Log::info('Checking username availability', ['username' => $username]);
-
         $exists = User::where('username', $username)->exists();
-
-        \Log::info('Username check result', [
-            'username' => $username,
-            'exists' => $exists,
-            'available' => ! $exists,
-        ]);
 
         return response()->json([
             'available' => ! $exists,
@@ -86,14 +78,7 @@ class AuthController extends Controller
      */
     public function checkEmail($email): JsonResponse
     {
-        \Log::info('Checking email availability', ['email' => $email]);
-
         $exists = User::where('email', $email)->exists();
-
-        \Log::info('Email check result', [
-            'email' => $email,
-            'exists' => $exists,
-        ]);
 
         return response()->json([
             'exists' => $exists,
@@ -103,17 +88,6 @@ class AuthController extends Controller
 
     public function register(Request $request): JsonResponse
     {
-        // Capture session ID IMMEDIATELY at the start of the method
-        $originalSessionId = session()->getId();
-
-        \Log::info('AuthController: Register method started', [
-            'immediate_session_id' => $originalSessionId,
-            'authenticated' => \Auth::check(),
-            'request_data' => $request->all(),
-            'request_method' => $request->method(),
-            'content_type' => $request->header('Content-Type'),
-        ]);
-
         $validator = Validator::make($request->all(), [
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
@@ -123,11 +97,6 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            \Log::error('Registration validation failed', [
-                'errors' => $validator->errors()->toArray(),
-                'input' => $request->all(),
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -144,46 +113,18 @@ class AuthController extends Controller
             'provider' => 'local',
         ]);
 
-        // Use the immediately captured session ID for migration
-        $guestSessionId = $originalSessionId;
-
-        \Log::info('User registration - Guest data migration', [
-            'user_id' => $user->id,
-            'guest_session_id' => $guestSessionId,
-            'has_guest_cart' => \App\Models\CartItem::where('session_id', $guestSessionId)->exists(),
-            'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists(),
-        ]);
+        $guestSessionId = session()->getId();
 
         // Store guest session ID and user ID for later migration after email verification
         session(['pending_guest_session_id' => $guestSessionId]);
         session(['pending_user_id' => $user->id]);
         session(['pending_intended_url' => session()->pull('url.intended', route('home'))]);
 
-        \Log::info('User registered - pending email verification', [
-            'user_id' => $user->id,
-            'username' => $user->username,
-            'email' => $user->email,
-            'guest_session_id' => $guestSessionId,
-            'authenticated' => false, // Not logged in yet
-        ]);
-
         // Send email verification instead of auto-login
         try {
             $magicLinkService = new MagicLinkService;
-            $token = $magicLinkService->generateMagicLink($user, 'email_verification');
-
-            \Log::info('Email verification sent', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'token' => $token,
-            ]);
+            $magicLinkService->generateMagicLink($user, 'email_verification');
         } catch (\Exception $e) {
-            \Log::error('Failed to send email verification', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'error' => $e->getMessage(),
-            ]);
-
             // Continue with registration even if email fails
         }
 
@@ -198,15 +139,6 @@ class AuthController extends Controller
 
     public function login(Request $request): JsonResponse
     {
-        // Capture session ID IMMEDIATELY at the start of the method
-        // This ensures we get the original session ID before any processing
-        $originalSessionId = session()->getId();
-
-        \Log::info('AuthController: Login method started - IMMEDIATE session capture', [
-            'immediate_session_id' => $originalSessionId,
-            'authenticated' => \Auth::check(),
-        ]);
-
         $validator = Validator::make($request->all(), [
             'username' => 'required|string',
             'password' => 'required|string',
@@ -220,36 +152,25 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Use the immediately captured session ID for migration
-        $guestSessionId = $originalSessionId;
-
-        \Log::info('AuthController: Login method started', [
-            'current_session_id' => session()->getId(),
-            'original_session_id' => $request->get('original_session_id'),
-            'guest_session_id_used' => $guestSessionId,
-            'authenticated' => \Auth::check(),
-        ]);
-
-        \Log::info('User login - Guest data migration', [
-            'guest_session_id' => $guestSessionId,
-            'has_guest_cart' => \App\Models\CartItem::where('session_id', $guestSessionId)->exists(),
-            'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists(),
-        ]);
+        $guestSessionId = session()->getId();
 
         // Try to find user by username or email for backward compatibility
         $user = User::where('username', $request->username)
             ->orWhere('email', $request->username)
             ->first();
 
+        // Check if user exists and is a Google OAuth user without a password
+        if ($user && $user->isSsoUser() && ! $user->hasPassword()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This account uses Google sign-in. Please use "Sign in with Google" instead.',
+                'error_type' => 'google_oauth_required',
+            ], 401);
+        }
+
         if ($user && Auth::attempt(['id' => $user->id, 'password' => $request->password], $request->boolean('remember'))) {
             // Get user after successful authentication
             $user = Auth::user();
-
-            \Log::info('User login successful - Migrating guest data', [
-                'user_id' => $user->id,
-                'guest_session_id' => $guestSessionId,
-                'session_id_after_auth' => session()->getId(),
-            ]);
 
             // Migrate guest data AFTER authentication to prevent session conflicts
             $cartController = new CartController;
@@ -257,12 +178,6 @@ class AuthController extends Controller
 
             $sessionWishlistService = new \App\Services\SessionWishlistService;
             $sessionWishlistService->migrateGuestToUser($user->id, $guestSessionId);
-
-            \Log::info('User login - Session handled by Laravel', [
-                'user_id' => $user->id,
-                'session_id' => session()->getId(),
-                'auth_check' => Auth::check(),
-            ]);
 
             // Get intended redirect URL from session, fallback to home
             $intendedUrl = session()->pull('url.intended', route('home'));
@@ -283,80 +198,44 @@ class AuthController extends Controller
 
     public function logout()
     {
-        \Log::info('LOGOUT: Starting logout process');
-
         try {
-            // Get user info before logout for Google OAuth handling
             $user = Auth::user();
-            $isGoogleUser = $user && $user->provider === 'google';
-
-            \Log::info('LOGOUT: User info', [
-                'user_id' => $user ? $user->id : null,
-                'provider' => $user ? $user->provider : null,
-                'is_google_user' => $isGoogleUser,
-                'has_remember_token' => $user && $user->remember_token ? true : false,
-            ]);
 
             // Clear authentication
             Auth::logout();
-            \Log::info('LOGOUT: Auth::logout() completed');
 
             // Clear session data
             session()->flush();
-            \Log::info('LOGOUT: Session flushed');
 
-            // Don't regenerate session during logout to avoid affecting other active sessions
-            \Log::info('LOGOUT: Session cleared (no regeneration)');
-
-            // Clear remember token for Google OAuth users
+            // Clear remember token
             if ($user && $user->remember_token) {
                 $user->remember_token = null;
                 $user->save();
-                \Log::info('LOGOUT: Remember token cleared for user', ['user_id' => $user->id]);
             }
-
-            \Log::info('LOGOUT: Logout process completed successfully');
 
             // Return JSON response for AJAX requests
             if (request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Logged out successfully',
-                    'debug' => [
-                        'was_google_user' => $isGoogleUser,
-                        'user_id' => $user ? $user->id : null,
-                    ],
                 ]);
             }
 
             // Redirect to home for regular requests
             return redirect()->route('home')->with('success', 'Logged out successfully');
         } catch (\Exception $e) {
-            \Log::error('LOGOUT: Error during logout', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
             // Even if there's an error, try to clear session
             try {
                 Auth::logout();
                 session()->flush();
-                // Don't regenerate session during emergency cleanup
-                \Log::info('LOGOUT: Emergency cleanup completed');
             } catch (\Exception $cleanupError) {
-                \Log::error('LOGOUT: Emergency cleanup failed', [
-                    'error' => $cleanupError->getMessage(),
-                ]);
+                // Ignore cleanup errors
             }
 
             if (request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Logged out successfully',
-                    'debug' => [
-                        'error_occurred' => true,
-                        'error_message' => $e->getMessage(),
-                    ],
                 ]);
             }
 
@@ -380,28 +259,8 @@ class AuthController extends Controller
 
     public function handleGoogleCallback(Request $request)
     {
-        // Capture session ID IMMEDIATELY at the start of the method
-        $originalSessionId = session()->getId();
-
-        \Log::info('AuthController: Google OAuth callback started - IMMEDIATE session capture', [
-            'immediate_session_id' => $originalSessionId,
-            'authenticated' => \Auth::check(),
-            'request_params' => $request->all(),
-            'request_url' => $request->fullUrl(),
-            'has_code' => $request->has('code'),
-            'has_error' => $request->has('error'),
-            'error_param' => $request->input('error'),
-            'error_description' => $request->input('error_description'),
-        ]);
-
         // Check for OAuth errors from Google
         if ($request->has('error')) {
-            \Log::error('Google OAuth - Error received from Google', [
-                'error' => $request->input('error'),
-                'error_description' => $request->input('error_description'),
-                'error_uri' => $request->input('error_uri'),
-            ]);
-
             return redirect()->route('home')->withErrors([
                 'error' => 'Google authentication failed: '.($request->input('error_description') ?? $request->input('error')),
             ]);
@@ -411,23 +270,8 @@ class AuthController extends Controller
             // Verify Google OAuth configuration
             $clientId = config('services.google.client_id');
             $clientSecret = config('services.google.client_secret');
-            $redirectUrl = config('services.google.redirect');
-
-            \Log::info('Google OAuth - Configuration check', [
-                'client_id_set' => ! empty($clientId),
-                'client_id_length' => $clientId ? strlen($clientId) : 0,
-                'client_secret_set' => ! empty($clientSecret),
-                'redirect_url' => $redirectUrl,
-                'app_env' => config('app.env'),
-                'app_debug' => config('app.debug'),
-            ]);
 
             if (empty($clientId) || empty($clientSecret)) {
-                \Log::error('Google OAuth - Missing configuration', [
-                    'client_id_set' => ! empty($clientId),
-                    'client_secret_set' => ! empty($clientSecret),
-                ]);
-
                 throw new \Exception('Google OAuth is not properly configured. Please check your environment variables.');
             }
 
@@ -446,35 +290,16 @@ class AuthController extends Controller
                 ]));
             }
 
-            \Log::info('Google OAuth - Attempting to get user from Google', [
-                'has_code' => $request->has('code'),
-                'has_state' => $request->has('state'),
-            ]);
-
             /** @var \Laravel\Socialite\Two\User $googleUser */
             $googleUser = $googleDriver->user();
-
-            \Log::info('Google OAuth - Successfully retrieved user from Google', [
-                'google_id' => $googleUser->id,
-                'email' => $googleUser->email,
-                'name' => $googleUser->name,
-            ]);
 
             $existingUser = User::where('google_id', $googleUser->id)
                 ->orWhere('email', $googleUser->email)
                 ->first();
 
+            $guestSessionId = session()->getId();
+
             if ($existingUser) {
-                // Use the immediately captured session ID for migration
-                $guestSessionId = $originalSessionId;
-
-                \Log::info('Google OAuth - Existing user login', [
-                    'user_id' => $existingUser->id,
-                    'guest_session_id' => $guestSessionId,
-                    'has_guest_cart' => \App\Models\CartItem::where('session_id', $guestSessionId)->exists(),
-                    'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists(),
-                ]);
-
                 // Update existing user with Google ID if not already set
                 if (! $existingUser->google_id) {
                     $updateData = [
@@ -497,10 +322,6 @@ class AuthController extends Controller
                 $cartController->migrateCartToUser($existingUser->id, $guestSessionId);
 
                 $sessionWishlistService = new \App\Services\SessionWishlistService;
-                \Log::info('AuthController: Calling migrateGuestToUser (login existing user)', [
-                    'user_id' => $existingUser->id,
-                    'guest_session_id_passed' => $guestSessionId,
-                ]);
                 $sessionWishlistService->migrateGuestToUser($existingUser->id, $guestSessionId);
 
                 // Login the user
@@ -508,25 +329,7 @@ class AuthController extends Controller
 
                 // Force session save to ensure authentication persists after redirect
                 session()->save();
-
-                \Log::info('Google OAuth - Existing user logged in', [
-                    'user_id' => $existingUser->id,
-                    'authenticated' => Auth::check(),
-                    'session_id' => session()->getId(),
-                ]);
             } else {
-                // Use the immediately captured session ID for migration
-                $guestSessionId = $originalSessionId;
-
-                \Log::info('Google OAuth - New user creation', [
-                    'guest_session_id' => $guestSessionId,
-                    'has_guest_cart' => \App\Models\CartItem::where('session_id', $guestSessionId)->exists(),
-                    'has_guest_wishlist' => \App\Models\WishlistItem::where('session_id', $guestSessionId)->exists(),
-                    'google_email' => $googleUser->email,
-                    'google_id' => $googleUser->id,
-                    'google_name' => $googleUser->name,
-                ]);
-
                 // Generate username for Google user
                 $username = $this->generateUsername($googleUser->name ?? 'User');
 
@@ -541,43 +344,17 @@ class AuthController extends Controller
                 $firstName = $nameParts[0] ?? '';
                 $lastName = implode(' ', array_slice($nameParts, 1)) ?? '';
 
-                \Log::info('Google OAuth - User data prepared', [
-                    'username' => $username,
+                // Create new user from Google data
+                $newUser = User::create([
                     'first_name' => $firstName,
                     'last_name' => $lastName,
                     'email' => $googleUser->email,
-                    'username_length' => strlen($username),
+                    'username' => $username,
+                    'password' => null, // No password for Google OAuth users
+                    'google_id' => $googleUser->id,
+                    'avatar' => $googleUser->avatar ?? null,
+                    'provider' => 'google',
                 ]);
-
-                // Create new user from Google data
-                try {
-                    $newUser = User::create([
-                        'first_name' => $firstName,
-                        'last_name' => $lastName,
-                        'email' => $googleUser->email,
-                        'username' => $username,
-                        'password' => null, // No password for Google OAuth users
-                        'google_id' => $googleUser->id,
-                        'avatar' => $googleUser->avatar ?? null,
-                        'provider' => 'google',
-                    ]);
-
-                    \Log::info('Google OAuth - User created successfully', [
-                        'user_id' => $newUser->id,
-                        'email' => $newUser->email,
-                        'username' => $newUser->username,
-                    ]);
-                } catch (\Exception $createException) {
-                    \Log::error('Google OAuth - User creation failed', [
-                        'error' => $createException->getMessage(),
-                        'trace' => $createException->getTraceAsString(),
-                        'email' => $googleUser->email,
-                        'username' => $username,
-                        'google_id' => $googleUser->id,
-                    ]);
-
-                    throw new \Exception('Failed to create user account: '.$createException->getMessage(), 0, $createException);
-                }
 
                 // Migrate guest data BEFORE authentication to prevent session loss
                 $cartController = new CartController;
@@ -591,12 +368,6 @@ class AuthController extends Controller
 
                 // Force session save to ensure authentication persists after redirect
                 session()->save();
-
-                \Log::info('Google OAuth - User logged in', [
-                    'user_id' => $newUser->id,
-                    'authenticated' => Auth::check(),
-                    'session_id' => session()->getId(),
-                ]);
             }
 
             // Get intended redirect URL from session, fallback to home
@@ -605,45 +376,16 @@ class AuthController extends Controller
             // Final session save before redirect
             session()->save();
 
-            \Log::info('Google OAuth - Redirecting user', [
-                'intended_url' => $intendedUrl,
-                'authenticated' => Auth::check(),
-                'user_id' => Auth::id(),
-            ]);
-
             return redirect($intendedUrl)->with('google_signin_success', 'Welcome! Please remember to add a password in your account settings for added security.');
         } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
-            \Log::error('Google OAuth - InvalidStateException (usually session mismatch)', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'session_id' => session()->getId(),
-            ]);
-
             return redirect()->route('home')->withErrors([
                 'error' => 'Session expired. Please try signing in with Google again.',
             ]);
         } catch (\GuzzleHttp\Exception\ClientException $e) {
-            $response = $e->getResponse();
-            $body = $response ? $response->getBody()->getContents() : 'No response body';
-
-            \Log::error('Google OAuth - HTTP Client Exception', [
-                'error' => $e->getMessage(),
-                'status_code' => $response ? $response->getStatusCode() : null,
-                'response_body' => $body,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
             return redirect()->route('home')->withErrors([
                 'error' => 'Google authentication failed. Please check your Google OAuth configuration.',
             ]);
         } catch (\Exception $e) {
-            \Log::error('Google OAuth error:', [
-                'error' => $e->getMessage(),
-                'error_class' => get_class($e),
-                'trace' => $e->getTraceAsString(),
-                'request_params' => $request->all(),
-            ]);
-
             return redirect()->route('home')->withErrors([
                 'error' => 'Google authentication failed: '.$e->getMessage(),
             ]);
@@ -672,11 +414,6 @@ class AuthController extends Controller
                 'message' => 'No intended URL provided',
             ], 400);
         } catch (\Exception $e) {
-            \Log::error('Error storing intended URL:', [
-                'error' => $e->getMessage(),
-                'intended_url' => $request->input('intended_url'),
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to store intended URL',
@@ -720,17 +457,8 @@ class AuthController extends Controller
 
                 $sessionWishlistService = new \App\Services\SessionWishlistService;
                 $sessionWishlistService->migrateGuestToUser($user->id, $guestSessionId);
-
-                \Log::info('Guest data migration completed after email verification', [
-                    'user_id' => $user->id,
-                    'guest_session_id' => $guestSessionId,
-                ]);
             } catch (\Exception $e) {
-                \Log::error('Guest data migration failed after email verification', [
-                    'error' => $e->getMessage(),
-                    'user_id' => $user->id,
-                    'guest_session_id' => $guestSessionId,
-                ]);
+                // Continue even if migration fails
             }
 
             // Clear pending session data
@@ -740,13 +468,6 @@ class AuthController extends Controller
         // Get intended redirect URL
         $intendedUrl = session('pending_intended_url', route('home'));
         session()->forget('pending_intended_url');
-
-        \Log::info('Email verification completed', [
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'authenticated' => Auth::check(),
-            'redirect_url' => $intendedUrl,
-        ]);
 
         return redirect($intendedUrl)
             ->with('success', 'Email verified successfully! Welcome to David\'s Wood Furniture.');
@@ -761,18 +482,7 @@ class AuthController extends Controller
 
         $user = User::where('username', $request->username)->first();
 
-        \Log::info('User lookup for forgot password', [
-            'username' => $request->username,
-            'user_found' => $user ? true : false,
-            'user_email' => $user ? $user->email : null,
-            'user_id' => $user ? $user->id : null,
-        ]);
-
         if (! $user) {
-            \Log::warning('User not found for forgot password', [
-                'username' => $request->username,
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'No account found with this username.',
@@ -780,45 +490,15 @@ class AuthController extends Controller
         }
 
         try {
-            // Simple logging without complex arrays
-            \Log::info('Attempting to send password reset email for user: '.$user->username);
-            \Log::info('User email: '.$user->email);
-            \Log::info('Mail driver: '.config('mail.default'));
-
-            // Test if PasswordResetMail class exists and can be instantiated
-            try {
-                $testMail = new \App\Mail\PasswordResetMail($user, 'test-token', now());
-                \Log::info('PasswordResetMail class instantiated successfully');
-            } catch (\Exception $e) {
-                \Log::error('Failed to instantiate PasswordResetMail: '.$e->getMessage());
-
-                throw $e;
-            }
-
             $magicLinkService = new MagicLinkService;
             $token = $magicLinkService->generateMagicLink($user, 'password_reset');
 
-            \Log::info('Password reset email sent successfully');
-            \Log::info('Token generated: '.$token);
-
-            // For development with log mailer, always return success
-            // The email will be logged to storage/logs/laravel.log
             return response()->json([
                 'success' => true,
                 'message' => 'Password reset link sent to your email!',
                 'user_email' => $user->email,
-                'debug_info' => config('app.debug') ? [
-                    'token' => $token,
-                    'reset_url' => route('auth.reset-password', $token),
-                    'mail_driver' => config('mail.default'),
-                    'note' => 'Email logged to storage/logs/laravel.log (development mode)',
-                ] : null,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Failed to send password reset email');
-            \Log::error('Error: '.$e->getMessage());
-            \Log::error('File: '.$e->getFile().' Line: '.$e->getLine());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to send password reset email. Please try again.',
@@ -878,11 +558,6 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        \Log::info('Password reset completed', [
-            'user_id' => $user->id,
-            'email' => $user->email,
-        ]);
-
         return response()->json([
             'success' => true,
             'message' => 'Password reset successfully!',
@@ -921,11 +596,6 @@ class AuthController extends Controller
                 'message' => 'Verification email sent successfully!',
             ]);
         } catch (\Exception $e) {
-            \Log::error('Failed to resend verification email', [
-                'email' => $request->email,
-                'error' => $e->getMessage(),
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to send verification email. Please try again.',
