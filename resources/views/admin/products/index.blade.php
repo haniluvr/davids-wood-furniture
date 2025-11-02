@@ -262,11 +262,9 @@
                 </div>
 
                 <!-- Pagination -->
-    @if($products->hasPages())
-                <div class="mt-6">
-                    {{ $products->links() }}
-    </div>
-    @endif
+                @if($products->hasPages())
+                    @include('admin.partials.pagination', ['paginator' => $products])
+                @endif
             @else
                 <div class="p-8 text-center">
                     <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4">

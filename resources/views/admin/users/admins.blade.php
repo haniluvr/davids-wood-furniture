@@ -233,14 +233,7 @@
 
     <!-- Pagination -->
     @if($admins->hasPages())
-        <div class="mt-6 flex items-center justify-between">
-            <div class="text-sm text-gray-600 dark:text-gray-400">
-                Showing {{ $admins->firstItem() }} to {{ $admins->lastItem() }} of {{ $admins->total() }} results
-            </div>
-            <div class="flex items-center gap-2">
-                {{ $admins->links() }}
-            </div>
-        </div>
+        @include('admin.partials.pagination', ['paginator' => $admins])
     @endif
 </div>
 <!-- Admin Users Table End -->

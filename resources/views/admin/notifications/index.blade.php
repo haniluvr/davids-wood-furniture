@@ -177,9 +177,7 @@
 
     <!-- Pagination -->
     @if($notifications->hasPages())
-        <div class="mt-6">
-            {{ $notifications->links() }}
-        </div>
+        @include('admin.partials.pagination', ['paginator' => $notifications])
     @endif
 </div>
 @endsection

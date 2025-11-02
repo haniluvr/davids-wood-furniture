@@ -134,9 +134,9 @@
     </div>
 
     <!-- Pagination -->
-    <div class="mt-6">
-        {{ $messages->links() }}
-    </div>
+    @if($messages->hasPages())
+        @include('admin.partials.pagination', ['paginator' => $messages])
+    @endif
 </div>
 @endsection
 

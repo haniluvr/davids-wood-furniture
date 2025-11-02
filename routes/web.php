@@ -155,7 +155,9 @@ $adminRoutes = function () {
         Route::middleware('admin.permission:inventory.view')->group(function () {
             Route::get('inventory', [App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');
             Route::get('inventory/low-stock', [App\Http\Controllers\Admin\InventoryController::class, 'lowStockAlerts'])->name('inventory.low-stock');
+            Route::get('inventory/low-stock/export', [App\Http\Controllers\Admin\InventoryController::class, 'exportLowStock'])->name('inventory.low-stock.export');
             Route::get('inventory/movements', [App\Http\Controllers\Admin\InventoryController::class, 'movements'])->name('inventory.movements');
+            Route::get('inventory/movements/export', [App\Http\Controllers\Admin\InventoryController::class, 'exportMovements'])->name('inventory.movements.export');
             Route::get('inventory/export', [App\Http\Controllers\Admin\InventoryController::class, 'export'])->name('inventory.export');
             Route::get('inventory/{product}', [App\Http\Controllers\Admin\InventoryController::class, 'show'])->name('inventory.show');
             Route::get('inventory/{product}/adjust', [App\Http\Controllers\Admin\InventoryController::class, 'adjust'])->name('inventory.adjust');

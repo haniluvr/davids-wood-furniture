@@ -191,9 +191,9 @@
                         <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="inventoryOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="inventoryOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
-                        <li><a href="{{ admin_route('inventory.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.index') ? 'text-primary dark:text-primary' : '' }}">Stock Levels</a></li>
+                        <li><a href="{{ admin_route('inventory.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.index') ? 'text-primary dark:text-primary' : '' }}">Inventory Management</a></li>
                         <li><a href="{{ admin_route('inventory.low-stock') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.low-stock') ? 'text-primary dark:text-primary' : '' }}">Low Stock Alerts</a></li>
-                        <li><a href="{{ admin_route('inventory.movements') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.movements') ? 'text-primary dark:text-primary' : '' }}">Inventory History</a></li>
+                        <li><a href="{{ admin_route('inventory.movements') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.movements') ? 'text-primary dark:text-primary' : '' }}">Inventory Movements</a></li>
                     </ul>
                 </li>
 

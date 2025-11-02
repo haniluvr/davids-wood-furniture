@@ -236,9 +236,7 @@
 
                 <!-- Pagination -->
                 @if($rmas->hasPages())
-                    <div class="px-6 py-3 border-t border-stone-200">
-                        {{ $rmas->links() }}
-                    </div>
+                    @include('admin.partials.pagination', ['paginator' => $rmas])
                 @endif
             @else
                 <div class="p-8 text-center">

@@ -20,9 +20,7 @@
                         Export
                     </button>
                     <a href="{{ admin_route('inventory.movements') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
+                        <i data-lucide="activity" class="w-4 h-4 mr-2"></i>
                         View Movements
                     </a>
                 </div>
@@ -140,16 +138,6 @@
             <div class="rounded-xl border border-stroke bg-white shadow-sm dark:border-strokedark dark:bg-boxdark">
                 <div class="flex items-center justify-between border-b border-stroke p-6 dark:border-strokedark">
                     <h3 class="text-lg font-semibold text-black dark:text-white">Product Inventory</h3>
-                    <div class="flex items-center gap-3">
-                        <a href="{{ admin_route('inventory.movements') }}" class="inline-flex items-center gap-2 rounded-lg border border-stroke px-3 py-2 text-sm hover:bg-gray-50 dark:border-strokedark dark:hover:bg-gray-800">
-                            <i data-lucide="activity" class="h-4 w-4"></i>
-                            View Movements
-                        </a>
-                        <button onclick="openExportModal()" class="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm text-white hover:bg-opacity-90">
-                            <i data-lucide="download" class="h-4 w-4"></i>
-                            Export
-                        </button>
-                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -202,12 +190,45 @@
                                     ₱{{ number_format($product->stock_quantity * $product->price, 2) }}
                                 </td>
                                 <td class="py-3 px-4">
-                                    <div class="flex items-center gap-2" x-data="{ dropdownOpen: false }">
-                                        <button @click="dropdownOpen = !dropdownOpen" class="text-gray-600 hover:text-primary dark:text-gray-400">
+                                    <div class="relative inline-block" 
+                                         x-data="{ 
+                                             dropdownOpen: false,
+                                             position: { top: 0, left: 0 },
+                                             updatePosition() {
+                                                 const button = this.$refs.button;
+                                                 if (button) {
+                                                     const rect = button.getBoundingClientRect();
+                                                     this.position = {
+                                                         top: rect.top + (rect.height / 2),
+                                                         left: rect.right + 8
+                                                     };
+                                                 }
+                                             },
+                                             toggleDropdown() {
+                                                 this.dropdownOpen = !this.dropdownOpen;
+                                                 if (this.dropdownOpen) {
+                                                     setTimeout(() => this.updatePosition(), 10);
+                                                 }
+                                             }
+                                         }" 
+                                         @click.outside="dropdownOpen = false">
+                                        <button @click="toggleDropdown()" 
+                                                class="text-gray-600 hover:text-primary dark:text-gray-400 relative z-10"
+                                                x-ref="button">
                                             <i data-lucide="more-horizontal" class="h-4 w-4"></i>
                                         </button>
                                         
-                                        <div x-show="dropdownOpen" @click.outside="dropdownOpen = false" class="absolute right-0 mt-2 z-40 w-40 space-y-1 rounded-lg border border-stroke bg-white p-1.5 shadow-lg dark:border-strokedark dark:bg-boxdark" x-cloak>
+                                        <div x-show="dropdownOpen" 
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 scale-95"
+                                             x-transition:enter-end="opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-150"
+                                             x-transition:leave-start="opacity-100 scale-100"
+                                             x-transition:leave-end="opacity-0 scale-95"
+                                             class="fixed z-[9999] w-48 space-y-1 rounded-xl border border-stone-200 bg-white p-1.5 shadow-xl dark:border-strokedark dark:bg-boxdark" 
+                                             x-cloak
+                                             :style="`top: ${position.top}px; left: ${position.left}px; transform: translateY(-50%);`"
+                                             x-ref="menu">
                                             <a href="{{ admin_route('inventory.show', $product) }}" class="flex w-full items-center gap-2 rounded-sm px-4 py-1.5 text-left text-sm hover:bg-gray dark:hover:bg-meta-4">
                                                 <i data-lucide="eye" class="w-4 h-4"></i>
                                                 View History
@@ -238,9 +259,7 @@
 
                 <!-- Pagination -->
                 @if($products->hasPages())
-                <div class="flex items-center justify-between border-t border-stroke p-6 dark:border-strokedark">
-                    {{ $products->links() }}
-                </div>
+                    @include('admin.partials.pagination', ['paginator' => $products])
                 @endif
             </div>
         </div>

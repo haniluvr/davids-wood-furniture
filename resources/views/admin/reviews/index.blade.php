@@ -316,9 +316,9 @@
                     </div>
 
                 <!-- Pagination -->
-                <div class="bg-white px-4 py-3 border-t border-stone-200 sm:px-6">
-                    {{ $reviews->links() }}
-                </div>
+                @if($reviews->hasPages())
+                    @include('admin.partials.pagination', ['paginator' => $reviews])
+                @endif
             @else
                 <div class="text-center py-12">
                     <svg class="mx-auto h-12 w-12 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

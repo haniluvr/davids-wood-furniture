@@ -249,7 +249,9 @@
                     </p>
                 </div>
                 <div>
-                    {{ $products->appends(request()->query())->links() }}
+                    @if($products->hasPages())
+                        @include('admin.partials.pagination', ['paginator' => $products->appends(request()->query())])
+                    @endif
                 </div>
             </div>
         </div>

@@ -189,9 +189,7 @@
 
     <!-- Pagination -->
     @if($orders->hasPages())
-                    <div class="px-6 py-3 border-t border-stone-200">
-        {{ $orders->links() }}
-    </div>
+        @include('admin.partials.pagination', ['paginator' => $orders])
     @endif
             @else
                 <div class="p-8 text-center">

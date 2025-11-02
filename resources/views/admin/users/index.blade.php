@@ -296,9 +296,7 @@
 
                 <!-- Pagination -->
                 @if($all_customers->hasPages())
-                    <div class="px-6 py-3 border-t border-stone-200">
-                        {{ $all_customers->links() }}
-                    </div>
+                    @include('admin.partials.pagination', ['paginator' => $all_customers])
                 @endif
             @else
                 <div class="p-8 text-center">

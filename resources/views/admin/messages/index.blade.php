@@ -231,9 +231,7 @@
 
                 <!-- Pagination -->
                 @if($messages->hasPages())
-                    <div class="px-6 py-3 border-t border-stone-200">
-                        {{ $messages->links() }}
-                    </div>
+                    @include('admin.partials.pagination', ['paginator' => $messages])
                 @endif
             @else
                 <div class="p-8 text-center">
