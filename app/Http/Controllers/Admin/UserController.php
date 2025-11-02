@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\WelcomeMail;
 use App\Models\Admin;
+use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -136,6 +137,9 @@ class UserController extends Controller
 
         $all_customer = User::create($all_customerData);
 
+        // Log customer creation
+        AuditLog::log('customer.created', Auth::guard('admin')->user(), $all_customer, [], [], "Created customer {$all_customer->first_name} {$all_customer->last_name} ({$all_customer->email})");
+
         // Send welcome email with magic link if requested
         if ($request->has('send_welcome_email') && $request->send_welcome_email) {
             try {
@@ -212,7 +216,11 @@ class UserController extends Controller
             'is_suspended' => 'boolean',
         ]);
 
+        $oldValues = $all_customer->only(['first_name', 'last_name', 'email', 'phone', 'is_suspended']);
         $all_customer->update($validated);
+
+        // Log customer update
+        AuditLog::log('customer.updated', Auth::guard('admin')->user(), $all_customer, $oldValues, $all_customer->only(['first_name', 'last_name', 'email', 'phone', 'is_suspended']), "Updated customer {$all_customer->first_name} {$all_customer->last_name}");
 
         return redirect()->to(admin_route('users.show', $all_customer))
             ->with('success', 'User updated successfully.');
@@ -231,8 +239,12 @@ class UserController extends Controller
         // Delete user's wishlist items
         $all_customer->wishlists()->delete();
 
+        $userData = $all_customer->toArray();
         // Delete the user
         $all_customer->delete();
+
+        // Log customer deletion
+        AuditLog::log('customer.deleted', Auth::guard('admin')->user(), null, $userData, [], "Deleted customer {$userData['first_name']} {$userData['last_name']} ({$userData['email']})");
 
         return redirect()->to(admin_route('users.index'))
             ->with('success', 'User deleted successfully.');
@@ -245,6 +257,9 @@ class UserController extends Controller
     {
         $all_customer->update(['is_suspended' => true]);
 
+        // Log suspension
+        AuditLog::log('customer.suspended', Auth::guard('admin')->user(), $all_customer, ['is_suspended' => false], ['is_suspended' => true], "Suspended customer {$all_customer->first_name} {$all_customer->last_name} ({$all_customer->email})");
+
         return back()->with('success', 'User account suspended successfully.');
     }
 
@@ -254,6 +269,9 @@ class UserController extends Controller
     public function unsuspend(User $all_customer)
     {
         $all_customer->update(['is_suspended' => false]);
+
+        // Log unsuspension
+        AuditLog::log('customer.unsuspended', Auth::guard('admin')->user(), $all_customer, ['is_suspended' => true], ['is_suspended' => false], "Unsuspended customer {$all_customer->first_name} {$all_customer->last_name} ({$all_customer->email})");
 
         return back()->with('success', 'User account unsuspended successfully.');
     }
@@ -265,6 +283,9 @@ class UserController extends Controller
     {
         $all_customer->update(['email_verified_at' => now()]);
 
+        // Log email verification
+        AuditLog::log('customer.email_verified', Auth::guard('admin')->user(), $all_customer, ['email_verified_at' => null], ['email_verified_at' => now()], "Verified email for customer {$all_customer->first_name} {$all_customer->last_name} ({$all_customer->email})");
+
         return back()->with('success', 'User email verified successfully.');
     }
 
@@ -273,7 +294,11 @@ class UserController extends Controller
      */
     public function unverifyEmail(User $all_customer)
     {
+        $oldVerifiedAt = $all_customer->email_verified_at;
         $all_customer->update(['email_verified_at' => null]);
+
+        // Log email unverification
+        AuditLog::log('customer.email_unverified', Auth::guard('admin')->user(), $all_customer, ['email_verified_at' => $oldVerifiedAt], ['email_verified_at' => null], "Removed email verification for customer {$all_customer->first_name} {$all_customer->last_name} ({$all_customer->email})");
 
         return back()->with('success', 'User email verification removed.');
     }
@@ -290,6 +315,9 @@ class UserController extends Controller
         $all_customer->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        // Log password reset (don't log the actual password)
+        AuditLog::log('customer.password_reset', Auth::guard('admin')->user(), $all_customer, [], [], "Reset password for customer {$all_customer->first_name} {$all_customer->last_name} ({$all_customer->email})");
 
         return back()->with('success', 'User password reset successfully.');
     }
@@ -348,6 +376,9 @@ class UserController extends Controller
 
         $admin = Admin::create($adminData);
 
+        // Log admin user creation
+        AuditLog::log('admin_user.created', Auth::guard('admin')->user(), $admin, [], [], "Created admin user {$admin->first_name} {$admin->last_name} ({$admin->email}) with role {$admin->role}");
+
         return redirect()->to(admin_route('users.admins'))
             ->with('success', 'Admin user created successfully.');
     }
@@ -367,7 +398,11 @@ class UserController extends Controller
             return back()->withErrors(['error' => 'Cannot delete the last super admin account.']);
         }
 
+        $adminData = $admin->toArray();
         $admin->delete();
+
+        // Log admin deletion
+        AuditLog::log('admin_user.deleted', Auth::guard('admin')->user(), null, $adminData, [], "Deleted admin user {$adminData['first_name']} {$adminData['last_name']} ({$adminData['email']}) with role {$adminData['role']}");
 
         return back()->with('success', 'Admin user deleted successfully.');
     }

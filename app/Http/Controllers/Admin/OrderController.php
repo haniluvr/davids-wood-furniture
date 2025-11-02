@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Events\OrderCreated;
 use App\Events\OrderStatusChanged;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\MagicLinkService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -183,6 +185,9 @@ class OrderController extends Controller
 
             DB::commit();
 
+            // Log order creation
+            AuditLog::log('order.created', Auth::guard('admin')->user(), $order, [], [], "Created order {$order->order_number} for customer");
+
             // Fire order created event
             event(new OrderCreated($order));
 
@@ -240,7 +245,11 @@ class OrderController extends Controller
             $validated['delivered_at'] = now();
         }
 
+        $oldValues = $order->only(['status', 'payment_status', 'shipping_method', 'tracking_number']);
         $order->update($validated);
+
+        // Log order update
+        AuditLog::log('order.updated', Auth::guard('admin')->user(), $order, $oldValues, $order->only(['status', 'payment_status', 'shipping_method', 'tracking_number']), "Updated order {$order->order_number}");
 
         return redirect()->to(admin_route('orders.show', $order))
             ->with('success', 'Order updated successfully.');
@@ -268,10 +277,14 @@ class OrderController extends Controller
                 }
             }
 
+            $orderData = $order->toArray();
             $order->orderItems()->delete();
             $order->delete();
 
             DB::commit();
+
+            // Log order deletion
+            AuditLog::log('order.deleted', Auth::guard('admin')->user(), null, $orderData, [], "Deleted order {$orderData['order_number']}");
 
             return redirect()->to(admin_route('orders.index'))
                 ->with('success', 'Order deleted successfully.');
@@ -325,6 +338,9 @@ class OrderController extends Controller
         }
 
         $order->update($updateData);
+
+        // Log order status change
+        AuditLog::log('order.status_updated', Auth::guard('admin')->user(), $order, ['status' => $oldStatus, 'fulfillment_status' => $order->getOriginal('fulfillment_status')], ['status' => $newStatus, 'fulfillment_status' => $updateData['fulfillment_status'] ?? $order->fulfillment_status], "Changed order {$order->order_number} status from {$oldStatus} to {$newStatus}");
 
         // Fire order status changed event
         event(new OrderStatusChanged($order, $oldStatus, $newStatus));
@@ -383,6 +399,9 @@ class OrderController extends Controller
         // Here you would integrate with your payment processor
         // For now, we'll just update the order status
 
+        $oldPaymentStatus = $order->payment_status;
+        $oldStatus = $order->status;
+
         $order->update([
             'payment_status' => 'refunded',
             'status' => 'returned',
@@ -391,6 +410,9 @@ class OrderController extends Controller
                       "\nReason: ".$request->refund_reason.
                       "\nProcessed at: ".now()->format('Y-m-d H:i:s'),
         ]);
+
+        // Log refund
+        AuditLog::log('order.refund_issued', Auth::guard('admin')->user(), $order, ['payment_status' => $oldPaymentStatus, 'status' => $oldStatus], ['payment_status' => 'refunded', 'status' => 'returned'], "Processed refund of ₱{$request->refund_amount} for order {$order->order_number}. Reason: {$request->refund_reason}");
 
         return back()->with('success', 'Refund processed successfully.');
     }
@@ -478,6 +500,9 @@ class OrderController extends Controller
             'admin_notes' => $request->admin_notes ? ($order->admin_notes ? $order->admin_notes."\n\n".$request->admin_notes : $request->admin_notes) : $order->admin_notes,
         ]);
 
+        // Log order approval
+        AuditLog::log('order.approved', Auth::guard('admin')->user(), $order, ['status' => $oldStatus, 'requires_approval' => true], ['status' => 'processing', 'requires_approval' => false, 'approved_at' => now()], "Approved order {$order->order_number}");
+
         event(new OrderStatusChanged($order, $oldStatus, 'processing'));
 
         return response()->json([
@@ -495,6 +520,7 @@ class OrderController extends Controller
             'admin_notes' => 'required|string|max:1000',
         ]);
 
+        $oldStatus = $order->status;
         $order->update([
             'requires_approval' => false,
             'status' => 'cancelled',
@@ -508,6 +534,9 @@ class OrderController extends Controller
                 $item->product->increment('stock_quantity', $item->quantity);
             }
         }
+
+        // Log order rejection
+        AuditLog::log('order.rejected', Auth::guard('admin')->user(), $order, ['status' => $oldStatus, 'requires_approval' => true], ['status' => 'cancelled', 'requires_approval' => false, 'rejected_at' => now()], "Rejected order {$order->order_number}. Notes: {$request->admin_notes}");
 
         return response()->json([
             'success' => true,
@@ -532,6 +561,7 @@ class OrderController extends Controller
         DB::transaction(function () use ($orderIds, $adminNotes) {
             foreach ($orderIds as $orderId) {
                 $order = Order::findOrFail($orderId);
+                $oldStatus = $order->status;
 
                 $order->update([
                     'requires_approval' => false,
@@ -541,7 +571,9 @@ class OrderController extends Controller
                     'admin_notes' => $adminNotes ? ($order->admin_notes ? $order->admin_notes."\n\n".$adminNotes : $adminNotes) : $order->admin_notes,
                 ]);
 
-                $oldStatus = 'pending';
+                // Log bulk approval
+                AuditLog::log('order.approved', Auth::guard('admin')->user(), $order, ['status' => $oldStatus, 'requires_approval' => true], ['status' => 'processing', 'requires_approval' => false, 'approved_at' => now()], "Bulk approved order {$order->order_number}");
+
                 event(new OrderStatusChanged($order, $oldStatus, 'processing'));
             }
         });
@@ -582,6 +614,10 @@ class OrderController extends Controller
                 }
 
                 $order->update($updateData);
+
+                // Log bulk status update
+                AuditLog::log('order.status_updated', Auth::guard('admin')->user(), $order, ['status' => $oldStatus], ['status' => $newStatus], "Bulk updated order {$order->order_number} status from {$oldStatus} to {$newStatus}");
+
                 event(new OrderStatusChanged($order, $oldStatus, $newStatus));
             }
         });
@@ -708,6 +744,7 @@ class OrderController extends Controller
             $updateData['status'] = 'delivered';
         }
 
+        $oldFulfillmentStatus = $order->fulfillment_status;
         $order->update($updateData);
 
         // Create or update fulfillment record
@@ -722,6 +759,9 @@ class OrderController extends Controller
             'packed_by' => $request->fulfillment_status === 'packed' ? auth('admin')->id() : $fulfillment->packed_by,
             'shipped_by' => $request->fulfillment_status === 'shipped' ? auth('admin')->id() : $fulfillment->shipped_by,
         ]);
+
+        // Log fulfillment status update
+        AuditLog::log('order.fulfillment_status_updated', Auth::guard('admin')->user(), $order, ['fulfillment_status' => $oldFulfillmentStatus], ['fulfillment_status' => $request->fulfillment_status], "Updated fulfillment status for order {$order->order_number} from {$oldFulfillmentStatus} to {$request->fulfillment_status}");
 
         return back()->with('success', 'Fulfillment status updated successfully.');
     }
@@ -844,6 +884,9 @@ class OrderController extends Controller
                 'newsletter_special_offers' => false,
                 'marketing_emails' => false,
             ]);
+
+            // Log customer creation
+            AuditLog::log('customer.created', Auth::guard('admin')->user(), $user, [], [], "Created customer {$user->first_name} {$user->last_name} ({$user->email}) for order creation");
 
             // Send magic link for password setup
             try {

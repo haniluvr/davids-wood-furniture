@@ -71,16 +71,7 @@ class ShippingMethodController extends Controller
         $shippingMethod = ShippingMethod::create($request->all());
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'shipping_method_created',
-            'model_type' => ShippingMethod::class,
-            'model_id' => $shippingMethod->id,
-            'old_values' => null,
-            'new_values' => $shippingMethod->toArray(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        AuditLog::log('shipping_method.created', Auth::guard('admin')->user(), $shippingMethod, [], [], "Created shipping method: {$shippingMethod->name}");
 
         return redirect()->to(admin_route('shipping-methods.index'))
             ->with('success', 'Shipping method created successfully.');
@@ -120,20 +111,11 @@ class ShippingMethodController extends Controller
                 ->withInput();
         }
 
-        $oldValues = $shippingMethod->toArray();
+        $oldValues = $shippingMethod->only(['name', 'cost', 'type', 'is_active']);
         $shippingMethod->update($request->all());
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'shipping_method_updated',
-            'model_type' => ShippingMethod::class,
-            'model_id' => $shippingMethod->id,
-            'old_values' => $oldValues,
-            'new_values' => $shippingMethod->toArray(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        AuditLog::log('shipping_method.updated', Auth::guard('admin')->user(), $shippingMethod, $oldValues, $shippingMethod->only(['name', 'cost', 'type', 'is_active']), "Updated shipping method: {$shippingMethod->name}");
 
         return redirect()->to(admin_route('shipping-methods.index'))
             ->with('success', 'Shipping method updated successfully.');
@@ -141,21 +123,11 @@ class ShippingMethodController extends Controller
 
     public function destroy(ShippingMethod $shippingMethod)
     {
-        $oldValues = $shippingMethod->toArray();
+        $shippingMethodData = $shippingMethod->toArray();
+        $shippingMethod->delete();
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'shipping_method_deleted',
-            'model_type' => ShippingMethod::class,
-            'model_id' => $shippingMethod->id,
-            'old_values' => $oldValues,
-            'new_values' => null,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
-
-        $shippingMethod->delete();
+        AuditLog::log('shipping_method.deleted', Auth::guard('admin')->user(), null, $shippingMethodData, [], "Deleted shipping method: {$shippingMethodData['name']}");
 
         return redirect()->to(admin_route('shipping-methods.index'))
             ->with('success', 'Shipping method deleted successfully.');
@@ -167,16 +139,7 @@ class ShippingMethodController extends Controller
         $shippingMethod->update(['is_active' => ! $shippingMethod->is_active]);
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'shipping_method_status_toggled',
-            'model_type' => ShippingMethod::class,
-            'model_id' => $shippingMethod->id,
-            'old_values' => ['is_active' => $oldStatus],
-            'new_values' => ['is_active' => $shippingMethod->is_active],
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        AuditLog::log('shipping_method.status_toggled', Auth::guard('admin')->user(), $shippingMethod, ['is_active' => $oldStatus], ['is_active' => $shippingMethod->is_active], "Toggled shipping method status for {$shippingMethod->name} from ".($oldStatus ? 'active' : 'inactive').' to '.($shippingMethod->is_active ? 'active' : 'inactive'));
 
         return response()->json([
             'success' => true,
@@ -199,16 +162,7 @@ class ShippingMethodController extends Controller
         }
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'shipping_methods_reordered',
-            'model_type' => ShippingMethod::class,
-            'model_id' => null,
-            'old_values' => null,
-            'new_values' => $request->shipping_methods,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        AuditLog::log('shipping_method.reordered', Auth::guard('admin')->user(), null, [], $request->shipping_methods, 'Reordered shipping methods');
 
         return response()->json([
             'success' => true,

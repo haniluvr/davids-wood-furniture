@@ -30,12 +30,12 @@ class AuditLog extends Model
     // Relationships
     public function admin()
     {
-        return $this->belongsTo(Admin::class, 'user_id')->where('user_type', 'admin');
+        return $this->belongsTo(Admin::class, 'user_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id')->where('user_type', 'user');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // Scopes
@@ -121,12 +121,94 @@ class AuditLog extends Model
     public function getActionColorAttribute(): string
     {
         return match ($this->action) {
-            'create' => 'text-green-600',
-            'update' => 'text-blue-600',
-            'delete' => 'text-red-600',
+            'create', 'product.created', 'order.created', 'customer.created', 'admin_user.created' => 'text-green-600',
+            'update', 'product.updated', 'order.status_updated', 'customer.updated' => 'text-blue-600',
+            'delete', 'product.deleted', 'order.deleted', 'customer.deleted' => 'text-red-600',
             'login' => 'text-purple-600',
             'logout' => 'text-gray-600',
+            'inventory.adjusted', 'low_stock_alert.acknowledged' => 'text-orange-600',
+            'order.refund_issued' => 'text-yellow-600',
+            'admin_user.role_changed', 'admin_user.deactivated' => 'text-red-600',
             default => 'text-gray-600',
         };
+    }
+
+    public function getActionBadgeColorAttribute(): string
+    {
+        return match ($this->action) {
+            'create', 'product.created', 'order.created', 'customer.created', 'admin_user.created' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            'update', 'product.updated', 'order.status_updated', 'customer.updated' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+            'delete', 'product.deleted', 'order.deleted', 'customer.deleted' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            'login' => 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+            'logout' => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+            'inventory.adjusted', 'low_stock_alert.acknowledged' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+            'order.refund_issued' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+            'admin_user.role_changed', 'admin_user.deactivated' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            default => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+        };
+    }
+
+    public function getCriticalityAttribute(): string
+    {
+        $criticalActions = ['delete', 'product.deleted', 'order.deleted', 'customer.deleted', 'admin_user.role_changed', 'admin_user.deactivated', 'order.refund_issued'];
+        $highActions = ['product.updated', 'order.status_updated', 'inventory.adjusted', 'password_changed'];
+
+        if (in_array($this->action, $criticalActions)) {
+            return 'high';
+        } elseif (in_array($this->action, $highActions)) {
+            return 'medium';
+        }
+
+        return 'low';
+    }
+
+    public function getUserDisplayAttribute(): string
+    {
+        if ($this->user_type === 'admin' && $this->admin) {
+            $role = $this->admin->role ? ' ('.ucfirst(str_replace('_', ' ', $this->admin->role)).')' : '';
+
+            return $this->admin->full_name.$role;
+        } elseif ($this->user_type === 'user' && $this->user) {
+            return $this->user->first_name.' '.$this->user->last_name;
+        }
+
+        return 'System';
+    }
+
+    public function getUserEmailAttribute(): ?string
+    {
+        if ($this->user_type === 'admin' && $this->admin) {
+            return $this->admin->email;
+        } elseif ($this->user_type === 'user' && $this->user) {
+            return $this->user->email ?? null;
+        }
+
+        return null;
+    }
+
+    public function getFormattedChangesAttribute(): ?string
+    {
+        if (empty($this->old_values) && empty($this->new_values)) {
+            return null;
+        }
+
+        $changes = [];
+
+        if (! empty($this->old_values) && ! empty($this->new_values)) {
+            foreach ($this->new_values as $key => $newValue) {
+                $oldValue = $this->old_values[$key] ?? null;
+                if ($oldValue !== $newValue && ! in_array($key, ['updated_at', 'created_at'])) {
+                    $changes[] = "{$key}: ".($oldValue ?: 'empty').' → '.($newValue ?: 'empty');
+                }
+            }
+        } elseif (! empty($this->new_values)) {
+            foreach ($this->new_values as $key => $value) {
+                if (! in_array($key, ['updated_at', 'created_at'])) {
+                    $changes[] = "{$key}: ".($value ?: 'empty');
+                }
+            }
+        }
+
+        return ! empty($changes) ? implode(', ', array_slice($changes, 0, 5)) : null;
     }
 }

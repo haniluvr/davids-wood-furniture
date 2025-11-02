@@ -260,9 +260,10 @@ $adminRoutes = function () {
         });
 
         // Audit Trail
-        Route::middleware('admin.permission:audit_logs.view')->group(function () {
+        Route::middleware('admin.permission:audit.view')->group(function () {
             Route::get('audit', [App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit.index');
             Route::get('audit/export', [App\Http\Controllers\Admin\AuditController::class, 'export'])->name('audit.export');
+            Route::get('audit/search-users', [App\Http\Controllers\Admin\AuditController::class, 'searchUsers'])->name('audit.search-users');
         });
 
         // Notifications Management

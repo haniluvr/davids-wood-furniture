@@ -51,17 +51,19 @@ class PermissionController extends Controller
             }
         }
 
+        // Get old permissions for logging
+        $oldPermissions = [];
+        foreach ($permissions as $role => $rolePermissions) {
+            foreach ($rolePermissions as $permission => $granted) {
+                $oldPermission = AdminPermission::where('role', $role)
+                    ->where('permission', $permission)
+                    ->first();
+                $oldPermissions[$role][$permission] = $oldPermission ? $oldPermission->granted : false;
+            }
+        }
+
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'permissions_updated',
-            'model_type' => AdminPermission::class,
-            'model_id' => null,
-            'old_values' => null,
-            'new_values' => $permissions,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        AuditLog::log('admin_user.permissions_updated', Auth::guard('admin')->user(), null, $oldPermissions, $permissions, 'Updated permissions for multiple roles');
 
         return redirect()->to(admin_route('permissions.index'))
             ->with('success', 'Permissions updated successfully.');
@@ -87,16 +89,7 @@ class PermissionController extends Controller
         }
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'permissions_reset_to_defaults',
-            'model_type' => AdminPermission::class,
-            'model_id' => null,
-            'old_values' => null,
-            'new_values' => $defaultPermissions,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        AuditLog::log('admin_user.permissions_reset', Auth::guard('admin')->user(), null, [], $defaultPermissions, 'Reset all permissions to defaults');
 
         return redirect()->to(admin_route('permissions.index'))
             ->with('success', 'Permissions reset to defaults successfully.');

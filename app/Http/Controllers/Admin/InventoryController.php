@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Events\LowStockAlert;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\InventoryMovement;
 use App\Models\Product;
@@ -232,6 +233,12 @@ class InventoryController extends Controller
             Auth::guard('admin')->id()
         );
 
+        // Refresh product to get updated stock
+        $product->refresh();
+
+        // Log inventory adjustment
+        AuditLog::log('inventory.adjusted', Auth::guard('admin')->user(), $product, ['stock_quantity' => $currentStock], ['stock_quantity' => $newStock], "Adjusted stock for {$product->name} (SKU: {$product->sku}) from {$currentStock} to {$newStock}. Type: {$validated['adjustment_type']}, Reason: {$validated['reason']}");
+
         // Check for low stock alert
         if ($newStock <= 10) { // Low stock threshold
             event(new LowStockAlert($product, $newStock, 10));
@@ -252,6 +259,8 @@ class InventoryController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
+        $oldStock = $product->stock_quantity;
+
         InventoryMovement::recordStockIn(
             $product->id,
             $validated['quantity'],
@@ -261,6 +270,11 @@ class InventoryController extends Controller
             null,
             Auth::guard('admin')->id()
         );
+
+        $product->refresh();
+
+        // Log stock addition
+        AuditLog::log('inventory.added', Auth::guard('admin')->user(), $product, ['stock_quantity' => $oldStock], ['stock_quantity' => $product->stock_quantity], "Added {$validated['quantity']} units to {$product->name} (SKU: {$product->sku}). Reason: {$validated['reason']}");
 
         return back()->with('success', 'Stock added successfully.');
     }
@@ -276,6 +290,8 @@ class InventoryController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
+        $oldStock = $product->stock_quantity;
+
         InventoryMovement::recordStockOut(
             $product->id,
             $validated['quantity'],
@@ -285,6 +301,11 @@ class InventoryController extends Controller
             null,
             Auth::guard('admin')->id()
         );
+
+        $product->refresh();
+
+        // Log stock removal
+        AuditLog::log('inventory.removed', Auth::guard('admin')->user(), $product, ['stock_quantity' => $oldStock], ['stock_quantity' => $product->stock_quantity], "Removed {$validated['quantity']} units from {$product->name} (SKU: {$product->sku}). Reason: {$validated['reason']}");
 
         return back()->with('success', 'Stock removed successfully.');
     }
@@ -713,8 +734,10 @@ class InventoryController extends Controller
         DB::beginTransaction();
 
         try {
+            $updatedCount = 0;
             foreach ($validated['products'] as $productData) {
                 $product = Product::findOrFail($productData['id']);
+                $oldStock = $product->stock_quantity;
                 $newStock = $productData['stock_quantity'];
 
                 if ($product->stock_quantity != $newStock) {
@@ -725,12 +748,18 @@ class InventoryController extends Controller
                         $validated['notes'],
                         Auth::guard('admin')->id()
                     );
+
+                    $product->refresh();
+
+                    // Log bulk inventory adjustment
+                    AuditLog::log('inventory.adjusted', Auth::guard('admin')->user(), $product, ['stock_quantity' => $oldStock], ['stock_quantity' => $newStock], "Bulk adjusted stock for {$product->name} (SKU: {$product->sku}) from {$oldStock} to {$newStock}. Reason: {$validated['reason']}");
+                    $updatedCount++;
                 }
             }
 
             DB::commit();
 
-            return back()->with('success', 'Bulk stock update completed successfully.');
+            return back()->with('success', "Bulk stock update completed successfully. {$updatedCount} product(s) updated.");
         } catch (\Exception $e) {
             DB::rollback();
 
@@ -813,6 +842,9 @@ class InventoryController extends Controller
                     'notes' => $notes ?: 'Bulk restock from low stock alerts',
                     'created_by' => Auth::guard('admin')->id(),
                 ]);
+
+                // Log bulk restock
+                AuditLog::log('inventory.added', Auth::guard('admin')->user(), $product, ['stock_quantity' => $oldQuantity], ['stock_quantity' => $newQuantity], "Bulk restocked {$quantity} units to {$product->name} (SKU: {$product->sku}). Reason: Bulk Restock");
             }
 
             DB::commit();

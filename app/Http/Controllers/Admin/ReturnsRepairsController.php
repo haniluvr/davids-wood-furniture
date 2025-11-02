@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\ReturnRepair;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -198,6 +200,9 @@ class ReturnsRepairsController extends Controller
 
             // Update order return status
             Order::find($request->order_id)->update(['return_status' => 'requested']);
+
+            // Log return/repair creation
+            AuditLog::log('return_repair.created', Auth::guard('admin')->user(), $returnRepair, [], [], "Created {$returnRepair->type} request {$returnRepair->rma_number} for order {$returnRepair->order->order_number}");
         });
 
         return redirect()->to(admin_route('orders.returns-repairs.index'))
@@ -210,6 +215,7 @@ class ReturnsRepairsController extends Controller
             'admin_notes' => 'nullable|string|max:1000',
         ]);
 
+        $oldStatus = $returnRepair->status;
         $returnRepair->update([
             'status' => 'approved',
             'approved_at' => now(),
@@ -218,6 +224,9 @@ class ReturnsRepairsController extends Controller
         ]);
 
         $returnRepair->order->update(['return_status' => 'approved']);
+
+        // Log approval
+        AuditLog::log('return_repair.approved', Auth::guard('admin')->user(), $returnRepair, ['status' => $oldStatus], ['status' => 'approved'], "Approved {$returnRepair->type} request {$returnRepair->rma_number}");
 
         return response()->json([
             'success' => true,
@@ -231,6 +240,7 @@ class ReturnsRepairsController extends Controller
             'admin_notes' => 'required|string|max:1000',
         ]);
 
+        $oldStatus = $returnRepair->status;
         $returnRepair->update([
             'status' => 'rejected',
             'processed_by' => auth('admin')->id(),
@@ -238,6 +248,9 @@ class ReturnsRepairsController extends Controller
         ]);
 
         $returnRepair->order->update(['return_status' => 'none']);
+
+        // Log rejection
+        AuditLog::log('return_repair.rejected', Auth::guard('admin')->user(), $returnRepair, ['status' => $oldStatus], ['status' => 'rejected'], "Rejected {$returnRepair->type} request {$returnRepair->rma_number}. Notes: {$request->admin_notes}");
 
         return response()->json([
             'success' => true,
@@ -251,6 +264,7 @@ class ReturnsRepairsController extends Controller
             'admin_notes' => 'nullable|string|max:1000',
         ]);
 
+        $oldStatus = $returnRepair->status;
         $returnRepair->update([
             'status' => 'received',
             'received_at' => now(),
@@ -259,6 +273,9 @@ class ReturnsRepairsController extends Controller
         ]);
 
         $returnRepair->order->update(['return_status' => 'received']);
+
+        // Log received status
+        AuditLog::log('return_repair.received', Auth::guard('admin')->user(), $returnRepair, ['status' => $oldStatus], ['status' => 'received'], "Marked {$returnRepair->type} request {$returnRepair->rma_number} as received");
 
         return response()->json([
             'success' => true,
@@ -274,6 +291,7 @@ class ReturnsRepairsController extends Controller
             'admin_notes' => 'nullable|string|max:1000',
         ]);
 
+        $oldStatus = $returnRepair->status;
         $returnRepair->update([
             'status' => 'refunded',
             'refund_amount' => $request->refund_amount,
@@ -284,6 +302,9 @@ class ReturnsRepairsController extends Controller
         ]);
 
         $returnRepair->order->update(['return_status' => 'completed']);
+
+        // Log refund processing
+        AuditLog::log('return_repair.refund_processed', Auth::guard('admin')->user(), $returnRepair, ['status' => $oldStatus], ['status' => 'refunded', 'refund_amount' => $request->refund_amount], "Processed refund of ₱{$request->refund_amount} for {$returnRepair->type} request {$returnRepair->rma_number}");
 
         return response()->json([
             'success' => true,
@@ -297,6 +318,7 @@ class ReturnsRepairsController extends Controller
             'admin_notes' => 'nullable|string|max:1000',
         ]);
 
+        $oldStatus = $returnRepair->status;
         $returnRepair->update([
             'status' => 'completed',
             'completed_at' => now(),
@@ -305,6 +327,9 @@ class ReturnsRepairsController extends Controller
         ]);
 
         $returnRepair->order->update(['return_status' => 'completed']);
+
+        // Log completion
+        AuditLog::log('return_repair.completed', Auth::guard('admin')->user(), $returnRepair, ['status' => $oldStatus], ['status' => 'completed'], "Marked {$returnRepair->type} request {$returnRepair->rma_number} as completed");
 
         return response()->json([
             'success' => true,

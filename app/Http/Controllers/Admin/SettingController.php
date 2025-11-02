@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\PaymentGateway;
 use App\Models\Setting;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
@@ -55,13 +57,22 @@ class SettingController extends Controller
             $validated['site_favicon'] = $faviconPath;
         }
 
-        // Update settings
+        // Get old settings for logging
+        $oldSettings = [];
+        $newSettings = [];
         foreach ($validated as $key => $value) {
+            $oldSetting = Setting::where('key', $key)->first();
+            $oldSettings[$key] = $oldSetting ? $oldSetting->value : null;
+            $newSettings[$key] = $value;
+
             Setting::updateOrCreate(
                 ['key' => $key],
                 ['value' => $value]
             );
         }
+
+        // Log settings update
+        AuditLog::log('settings.general_updated', Auth::guard('admin')->user(), null, $oldSettings, $newSettings, 'Updated general settings');
 
         // Clear cache
         Cache::forget('settings');
@@ -87,13 +98,22 @@ class SettingController extends Controller
             'mail_reply_to_name' => 'nullable|string|max:255',
         ]);
 
-        // Update settings
+        // Get old settings for logging (exclude password for security)
+        $oldSettings = [];
+        $newSettings = [];
         foreach ($validated as $key => $value) {
+            $oldSetting = Setting::where('key', $key)->first();
+            $oldSettings[$key] = $oldSetting ? ($key === 'mail_password' ? '[REDACTED]' : $oldSetting->value) : null;
+            $newSettings[$key] = $key === 'mail_password' ? '[REDACTED]' : $value;
+
             Setting::updateOrCreate(
                 ['key' => $key],
                 ['value' => $value]
             );
         }
+
+        // Log email settings update
+        AuditLog::log('settings.email_updated', Auth::guard('admin')->user(), null, $oldSettings, $newSettings, 'Updated email settings');
 
         return back()->with('success', 'Email settings updated successfully.');
     }

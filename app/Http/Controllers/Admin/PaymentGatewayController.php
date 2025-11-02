@@ -87,16 +87,7 @@ class PaymentGatewayController extends Controller
         $paymentGateway = PaymentGateway::create($data);
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'payment_gateway_created',
-            'model_type' => PaymentGateway::class,
-            'model_id' => $paymentGateway->id,
-            'old_values' => null,
-            'new_values' => $paymentGateway->toArray(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        AuditLog::log('payment_gateway.created', Auth::guard('admin')->user(), $paymentGateway, [], [], "Created payment gateway: {$paymentGateway->display_name}");
 
         return redirect()->to(admin_route('payment-gateways.index'))
             ->with('success', 'Payment gateway created successfully.');
@@ -135,7 +126,7 @@ class PaymentGatewayController extends Controller
                 ->withInput();
         }
 
-        $oldValues = $paymentGateway->toArray();
+        $oldValues = $paymentGateway->only(['name', 'display_name', 'is_active', 'is_test_mode']);
         $data = $request->all();
 
         // Encrypt sensitive configuration data
@@ -154,16 +145,7 @@ class PaymentGatewayController extends Controller
         $paymentGateway->update($data);
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'payment_gateway_updated',
-            'model_type' => PaymentGateway::class,
-            'model_id' => $paymentGateway->id,
-            'old_values' => $oldValues,
-            'new_values' => $paymentGateway->toArray(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        AuditLog::log('payment_gateway.updated', Auth::guard('admin')->user(), $paymentGateway, $oldValues, $paymentGateway->only(['name', 'display_name', 'is_active', 'is_test_mode']), "Updated payment gateway: {$paymentGateway->display_name}");
 
         return redirect()->to(admin_route('payment-gateways.index'))
             ->with('success', 'Payment gateway updated successfully.');
@@ -171,21 +153,11 @@ class PaymentGatewayController extends Controller
 
     public function destroy(PaymentGateway $paymentGateway)
     {
-        $oldValues = $paymentGateway->toArray();
+        $paymentGatewayData = $paymentGateway->toArray();
+        $paymentGateway->delete();
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'payment_gateway_deleted',
-            'model_type' => PaymentGateway::class,
-            'model_id' => $paymentGateway->id,
-            'old_values' => $oldValues,
-            'new_values' => null,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
-
-        $paymentGateway->delete();
+        AuditLog::log('payment_gateway.deleted', Auth::guard('admin')->user(), null, $paymentGatewayData, [], "Deleted payment gateway: {$paymentGatewayData['display_name']}");
 
         return redirect()->to(admin_route('payment-gateways.index'))
             ->with('success', 'Payment gateway deleted successfully.');
@@ -197,16 +169,7 @@ class PaymentGatewayController extends Controller
         $paymentGateway->update(['is_active' => ! $paymentGateway->is_active]);
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'payment_gateway_status_toggled',
-            'model_type' => PaymentGateway::class,
-            'model_id' => $paymentGateway->id,
-            'old_values' => ['is_active' => $oldStatus],
-            'new_values' => ['is_active' => $paymentGateway->is_active],
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        AuditLog::log('payment_gateway.status_toggled', Auth::guard('admin')->user(), $paymentGateway, ['is_active' => $oldStatus], ['is_active' => $paymentGateway->is_active], "Toggled payment gateway status for {$paymentGateway->display_name} from ".($oldStatus ? 'active' : 'inactive').' to '.($paymentGateway->is_active ? 'active' : 'inactive'));
 
         return response()->json([
             'success' => true,
@@ -221,16 +184,7 @@ class PaymentGatewayController extends Controller
         $paymentGateway->update(['is_test_mode' => ! $paymentGateway->is_test_mode]);
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'payment_gateway_mode_toggled',
-            'model_type' => PaymentGateway::class,
-            'model_id' => $paymentGateway->id,
-            'old_values' => ['is_test_mode' => $oldMode],
-            'new_values' => ['is_test_mode' => $paymentGateway->is_test_mode],
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        AuditLog::log('payment_gateway.mode_toggled', Auth::guard('admin')->user(), $paymentGateway, ['is_test_mode' => $oldMode], ['is_test_mode' => $paymentGateway->is_test_mode], "Toggled payment gateway mode for {$paymentGateway->display_name} from ".($oldMode ? 'test' : 'live').' to '.($paymentGateway->is_test_mode ? 'test' : 'live'));
 
         return response()->json([
             'success' => true,
@@ -280,16 +234,7 @@ class PaymentGatewayController extends Controller
         }
 
         // Log the action
-        AuditLog::create([
-            'admin_id' => Auth::id(),
-            'action' => 'payment_gateways_reordered',
-            'model_type' => PaymentGateway::class,
-            'model_id' => null,
-            'old_values' => null,
-            'new_values' => $request->payment_gateways,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        AuditLog::log('payment_gateway.reordered', Auth::guard('admin')->user(), null, [], $request->payment_gateways, 'Reordered payment gateways');
 
         return response()->json([
             'success' => true,
