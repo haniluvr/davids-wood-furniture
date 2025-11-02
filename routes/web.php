@@ -83,6 +83,7 @@ $adminRoutes = function () {
         // Returns & Repairs
         Route::get('orders/returns-repairs', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'index'])->name('orders.returns-repairs.index');
         Route::get('orders/returns-repairs/create', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'create'])->name('orders.returns-repairs.create');
+        Route::get('orders/returns-repairs/search-orders', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'searchOrders'])->name('orders.returns-repairs.search-orders');
         Route::post('orders/returns-repairs', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'store'])->name('orders.returns-repairs.store');
         Route::get('orders/returns-repairs/{returnRepair}', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'show'])->name('orders.returns-repairs.show');
         Route::get('orders/returns-repairs/{returnRepair}/edit', [App\Http\Controllers\Admin\ReturnsRepairsController::class, 'edit'])->name('orders.returns-repairs.edit');
@@ -101,17 +102,20 @@ $adminRoutes = function () {
         Route::post('customers/quick-create', [App\Http\Controllers\Admin\OrderController::class, 'quickCreateCustomer'])->name('customers.quick-create');
 
         // Bulk Actions & Export (before resource routes)
+        Route::post('orders/bulk-approve', [App\Http\Controllers\Admin\OrderController::class, 'bulkApprove'])->name('orders.bulk-approve');
         Route::post('orders/bulk-update-status', [App\Http\Controllers\Admin\OrderController::class, 'bulkUpdateStatus'])->name('orders.bulk-update-status');
         Route::get('orders/export', [App\Http\Controllers\Admin\OrderController::class, 'export'])->name('orders.export');
 
-        // Resource routes (must come AFTER custom routes)
-        Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
+        // Single order actions (before resource routes to avoid conflicts)
+        Route::post('orders/{order}/approve', [App\Http\Controllers\Admin\OrderController::class, 'approveOrder'])->name('orders.approve');
+        Route::post('orders/{order}/reject', [App\Http\Controllers\Admin\OrderController::class, 'rejectOrder'])->name('orders.reject');
         Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
         Route::post('orders/{order}/refund', [App\Http\Controllers\Admin\OrderController::class, 'processRefund'])->name('orders.process-refund');
         Route::get('orders/{order}/invoice', [App\Http\Controllers\Admin\OrderController::class, 'downloadInvoice'])->name('orders.download-invoice');
         Route::get('orders/{order}/packing-slip', [App\Http\Controllers\Admin\OrderController::class, 'downloadPackingSlip'])->name('orders.download-packing-slip');
-        Route::post('orders/{order}/approve', [App\Http\Controllers\Admin\OrderController::class, 'approveOrder'])->name('orders.approve');
-        Route::post('orders/{order}/reject', [App\Http\Controllers\Admin\OrderController::class, 'rejectOrder'])->name('orders.reject');
+
+        // Resource routes (must come AFTER custom routes)
+        Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
         // });
 
         // User Management
@@ -347,6 +351,10 @@ Route::get('/products/{product}', [ProductController::class, 'show'])->name('pro
 // Contact form routes
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
 
+// Static pages routes
+Route::get('/privacy-policy', [App\Http\Controllers\PageController::class, 'privacyPolicy'])->name('privacy-policy');
+Route::get('/terms-of-service', [App\Http\Controllers\PageController::class, 'termsOfService'])->name('terms-of-service');
+
 // Login page route (for admin redirects and Authenticate middleware) - redirect to home with login modal
 // Note: 'login' route name is required by Laravel's Authenticate middleware
 Route::get('/login', function () {
@@ -376,7 +384,7 @@ Route::middleware(['api.session'])->group(function () {
 // Keep this BELOW specific routes like auth, products, etc., to avoid shadowing
 Route::get('/{slug}', [App\Http\Controllers\CmsPageController::class, 'show'])
     ->name('cms.show')
-    ->where('slug', '^(?!test-route$|health$|login$|verify-email-sent$|verify-email$|reset-password$|auth$|checkout$|account$|products$|api$|contact$)[a-zA-Z0-9\-]+$');
+    ->where('slug', '^(?!test-route$|health$|login$|verify-email-sent$|verify-email$|reset-password$|auth$|checkout$|account$|products$|api$|contact$|privacy-policy$|terms-of-service$)[a-zA-Z0-9\-]+$');
 
 // Cart routes (using web middleware for proper session handling)
 Route::middleware(['web'])->group(function () {

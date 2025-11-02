@@ -23,7 +23,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="py-6">
+    <div class="pt-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
     <!-- Pending Approval -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
@@ -79,16 +79,16 @@
         </div>
 
     <!-- Filters -->
-    <div class="py-6">
+    <div class="pb-6">
         <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
-            <form method="GET" action="{{ admin_route('orders.pending-approval') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
+            <form method="GET" action="{{ admin_route('orders.pending-approval') }}" class="flex flex-wrap items-end gap-4 justify-between">
+                <div class="flex-1 min-w-[200px]">
                     <label for="search" class="block text-sm font-medium text-stone-700 mb-2">Search</label>
                     <input type="text" id="search" name="search" value="{{ request('search') }}" 
                            placeholder="Search orders..."
                            class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-            </div>
-                <div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
                     <label for="priority" class="block text-sm font-medium text-stone-700 mb-2">Priority</label>
                     <select id="priority" name="priority" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                         <option value="">All Priorities</option>
@@ -96,24 +96,18 @@
                         <option value="medium" {{ request('priority') === 'medium' ? 'selected' : '' }}>Medium</option>
                         <option value="low" {{ request('priority') === 'low' ? 'selected' : '' }}>Low</option>
                     </select>
-                    </div>
+                </div>
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
-                        </svg>
+                    <button type="submit" class="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 whitespace-nowrap">
                         Filter
                     </button>
-                    <a href="{{ admin_route('orders.pending-approval') }}" class="inline-flex justify-center items-center px-4 py-2 border border-stone-300 rounded-lg text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        Clear
+                    <a href="{{ admin_route('orders.pending-approval') }}" class="inline-flex items-center justify-center rounded-lg border border-stone-300 px-4 py-2.5 text-sm hover:bg-stone-50">
+                        <i data-lucide="x" class="h-4 w-4"></i>
                     </a>
                 </div>
             </form>
-                </div>
-            </div>
+        </div>
+    </div>
 
     <!-- Orders List -->
     <div class="pb-8">
@@ -152,8 +146,16 @@
                                         ₱{{ number_format($order->total_amount, 2) }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="text-sm text-stone-900 dark:text-white capitalize">
-                                            {{ $order->priority }}
+                                        @php
+                                            $priority = $order->total_amount >= 10000 ? 'high' : ($order->total_amount >= 5000 ? 'medium' : 'low');
+                                            $priorityColors = [
+                                                'high' => 'bg-red-100 text-red-800',
+                                                'medium' => 'bg-yellow-100 text-yellow-800',
+                                                'low' => 'bg-green-100 text-green-800'
+                                            ];
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $priorityColors[$priority] }} capitalize">
+                                            {{ $priority }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-stone-900">
@@ -161,12 +163,12 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex items-center space-x-2">
-                                            <button onclick="approveOrder({{ $order->id }})" class="text-green-600 hover:text-green-900 transition-colors duration-150" title="Approve">
+                                            <button onclick="approveOrder({{ $order->id }}, '{{ $order->order_number }}')" class="text-green-600 hover:text-green-900 transition-colors duration-150" title="Approve">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
                 </button>
-                                            <button onclick="rejectOrder({{ $order->id }})" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Reject">
+                                            <button onclick="rejectOrder({{ $order->id }}, '{{ $order->order_number }}')" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Reject">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                 </svg>
@@ -205,6 +207,96 @@
     </div>
 </div>
 
+<!-- Bulk Approve Modal -->
+<div id="bulk-approve-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeBulkApproveModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900">Bulk Approve Orders</h3>
+                <p class="text-sm text-stone-600">Approve selected orders and move them to processing</p>
+            </div>
+            <div class="mb-4">
+                <p class="text-sm text-stone-700" id="selected-orders-count"></p>
+                <label for="bulk-approve-notes" class="block text-sm font-medium text-stone-700 mt-4 mb-2">Admin Notes (Optional)</label>
+                <textarea id="bulk-approve-notes" rows="3" placeholder="Add any notes about this approval..." class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button id="confirm-bulk-approve-btn" onclick="confirmBulkApprove(this)" class="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Approve Selected
+                </button>
+                <button onclick="closeBulkApproveModal()" class="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Single Order Approve Modal -->
+<div id="approve-order-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeApproveOrderModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900">Approve Order</h3>
+                <p class="text-sm text-stone-600">Are you sure you want to approve this order? It will be moved to processing.</p>
+            </div>
+            <div class="mb-4">
+                <p class="text-sm text-stone-700 mb-4" id="approve-order-number"></p>
+                <label for="approve-order-notes" class="block text-sm font-medium text-stone-700 mb-2">Admin Notes (Optional)</label>
+                <textarea id="approve-order-notes" rows="3" placeholder="Add any notes about this approval..." class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button id="confirm-approve-order-btn" onclick="confirmApproveOrder(this)" class="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Approve Order
+                </button>
+                <button onclick="closeApproveOrderModal()" class="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Single Order Reject Modal -->
+<div id="reject-order-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeRejectOrderModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900">Reject Order</h3>
+                <p class="text-sm text-stone-600">This order will be cancelled and stock will be restored.</p>
+            </div>
+            <div class="mb-4">
+                <p class="text-sm text-stone-700 mb-4" id="reject-order-number"></p>
+                <label for="reject-order-notes" class="block text-sm font-medium text-stone-700 mb-2">
+                    Rejection Reason <span class="text-red-600">*</span>
+                </label>
+                <textarea id="reject-order-notes" rows="4" placeholder="Please provide a reason for rejection..." required class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"></textarea>
+                <p class="text-xs text-stone-500 mt-1">This field is required</p>
+            </div>
+            <div class="flex gap-3">
+                <button id="confirm-reject-order-btn" onclick="confirmRejectOrder(this)" class="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Reject Order
+                </button>
+                <button onclick="closeRejectOrderModal()" class="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -234,9 +326,9 @@ document.addEventListener('DOMContentLoaded', function() {
     bulkApproveBtn.addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
         if (checkedBoxes.length > 0) {
-            if (confirm(`Are you sure you want to approve ${checkedBoxes.length} orders?`)) {
-                bulkApproveOrders(Array.from(checkedBoxes).map(cb => cb.value));
-            }
+            document.getElementById('selected-orders-count').textContent = `You are about to approve ${checkedBoxes.length} order(s).`;
+            document.getElementById('bulk-approve-modal').classList.remove('hidden');
+            document.body.classList.add('modal-open');
         }
     });
 
@@ -255,23 +347,213 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function approveOrder(orderId) {
-    if (confirm('Are you sure you want to approve this order?')) {
-        // Implement approve order functionality
-        console.log('Approve order:', orderId);
-    }
+function approveOrder(orderId, orderNumber) {
+    document.getElementById('approve-order-number').textContent = `Order: #${orderNumber}`;
+    document.getElementById('approve-order-modal').dataset.orderId = orderId;
+    document.getElementById('approve-order-notes').value = '';
+    document.getElementById('approve-order-modal').classList.remove('hidden');
+    document.body.classList.add('modal-open');
 }
 
-function rejectOrder(orderId) {
-    if (confirm('Are you sure you want to reject this order?')) {
-        // Implement reject order functionality
-        console.log('Reject order:', orderId);
+function rejectOrder(orderId, orderNumber) {
+    document.getElementById('reject-order-number').textContent = `Order: #${orderNumber}`;
+    document.getElementById('reject-order-modal').dataset.orderId = orderId;
+    document.getElementById('reject-order-notes').value = '';
+    document.getElementById('reject-order-modal').classList.remove('hidden');
+    document.body.classList.add('modal-open');
+}
+
+function closeApproveOrderModal() {
+    document.getElementById('approve-order-modal').classList.add('hidden');
+    document.getElementById('approve-order-notes').value = '';
+    document.getElementById('approve-order-modal').dataset.orderId = '';
+    document.body.classList.remove('modal-open');
+}
+
+function closeRejectOrderModal() {
+    document.getElementById('reject-order-modal').classList.add('hidden');
+    document.getElementById('reject-order-notes').value = '';
+    document.getElementById('reject-order-modal').dataset.orderId = '';
+    document.body.classList.remove('modal-open');
+}
+
+function confirmApproveOrder(button) {
+    const orderId = document.getElementById('approve-order-modal').dataset.orderId;
+    const adminNotes = document.getElementById('approve-order-notes').value;
+
+    if (!orderId) {
+        alert('Order ID not found');
+        return;
     }
+
+    // Disable button to prevent double submission
+    const confirmBtn = button || document.getElementById('confirm-approve-order-btn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Processing...';
+
+    // Build the URL - routes are /orders/{order}/approve on admin subdomain
+    const approveUrl = `{{ url('/') }}/orders/${orderId}/approve`;
+    fetch(approveUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            admin_notes: adminNotes
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            closeApproveOrderModal();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to approve order'));
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while approving the order: ' + error.message);
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
+    });
+}
+
+function confirmRejectOrder(button) {
+    const orderId = document.getElementById('reject-order-modal').dataset.orderId;
+    const adminNotes = document.getElementById('reject-order-notes').value.trim();
+
+    if (!orderId) {
+        alert('Order ID not found');
+        return;
+    }
+
+    if (!adminNotes) {
+        alert('Rejection reason is required');
+        document.getElementById('reject-order-notes').focus();
+        return;
+    }
+
+    // Disable button to prevent double submission
+    const confirmBtn = button || document.getElementById('confirm-reject-order-btn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Processing...';
+
+    // Build the URL - routes are /orders/{order}/reject on admin subdomain
+    const rejectUrl = `{{ url('/') }}/orders/${orderId}/reject`;
+    fetch(rejectUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            admin_notes: adminNotes
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            closeRejectOrderModal();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to reject order'));
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while rejecting the order: ' + error.message);
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
+    });
+}
+
+function closeBulkApproveModal() {
+    document.getElementById('bulk-approve-modal').classList.add('hidden');
+    document.getElementById('bulk-approve-notes').value = '';
+    document.body.classList.remove('modal-open');
+}
+
+function confirmBulkApprove(button) {
+    const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
+    const orderIds = Array.from(checkedBoxes).map(cb => cb.value);
+    const adminNotes = document.getElementById('bulk-approve-notes').value;
+
+    if (orderIds.length === 0) {
+        alert('No orders selected');
+        return;
+    }
+
+    // Disable button to prevent double submission
+    const confirmBtn = button || document.getElementById('confirm-bulk-approve-btn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Processing...';
+
+    fetch('{{ admin_route("orders.bulk-approve") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            order_ids: orderIds,
+            admin_notes: adminNotes
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            closeBulkApproveModal();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'An error occurred'));
+            const confirmBtn = document.getElementById('confirm-bulk-approve-btn');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Approve Selected';
+        }
+    })
+    .catch(error => {
+        alert('An error occurred while processing the request: ' + error.message);
+        const confirmBtn = document.getElementById('confirm-bulk-approve-btn');
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Approve Selected';
+    });
 }
 
 function bulkApproveOrders(orderIds) {
-    // Implement bulk approve functionality
-    console.log('Bulk approve orders:', orderIds);
+    // This function is kept for backward compatibility but uses the modal now
+    const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
+    if (checkedBoxes.length > 0) {
+        document.getElementById('selected-orders-count').textContent = `You are about to approve ${checkedBoxes.length} order(s).`;
+        document.getElementById('bulk-approve-modal').classList.remove('hidden');
+        document.body.classList.add('modal-open');
+    }
 }
 </script>
 @endpush

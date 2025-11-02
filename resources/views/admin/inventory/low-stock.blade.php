@@ -3,22 +3,34 @@
 @section('title', 'Low Stock Alerts')
 
 @section('content')
-<div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-    <!-- Breadcrumb -->
-    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 class="text-title-md2 font-semibold text-black dark:text-white">
-            Low Stock Alerts
-        </h2>
-        <nav>
-            <ol class="flex items-center gap-2">
-                <li><a href="{{ admin_route('dashboard') }}" class="font-medium">Dashboard</a></li>
-                <li class="font-medium text-primary">/</li>
-                <li><a href="{{ admin_route('inventory.index') }}" class="font-medium">Inventory</a></li>
-                <li class="font-medium text-primary">/</li>
-                <li class="font-medium text-primary">Low Stock</li>
-            </ol>
-        </nav>
+<div class="min-h-screen bg-white">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b border-stone-200">
+        <div class="mx-auto max-w-screen-2xl">
+            <div class="flex justify-between items-center py-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-stone-900">Low Stock Alerts</h1>
+                    <p class="mt-1 text-sm text-stone-600">Monitor products that are running low on inventory</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="inline-flex items-center px-4 py-2 border border-stone-300 rounded-lg text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export
+                    </button>
+                    <button class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Bulk Reorder
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <div class="mx-auto max-w-screen-2xl pt-6">
 
     <!-- Alert Summary -->
     <div class="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -74,8 +86,8 @@
     <!-- Filters -->
     <div class="mb-6 rounded-xl border border-stroke bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
         <h3 class="mb-4 text-lg font-semibold text-black dark:text-white">Filters</h3>
-        <form method="GET" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div>
+        <form method="GET" class="flex flex-wrap items-end gap-4 justify-between">
+            <div class="flex-1 min-w-[200px]">
                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Alert Level</label>
                 <select name="level" class="w-full rounded-lg border border-stroke px-3 py-2 text-sm dark:border-strokedark dark:bg-form-input">
                     <option value="">All Levels</option>
@@ -85,7 +97,7 @@
                 </select>
             </div>
 
-            <div>
+            <div class="flex-1 min-w-[200px]">
                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
                 <select name="category_id" class="w-full rounded-lg border border-stroke px-3 py-2 text-sm dark:border-strokedark dark:bg-form-input">
                     <option value="">All Categories</option>
@@ -97,7 +109,7 @@
                 </select>
             </div>
 
-            <div>
+            <div class="flex-1 min-w-[200px]">
                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Sort By</label>
                 <select name="sort" class="w-full rounded-lg border border-stroke px-3 py-2 text-sm dark:border-strokedark dark:bg-form-input">
                     <option value="stock_asc" {{ request('sort') == 'stock_asc' ? 'selected' : '' }}>Stock (Low to High)</option>
@@ -108,10 +120,13 @@
                 </select>
             </div>
 
-            <div class="flex items-end">
-                <button type="submit" class="w-full rounded-lg bg-primary px-4 py-2 text-white hover:bg-opacity-90">
+            <div class="flex items-end gap-2">
+                <button type="submit" class="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-opacity-90 whitespace-nowrap">
                     Apply Filters
                 </button>
+                <a href="{{ admin_route('inventory.low-stock') }}" class="inline-flex items-center justify-center rounded-lg border border-stroke px-4 py-2.5 text-sm hover:bg-gray-50 dark:border-strokedark dark:hover:bg-gray-800">
+                    <i data-lucide="x" class="h-4 w-4"></i>
+                </a>
             </div>
         </form>
     </div>
@@ -353,6 +368,7 @@
                 </button>
             </div>
         </div>
+    </div>
     </div>
 </div>
 @endsection

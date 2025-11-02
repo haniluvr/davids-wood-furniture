@@ -3,248 +3,249 @@
 @section('title', 'Messages')
 
 @section('content')
-<!-- Breadcrumb Start -->
-<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <div>
-        <h1 class="text-3xl font-bold text-stone-900 dark:text-white">
-            Messages
-        </h1>
-        <p class="mt-2 text-stone-600 dark:text-gray-400">
-            Manage customer inquiries and support messages.
-        </p>
-    </div>
-
-    <div class="flex items-center gap-3">
-        <button id="bulk-respond-btn" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200" disabled>
-            <i data-lucide="message-square" class="w-4 h-4"></i>
-            Mark as Responded
-        </button>
-    </div>
-</div>
-<!-- Breadcrumb End -->
-
-<!-- Stats Cards Start -->
-<div class="grid grid-cols-1 gap-6 md:grid-cols-4 mb-8">
-    <!-- New Messages -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-50 to-red-100/50 p-6 shadow-lg shadow-red-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-red-500/20 dark:from-red-900/20 dark:to-red-800/10">
-        <div class="flex items-center justify-between">
+<div class="min-h-screen bg-white">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b border-stone-200">
+        <div class="flex justify-between items-center py-6">
             <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500 shadow-lg">
-                    <i data-lucide="mail" class="w-6 h-6 text-white"></i>
-                </div>
-                <div class="mt-4">
-                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($stats['new_messages']) }}
-                    </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">New Messages</p>
-                </div>
+                <h1 class="text-2xl font-bold text-stone-900">Messages</h1>
+                <p class="mt-1 text-sm text-stone-600">Manage customer inquiries and support messages</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="bulk-respond-btn" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500" disabled>
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Mark as Responded
+                </button>
             </div>
         </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-red-500/10"></div>
     </div>
 
-    <!-- Read Messages -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 shadow-lg shadow-blue-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 dark:from-blue-900/20 dark:to-blue-800/10">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500 shadow-lg">
-                    <i data-lucide="eye" class="w-6 h-6 text-white"></i>
-                </div>
-                <div class="mt-4">
-                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($stats['read_messages']) }}
-                    </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Read Messages</p>
+    <!-- Stats Cards -->
+    <div class="py-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <!-- New Messages -->
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">New Messages</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['new_messages']) }}</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-blue-500/10"></div>
-    </div>
 
-    <!-- Responded Messages -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-6 shadow-lg shadow-emerald-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/20 dark:from-emerald-900/20 dark:to-emerald-800/10">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500 shadow-lg">
-                    <i data-lucide="check-circle" class="w-6 h-6 text-white"></i>
-                </div>
-                <div class="mt-4">
-                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($stats['responded_messages']) }}
-                    </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Responded</p>
+            <!-- Read Messages -->
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Read Messages</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['read_messages']) }}</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-emerald-500/10"></div>
-    </div>
 
-    <!-- Total Messages -->
-    <div class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100/50 p-6 shadow-lg shadow-purple-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/20 dark:from-purple-900/20 dark:to-purple-800/10">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500 shadow-lg">
-                    <i data-lucide="message-square" class="w-6 h-6 text-white"></i>
-                </div>
-                <div class="mt-4">
-                    <h3 class="text-2xl font-bold text-stone-900 dark:text-white">
-                        {{ number_format($stats['total_messages']) }}
-                    </h3>
-                    <p class="text-sm font-medium text-stone-600 dark:text-gray-400">Total Messages</p>
+            <!-- Responded Messages -->
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Responded</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['responded_messages']) }}</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-purple-500/10"></div>
-    </div>
-</div>
-<!-- Stats Cards End -->
 
-<!-- Messages Management -->
-<div class="rounded-2xl border border-stone-200/50 bg-white/80 backdrop-blur-sm p-6 shadow-lg shadow-stone-500/5 dark:border-strokedark/50 dark:bg-boxdark/80">
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h3 class="text-xl font-bold text-stone-900 dark:text-white">Message Inbox</h3>
-            <p class="text-sm text-stone-600 dark:text-gray-400">Unified inbox for all customer messages</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <button class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
-                <i data-lucide="filter" class="w-4 h-4"></i>
-                Filter
-            </button>
+            <!-- Total Messages -->
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Total Messages</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['total_messages']) }}</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Status Tabs -->
-    <div class="mb-6">
-        <div class="border-b border-stone-200 dark:border-strokedark">
-            <nav class="-mb-px flex space-x-8">
-                <button class="status-tab {{ !request('status') || request('status') === 'all' ? 'border-b-2 border-primary py-2 px-1 text-sm font-medium text-primary' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300' }}" data-status="all">
-                    All Messages
-                    <span class="ml-2 rounded-full bg-primary px-2.5 py-0.5 text-xs text-white">{{ $stats['total_messages'] }}</span>
-                </button>
-                <button class="status-tab {{ request('status') === 'new' ? 'border-b-2 border-primary py-2 px-1 text-sm font-medium text-primary' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300' }}" data-status="new">
-                    New
-                    <span class="ml-2 rounded-full bg-red-100 px-2.5 py-0.5 text-xs text-red-800 dark:bg-red-900/30 dark:text-red-400">{{ $stats['new_messages'] }}</span>
-                </button>
-                <button class="status-tab {{ request('status') === 'read' ? 'border-b-2 border-primary py-2 px-1 text-sm font-medium text-primary' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300' }}" data-status="read">
-                    Read
-                    <span class="ml-2 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">{{ $stats['read_messages'] }}</span>
-                </button>
-                <button class="status-tab {{ request('status') === 'responded' ? 'border-b-2 border-primary py-2 px-1 text-sm font-medium text-primary' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300' }}" data-status="responded">
-                    Responded
-                    <span class="ml-2 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">{{ $stats['responded_messages'] }}</span>
-                </button>
-            </nav>
+    <div class="pb-6">
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+            <div class="border-b border-stone-200">
+                <nav class="-mb-px flex space-x-8">
+                    <button class="status-tab {{ !request('status') || request('status') === 'all' ? 'border-b-2 border-emerald-600 py-2 px-1 text-sm font-medium text-emerald-600' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300' }}" data-status="all">
+                        All Messages
+                        <span class="ml-2 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs text-emerald-800">{{ $stats['total_messages'] }}</span>
+                    </button>
+                    <button class="status-tab {{ request('status') === 'new' ? 'border-b-2 border-emerald-600 py-2 px-1 text-sm font-medium text-emerald-600' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300' }}" data-status="new">
+                        New
+                        <span class="ml-2 rounded-full bg-red-100 px-2.5 py-0.5 text-xs text-red-800">{{ $stats['new_messages'] }}</span>
+                    </button>
+                    <button class="status-tab {{ request('status') === 'read' ? 'border-b-2 border-emerald-600 py-2 px-1 text-sm font-medium text-emerald-600' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300' }}" data-status="read">
+                        Read
+                        <span class="ml-2 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs text-blue-800">{{ $stats['read_messages'] }}</span>
+                    </button>
+                    <button class="status-tab {{ request('status') === 'responded' ? 'border-b-2 border-emerald-600 py-2 px-1 text-sm font-medium text-emerald-600' : 'border-b-2 border-transparent py-2 px-1 text-sm font-medium text-stone-500 hover:text-stone-700 hover:border-stone-300' }}" data-status="responded">
+                        Responded
+                        <span class="ml-2 rounded-full bg-green-100 px-2.5 py-0.5 text-xs text-green-800">{{ $stats['responded_messages'] }}</span>
+                    </button>
+                </nav>
+            </div>
         </div>
     </div>
 
     <!-- Messages List -->
-    <div id="messages-container">
-        <div class="overflow-hidden rounded-xl border border-stone-200/50 dark:border-strokedark/50">
-            <div class="grid grid-cols-6 rounded-t-xl bg-stone-50 dark:bg-stone-800/50">
-                <div class="p-4">
-                    <input type="checkbox" id="select-all-messages" class="rounded border-stone-300 text-primary focus:ring-primary">
-                </div>
-                <div class="p-4">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">From</h5>
-                </div>
-                <div class="p-4">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Subject</h5>
-                </div>
-                <div class="p-4">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Status</h5>
-                </div>
-                <div class="p-4">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Date</h5>
-                </div>
-                <div class="p-4">
-                    <h5 class="text-sm font-semibold text-stone-700 dark:text-stone-300">Actions</h5>
-                </div>
-            </div>
-
-            @forelse($messages as $message)
-            <div class="grid grid-cols-6 border-b border-stone-200/50 dark:border-strokedark/50 transition-colors duration-200 hover:bg-stone-50/50 dark:hover:bg-stone-800/20">
-                <div class="flex items-center p-4">
-                    <input type="checkbox" class="message-checkbox rounded border-stone-300 text-primary focus:ring-primary" value="{{ $message->id }}">
-                </div>
-                <div class="flex items-center gap-3 p-4">
-                    <div class="flex-shrink-0">
-                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-                            <span class="text-white font-semibold text-sm">{{ substr($message->name, 0, 1) }}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col">
-                        <p class="font-semibold text-stone-900 dark:text-white">{{ $message->name }}</p>
-                        <p class="text-xs text-stone-500 dark:text-gray-400">{{ $message->email }}</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center p-4">
-                    <div class="flex flex-col">
-                        <p class="font-semibold text-stone-900 dark:text-white truncate">{{ Str::limit($message->message, 50) }}</p>
-                        @if($message->tags)
-                        <div class="flex flex-wrap gap-1 mt-1">
-                            @foreach(array_slice($message->tags, 0, 2) as $tag)
-                            <span class="inline-flex items-center rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-800 dark:bg-stone-700 dark:text-stone-200">
-                                {{ $tag }}
-                            </span>
+    <div class="pb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200">
+            @if($messages->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-stone-200">
+                        <thead class="bg-stone-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">
+                                    <input type="checkbox" id="select-all-messages" class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500">
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">From</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Subject</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-stone-200">
+                            @foreach($messages as $message)
+                                <tr class="hover:bg-stone-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox" class="message-checkbox rounded border-stone-300 text-emerald-600 focus:ring-emerald-500" value="{{ $message->id }}">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <div class="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                                                    <span class="text-emerald-600 font-medium text-sm">
+                                                        {{ substr($message->name, 0, 1) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-stone-900">{{ $message->name }}</div>
+                                                <div class="text-sm text-stone-500">{{ $message->email }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-stone-900">{{ Str::limit($message->message, 50) }}</div>
+                                        @if($message->tags)
+                                        <div class="flex flex-wrap gap-1 mt-1">
+                                            @foreach(array_slice($message->tags, 0, 2) as $tag)
+                                            <span class="inline-flex items-center rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-800">
+                                                {{ $tag }}
+                                            </span>
+                                            @endforeach
+                                            @if(count($message->tags) > 2)
+                                            <span class="text-xs text-stone-500">+{{ count($message->tags) - 2 }}</span>
+                                            @endif
+                                        </div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            @if($message->status === 'new') bg-red-100 text-red-800
+                                            @elseif($message->status === 'read') bg-blue-100 text-blue-800
+                                            @elseif($message->status === 'responded') bg-green-100 text-green-800
+                                            @else bg-stone-100 text-stone-800
+                                            @endif">
+                                            {{ ucfirst($message->status) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-stone-900">{{ $message->created_at->format('M d, Y') }}</div>
+                                        <div class="text-sm text-stone-500">{{ $message->created_at->format('h:i A') }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex items-center space-x-2" x-data="{ dropdownOpen: false }">
+                                            <button @click="dropdownOpen = !dropdownOpen" class="text-stone-600 hover:text-stone-900 transition-colors duration-150">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                                                </svg>
+                                            </button>
+                                            
+                                            <div x-show="dropdownOpen" @click.outside="dropdownOpen = false" class="absolute right-0 top-full z-40 w-48 space-y-1 rounded-lg border border-stone-200 bg-white p-1.5 shadow-lg" x-cloak>
+                                                <a href="{{ admin_route('messages.show', $message) }}" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
+                                                    View Message
+                                                </a>
+                                                @if($message->status !== 'responded')
+                                                <button onclick="markAsResponded({{ $message->id }})" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-green-600 hover:bg-green-50">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    Mark as Responded
+                                                </button>
+                                                @endif
+                                                <button onclick="deleteMessage({{ $message->id }})" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                    Delete Message
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
                             @endforeach
-                            @if(count($message->tags) > 2)
-                            <span class="text-xs text-stone-500">+{{ count($message->tags) - 2 }}</span>
-                            @endif
-                        </div>
-                        @endif
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if($messages->hasPages())
+                    <div class="px-6 py-3 border-t border-stone-200">
+                        {{ $messages->links() }}
                     </div>
-                </div>
-
-                <div class="flex items-center p-4">
-                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                        @if($message->status === 'new') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400
-                        @elseif($message->status === 'read') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400
-                        @elseif($message->status === 'responded') bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400
-                        @else bg-stone-100 text-stone-800 dark:bg-stone-700 dark:text-stone-200
-                        @endif">
-                        {{ ucfirst($message->status) }}
-                    </span>
-                </div>
-
-                <div class="flex items-center p-4">
-                    <div class="flex flex-col">
-                        <p class="text-sm text-stone-900 dark:text-white">{{ $message->created_at->format('M d, Y') }}</p>
-                        <p class="text-xs text-stone-500 dark:text-gray-400">{{ $message->created_at->format('h:i A') }}</p>
+                @endif
+            @else
+                <div class="p-8 text-center">
+                    <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4">
+                        <svg class="h-6 w-6 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
                     </div>
+                    <p class="text-stone-500">No messages found</p>
                 </div>
-
-                <div class="flex items-center gap-2 p-4">
-                    <a href="{{ admin_route('messages.show', $message) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400" title="View Message">
-                        <i data-lucide="eye" class="w-4 h-4"></i>
-                    </a>
-                    @if($message->status !== 'responded')
-                    <button onclick="markAsResponded({{ $message->id }})" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-green-100 hover:text-green-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-green-900/20 dark:hover:text-green-400" title="Mark as Responded">
-                        <i data-lucide="check" class="w-4 h-4"></i>
-                    </button>
-                    @endif
-                    <button onclick="deleteMessage({{ $message->id }})" class="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-stone-100 text-stone-600 transition-all duration-200 hover:bg-red-100 hover:text-red-600 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-red-900/20 dark:hover:text-red-400" title="Delete">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
-            @empty
-            <div class="p-8 text-center">
-                <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4 dark:bg-stone-800">
-                    <i data-lucide="message-square" class="w-6 h-6 text-stone-400"></i>
-                </div>
-                <p class="text-stone-500 dark:text-gray-400">No messages found</p>
-            </div>
-            @endforelse
+            @endif
         </div>
-
-        <!-- Pagination -->
-        @if($messages->hasPages())
-        <div class="mt-6">
-            {{ $messages->links() }}
-        </div>
-        @endif
     </div>
 </div>
 @endsection

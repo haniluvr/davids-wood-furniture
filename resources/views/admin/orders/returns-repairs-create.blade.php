@@ -32,7 +32,7 @@
             <!-- Left Column - Main Content -->
             <div class="xl:col-span-2 space-y-8">
                 <!-- Order Selection -->
-                <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-hidden">
+                <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-visible">
                     <div class="px-8 py-6 border-b border-stone-200 dark:border-strokedark bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
                         <div class="flex items-center gap-3">
                             <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl">
@@ -42,30 +42,34 @@
                         </div>
                         <p class="mt-1 text-sm text-stone-600 dark:text-gray-400">Select the order for this return/repair request</p>
                     </div>
-                    <div class="p-8">
+                    <div class="p-8 overflow-visible">
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">
                                 Select Order <span class="text-red-500">*</span>
-                    </label>
-                            <select name="order_id" 
-                        id="order-select"
-                                    class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white"
-                                    required>
-                        <option value="">Select an order...</option>
-                        @foreach($orders as $order)
-                                    <option value="{{ $order->id }}" 
-                                            data-customer="{{ $order->user->first_name ?? 'Guest' }} {{ $order->user->last_name ?? '' }}" 
-                                            data-email="{{ $order->user->email ?? 'No email' }}"
-                                            data-order-number="{{ $order->order_number }}"
-                                            data-order-date="{{ $order->created_at->format('M d, Y') }}"
-                                            data-order-total="₱{{ number_format($order->total_amount, 2) }}">
-                                Order #{{ $order->order_number }} - {{ $order->user->first_name ?? 'Guest' }} {{ $order->user->last_name ?? '' }} ({{ $order->created_at->format('M d, Y') }})
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('order_id')
+                            </label>
+                            <div class="relative">
+                                <input type="text" 
+                                       id="order-search" 
+                                       name="order_search"
+                                       placeholder="Type order number or customer name..."
+                                       autocomplete="off"
+                                       class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white">
+                                <input type="hidden" name="order_id" id="selected-order-id" value="{{ old('order_id') }}" required>
+                                <div id="order-results" class="hidden absolute z-[9999] w-full mt-1 bg-white dark:bg-boxdark rounded-xl shadow-xl border border-stone-200 dark:border-strokedark max-h-60 overflow-y-auto"></div>
+                            </div>
+                            @error('order_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                            @enderror
+                            <div id="selected-order-display" class="hidden mt-2 p-3 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-strokedark">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-stone-900 dark:text-white" id="selected-order-text"></p>
+                                    </div>
+                                    <button type="button" onclick="clearOrderSelection()" class="text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -295,72 +299,192 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const orderSelect = document.getElementById('order-select');
+    const orderSearch = document.getElementById('order-search');
+    const orderResults = document.getElementById('order-results');
+    const selectedOrderId = document.getElementById('selected-order-id');
+    const selectedOrderDisplay = document.getElementById('selected-order-display');
+    const selectedOrderText = document.getElementById('selected-order-text');
     const customerInfo = document.getElementById('customer-info');
     const orderSummary = document.getElementById('order-summary');
 
-    orderSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
+    let searchTimeout;
+    let selectedOrder = null;
+
+    // Order search functionality
+    orderSearch.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
         
-        if (this.value) {
-            const customerName = selectedOption.dataset.customer;
-            const customerEmail = selectedOption.dataset.email;
-            const orderNumber = selectedOption.dataset.orderNumber;
-            const orderDate = selectedOption.dataset.orderDate;
-            const orderTotal = selectedOption.dataset.orderTotal;
-            
-            // Update customer information
-            customerInfo.innerHTML = `
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="h-12 w-12 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg">
-                        <span class="text-white font-medium text-sm">
-                            ${customerName.split(' ').map(n => n[0]).join('').toUpperCase()}
-                        </span>
-                    </div>
-                    <div>
-                        <h4 class="font-medium text-stone-900 dark:text-white">${customerName}</h4>
-                        <p class="text-sm text-stone-500">${customerEmail}</p>
-                    </div>
-                </div>
-            `;
-            
-            // Update order summary
-            orderSummary.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex justify-between">
-                        <span class="text-stone-600 dark:text-stone-400">Order Number:</span>
-                        <span class="text-stone-900 dark:text-white font-medium">${orderNumber}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-stone-600 dark:text-stone-400">Order Date:</span>
-                        <span class="text-stone-900 dark:text-white">${orderDate}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-stone-600 dark:text-stone-400">Total Amount:</span>
-                        <span class="text-stone-900 dark:text-white font-semibold">${orderTotal}</span>
-                    </div>
-                </div>
-            `;
-        } else {
-            // Reset to default state
-            customerInfo.innerHTML = `
-                <div class="text-center py-8">
-                    <i data-lucide="shopping-cart" class="w-12 h-12 text-stone-400 mx-auto mb-4"></i>
-                    <p class="text-stone-600 dark:text-stone-400">Select an order to view customer details</p>
-                </div>
-            `;
-            
-            orderSummary.innerHTML = `
-                <div class="text-center py-8">
-                    <i data-lucide="file-text" class="w-12 h-12 text-stone-400 mx-auto mb-4"></i>
-                    <p class="text-stone-600 dark:text-stone-400">Select an order to view details</p>
-                </div>
-            `;
+        if (query.length < 2) {
+            orderResults.classList.add('hidden');
+            return;
         }
-        
-        // Recreate icons
-        lucide.createIcons();
+
+        searchTimeout = setTimeout(() => {
+            searchOrders(query);
+        }, 300);
     });
+
+    // Close results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!orderSearch.contains(e.target) && !orderResults.contains(e.target)) {
+            orderResults.classList.add('hidden');
+        }
+    });
+
+    function searchOrders(query) {
+        const url = `{{ admin_route('orders.returns-repairs.search-orders') }}?q=${encodeURIComponent(query)}`;
+        
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            displayOrderResults(data);
+        })
+        .catch(error => {
+            console.error('Error searching orders:', error);
+            orderResults.innerHTML = '<div class="p-4 text-center text-red-500">Error searching orders</div>';
+            orderResults.classList.remove('hidden');
+        });
+    }
+
+    function displayOrderResults(orders) {
+        if (orders.length === 0) {
+            orderResults.innerHTML = '<div class="p-4 text-center text-stone-600 dark:text-stone-400">No orders found</div>';
+            orderResults.classList.remove('hidden');
+            return;
+        }
+
+        let html = '';
+        orders.forEach(order => {
+            const escapedCustomerName = order.customer_name.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+            const escapedCustomerEmail = order.customer_email.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+            html += `
+                <div class="p-3 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer border-b border-stone-200 dark:border-strokedark last:border-b-0" 
+                     data-order-id="${order.id}"
+                     data-order-number="${order.order_number}"
+                     data-customer-name="${escapedCustomerName}"
+                     data-customer-email="${escapedCustomerEmail}"
+                     data-order-date="${order.order_date}"
+                     data-order-total="${order.order_total}">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-medium text-stone-900 dark:text-white">Order #${order.order_number}</p>
+                            <p class="text-xs text-stone-600 dark:text-stone-400">${order.customer_name} • ${order.order_date}</p>
+                        </div>
+                        <p class="text-sm font-semibold text-stone-900 dark:text-white">₱${order.order_total}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        orderResults.innerHTML = html;
+        
+        // Add click handlers after rendering
+        orderResults.querySelectorAll('[data-order-id]').forEach(item => {
+            item.addEventListener('click', function() {
+                selectOrder(
+                    parseInt(this.dataset.orderId),
+                    this.dataset.orderNumber,
+                    this.dataset.customerName,
+                    this.dataset.customerEmail,
+                    this.dataset.orderDate,
+                    '₱' + this.dataset.orderTotal
+                );
+            });
+        });
+
+        orderResults.classList.remove('hidden');
+    }
+
+    window.selectOrder = function(id, orderNumber, customerName, customerEmail, orderDate, orderTotal) {
+        selectedOrderId.value = id;
+        selectedOrder = {
+            id: id,
+            orderNumber: orderNumber,
+            customerName: customerName,
+            customerEmail: customerEmail,
+            orderDate: orderDate,
+            orderTotal: orderTotal
+        };
+
+        // Update display
+        orderSearch.value = `Order #${orderNumber} - ${customerName}`;
+        selectedOrderText.textContent = `Order #${orderNumber} - ${customerName} (${orderDate})`;
+        selectedOrderDisplay.classList.remove('hidden');
+        orderResults.classList.add('hidden');
+
+        // Update customer information
+        customerInfo.innerHTML = `
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-12 w-12 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg">
+                    <span class="text-white font-medium text-sm">
+                        ${customerName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </span>
+                </div>
+                <div>
+                    <h4 class="font-medium text-stone-900 dark:text-white">${customerName}</h4>
+                    <p class="text-sm text-stone-500">${customerEmail}</p>
+                </div>
+            </div>
+        `;
+        
+        // Update order summary
+        orderSummary.innerHTML = `
+            <div class="space-y-4">
+                <div class="flex justify-between">
+                    <span class="text-stone-600 dark:text-stone-400">Order Number:</span>
+                    <span class="text-stone-900 dark:text-white font-medium">${orderNumber}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-stone-600 dark:text-stone-400">Order Date:</span>
+                    <span class="text-stone-900 dark:text-white">${orderDate}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-stone-600 dark:text-stone-400">Total Amount:</span>
+                    <span class="text-stone-900 dark:text-white font-semibold">${orderTotal}</span>
+                </div>
+            </div>
+        `;
+
+        lucide.createIcons();
+    };
+
+    window.clearOrderSelection = function() {
+        selectedOrderId.value = '';
+        selectedOrder = null;
+        orderSearch.value = '';
+        selectedOrderDisplay.classList.add('hidden');
+
+        // Reset customer info and order summary
+        customerInfo.innerHTML = `
+            <div class="text-center py-8">
+                <i data-lucide="shopping-cart" class="w-12 h-12 text-stone-400 mx-auto mb-4"></i>
+                <p class="text-stone-600 dark:text-stone-400">Select an order to view customer details</p>
+            </div>
+        `;
+        
+        orderSummary.innerHTML = `
+            <div class="text-center py-8">
+                <i data-lucide="file-text" class="w-12 h-12 text-stone-400 mx-auto mb-4"></i>
+                <p class="text-stone-600 dark:text-stone-400">Select an order to view details</p>
+            </div>
+        `;
+
+        lucide.createIcons();
+    };
     
     lucide.createIcons();
 });

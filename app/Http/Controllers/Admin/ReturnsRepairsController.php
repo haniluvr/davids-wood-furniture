@@ -11,11 +11,39 @@ use Illuminate\Support\Facades\Storage;
 
 class ReturnsRepairsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $rmas = ReturnRepair::with(['order.user', 'processedBy'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        $query = ReturnRepair::with(['order.user', 'processedBy']);
+
+        // Search filter (RMA number)
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            // Remove common prefixes/symbols for more flexible searching
+            $search = str_replace(['#', 'RMA-', 'rma-'], '', $search);
+            $query->where(function ($q) use ($search) {
+                $q->where('rma_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('order', function ($orderQuery) use ($search) {
+                        $orderQuery->where('order_number', 'like', '%'.$search.'%');
+                    })
+                    ->orWhereHas('order.user', function ($userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%');
+                    });
+            });
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Type filter
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        $rmas = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
 
         // Get statistics
         $stats = [
@@ -38,9 +66,95 @@ class ReturnsRepairsController extends Controller
 
     public function create()
     {
-        $orders = Order::with('user')->where('status', 'delivered')->orderBy('created_at', 'desc')->get();
+        return view('admin.orders.returns-repairs-create');
+    }
 
-        return view('admin.orders.returns-repairs-create', compact('orders'));
+    public function searchOrders(Request $request)
+    {
+        $query = $request->get('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $orders = Order::with('user')
+            ->where(function ($q) use ($query) {
+                $q->where('order_number', 'like', '%'.$query.'%')
+                    ->orWhereHas('user', function ($userQuery) use ($query) {
+                        $userQuery->where('first_name', 'like', '%'.$query.'%')
+                            ->orWhere('last_name', 'like', '%'.$query.'%')
+                            ->orWhere('email', 'like', '%'.$query.'%');
+                    });
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'customer_name' => ($order->user->first_name ?? 'Guest').' '.($order->user->last_name ?? ''),
+                    'customer_email' => $order->user->email ?? 'No email',
+                    'order_date' => $order->created_at->format('M d, Y'),
+                    'order_total' => number_format($order->total_amount, 2),
+                ];
+            });
+
+        return response()->json($orders);
+    }
+
+    public function edit(ReturnRepair $returnRepair)
+    {
+        $returnRepair->load(['order.user', 'order.orderItems.product']);
+        $orders = Order::with('user')->orderBy('created_at', 'desc')->get();
+
+        return view('admin.orders.returns-repairs-edit', compact('returnRepair', 'orders'));
+    }
+
+    public function update(Request $request, ReturnRepair $returnRepair)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'type' => 'required|in:return,repair,exchange',
+            'reason' => 'required|string|max:500',
+            'description' => 'nullable|string|max:1000',
+            'products' => 'required|array',
+            'products.*' => 'required|array',
+            'products.*.product_id' => 'required|exists:products,id',
+            'products.*.quantity' => 'required|integer|min:1',
+            'customer_notes' => 'nullable|string|max:1000',
+            'admin_notes' => 'nullable|string|max:1000',
+            'photos' => 'nullable|array|max:5',
+            'photos.*' => 'mimetypes:image/jpeg,image/png,image/gif,image/webp,image/avif|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
+        ]);
+
+        DB::transaction(function () use ($request, $returnRepair) {
+            $updateData = [
+                'order_id' => $request->order_id,
+                'user_id' => Order::find($request->order_id)->user_id,
+                'type' => $request->type,
+                'reason' => $request->reason,
+                'description' => $request->description,
+                'products' => $request->products,
+                'customer_notes' => $request->customer_notes,
+                'admin_notes' => $request->admin_notes,
+            ];
+
+            // Handle photo uploads if new photos are provided
+            if ($request->hasFile('photos')) {
+                $photoPaths = $returnRepair->photos ?? [];
+                foreach ($request->file('photos') as $photo) {
+                    $path = $photo->store('returns-photos', 'public');
+                    $photoPaths[] = $path;
+                }
+                $updateData['photos'] = $photoPaths;
+            }
+
+            $returnRepair->update($updateData);
+        });
+
+        return redirect()->to(admin_route('orders.returns-repairs.index'))
+            ->with('success', 'Return/Repair request updated successfully.');
     }
 
     public function store(Request $request)

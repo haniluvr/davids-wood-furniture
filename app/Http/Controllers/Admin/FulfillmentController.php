@@ -11,15 +11,13 @@ class FulfillmentController extends Controller
 {
     public function index(Request $request)
     {
-        // Get orders ready to ship (status: processing or pending)
+        // Get all orders with fulfillment information
         $query = Order::with(['user', 'orderItems.product', 'fulfillment'])
-            ->whereIn('status', ['processing', 'pending'])
-            ->where('fulfillment_status', '!=', 'shipped')
-            ->orderBy('created_at', 'asc');
+            ->orderBy('created_at', 'desc');
 
         // Search functionality
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
+        if ($request->has('search') && ! empty($request->search)) {
+            $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('order_number', 'like', '%'.$search.'%')
                     ->orWhereHas('user', function ($userQuery) use ($search) {
@@ -30,12 +28,17 @@ class FulfillmentController extends Controller
             });
         }
 
-        // Status filter
-        if ($request->has('status') && $request->status !== 'all') {
-            $query->where('fulfillment_status', $request->status);
+        // Status filter - handle both 'pending' and 'pending_packing' for compatibility
+        if ($request->has('status') && ! empty($request->status)) {
+            $status = $request->status;
+            // Map 'pending_packing' to 'pending' since the DB uses 'pending'
+            if ($status === 'pending_packing') {
+                $status = 'pending';
+            }
+            $query->where('fulfillment_status', $status);
         }
 
-        $orders = $query->paginate(20);
+        $orders = $query->paginate(20)->withQueryString();
 
         // Get fulfillment statistics
         $stats = [
@@ -134,45 +137,62 @@ class FulfillmentController extends Controller
         $request->validate([
             'order_ids' => 'required|array',
             'order_ids.*' => 'exists:orders,id',
-            'carrier' => 'required|string|max:100',
-            'tracking_numbers' => 'required|array',
-            'tracking_numbers.*' => 'string|max:100',
+            'carrier' => 'nullable|string|max:100',
+            'tracking_numbers' => 'nullable|array',
+            'tracking_numbers.*' => 'nullable|string|max:100',
         ]);
 
         $orderIds = $request->order_ids;
-        $carrier = $request->carrier;
-        $trackingNumbers = $request->tracking_numbers;
+        $carrier = $request->carrier ?? 'Not specified';
+        $trackingNumbers = $request->tracking_numbers ?? [];
 
-        DB::transaction(function () use ($orderIds, $carrier, $trackingNumbers) {
+        $updatedCount = 0;
+
+        DB::transaction(function () use ($orderIds, $carrier, $trackingNumbers, &$updatedCount) {
             foreach ($orderIds as $index => $orderId) {
                 $order = Order::findOrFail($orderId);
+
+                // Skip if already shipped
+                if ($order->fulfillment_status === 'shipped') {
+                    continue;
+                }
+
                 $trackingNumber = $trackingNumbers[$index] ?? null;
 
+                $fulfillment = $order->fulfillment()->firstOrCreate([]);
+
+                $fulfillmentData = [
+                    'shipped' => true,
+                    'shipped_at' => now(),
+                    'shipped_by' => auth('admin')->id(),
+                    'carrier' => $carrier,
+                ];
+
                 if ($trackingNumber) {
-                    $fulfillment = $order->fulfillment()->firstOrCreate([]);
-
-                    $fulfillment->update([
-                        'shipped' => true,
-                        'shipped_at' => now(),
-                        'shipped_by' => auth('admin')->id(),
-                        'carrier' => $carrier,
-                        'tracking_number' => $trackingNumber,
-                    ]);
-
-                    $order->update([
-                        'status' => 'shipped',
-                        'fulfillment_status' => 'shipped',
-                        'shipped_at' => now(),
-                        'carrier' => $carrier,
-                        'tracking_number' => $trackingNumber,
-                    ]);
+                    $fulfillmentData['tracking_number'] = $trackingNumber;
                 }
+
+                $fulfillment->update($fulfillmentData);
+
+                $orderData = [
+                    'status' => 'shipped',
+                    'fulfillment_status' => 'shipped',
+                    'shipped_at' => now(),
+                    'carrier' => $carrier,
+                ];
+
+                if ($trackingNumber) {
+                    $orderData['tracking_number'] = $trackingNumber;
+                }
+
+                $order->update($orderData);
+                $updatedCount++;
             }
         });
 
         return response()->json([
             'success' => true,
-            'message' => count($orderIds).' orders marked as shipped successfully',
+            'message' => $updatedCount.' order'.($updatedCount !== 1 ? 's' : '').' marked as shipped successfully',
         ]);
     }
 

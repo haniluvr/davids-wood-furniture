@@ -106,14 +106,23 @@
                             <h4 class="text-sm font-medium text-stone-700 dark:text-stone-300">Fulfillment Progress</h4>
                             <div class="space-y-3">
                                 <!-- Progress Bar -->
-                                <div class="w-full bg-stone-200 rounded-full h-3 dark:bg-stone-700">
+                                <div class="w-full bg-stone-200 rounded-full h-3 dark:bg-stone-700 relative">
                                     @php
-                                        $progress = 0;
-                                        $steps = ['pending', 'processing', 'shipped', 'delivered'];
-                                        $currentStep = array_search($order->status, $steps);
-                                        if ($currentStep !== false) {
-                                            $progress = (($currentStep + 1) / count($steps)) * 100;
-                                        }
+                                        // Calculate progress percentage that aligns with node centers
+                                        // The track extends full width, nodes use justify-between with w-6 (24px) circles
+                                        // With justify-between: node centers are positioned at equal spacing
+                                        // Accounting for circles (24px radius = 12px) and track outset:
+                                        // - First node center: ~2% from track start
+                                        // - Second node center: ~33% (1/3 of track width)  
+                                        // - Third node center: ~67% (2/3 of track width)
+                                        // - Fourth node center: ~98% from track start
+                                        $progressMap = [
+                                            'pending' => 2,         // Center of Order Placed circle
+                                            'processing' => 33,      // Center of Processing circle  
+                                            'shipped' => 67,         // Center of Shipped circle
+                                            'delivered' => 98        // Center of Delivered circle
+                                        ];
+                                        $progress = $progressMap[$order->status] ?? 0;
                                     @endphp
                                     <div class="bg-gradient-to-r from-emerald-500 to-blue-500 h-3 rounded-full transition-all duration-500" 
                                          style="width: {{ $progress }}%"></div>

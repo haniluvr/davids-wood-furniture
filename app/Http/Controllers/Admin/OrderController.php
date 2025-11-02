@@ -401,8 +401,13 @@ class OrderController extends Controller
     public function pendingApproval(Request $request)
     {
         $query = Order::with(['user', 'orderItems.product', 'approvedBy'])
-            ->where('requires_approval', true)
-            ->whereNull('approved_at')
+            ->where(function ($q) {
+                $q->where(function ($subQ) {
+                    $subQ->where('requires_approval', true)
+                        ->whereNull('approved_at');
+                })->orWhere('status', 'pending');
+            })
+            ->whereNull('rejected_at')
             ->orderBy('created_at', 'asc');
 
         // Search functionality
@@ -418,11 +423,34 @@ class OrderController extends Controller
             });
         }
 
+        // Priority filter (based on order amount)
+        if ($request->has('priority') && $request->priority) {
+            switch ($request->priority) {
+                case 'high':
+                    $query->where('total_amount', '>=', 10000);
+
+                    break;
+                case 'medium':
+                    $query->whereBetween('total_amount', [5000, 9999.99]);
+
+                    break;
+                case 'low':
+                    $query->where('total_amount', '<', 5000);
+
+                    break;
+            }
+        }
+
         $orders = $query->paginate(15);
 
         // Get statistics
         $stats = [
-            'pending_approval' => Order::where('requires_approval', true)->whereNull('approved_at')->count(),
+            'pending_approval' => Order::where(function ($q) {
+                $q->where(function ($subQ) {
+                    $subQ->where('requires_approval', true)
+                        ->whereNull('approved_at');
+                })->orWhere('status', 'pending');
+            })->whereNull('rejected_at')->count(),
             'approved_today' => Order::where('requires_approval', true)->whereDate('approved_at', today())->count(),
             'rejected_today' => Order::where('requires_approval', true)->whereDate('rejected_at', today())->count(),
             'total_requiring_approval' => Order::where('requires_approval', true)->count(),
@@ -440,13 +468,17 @@ class OrderController extends Controller
             'admin_notes' => 'nullable|string|max:1000',
         ]);
 
+        $oldStatus = $order->status;
+
         $order->update([
             'requires_approval' => false,
             'approved_at' => now(),
             'approved_by' => auth('admin')->id(),
             'status' => 'processing',
-            'admin_notes' => $request->admin_notes,
+            'admin_notes' => $request->admin_notes ? ($order->admin_notes ? $order->admin_notes."\n\n".$request->admin_notes : $request->admin_notes) : $order->admin_notes,
         ]);
+
+        event(new OrderStatusChanged($order, $oldStatus, 'processing'));
 
         return response()->json([
             'success' => true,
@@ -466,6 +498,7 @@ class OrderController extends Controller
         $order->update([
             'requires_approval' => false,
             'status' => 'cancelled',
+            'rejected_at' => now(),
             'admin_notes' => $request->admin_notes,
         ]);
 
@@ -479,6 +512,43 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Order rejected successfully',
+        ]);
+    }
+
+    /**
+     * Bulk approve orders.
+     */
+    public function bulkApprove(Request $request)
+    {
+        $request->validate([
+            'order_ids' => 'required|array',
+            'order_ids.*' => 'exists:orders,id',
+            'admin_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $orderIds = $request->order_ids;
+        $adminNotes = $request->admin_notes;
+
+        DB::transaction(function () use ($orderIds, $adminNotes) {
+            foreach ($orderIds as $orderId) {
+                $order = Order::findOrFail($orderId);
+
+                $order->update([
+                    'requires_approval' => false,
+                    'approved_at' => now(),
+                    'approved_by' => auth('admin')->id(),
+                    'status' => 'processing',
+                    'admin_notes' => $adminNotes ? ($order->admin_notes ? $order->admin_notes."\n\n".$adminNotes : $adminNotes) : $order->admin_notes,
+                ]);
+
+                $oldStatus = 'pending';
+                event(new OrderStatusChanged($order, $oldStatus, 'processing'));
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => count($orderIds).' order(s) approved successfully',
         ]);
     }
 

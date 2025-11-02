@@ -23,7 +23,7 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="py-6">
+    <div class="pt-6 pb-3">
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
             <!-- Total Orders -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
@@ -90,57 +90,51 @@
                         <p class="text-sm font-medium text-stone-500">Total Revenue</p>
                         <p class="text-2xl font-semibold text-stone-900">₱{{ number_format($stats['total_revenue'] ?? 0, 2) }}</p>
                     </div>
-        </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="py-6">
+    <div class="pt-3 pb-6">
         <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
-            <form method="GET" action="{{ admin_route('orders.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
+            <form method="GET" action="{{ admin_route('orders.index') }}" class="flex flex-wrap items-end gap-4 justify-between">
+                <div class="flex-1 min-w-[200px]">
                     <label for="search" class="block text-sm font-medium text-stone-700 mb-2">Search</label>
                     <input type="text" id="search" name="search" value="{{ request('search') }}" 
                            placeholder="Search orders..."
                            class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                    </div>
-                <div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
                     <label for="status" class="block text-sm font-medium text-stone-700 mb-2">Status</label>
                     <select id="status" name="status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                         <option value="">All Status</option>
-                            <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>Processing</option>
-                            <option value="shipped" {{ request('status') === 'shipped' ? 'selected' : '' }}>Shipped</option>
-                            <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
-                            <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                        </select>
-                    </div>
-                <div>
+                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>Processing</option>
+                        <option value="shipped" {{ request('status') === 'shipped' ? 'selected' : '' }}>Shipped</option>
+                        <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
+                        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[200px]">
                     <label for="payment_status" class="block text-sm font-medium text-stone-700 mb-2">Payment Status</label>
                     <select id="payment_status" name="payment_status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                         <option value="">All Payment Status</option>
-                            <option value="pending" {{ request('payment_status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Paid</option>
+                        <option value="pending" {{ request('payment_status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Paid</option>
                         <option value="failed" {{ request('payment_status') === 'failed' ? 'selected' : '' }}>Failed</option>
-                            <option value="refunded" {{ request('payment_status') === 'refunded' ? 'selected' : '' }}>Refunded</option>
-                        </select>
-                    </div>
+                        <option value="refunded" {{ request('payment_status') === 'refunded' ? 'selected' : '' }}>Refunded</option>
+                    </select>
+                </div>
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
-                        </svg>
-                            Filter
-                        </button>
-                    <a href="{{ admin_route('orders.index') }}" class="inline-flex justify-center items-center px-4 py-2 border border-stone-300 rounded-lg text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                            Clear
-                        </a>
-                    </div>
-                </form>
+                    <button type="submit" class="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 whitespace-nowrap">
+                        Filter
+                    </button>
+                    <a href="{{ admin_route('orders.index') }}" class="inline-flex items-center justify-center rounded-lg border border-stone-300 px-4 py-2.5 text-sm hover:bg-stone-50">
+                        <i data-lucide="x" class="h-4 w-4"></i>
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 

@@ -1150,29 +1150,24 @@ function initAddToCartButton() {
         this.querySelector('span').textContent = 'Adding...';
         
         try {
-            const response = await fetch('/api/cart/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    product_id: productId,
-                    quantity: quantity
-                })
-            });
+            // Use the API helper for consistency
+            const response = await window.api.addToCart(productId, quantity);
             
-            const data = await response.json();
-            
-            if (data.success) {
+            if (response.success) {
                 // Use the same animation as product cards
                 await animateButtonSuccess(this);
                 
-                // Update cart count in navbar if available
-                const cartCount = document.querySelector('.cart-count');
-                if (cartCount) {
-                    const currentCount = parseInt(cartCount.textContent) || 0;
-                    cartCount.textContent = currentCount + quantity;
+                // Update cart count badge in navbar by fetching latest count from server
+                if (typeof updateCartCount === 'function') {
+                    await updateCartCount();
+                }
+                
+                // Load updated cart if cart offcanvas is open
+                const cartOffcanvas = document.getElementById('offcanvas-cart');
+                if (cartOffcanvas && !cartOffcanvas.classList.contains('hidden')) {
+                    if (typeof loadCartItems === 'function') {
+                        await loadCartItems();
+                    }
                 }
                 
                 // Re-enable button after animation

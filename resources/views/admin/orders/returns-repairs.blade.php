@@ -23,7 +23,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="py-6">
+    <div class="pt-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
     <!-- Requested -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
@@ -38,9 +38,9 @@
                     <div class="ml-4">
                         <p class="text-sm font-medium text-stone-500">Requested</p>
                         <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['requested'] ?? 0) }}</p>
+                    </div>
                 </div>
-                </div>
-    </div>
+            </div>
 
     <!-- Approved -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
@@ -55,7 +55,7 @@
                     <div class="ml-4">
                         <p class="text-sm font-medium text-stone-500">Approved</p>
                         <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['approved'] ?? 0) }}</p>
-                </div>
+                    </div>
                 </div>
             </div>
 
@@ -67,14 +67,14 @@
                             <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
-        </div>
-    </div>
+                        </div>
+                    </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-stone-500">In Progress</p>
                         <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['in_progress'] ?? 0) }}</p>
+                    </div>
                 </div>
-                </div>
-    </div>
+            </div>
 
     <!-- Completed -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
@@ -113,27 +113,16 @@
     </div>
 
     <!-- Filters -->
-    <div class="py-6">
+    <div class="pb-6">
         <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
-            <form method="GET" action="{{ admin_route('orders.returns-repairs.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
+            <form method="GET" action="{{ admin_route('orders.returns-repairs.index') }}" class="flex flex-wrap items-end gap-4 justify-between">
+                <div class="flex-1 min-w-[200px]">
                     <label for="search" class="block text-sm font-medium text-stone-700 mb-2">Search</label>
                     <input type="text" id="search" name="search" value="{{ request('search') }}" 
                            placeholder="Search RMA numbers..."
                            class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                 </div>
-                <div>
-                    <label for="status" class="block text-sm font-medium text-stone-700 mb-2">Status</label>
-                    <select id="status" name="status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                        <option value="">All Status</option>
-                        <option value="requested" {{ request('status') === 'requested' ? 'selected' : '' }}>Requested</option>
-                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
-                        <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                    </select>
-                </div>
-        <div>
+                <div class="flex-1 min-w-[200px]">
                     <label for="type" class="block text-sm font-medium text-stone-700 mb-2">Type</label>
                     <select id="type" name="type" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                         <option value="">All Types</option>
@@ -141,19 +130,26 @@
                         <option value="exchange" {{ request('type') === 'exchange' ? 'selected' : '' }}>Exchange</option>
                         <option value="repair" {{ request('type') === 'repair' ? 'selected' : '' }}>Repair</option>
                     </select>
-        </div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                    <label for="status" class="block text-sm font-medium text-stone-700 mb-2">Status</label>
+                    <select id="status" name="status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">All Status</option>
+                        <option value="requested" {{ request('status') === 'requested' ? 'selected' : '' }}>Requested</option>
+                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                        <option value="received" {{ request('status') === 'received' ? 'selected' : '' }}>Received</option>
+                        <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                        <option value="refunded" {{ request('status') === 'refunded' ? 'selected' : '' }}>Refunded</option>
+                        <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                    </select>
+                </div>
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
-                        </svg>
-                Filter
-            </button>
-                    <a href="{{ admin_route('orders.returns-repairs.index') }}" class="inline-flex justify-center items-center px-4 py-2 border border-stone-300 rounded-lg text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        Clear
+                    <button type="submit" class="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 whitespace-nowrap">
+                        Filter
+                    </button>
+                    <a href="{{ admin_route('orders.returns-repairs.index') }}" class="inline-flex items-center justify-center rounded-lg border border-stone-300 px-4 py-2.5 text-sm hover:bg-stone-50">
+                        <i data-lucide="x" class="h-4 w-4"></i>
                     </a>
                 </div>
             </form>

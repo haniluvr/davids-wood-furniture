@@ -23,7 +23,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="py-6">
+    <div class="pt-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
     <!-- Pending Packing -->
             <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
@@ -96,16 +96,16 @@
         </div>
 
     <!-- Filters -->
-    <div class="py-6">
+    <div class="pb-6">
         <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
-            <form method="GET" action="{{ admin_route('orders.fulfillment') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
+            <form method="GET" action="{{ admin_route('orders.fulfillment') }}" class="flex flex-wrap items-end gap-4 justify-between">
+                <div class="flex-1 min-w-[200px]">
                     <label for="search" class="block text-sm font-medium text-stone-700 mb-2">Search</label>
                     <input type="text" id="search" name="search" value="{{ request('search') }}" 
                            placeholder="Search orders..."
                            class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-            </div>
-                <div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
                     <label for="status" class="block text-sm font-medium text-stone-700 mb-2">Status</label>
                     <select id="status" name="status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                         <option value="">All Status</option>
@@ -114,24 +114,18 @@
                         <option value="shipped" {{ request('status') === 'shipped' ? 'selected' : '' }}>Shipped</option>
                         <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
                     </select>
-                    </div>
+                </div>
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
-                        </svg>
+                    <button type="submit" class="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 whitespace-nowrap">
                         Filter
                     </button>
-                    <a href="{{ admin_route('orders.fulfillment') }}" class="inline-flex justify-center items-center px-4 py-2 border border-stone-300 rounded-lg text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        Clear
+                    <a href="{{ admin_route('orders.fulfillment') }}" class="inline-flex items-center justify-center rounded-lg border border-stone-300 px-4 py-2.5 text-sm hover:bg-stone-50">
+                        <i data-lucide="x" class="h-4 w-4"></i>
                     </a>
                 </div>
             </form>
-                </div>
-            </div>
+        </div>
+    </div>
 
     <!-- Orders List -->
     <div class="pb-8">
@@ -168,7 +162,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="text-sm text-stone-900 dark:text-white capitalize">
-                                            {{ str_replace('_', ' ', $order->fulfillment_status) }}
+                                            {{ str_replace('_', ' ', $order->fulfillment_status ?? 'pending') }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-stone-900">
@@ -226,6 +220,80 @@
     </div>
 </div>
 
+<!-- Success Notification -->
+<div id="success-notification" class="fixed top-4 right-4 z-[10000] hidden">
+    <div class="bg-emerald-50 border border-emerald-200 rounded-lg shadow-lg p-4 max-w-sm">
+        <div class="flex items-start gap-3">
+            <div class="flex-shrink-0">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
+                    <svg class="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="flex-1">
+                <p id="success-message" class="text-sm font-medium text-emerald-900"></p>
+            </div>
+            <button onclick="closeSuccessNotification()" class="flex-shrink-0 text-emerald-400 hover:text-emerald-600">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Error Notification -->
+<div id="error-notification" class="fixed top-4 right-4 z-[10000] hidden">
+    <div class="bg-red-50 border border-red-200 rounded-lg shadow-lg p-4 max-w-sm">
+        <div class="flex items-start gap-3">
+            <div class="flex-shrink-0">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
+                    <svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="flex-1">
+                <p id="error-message" class="text-sm font-medium text-red-900"></p>
+            </div>
+            <button onclick="closeErrorNotification()" class="flex-shrink-0 text-red-400 hover:text-red-600">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Ship Confirmation Modal -->
+<div id="bulk-ship-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div class="mb-4">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
+                        <svg class="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-stone-900">Mark Orders as Shipped</h3>
+                </div>
+                <p id="bulk-ship-message" class="text-sm text-stone-600"></p>
+            </div>
+            <div class="flex gap-3">
+                <button id="bulk-ship-cancel" class="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">
+                    Cancel
+                </button>
+                <button id="bulk-ship-confirm" class="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -255,9 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
     bulkShipBtn.addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
         if (checkedBoxes.length > 0) {
-            if (confirm(`Are you sure you want to mark ${checkedBoxes.length} orders as shipped?`)) {
-                bulkShipOrders(Array.from(checkedBoxes).map(cb => cb.value));
-            }
+            showBulkShipModal(checkedBoxes.length);
         }
     });
 
@@ -290,9 +356,150 @@ function markAsShipped(orderId) {
     }
 }
 
-function bulkShipOrders(orderIds) {
-    // Implement bulk ship functionality
-    console.log('Bulk ship orders:', orderIds);
+function showBulkShipModal(orderCount) {
+    if (orderCount === 0) {
+        return;
+    }
+    
+    const message = orderCount === 1 
+        ? `Are you sure you want to mark ${orderCount} order as shipped?`
+        : `Are you sure you want to mark ${orderCount} orders as shipped?`;
+    
+    document.getElementById('bulk-ship-message').textContent = message;
+    document.getElementById('bulk-ship-modal').classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    
+    // Remove existing event listeners
+    const confirmBtn = document.getElementById('bulk-ship-confirm');
+    const cancelBtn = document.getElementById('bulk-ship-cancel');
+    
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    // Add new event listeners
+    newConfirmBtn.addEventListener('click', function() {
+        const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
+        const orderIds = Array.from(checkedBoxes).map(cb => cb.value);
+        bulkShipOrders(orderIds, newConfirmBtn);
+    });
+    
+    newCancelBtn.addEventListener('click', function() {
+        document.getElementById('bulk-ship-modal').classList.add('hidden');
+        document.body.classList.remove('modal-open');
+    });
+    
+    // Close modal when clicking outside on the overlay
+    const modalContainer = document.getElementById('bulk-ship-modal');
+    const overlayDiv = modalContainer.querySelector('.fixed.inset-0.bg-black');
+    
+    if (overlayDiv) {
+        const newOverlay = overlayDiv.cloneNode(true);
+        overlayDiv.parentNode.replaceChild(newOverlay, overlayDiv);
+        newOverlay.addEventListener('click', function() {
+            modalContainer.classList.add('hidden');
+            document.body.classList.remove('modal-open');
+        });
+    }
+}
+
+function bulkShipOrders(orderIds, confirmButton) {
+    if (!orderIds || orderIds.length === 0) {
+        showErrorNotification('No orders selected');
+        return;
+    }
+
+    // Close modal first
+    const modal = document.getElementById('bulk-ship-modal');
+    modal.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+
+    // Show loading state on button if provided
+    let originalText = '';
+    if (confirmButton) {
+        originalText = confirmButton.textContent;
+        confirmButton.disabled = true;
+        confirmButton.textContent = 'Processing...';
+    }
+
+    // Make API request
+    fetch('{{ admin_route("orders.fulfillment.bulk-ship") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            order_ids: orderIds,
+            carrier: null, // Optional - can be enhanced later with a form
+            tracking_numbers: null // Optional - can be enhanced later with a form
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.message || 'Failed to mark orders as shipped');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showSuccessNotification(data.message || 'Orders marked as shipped successfully');
+            // Reload after a short delay to let user see the message
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            throw new Error(data.message || 'Failed to mark orders as shipped');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorNotification(error.message || 'Failed to mark orders as shipped');
+        if (confirmButton && originalText) {
+            confirmButton.disabled = false;
+            confirmButton.textContent = originalText;
+        }
+        // Re-open modal if there was an error
+        modal.classList.remove('hidden');
+        document.body.classList.add('modal-open');
+    });
+}
+
+function showSuccessNotification(message) {
+    const notification = document.getElementById('success-notification');
+    const messageElement = document.getElementById('success-message');
+    messageElement.textContent = message;
+    notification.classList.remove('hidden');
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        closeSuccessNotification();
+    }, 3000);
+}
+
+function closeSuccessNotification() {
+    document.getElementById('success-notification').classList.add('hidden');
+}
+
+function showErrorNotification(message) {
+    const notification = document.getElementById('error-notification');
+    const messageElement = document.getElementById('error-message');
+    messageElement.textContent = message;
+    notification.classList.remove('hidden');
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        closeErrorNotification();
+    }, 5000);
+}
+
+function closeErrorNotification() {
+    document.getElementById('error-notification').classList.add('hidden');
 }
 </script>
 @endpush

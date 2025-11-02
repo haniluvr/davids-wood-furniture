@@ -122,8 +122,8 @@
                 <hr class="divider">
                 <h3 class="text-lg font-semibold mb-2">Policies</h3>
                 <ul>
-                    <li><a href="#">Privacy policy</a></li>
-                    <li><a href="#">Terms of service</a></li>
+                    <li><a href="{{ route('privacy-policy') }}">Privacy policy</a></li>
+                    <li><a href="{{ route('terms-of-service') }}">Terms of service</a></li>
                     <li><a href="#">Warranty</a></li>
                 </ul>
             </div>
