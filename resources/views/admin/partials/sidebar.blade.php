@@ -233,9 +233,7 @@
                     </button>
                     <ul x-show="shippingOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
                         <li><a href="{{ admin_route('shipping-methods.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.shipping-methods.*') ? 'text-primary dark:text-primary' : '' }}">Shipping Methods</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Shipping Zones</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Carriers & Rates</a></li>
-                        <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary">Delivery Tracking</a></li>
+                        <li><a href="{{ admin_route('delivery-tracking.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.delivery-tracking.*') ? 'text-primary dark:text-primary' : '' }}">Delivery Tracking</a></li>
                     </ul>
                 </li>
 
@@ -321,14 +319,6 @@
                             <i data-lucide="store" class="w-4 h-4"></i>
                             Store Settings
                         </a>
-                        <a href="{{ admin_route('shipping-methods.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.shipping-methods*') ? 'bg-primary/10 text-primary' : '' }}">
-                            <i data-lucide="truck" class="w-4 h-4"></i>
-                            Shipping Methods
-                        </a>
-                        <a href="{{ admin_route('payment-gateways.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.payment-gateways*') ? 'bg-primary/10 text-primary' : '' }}">
-                            <i data-lucide="credit-card" class="w-4 h-4"></i>
-                            Payment Gateways
-                        </a>
                         <a href="{{ admin_route('users.admins') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.users.admins') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="users" class="w-4 h-4"></i>
                             Manage Admins
@@ -338,9 +328,9 @@
                             Permissions
                         </a>
                         <hr class="my-2 border-stroke dark:border-strokedark">
-                        <a href="{{ admin_route('settings.sustainability') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.settings.sustainability') ? 'bg-primary/10 text-primary' : '' }}">
-                            <i data-lucide="leaf" class="w-4 h-4"></i>
-                            Sustainability Settings
+                        <a href="{{ admin_route('payment-gateways.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.payment-gateways*') ? 'bg-primary/10 text-primary' : '' }}">
+                            <i data-lucide="credit-card" class="w-4 h-4"></i>
+                            Payment Gateways
                         </a>
                         <a href="{{ admin_route('integrations.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.integrations*') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="plug" class="w-4 h-4"></i>

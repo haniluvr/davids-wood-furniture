@@ -3,44 +3,43 @@
 @section('title', 'Payment Gateways')
 
 @section('content')
-<div class="min-h-screen bg-stone-50">
+<div class="min-h-screen bg-white">
     <!-- Header -->
     <div class="bg-white shadow-sm border-b border-stone-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-stone-900">Payment Gateways</h1>
-                    <p class="mt-1 text-sm text-stone-600">Manage payment processing methods and configurations</p>
-                </div>
-                <div class="flex space-x-3">
-                    <button onclick="reorderPaymentGateways()" class="inline-flex items-center px-4 py-2 border border-stone-300 rounded-lg text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                        </svg>
-                        Reorder
-                    </button>
-                    <a href="{{ admin_route('payment-gateways.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Add Payment Gateway
-                    </a>
-                </div>
+        <div class="flex justify-between items-center py-6">
+            <div>
+                <h1 class="text-2xl font-bold text-stone-900">Payment Gateways</h1>
+                <p class="mt-1 text-sm text-stone-600">Manage payment processing methods and configurations</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="reorderPaymentGateways()" 
+                        class="inline-flex items-center px-4 py-2 border border-stone-300 rounded-lg text-sm font-medium text-stone-700 hover:bg-stone-50">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Reorder
+                </button>
+                <a href="{{ admin_route('payment-gateways.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Payment Gateway
+                </a>
             </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="py-6">
         <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
-            <form method="GET" action="{{ admin_route('payment-gateways.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
+            <form method="GET" action="{{ admin_route('payment-gateways.index') }}" class="flex flex-wrap items-end gap-4 justify-between">
+                <div class="flex-1 min-w-[200px]">
                     <label for="search" class="block text-sm font-medium text-stone-700 mb-2">Search</label>
                     <input type="text" id="search" name="search" value="{{ request('search') }}" 
                            placeholder="Search by name or gateway..."
                            class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                 </div>
-                <div>
+                <div class="flex-1 min-w-[200px]">
                     <label for="status" class="block text-sm font-medium text-stone-700 mb-2">Status</label>
                     <select id="status" name="status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                         <option value="">All Status</option>
@@ -48,7 +47,7 @@
                         <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                     </select>
                 </div>
-                <div>
+                <div class="flex-1 min-w-[200px]">
                     <label for="mode" class="block text-sm font-medium text-stone-700 mb-2">Mode</label>
                     <select id="mode" name="mode" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                         <option value="">All Modes</option>
@@ -56,29 +55,26 @@
                         <option value="test" {{ request('mode') == 'test' ? 'selected' : '' }}>Test</option>
                     </select>
                 </div>
-                <div class="flex items-end">
-                    <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
-                        </svg>
+                <div class="flex items-end gap-2">
+                    <button type="submit" class="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 whitespace-nowrap">
                         Filter
                     </button>
+                    <a href="{{ admin_route('payment-gateways.index') }}" class="inline-flex items-center justify-center rounded-lg border border-stone-300 px-4 py-2.5 text-sm hover:bg-stone-50">
+                        <i data-lucide="x" class="h-4 w-4"></i>
+                    </a>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Payment Gateways List -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+    <div class="pb-8">
         <div class="bg-white rounded-xl shadow-sm border border-stone-200">
             @if($paymentGateways->count() > 0)
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-stone-200">
                         <thead class="bg-stone-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">
-                                    <input type="checkbox" id="selectAll" class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500">
-                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Gateway</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Type</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Fees</th>
@@ -91,13 +87,10 @@
                             @foreach($paymentGateways as $gateway)
                                 <tr class="hover:bg-stone-50 transition-colors duration-150" data-id="{{ $gateway->id }}">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" name="selected_gateways[]" value="{{ $gateway->id }}" class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500">
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10">
-                                                <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                                                    <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <div class="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                                                    <svg class="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                                                     </svg>
                                                 </div>
@@ -147,18 +140,18 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
                                             </button>
-                                            <a href="{{ admin_route('payment-gateways.show', $gateway) }}" class="text-emerald-600 hover:text-emerald-900 transition-colors duration-150">
+                                            <a href="{{ admin_route('payment-gateways.show', $gateway) }}" class="text-emerald-600 hover:text-emerald-900 transition-colors duration-150" title="View">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
                                             </a>
-                                            <a href="{{ admin_route('payment-gateways.edit', $gateway) }}" class="text-stone-600 hover:text-stone-900 transition-colors duration-150">
+                                            <a href="{{ admin_route('payment-gateways.edit', $gateway) }}" class="text-stone-600 hover:text-stone-900 transition-colors duration-150" title="Edit">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                 </svg>
                                             </a>
-                                            <button onclick="deletePaymentGateway({{ $gateway->id }})" class="text-red-600 hover:text-red-900 transition-colors duration-150">
+                                            <button onclick="deletePaymentGateway({{ $gateway->id }})" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Delete">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                                 </svg>
@@ -197,26 +190,28 @@
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-xl bg-white">
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full hidden z-[9999]">
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-boxdark text-left align-middle shadow-2xl transition-all">
         <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30">
+                <svg class="h-8 w-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                 </svg>
             </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Delete Payment Gateway</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500">Are you sure you want to delete this payment gateway? This action cannot be undone.</p>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mt-4">Delete Payment Gateway</h3>
+            <div class="mt-3 px-4 py-3">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Are you sure you want to delete this payment gateway? This action cannot be undone and will permanently remove the gateway from your system.</p>
             </div>
-            <div class="items-center px-4 py-3">
-                <button id="confirmDelete" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-lg w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 mr-2">
-                    Delete
-                </button>
-                <button onclick="closeDeleteModal()" class="mt-3 px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-lg w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+            <div class="flex gap-3 px-4 py-4">
+                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 border border-stone-200 dark:border-strokedark bg-white dark:bg-boxdark text-stone-700 dark:text-white text-sm font-medium rounded-xl hover:bg-stone-50 dark:hover:bg-gray-800 transition-colors duration-200">
                     Cancel
                 </button>
+                <button id="confirmDelete" class="flex-1 px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200">
+                    Delete Gateway
+                </button>
             </div>
+        </div>
         </div>
     </div>
 </div>
@@ -229,36 +224,39 @@ let deleteGatewayId = null;
 
 // Initialize sortable
 document.addEventListener('DOMContentLoaded', function() {
-    const sortable = Sortable.create(document.getElementById('sortable-payment-gateways'), {
-        handle: 'tr',
-        animation: 150,
-        onEnd: function(evt) {
-            const items = Array.from(document.querySelectorAll('#sortable-payment-gateways tr[data-id]'));
-            const paymentGateways = items.map((item, index) => ({
-                id: item.dataset.id,
-                sort_order: index
-            }));
-            
-            fetch('{{ admin_route("payment-gateways.reorder") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ payment_gateways: paymentGateways })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Payment gateways reordered successfully', 'success');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Error reordering payment gateways', 'error');
-            });
-        }
-    });
+    const sortableContainer = document.getElementById('sortable-payment-gateways');
+    if (sortableContainer) {
+        const sortable = Sortable.create(sortableContainer, {
+            handle: 'tr',
+            animation: 150,
+            onEnd: function(evt) {
+                const items = Array.from(document.querySelectorAll('#sortable-payment-gateways tr[data-id]'));
+                const paymentGateways = items.map((item, index) => ({
+                    id: item.dataset.id,
+                    sort_order: index
+                }));
+                
+                fetch('{{ admin_route("payment-gateways.reorder") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ payment_gateways: paymentGateways })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Payment gateways reordered successfully', 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error reordering payment gateways', 'error');
+                });
+            }
+        });
+    }
 });
 
 function toggleStatus(gatewayId) {
@@ -359,7 +357,7 @@ document.getElementById('confirmDelete').addEventListener('click', function() {
 
 function showNotification(message, type) {
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 ${
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-xl text-white z-50 shadow-lg ${
         type === 'success' ? 'bg-green-500' : 
         type === 'error' ? 'bg-red-500' : 
         'bg-blue-500'
@@ -370,6 +368,10 @@ function showNotification(message, type) {
     setTimeout(() => {
         notification.remove();
     }, 3000);
+}
+
+function reorderPaymentGateways() {
+    alert('Drag and drop rows to reorder payment gateways');
 }
 </script>
 @endpush

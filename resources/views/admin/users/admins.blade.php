@@ -3,274 +3,237 @@
 @section('title', 'Admin Users')
 
 @section('content')
-<!-- Breadcrumb Start -->
-<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <h2 class="text-title-md2 font-bold text-black dark:text-white">
-        Admin Users
-    </h2>
-
-    <nav>
-        <ol class="flex items-center gap-2">
-            <li>
-                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
-            </li>
-            <li>
-                <a class="font-medium" href="{{ admin_route('users.index') }}">Users /</a>
-            </li>
-            <li class="font-medium text-primary">Admins</li>
-        </ol>
-    </nav>
-</div>
-<!-- Breadcrumb End -->
-
-<!-- Stats Cards Start -->
-<div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5 mb-6">
-    <!-- Total Admins -->
-    <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4">
-            <i data-lucide="shield" class="w-6 h-6 text-primary dark:text-white"></i>
-        </div>
-        <div class="mt-4 flex items-end justify-between">
+<div class="min-h-screen bg-white">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b border-stone-200">
+        <div class="flex justify-between items-center py-6">
             <div>
-                <h4 class="text-title-md font-bold text-black dark:text-white">
-                    {{ number_format($stats['total_admins'] ?? 0) }}
-                </h4>
-                <span class="text-sm font-medium">Total Admins</span>
+                <h1 class="text-2xl font-bold text-stone-900">Admin Users</h1>
+                <p class="mt-1 text-sm text-stone-600">Manage admin accounts and permissions</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ admin_route('users.create-admin') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Admin
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Active Admins -->
-    <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-3 dark:bg-meta-4">
-            <i data-lucide="user-check" class="w-6 h-6 text-white"></i>
-        </div>
-        <div class="mt-4 flex items-end justify-between">
-            <div>
-                <h4 class="text-title-md font-bold text-black dark:text-white">
-                    {{ number_format($stats['active_admins'] ?? 0) }}
-                </h4>
-                <span class="text-sm font-medium">Active Admins</span>
+    <!-- Stats Cards -->
+    <div class="pt-6 pb-3">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <!-- Total Admins -->
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Total Admins</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['total_admins'] ?? 0) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Admins -->
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Active Admins</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['active_admins'] ?? 0) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Super Admins -->
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Super Admins</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ number_format($stats['super_admins'] ?? 0) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Last Login -->
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-stone-500">Last Login</p>
+                        <p class="text-2xl font-semibold text-stone-900">{{ $stats['last_login'] ?? 'N/A' }}</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-
-    <!-- Super Admins -->
-    <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-4 dark:bg-meta-4">
-            <i data-lucide="crown" class="w-6 h-6 text-white"></i>
-        </div>
-        <div class="mt-4 flex items-end justify-between">
-            <div>
-                <h4 class="text-title-md font-bold text-black dark:text-white">
-                    {{ number_format($stats['super_admins'] ?? 0) }}
-                </h4>
-                <span class="text-sm font-medium">Super Admins</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Last Login -->
-    <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-5 dark:bg-meta-4">
-            <i data-lucide="clock" class="w-6 h-6 text-white"></i>
-        </div>
-        <div class="mt-4 flex items-end justify-between">
-            <div>
-                <h4 class="text-title-md font-bold text-black dark:text-white">
-                    {{ $stats['last_login'] ?? 'N/A' }}
-                </h4>
-                <span class="text-sm font-medium">Last Login</span>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Stats Cards End -->
-
-<!-- Admin Users Table Start -->
-<div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-    <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <h4 class="text-xl font-semibold text-black dark:text-white">
-            Admin Users
-        </h4>
-        <a href="{{ admin_route('users.create-admin') }}" class="flex items-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2 text-white hover:bg-primary/90 transition-colors duration-200">
-            <i data-lucide="user-plus" class="w-4 h-4"></i>
-            Add Admin
-        </a>
     </div>
 
     <!-- Filters -->
-    <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
-        <div>
-            <label for="search" class="mb-2.5 block text-black dark:text-white">Search</label>
-            <input
-                type="text"
-                id="search"
-                placeholder="Search admins..."
-                class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-            />
-        </div>
-        <div>
-            <label for="role" class="mb-2.5 block text-black dark:text-white">Role</label>
-            <select
-                id="role"
-                class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-            >
-                <option value="">All Roles</option>
-                <option value="super_admin">Super Admin</option>
-                <option value="admin">Admin</option>
-                <option value="manager">Manager</option>
-                <option value="staff">Staff</option>
-                <option value="viewer">Viewer</option>
-            </select>
-        </div>
-        <div>
-            <label for="status" class="mb-2.5 block text-black dark:text-white">Status</label>
-            <select
-                id="status"
-                class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-            >
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="suspended">Suspended</option>
-            </select>
-        </div>
-        <div class="flex items-end">
-            <button class="w-full flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-3 text-white hover:bg-primary/90 transition-colors duration-200">
-                <i data-lucide="search" class="w-4 h-4"></i>
-                Filter
-            </button>
+    <div class="pt-3 pb-6">
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+            <form method="GET" action="{{ admin_route('users.admins') }}" class="flex flex-wrap items-end gap-4 justify-between">
+                <div class="flex-1 min-w-[200px]">
+                    <label for="search" class="block text-sm font-medium text-stone-700 mb-2">Search</label>
+                    <input type="text" id="search" name="search" value="{{ request('search') }}" 
+                           placeholder="Search admins..."
+                           class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                    <label for="role" class="block text-sm font-medium text-stone-700 mb-2">Role</label>
+                    <select id="role" name="role" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">All Roles</option>
+                        <option value="super_admin" {{ request('role') == 'super_admin' ? 'selected' : '' }}>Super Admin</option>
+                        <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="manager" {{ request('role') == 'manager' ? 'selected' : '' }}>Manager</option>
+                        <option value="staff" {{ request('role') == 'staff' ? 'selected' : '' }}>Staff</option>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                    <label for="status" class="block text-sm font-medium text-stone-700 mb-2">Status</label>
+                    <select id="status" name="status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">All Status</option>
+                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                        <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                    </select>
+                </div>
+                <div class="flex items-end gap-2">
+                    <button type="submit" class="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 whitespace-nowrap">
+                        Filter
+                    </button>
+                    <a href="{{ admin_route('users.admins') }}" class="inline-flex items-center justify-center rounded-lg border border-stone-300 px-4 py-2.5 text-sm hover:bg-stone-50">
+                        <i data-lucide="x" class="h-4 w-4"></i>
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Table -->
-    <div class="mt-6 overflow-x-auto">
-        <table class="w-full">
-            <thead>
-                <tr class="border-b border-stroke dark:border-strokedark">
-                    <th class="text-left py-3 px-4 font-medium text-black dark:text-white">
-                        <input type="checkbox" class="rounded border-stroke dark:border-strokedark" />
-                    </th>
-                    <th class="text-left py-3 px-4 font-medium text-black dark:text-white">Admin</th>
-                    <th class="text-left py-3 px-4 font-medium text-black dark:text-white">Role</th>
-                    <th class="text-left py-3 px-4 font-medium text-black dark:text-white">Status</th>
-                    <th class="text-left py-3 px-4 font-medium text-black dark:text-white">Last Login</th>
-                    <th class="text-left py-3 px-4 font-medium text-black dark:text-white">Created</th>
-                    <th class="text-left py-3 px-4 font-medium text-black dark:text-white">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($admins as $admin)
-                    <tr class="border-b border-stroke/50 dark:border-strokedark/50 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                        <td class="py-3 px-4">
-                            <input type="checkbox" class="rounded border-stroke dark:border-strokedark" />
-                        </td>
-                        <td class="py-3 px-4">
-                            <div class="flex items-center gap-3">
-                                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-                                    <span class="text-white font-semibold text-sm">
-                                        {{ substr($admin->first_name, 0, 1) }}{{ substr($admin->last_name, 0, 1) }}
-                                    </span>
-                                </div>
-                                <div>
-                                    <h5 class="font-medium text-black dark:text-white">{{ $admin->first_name }} {{ $admin->last_name }}</h5>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ $admin->email }}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-3 px-4">
-                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                                @if($admin->role === 'super_admin') bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400
-                                @elseif($admin->role === 'admin') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400
-                                @elseif($admin->role === 'manager') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
-                                @elseif($admin->role === 'staff') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400
-                                @else bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 @endif">
-                                {{ ucfirst(str_replace('_', ' ', $admin->role)) }}
-                            </span>
-                        </td>
-                        <td class="py-3 px-4">
-                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                                @if($admin->status === 'active') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
-                                @elseif($admin->status === 'inactive') bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400
-                                @elseif($admin->status === 'suspended') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400
-                                @else bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 @endif">
-                                {{ ucfirst($admin->status ?? 'active') }}
-                            </span>
-                        </td>
-                        <td class="py-3 px-4 text-gray-600 dark:text-gray-400">
-                            {{ $admin->last_login_at ? $admin->last_login_at->format('M d, Y g:i A') : 'Never' }}
-                        </td>
-                        <td class="py-3 px-4 text-gray-600 dark:text-gray-400">
-                            {{ $admin->created_at->format('M d, Y') }}
-                        </td>
-                        <td class="py-3 px-4">
-                            <div class="flex items-center gap-2">
-                                <a href="{{ admin_route('users.edit-admin', $admin) }}" class="text-primary hover:text-primary/80 transition-colors duration-200" title="Edit">
-                                    <i data-lucide="edit" class="w-4 h-4"></i>
-                                </a>
-                                @if($admin->id !== auth('admin')->id())
-                                    <button class="text-red-500 hover:text-red-700 transition-colors duration-200" title="Delete" onclick="confirmDelete({{ $admin->id }})">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="py-8 text-center">
-                            <div class="flex flex-col items-center">
-                                <i data-lucide="users" class="w-12 h-12 text-gray-400 mb-4"></i>
-                                <p class="text-gray-600 dark:text-gray-400">No admin users found</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <!-- Admin Users List -->
+    <div class="pb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200">
+            @if($admins->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-stone-200">
+                        <thead class="bg-stone-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Admin</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Role</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Last Login</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Created</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-stone-200">
+                            @foreach($admins as $admin)
+                                <tr class="hover:bg-stone-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+                                                    <span class="text-white font-semibold text-sm">
+                                                        {{ substr($admin->first_name, 0, 1) }}{{ substr($admin->last_name, 0, 1) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-stone-900">{{ $admin->first_name }} {{ $admin->last_name }}</div>
+                                                <div class="text-sm text-stone-500">{{ $admin->email }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            {{ $admin->role === 'super_admin' ? 'bg-purple-100 text-purple-800' : 
+                                               ($admin->role === 'admin' ? 'bg-blue-100 text-blue-800' : 
+                                               ($admin->role === 'manager' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800')) }}">
+                                            {{ ucfirst(str_replace('_', ' ', $admin->role)) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Active
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-stone-900">
+                                        {{ $admin->last_login_at ? $admin->last_login_at->format('M d, Y') : 'Never' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-stone-900">
+                                        {{ $admin->created_at->format('M d, Y') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <a href="{{ admin_route('users.edit-admin', $admin) }}" class="text-emerald-600 hover:text-emerald-900 transition-colors duration-150" title="Edit">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </a>
+                                            @if($admin->id !== auth('admin')->id())
+                                                <button onclick="confirmDelete({{ $admin->id }})" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Delete">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
 
-    <!-- Pagination -->
-    @if($admins->hasPages())
-        @include('admin.partials.pagination', ['paginator' => $admins])
-    @endif
-</div>
-<!-- Admin Users Table End -->
-
-<!-- Bulk Actions -->
-<div class="mt-6 rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark" x-data="{ showBulkActions: false }">
-    <div class="flex items-center justify-between">
-        <h4 class="text-lg font-semibold text-black dark:text-white">Bulk Actions</h4>
-        <button @click="showBulkActions = !showBulkActions" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
-            <i data-lucide="settings" class="w-4 h-4"></i>
-            Bulk Actions
-        </button>
-    </div>
-    
-    <div x-show="showBulkActions" x-transition class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <button class="flex items-center justify-center gap-2 rounded-lg border border-green-500 bg-green-500 px-4 py-2 text-white hover:bg-green-600 transition-colors duration-200">
-            <i data-lucide="user-check" class="w-4 h-4"></i>
-            Activate Selected
-        </button>
-        <button class="flex items-center justify-center gap-2 rounded-lg border border-yellow-500 bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600 transition-colors duration-200">
-            <i data-lucide="user-x" class="w-4 h-4"></i>
-            Deactivate Selected
-        </button>
-        <button class="flex items-center justify-center gap-2 rounded-lg border border-red-500 bg-red-500 px-4 py-2 text-white hover:bg-red-600 transition-colors duration-200">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-            Delete Selected
-        </button>
+                <!-- Pagination -->
+                @if($admins->hasPages())
+                    @include('admin.partials.pagination', ['paginator' => $admins])
+                @endif
+            @else
+                <div class="p-8 text-center">
+                    <div class="mx-auto h-12 w-12 rounded-full bg-stone-100 flex items-center justify-center mb-4">
+                        <svg class="h-6 w-6 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-stone-500">No admin users found</p>
+                </div>
+            @endif
+        </div>
     </div>
 </div>
 
 <script>
 function confirmDelete(adminId) {
     if (confirm('Are you sure you want to delete this admin user? This action cannot be undone.')) {
-        // Create a form and submit it
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/admin/users/admins/${adminId}`;
+        form.action = `/admin/admins/${adminId}`;
         
         const csrfToken = document.createElement('input');
         csrfToken.type = 'hidden';

@@ -3,361 +3,225 @@
 @section('title', 'Edit Shipping Method')
 
 @section('content')
-<!-- Breadcrumb Start -->
-<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <h2 class="text-title-md2 font-bold text-black dark:text-white">
-        Edit Shipping Method
-    </h2>
+<div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-xl shadow-lg">
+                    <i data-lucide="truck" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-stone-900 dark:text-white">Edit Shipping Method</h1>
+                    <p class="mt-1 text-sm text-stone-600 dark:text-gray-400">Edit "{{ $shippingMethod->name }}"</p>
+                </div>
+            </div>
+            <a href="{{ admin_route('shipping-methods.index') }}" 
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back to Shipping Methods
+            </a>
+        </div>
+    </div>
 
-    <nav>
-        <ol class="flex items-center gap-2">
-            <li>
-                <a class="font-medium" href="{{ admin_route('dashboard') }}">Dashboard /</a>
-            </li>
-            <li>
-                <a class="font-medium" href="{{ admin_route('shipping-methods.index') }}">Shipping Methods /</a>
-            </li>
-            <li class="font-medium text-primary">{{ $shippingMethod->name }}</li>
-        </ol>
-    </nav>
-</div>
-<!-- Breadcrumb End -->
-
-<div class="max-w-4xl mx-auto">
-    <form action="{{ admin_route('shipping-methods.update', $shippingMethod) }}" method="POST" class="space-y-6">
+    <form action="{{ admin_route('shipping-methods.update', $shippingMethod) }}" method="POST" class="space-y-8" id="shippingForm">
         @csrf
         @method('PUT')
 
-        <!-- Basic Information -->
-        <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-            <h4 class="text-lg font-semibold text-black dark:text-white mb-6">Basic Information</h4>
-            
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <!-- Name -->
-                <div>
-                    <label for="name" class="mb-2.5 block text-black dark:text-white">
-                        Shipping Method Name <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value="{{ old('name', $shippingMethod->name) }}"
-                        class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('name') border-red-500 @enderror"
-                        required
-                        placeholder="e.g., Standard Shipping"
-                    />
-                    @error('name')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Code -->
-                <div>
-                    <label for="code" class="mb-2.5 block text-black dark:text-white">
-                        Method Code <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        id="code"
-                        name="code"
-                        value="{{ old('code', $shippingMethod->code) }}"
-                        class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('code') border-red-500 @enderror"
-                        required
-                        placeholder="e.g., standard"
-                    />
-                    @error('code')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Description -->
-                <div class="md:col-span-2">
-                    <label for="description" class="mb-2.5 block text-black dark:text-white">
-                        Description
-                    </label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        rows="3"
-                        class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('description') border-red-500 @enderror"
-                        placeholder="Brief description of the shipping method"
-                    >{{ old('description', $shippingMethod->description) }}</textarea>
-                    @error('description')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-        </div>
-
-        <!-- Pricing Configuration -->
-        <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-            <h4 class="text-lg font-semibold text-black dark:text-white mb-6">Pricing Configuration</h4>
-            
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <!-- Base Rate -->
-                <div>
-                    <label for="base_rate" class="mb-2.5 block text-black dark:text-white">
-                        Base Rate <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                        <input
-                            type="number"
-                            id="base_rate"
-                            name="base_rate"
-                            value="{{ old('base_rate', $shippingMethod->base_rate) }}"
-                            step="0.01"
-                            min="0"
-                            class="w-full rounded border-[1.5px] border-stroke bg-transparent pl-8 pr-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('base_rate') border-red-500 @enderror"
-                            required
-                            placeholder="0.00"
-                        />
-                    </div>
-                    @error('base_rate')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Rate Type -->
-                <div>
-                    <label for="rate_type" class="mb-2.5 block text-black dark:text-white">
-                        Rate Type
-                    </label>
-                    <select
-                        id="rate_type"
-                        name="rate_type"
-                        class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('rate_type') border-red-500 @enderror"
-                    >
-                        <option value="flat" {{ old('rate_type', $shippingMethod->rate_type) === 'flat' ? 'selected' : '' }}>Flat Rate</option>
-                        <option value="weight" {{ old('rate_type', $shippingMethod->rate_type) === 'weight' ? 'selected' : '' }}>Weight Based</option>
-                        <option value="price" {{ old('rate_type', $shippingMethod->rate_type) === 'price' ? 'selected' : '' }}>Price Based</option>
-                        <option value="free" {{ old('rate_type', $shippingMethod->rate_type) === 'free' ? 'selected' : '' }}>Free Shipping</option>
-                    </select>
-                    @error('rate_type')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Free Shipping Threshold -->
-                <div id="free_shipping_threshold" class="hidden">
-                    <label for="free_shipping_threshold" class="mb-2.5 block text-black dark:text-white">
-                        Free Shipping Threshold
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                        <input
-                            type="number"
-                            id="free_shipping_threshold"
-                            name="free_shipping_threshold"
-                            value="{{ old('free_shipping_threshold', $shippingMethod->free_shipping_threshold) }}"
-                            step="0.01"
-                            min="0"
-                            class="w-full rounded border-[1.5px] border-stroke bg-transparent pl-8 pr-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('free_shipping_threshold') border-red-500 @enderror"
-                            placeholder="0.00"
-                        />
-                    </div>
-                    @error('free_shipping_threshold')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Weight Rate -->
-                <div id="weight_rate" class="hidden">
-                    <label for="weight_rate" class="mb-2.5 block text-black dark:text-white">
-                        Rate Per Weight Unit
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                        <input
-                            type="number"
-                            id="weight_rate"
-                            name="weight_rate"
-                            value="{{ old('weight_rate', $shippingMethod->weight_rate) }}"
-                            step="0.01"
-                            min="0"
-                            class="w-full rounded border-[1.5px] border-stroke bg-transparent pl-8 pr-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('weight_rate') border-red-500 @enderror"
-                            placeholder="0.00"
-                        />
-                    </div>
-                    @error('weight_rate')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-        </div>
-
-        <!-- Delivery Settings -->
-        <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-            <h4 class="text-lg font-semibold text-black dark:text-white mb-6">Delivery Settings</h4>
-            
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <!-- Estimated Days -->
-                <div>
-                    <label for="estimated_days" class="mb-2.5 block text-black dark:text-white">
-                        Estimated Delivery Days
-                    </label>
-                    <input
-                        type="number"
-                        id="estimated_days"
-                        name="estimated_days"
-                        value="{{ old('estimated_days', $shippingMethod->estimated_days) }}"
-                        min="1"
-                        class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('estimated_days') border-red-500 @enderror"
-                        placeholder="e.g., 3-5"
-                    />
-                    @error('estimated_days')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Max Weight -->
-                <div>
-                    <label for="max_weight" class="mb-2.5 block text-black dark:text-white">
-                        Maximum Weight (lbs)
-                    </label>
-                    <input
-                        type="number"
-                        id="max_weight"
-                        name="max_weight"
-                        value="{{ old('max_weight', $shippingMethod->max_weight) }}"
-                        step="0.1"
-                        min="0"
-                        class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('max_weight') border-red-500 @enderror"
-                        placeholder="0.0"
-                    />
-                    @error('max_weight')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Max Dimensions -->
-                <div>
-                    <label for="max_dimensions" class="mb-2.5 block text-black dark:text-white">
-                        Maximum Dimensions (inches)
-                    </label>
-                    <input
-                        type="text"
-                        id="max_dimensions"
-                        name="max_dimensions"
-                        value="{{ old('max_dimensions', $shippingMethod->max_dimensions) }}"
-                        class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('max_dimensions') border-red-500 @enderror"
-                        placeholder="e.g., 24x18x12"
-                    />
-                    @error('max_dimensions')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Tracking Available -->
-                <div>
-                    <label class="mb-2.5 block text-black dark:text-white">
-                        Tracking Available
-                    </label>
-                    <div class="flex items-center space-x-4">
-                        <label class="flex items-center">
-                            <input
-                                type="radio"
-                                name="tracking_available"
-                                value="1"
-                                {{ old('tracking_available', $shippingMethod->tracking_available) ? 'checked' : '' }}
-                                class="mr-2"
-                            />
-                            <span class="text-black dark:text-white">Yes</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input
-                                type="radio"
-                                name="tracking_available"
-                                value="0"
-                                {{ !old('tracking_available', $shippingMethod->tracking_available) ? 'checked' : '' }}
-                                class="mr-2"
-                            />
-                            <span class="text-black dark:text-white">No</span>
-                        </label>
-                    </div>
-                    @error('tracking_available')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-        </div>
-
-        <!-- Status & Availability -->
-        <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
-            <h4 class="text-lg font-semibold text-black dark:text-white mb-6">Status & Availability</h4>
-            
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <!-- Status -->
-                <div>
-                    <label for="status" class="mb-2.5 block text-black dark:text-white">
-                        Status
-                    </label>
-                    <select
-                        id="status"
-                        name="status"
-                        class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('status') border-red-500 @enderror"
-                    >
-                        <option value="active" {{ old('status', $shippingMethod->status) === 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="inactive" {{ old('status', $shippingMethod->status) === 'inactive' ? 'selected' : '' }}>Inactive</option>
-                    </select>
-                    @error('status')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Sort Order -->
-                <div>
-                    <label for="sort_order" class="mb-2.5 block text-black dark:text-white">
-                        Sort Order
-                    </label>
-                    <input
-                        type="number"
-                        id="sort_order"
-                        name="sort_order"
-                        value="{{ old('sort_order', $shippingMethod->sort_order) }}"
-                        min="0"
-                        class="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary @error('sort_order') border-red-500 @enderror"
-                        placeholder="0"
-                    />
-                    @error('sort_order')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
+        <!-- Main Content Area -->
+        <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-hidden">
+            <!-- Tab Navigation -->
+            <div class="border-b border-stone-200 dark:border-strokedark">
+                <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+                    <button type="button" onclick="switchTab('basic')" id="basic-tab" class="tab-button active py-4 px-1 border-b-2 font-medium text-sm border-emerald-500 text-emerald-600 dark:text-emerald-400">
+                        <i data-lucide="info" class="w-5 h-5 mr-2 inline"></i>
+                        Basic Information
+                    </button>
+                    <button type="button" onclick="switchTab('pricing')" id="pricing-tab" class="tab-button py-4 px-1 border-b-2 font-medium text-sm border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300">
+                        <i data-lucide="dollar-sign" class="w-5 h-5 mr-2 inline"></i>
+                        Cost & Pricing
+                    </button>
+                    <button type="button" onclick="switchTab('settings')" id="settings-tab" class="tab-button py-4 px-1 border-b-2 font-medium text-sm border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300 dark:text-gray-400 dark:hover:text-gray-300">
+                        <i data-lucide="settings" class="w-5 h-5 mr-2 inline"></i>
+                        Settings
+                    </button>
+                </nav>
             </div>
 
-            <!-- Checkboxes -->
-            <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <label class="flex items-center">
-                    <input
-                        type="checkbox"
-                        name="is_default"
-                        value="1"
-                        {{ old('is_default', $shippingMethod->is_default) ? 'checked' : '' }}
-                        class="mr-2 rounded border-stroke dark:border-strokedark"
-                    />
-                    <span class="text-black dark:text-white">Default Shipping Method</span>
-                </label>
-                <label class="flex items-center">
-                    <input
-                        type="checkbox"
-                        name="requires_signature"
-                        value="1"
-                        {{ old('requires_signature', $shippingMethod->requires_signature) ? 'checked' : '' }}
-                        class="mr-2 rounded border-stroke dark:border-strokedark"
-                    />
-                    <span class="text-black dark:text-white">Requires Signature</span>
-                </label>
+            <!-- Tab Content -->
+            <div class="p-8">
+                <!-- Basic Information Tab -->
+                <div id="basic-panel" class="tab-panel">
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label for="name" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                                    Method Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="name" name="name" value="{{ old('name', $shippingMethod->name) }}" required
+                                       class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400 @error('name') border-red-300 @enderror"
+                                       placeholder="e.g., Standard Shipping">
+                                @error('name')
+                                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="type" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                                    Shipping Type <span class="text-red-500">*</span>
+                                </label>
+                                <select id="type" name="type" required onchange="toggleTypeFields()"
+                                        class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('type') border-red-300 @enderror">
+                                    <option value="">Select Type</option>
+                                    <option value="flat_rate" {{ old('type', $shippingMethod->type) == 'flat_rate' ? 'selected' : '' }}>Flat Rate</option>
+                                    <option value="free_shipping" {{ old('type', $shippingMethod->type) == 'free_shipping' ? 'selected' : '' }}>Free Shipping</option>
+                                    <option value="weight_based" {{ old('type', $shippingMethod->type) == 'weight_based' ? 'selected' : '' }}>Weight Based</option>
+                                    <option value="price_based" {{ old('type', $shippingMethod->type) == 'price_based' ? 'selected' : '' }}>Price Based</option>
+                                </select>
+                                @error('type')
+                                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="description" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Description</label>
+                            <textarea id="description" name="description" rows="3"
+                                      class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400 @error('description') border-red-300 @enderror"
+                                      placeholder="Brief description of this shipping method">{{ old('description', $shippingMethod->description) }}</textarea>
+                            @error('description')
+                                <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost & Pricing Tab -->
+                <div id="pricing-panel" class="tab-panel hidden">
+                    <div class="space-y-6">
+                        <div id="cost-fields" class="space-y-6">
+                            <div class="space-y-2">
+                                <label for="cost" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                                    Base Cost <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-stone-500 dark:text-gray-400 sm:text-sm">₱</span>
+                                    </div>
+                                    <input type="number" id="cost" name="cost" value="{{ old('cost', $shippingMethod->cost) }}" step="0.01" min="0" required
+                                           class="w-full pl-8 pr-3 py-3 rounded-xl border border-stone-200 bg-white px-4 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('cost') border-red-300 @enderror"
+                                           placeholder="0.00">
+                                </div>
+                                @error('cost')
+                                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            
+                            <div id="free-shipping-threshold" class="hidden space-y-2">
+                                <label for="free_shipping_threshold" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Free Shipping Threshold</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-stone-500 dark:text-gray-400 sm:text-sm">₱</span>
+                                    </div>
+                                    <input type="number" id="free_shipping_threshold" name="free_shipping_threshold" value="{{ old('free_shipping_threshold', $shippingMethod->free_shipping_threshold) }}" step="0.01" min="0"
+                                           class="w-full pl-8 pr-3 py-3 rounded-xl border border-stone-200 bg-white px-4 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('free_shipping_threshold') border-red-300 @enderror"
+                                           placeholder="0.00">
+                                </div>
+                                @error('free_shipping_threshold')
+                                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label for="minimum_order_amount" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Minimum Order Amount</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-stone-500 dark:text-gray-400 sm:text-sm">₱</span>
+                                    </div>
+                                    <input type="number" id="minimum_order_amount" name="minimum_order_amount" value="{{ old('minimum_order_amount', $shippingMethod->minimum_order_amount) }}" step="0.01" min="0"
+                                           class="w-full pl-8 pr-3 py-3 rounded-xl border border-stone-200 bg-white px-4 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('minimum_order_amount') border-red-300 @enderror"
+                                           placeholder="0.00">
+                                </div>
+                                @error('minimum_order_amount')
+                                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="maximum_order_amount" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Maximum Order Amount</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-stone-500 dark:text-gray-400 sm:text-sm">₱</span>
+                                    </div>
+                                    <input type="number" id="maximum_order_amount" name="maximum_order_amount" value="{{ old('maximum_order_amount', $shippingMethod->maximum_order_amount) }}" step="0.01" min="0"
+                                           class="w-full pl-8 pr-3 py-3 rounded-xl border border-stone-200 bg-white px-4 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('maximum_order_amount') border-red-300 @enderror"
+                                           placeholder="No limit">
+                                </div>
+                                @error('maximum_order_amount')
+                                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label for="estimated_days_min" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Minimum Delivery Days</label>
+                                <input type="number" id="estimated_days_min" name="estimated_days_min" value="{{ old('estimated_days_min', $shippingMethod->estimated_days_min) }}" min="1"
+                                       class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('estimated_days_min') border-red-300 @enderror"
+                                       placeholder="1">
+                                @error('estimated_days_min')
+                                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="estimated_days_max" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Maximum Delivery Days</label>
+                                <input type="number" id="estimated_days_max" name="estimated_days_max" value="{{ old('estimated_days_max', $shippingMethod->estimated_days_max) }}" min="1"
+                                       class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('estimated_days_max') border-red-300 @enderror"
+                                       placeholder="7">
+                                @error('estimated_days_max')
+                                    <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings-panel" class="tab-panel hidden">
+                    <div class="space-y-6">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="is_active" name="is_active" value="1" {{ old('is_active', $shippingMethod->is_active) ? 'checked' : '' }}
+                                   class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 dark:border-strokedark dark:bg-boxdark">
+                            <label for="is_active" class="ml-2 block text-sm text-stone-700 dark:text-stone-300">Active</label>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="sort_order" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Sort Order</label>
+                            <input type="number" id="sort_order" name="sort_order" value="{{ old('sort_order', $shippingMethod->sort_order) }}" min="0"
+                                   class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white @error('sort_order') border-red-300 @enderror"
+                                   placeholder="0">
+                            <p class="mt-1 text-xs text-stone-500 dark:text-gray-400">Lower numbers appear first in the list</p>
+                            @error('sort_order')
+                                <p class="mt-1 text-sm text-red-500 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Form Actions -->
         <div class="flex items-center justify-end gap-4">
-            <a href="{{ admin_route('shipping-methods.index') }}" class="flex items-center gap-2 rounded-lg border border-stroke bg-white px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200 dark:border-strokedark dark:bg-boxdark dark:text-gray-300 dark:hover:bg-gray-800">
+            <a href="{{ admin_route('shipping-methods.index') }}" 
+               class="inline-flex items-center gap-2 px-6 py-3 border border-stone-200 bg-white text-sm font-medium text-stone-700 rounded-xl transition-all duration-200 hover:bg-stone-50 hover:border-stone-300 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
                 <i data-lucide="x" class="w-4 h-4"></i>
                 Cancel
             </a>
-            <button type="submit" class="flex items-center gap-2 rounded-lg border border-primary bg-primary px-6 py-3 text-white hover:bg-primary/90 transition-colors duration-200">
+            <button type="submit" 
+                    class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-blue-600 text-sm font-medium text-white rounded-xl shadow-lg transition-all duration-200 hover:from-emerald-700 hover:to-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
                 <i data-lucide="save" class="w-4 h-4"></i>
                 Update Shipping Method
             </button>
@@ -365,32 +229,51 @@
     </form>
 </div>
 
+@push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const rateTypeSelect = document.getElementById('rate_type');
-    const freeShippingThreshold = document.getElementById('free_shipping_threshold');
-    const weightRate = document.getElementById('weight_rate');
-
-    // Show/hide fields based on rate type
-    function toggleRateFields() {
-        const rateType = rateTypeSelect.value;
-        
-        // Hide all conditional fields
-        freeShippingThreshold.style.display = 'none';
-        weightRate.style.display = 'none';
-        
-        // Show relevant fields based on rate type
-        if (rateType === 'free') {
-            freeShippingThreshold.style.display = 'block';
-        } else if (rateType === 'weight') {
-            weightRate.style.display = 'block';
-        }
-    }
-
-    rateTypeSelect.addEventListener('change', toggleRateFields);
+// Tab switching functionality
+function switchTab(tabName) {
+    // Hide all panels
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.add('hidden');
+    });
     
-    // Initialize on page load
-    toggleRateFields();
+    // Remove active class from all tabs
+    document.querySelectorAll('.tab-button').forEach(tab => {
+        tab.classList.remove('active', 'border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400');
+        tab.classList.add('border-transparent', 'text-stone-500', 'dark:text-gray-400');
+    });
+    
+    // Show selected panel
+    document.getElementById(tabName + '-panel').classList.remove('hidden');
+    
+    // Add active class to selected tab
+    const activeTab = document.getElementById(tabName + '-tab');
+    activeTab.classList.add('active', 'border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400');
+    activeTab.classList.remove('border-transparent', 'text-stone-500', 'dark:text-gray-400');
+}
+
+function toggleTypeFields() {
+    const type = document.getElementById('type').value;
+    const costFields = document.getElementById('cost-fields');
+    const freeShippingThreshold = document.getElementById('free-shipping-threshold');
+    const costInput = document.getElementById('cost');
+    
+    if (type === 'free_shipping') {
+        costFields.style.display = 'none';
+        freeShippingThreshold.classList.remove('hidden');
+        costInput.required = false;
+    } else {
+        costFields.style.display = 'block';
+        freeShippingThreshold.classList.add('hidden');
+        costInput.required = true;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleTypeFields();
 });
 </script>
+@endpush
 @endsection

@@ -148,6 +148,8 @@ $adminRoutes = function () {
             Route::get('admins', [App\Http\Controllers\Admin\UserController::class, 'admins'])->name('users.admins');
             Route::get('admins/create', [App\Http\Controllers\Admin\UserController::class, 'createAdmin'])->name('users.create-admin');
             Route::post('admins', [App\Http\Controllers\Admin\UserController::class, 'storeAdmin'])->name('users.store-admin');
+            Route::get('admins/{admin}/edit', [App\Http\Controllers\Admin\UserController::class, 'editAdmin'])->name('users.edit-admin');
+            Route::put('admins/{admin}', [App\Http\Controllers\Admin\UserController::class, 'updateAdmin'])->name('users.update-admin');
             Route::delete('admins/{admin}', [App\Http\Controllers\Admin\UserController::class, 'destroyAdmin'])->name('users.destroy-admin');
         });
 
@@ -181,10 +183,6 @@ $adminRoutes = function () {
             Route::post('settings/test-email', [App\Http\Controllers\Admin\SettingController::class, 'testEmail'])->name('settings.test-email');
             Route::post('settings/clear-cache', [App\Http\Controllers\Admin\SettingController::class, 'clearCache'])->name('settings.clear-cache');
 
-            // Sustainability Settings
-            Route::get('settings/sustainability', [App\Http\Controllers\Admin\SustainabilityController::class, 'index'])->name('settings.sustainability');
-            Route::post('settings/sustainability', [App\Http\Controllers\Admin\SustainabilityController::class, 'update'])->name('settings.sustainability.update');
-
             // Integrations
             Route::get('integrations', [App\Http\Controllers\Admin\IntegrationController::class, 'index'])->name('integrations.index');
             Route::get('integrations/{integration}', [App\Http\Controllers\Admin\IntegrationController::class, 'edit'])->name('integrations.edit');
@@ -201,6 +199,13 @@ $adminRoutes = function () {
             Route::resource('shipping-methods', App\Http\Controllers\Admin\ShippingMethodController::class);
             Route::post('shipping-methods/{shippingMethod}/toggle-status', [App\Http\Controllers\Admin\ShippingMethodController::class, 'toggleStatus'])->name('shipping-methods.toggle-status');
             Route::post('shipping-methods/reorder', [App\Http\Controllers\Admin\ShippingMethodController::class, 'reorder'])->name('shipping-methods.reorder');
+        });
+
+        // Delivery Tracking
+        Route::middleware('admin.permission:shipping.view')->group(function () {
+            Route::get('delivery-tracking', [App\Http\Controllers\Admin\DeliveryTrackingController::class, 'index'])->name('delivery-tracking.index');
+            Route::get('delivery-tracking/{order}', [App\Http\Controllers\Admin\DeliveryTrackingController::class, 'show'])->name('delivery-tracking.show');
+            Route::post('delivery-tracking/{order}/update', [App\Http\Controllers\Admin\DeliveryTrackingController::class, 'updateTracking'])->name('delivery-tracking.update');
         });
 
         // Payment Gateways
@@ -257,6 +262,7 @@ $adminRoutes = function () {
             Route::get('permissions', [App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('permissions.index');
             Route::post('permissions', [App\Http\Controllers\Admin\PermissionController::class, 'update'])->name('permissions.update');
             Route::post('permissions/reset', [App\Http\Controllers\Admin\PermissionController::class, 'resetToDefaults'])->name('permissions.reset');
+            Route::post('permissions/roles', [App\Http\Controllers\Admin\PermissionController::class, 'storeRole'])->name('permissions.store-role');
         });
 
         // Audit Trail

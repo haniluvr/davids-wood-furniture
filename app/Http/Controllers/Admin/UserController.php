@@ -346,7 +346,16 @@ class UserController extends Controller
 
         $admins = $query->paginate(15);
 
-        return view('admin.users.admins', compact('admins'));
+        // Calculate statistics
+        $lastLoginAdmin = Admin::whereNotNull('last_login_at')->orderBy('last_login_at', 'desc')->first();
+        $stats = [
+            'total_admins' => Admin::count(),
+            'active_admins' => Admin::where('status', 'active')->count(),
+            'super_admins' => Admin::where('role', 'super_admin')->count(),
+            'last_login' => $lastLoginAdmin ? $lastLoginAdmin->last_login_at->format('M d, Y') : 'N/A',
+        ];
+
+        return view('admin.users.admins', compact('admins', 'stats'));
     }
 
     /**
@@ -367,7 +376,7 @@ class UserController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:admins',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:super_admin,admin,manager,staff',
+            'role' => 'required|in:super_admin,admin,sales_support_manager,inventory_fulfillment_manager,product_content_manager,finance_reporting_analyst,staff,viewer',
         ]);
 
         $adminData = $validated;
@@ -381,6 +390,49 @@ class UserController extends Controller
 
         return redirect()->to(admin_route('users.admins'))
             ->with('success', 'Admin user created successfully.');
+    }
+
+    /**
+     * Show the form for editing an admin user.
+     */
+    public function editAdmin(Admin $admin)
+    {
+        return view('admin.users.edit-admin', compact('admin'));
+    }
+
+    /**
+     * Update admin user.
+     */
+    public function updateAdmin(Request $request, Admin $admin)
+    {
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('admins')->ignore($admin->id)],
+            'password' => 'nullable|string|min:8|confirmed',
+            'role' => 'required|in:super_admin,admin,sales_support_manager,inventory_fulfillment_manager,product_content_manager,finance_reporting_analyst,staff,viewer',
+        ]);
+
+        $oldValues = $admin->only(['first_name', 'last_name', 'email', 'role']);
+
+        // Update admin data
+        $admin->first_name = $validated['first_name'];
+        $admin->last_name = $validated['last_name'];
+        $admin->email = $validated['email'];
+        $admin->role = $validated['role'];
+
+        // Update password if provided
+        if (! empty($validated['password'])) {
+            $admin->password = Hash::make($validated['password']);
+        }
+
+        $admin->save();
+
+        // Log admin user update
+        AuditLog::log('admin_user.updated', Auth::guard('admin')->user(), $admin, $oldValues, $admin->only(['first_name', 'last_name', 'email', 'role']), "Updated admin user {$admin->first_name} {$admin->last_name} ({$admin->email})");
+
+        return redirect()->to(admin_route('users.admins'))
+            ->with('success', 'Admin user updated successfully.');
     }
 
     /**
