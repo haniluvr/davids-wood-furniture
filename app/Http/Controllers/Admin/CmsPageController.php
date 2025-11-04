@@ -91,7 +91,7 @@ class CmsPageController extends Controller
         $cmsPage = CmsPage::create($data);
 
         // Log the action
-        AuditLog::logCreate(Auth::user(), $cmsPage);
+        AuditLog::logCreate(Auth::guard('admin')->user(), $cmsPage);
 
         return redirect()->to(admin_route('cms-pages.index'))
             ->with('success', 'CMS page created successfully.');
@@ -153,7 +153,7 @@ class CmsPageController extends Controller
         $cmsPage->update($data);
 
         // Log the action
-        AuditLog::logUpdate(Auth::user(), $cmsPage, $oldValues);
+        AuditLog::logUpdate(Auth::guard('admin')->user(), $cmsPage, $oldValues);
 
         return redirect()->to(admin_route('cms-pages.index'))
             ->with('success', 'CMS page updated successfully.');
@@ -164,7 +164,7 @@ class CmsPageController extends Controller
         $oldValues = $cmsPage->toArray();
 
         // Log the action
-        AuditLog::logDelete(Auth::user(), $cmsPage);
+        AuditLog::logDelete(Auth::guard('admin')->user(), $cmsPage);
 
         $cmsPage->delete();
 
@@ -187,7 +187,7 @@ class CmsPageController extends Controller
         $cmsPage->update($updateData);
 
         // Log the action
-        AuditLog::log('cms_page_status_toggled', Auth::user(), $cmsPage, ['is_active' => $oldStatus], ['is_active' => $cmsPage->is_active]);
+        AuditLog::log('cms_page_status_toggled', Auth::guard('admin')->user(), $cmsPage, ['is_active' => $oldStatus], ['is_active' => $cmsPage->is_active]);
 
         return response()->json([
             'success' => true,
@@ -206,7 +206,7 @@ class CmsPageController extends Controller
         $newCmsPage->save();
 
         // Log the action
-        AuditLog::logCreate(Auth::user(), $newCmsPage);
+        AuditLog::logCreate(Auth::guard('admin')->user(), $newCmsPage);
 
         return redirect()->to(admin_route('cms-pages.edit', $newCmsPage))
             ->with('success', 'CMS page duplicated successfully.');
