@@ -147,7 +147,13 @@ class AuditController extends Controller
                 'line' => $e->getLine(),
             ]);
 
-            return redirect()->to(admin_route('dashboard'))->withErrors(['error' => 'An error occurred while loading the audit log: '.$e->getMessage()]);
+            try {
+                return redirect()->to(admin_route('dashboard'))->withErrors(['error' => 'An error occurred while loading the audit log. Please check the logs for details.']);
+            } catch (\Exception $redirectException) {
+                \Log::error('Failed to redirect after audit error: '.$redirectException->getMessage());
+
+                return response()->view('errors.500', ['message' => 'An error occurred while loading the audit log.'], 500);
+            }
         }
     }
 

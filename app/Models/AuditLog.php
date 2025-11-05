@@ -207,17 +207,38 @@ class AuditLog extends Model
 
         $changes = [];
 
+        // Helper function to convert value to string
+        $toString = function ($value) {
+            if (is_array($value)) {
+                return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            }
+            if (is_object($value)) {
+                return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            }
+            if (is_null($value)) {
+                return 'null';
+            }
+            if (is_bool($value)) {
+                return $value ? 'true' : 'false';
+            }
+
+            return (string) $value;
+        };
+
         if (! empty($this->old_values) && ! empty($this->new_values)) {
             foreach ($this->new_values as $key => $newValue) {
                 $oldValue = $this->old_values[$key] ?? null;
                 if ($oldValue !== $newValue && ! in_array($key, ['updated_at', 'created_at'])) {
-                    $changes[] = "{$key}: ".($oldValue ?: 'empty').' → '.($newValue ?: 'empty');
+                    $oldValueStr = $toString($oldValue);
+                    $newValueStr = $toString($newValue);
+                    $changes[] = "{$key}: ".($oldValueStr ?: 'empty').' → '.($newValueStr ?: 'empty');
                 }
             }
         } elseif (! empty($this->new_values)) {
             foreach ($this->new_values as $key => $value) {
                 if (! in_array($key, ['updated_at', 'created_at'])) {
-                    $changes[] = "{$key}: ".($value ?: 'empty');
+                    $valueStr = $toString($value);
+                    $changes[] = "{$key}: ".($valueStr ?: 'empty');
                 }
             }
         }
