@@ -18,11 +18,11 @@ if (! function_exists('admin_route')) {
         if (class_exists(\App\Helpers\RouteHelper::class)) {
             return \App\Helpers\RouteHelper::adminRoute($routeName, $parameters);
         }
-        
+
         // Fallback: Use the route helper directly if RouteHelper class not found
         $env = config('app.env');
         $prefix = $env === 'local' ? 'admin.test.' : 'admin.';
-        
+
         return route($prefix.$routeName, $parameters);
     }
 }
@@ -43,7 +43,7 @@ if (! function_exists('storage_disk')) {
         } catch (\Exception $e) {
             // Fallback if dynamic method doesn't exist
         }
-        
+
         // Fallback to public disk
         return \Illuminate\Support\Facades\Storage::disk('public');
     }
@@ -63,7 +63,7 @@ if (! function_exists('storage_url')) {
         } catch (\Exception $e) {
             // Fallback if dynamic method doesn't exist
         }
-        
+
         // Fallback to asset helper
         return asset('storage/'.ltrim($path, '/'));
     }
