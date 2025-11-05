@@ -59,9 +59,9 @@ class Admin extends Authenticatable
     {
         $firstName = $this->first_name ?? '';
         $lastName = $this->last_name ?? '';
-        
+
         $fullName = trim($firstName.' '.$lastName);
-        
+
         return $fullName ?: 'Unknown';
     }
 

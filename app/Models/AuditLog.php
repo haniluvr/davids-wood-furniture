@@ -115,7 +115,7 @@ class AuditLog extends Model
             $firstName = $this->user->first_name ?? '';
             $lastName = $this->user->last_name ?? '';
             $fullName = trim($firstName.' '.$lastName);
-            
+
             return $fullName ?: 'Unknown User';
         }
 
@@ -176,7 +176,7 @@ class AuditLog extends Model
             $firstName = $this->user->first_name ?? '';
             $lastName = $this->user->last_name ?? '';
             $fullName = trim($firstName.' '.$lastName);
-            
+
             return $fullName ?: 'Unknown User';
         }
 
