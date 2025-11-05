@@ -57,7 +57,12 @@ class Admin extends Authenticatable
     // Accessors
     public function getFullNameAttribute(): string
     {
-        return $this->first_name.' '.$this->last_name;
+        $firstName = $this->first_name ?? '';
+        $lastName = $this->last_name ?? '';
+        
+        $fullName = trim($firstName.' '.$lastName);
+        
+        return $fullName ?: 'Unknown';
     }
 
     public function getAvatarUrlAttribute(): string

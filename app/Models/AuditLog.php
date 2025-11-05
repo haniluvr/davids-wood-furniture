@@ -112,7 +112,11 @@ class AuditLog extends Model
         if ($this->user_type === 'admin' && $this->admin) {
             return $this->admin->full_name;
         } elseif ($this->user_type === 'user' && $this->user) {
-            return $this->user->first_name.' '.$this->user->last_name;
+            $firstName = $this->user->first_name ?? '';
+            $lastName = $this->user->last_name ?? '';
+            $fullName = trim($firstName.' '.$lastName);
+            
+            return $fullName ?: 'Unknown User';
         }
 
         return 'Unknown User';
@@ -169,7 +173,11 @@ class AuditLog extends Model
 
             return $this->admin->full_name.$role;
         } elseif ($this->user_type === 'user' && $this->user) {
-            return $this->user->first_name.' '.$this->user->last_name;
+            $firstName = $this->user->first_name ?? '';
+            $lastName = $this->user->last_name ?? '';
+            $fullName = trim($firstName.' '.$lastName);
+            
+            return $fullName ?: 'Unknown User';
         }
 
         return 'System';
