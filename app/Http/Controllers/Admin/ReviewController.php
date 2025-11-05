@@ -15,83 +15,93 @@ class ReviewController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ProductReview::with(['product', 'user', 'order']);
+        try {
+            $query = ProductReview::with(['product', 'user', 'order']);
 
-        // Calculate statistics
-        $totalReviews = ProductReview::count();
-        $averageRating = ProductReview::avg('rating') ?? 0;
-        $pendingCount = ProductReview::where('is_approved', false)->count();
-        $approvedCount = ProductReview::where('is_approved', true)->count();
+            // Calculate statistics
+            $totalReviews = ProductReview::count();
+            $averageRating = ProductReview::avg('rating') ?? 0;
+            $pendingCount = ProductReview::where('is_approved', false)->count();
+            $approvedCount = ProductReview::where('is_approved', true)->count();
 
-        // Search functionality
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%'.$request->search.'%')
-                    ->orWhere('review', 'like', '%'.$request->search.'%')
-                    ->orWhereHas('product', function ($productQuery) use ($request) {
-                        $productQuery->where('name', 'like', '%'.$request->search.'%');
-                    })
-                    ->orWhereHas('user', function ($userQuery) use ($request) {
-                        $userQuery->where('first_name', 'like', '%'.$request->search.'%')
-                            ->orWhere('last_name', 'like', '%'.$request->search.'%')
-                            ->orWhere('email', 'like', '%'.$request->search.'%');
-                    });
-            });
-        }
-
-        // Status filter
-        if ($request->filled('status')) {
-            switch ($request->status) {
-                case 'pending':
-                    $query->where('is_approved', false);
-
-                    break;
-                case 'approved':
-                    $query->where('is_approved', true);
-
-                    break;
-                case 'verified':
-                    $query->where('is_verified_purchase', true);
-
-                    break;
-                case 'unverified':
-                    $query->where('is_verified_purchase', false);
-
-                    break;
+            // Search functionality
+            if ($request->filled('search')) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('title', 'like', '%'.$request->search.'%')
+                        ->orWhere('review', 'like', '%'.$request->search.'%')
+                        ->orWhereHas('product', function ($productQuery) use ($request) {
+                            $productQuery->where('name', 'like', '%'.$request->search.'%');
+                        })
+                        ->orWhereHas('user', function ($userQuery) use ($request) {
+                            $userQuery->where('first_name', 'like', '%'.$request->search.'%')
+                                ->orWhere('last_name', 'like', '%'.$request->search.'%')
+                                ->orWhere('email', 'like', '%'.$request->search.'%');
+                        });
+                });
             }
+
+            // Status filter
+            if ($request->filled('status')) {
+                switch ($request->status) {
+                    case 'pending':
+                        $query->where('is_approved', false);
+
+                        break;
+                    case 'approved':
+                        $query->where('is_approved', true);
+
+                        break;
+                    case 'verified':
+                        $query->where('is_verified_purchase', true);
+
+                        break;
+                    case 'unverified':
+                        $query->where('is_verified_purchase', false);
+
+                        break;
+                }
+            }
+
+            // Rating filter
+            if ($request->filled('rating')) {
+                $query->where('rating', $request->rating);
+            }
+
+            // Product filter
+            if ($request->filled('product_id')) {
+                $query->where('product_id', $request->product_id);
+            }
+
+            // Date range filter
+            if ($request->filled('date_from')) {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+            if ($request->filled('date_to')) {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+
+            // Sort
+            $sortBy = $request->get('sort', 'created_at');
+            $sortOrder = $request->get('order', 'desc');
+            $query->orderBy($sortBy, $sortOrder);
+
+            $reviews = $query->paginate(15)->withQueryString();
+
+            // Get products for filter dropdown
+            $products = \App\Models\Product::where('is_active', true)
+                ->orderBy('name')
+                ->pluck('name', 'id');
+
+            return view('admin.reviews.index', compact('reviews', 'products', 'totalReviews', 'averageRating', 'pendingCount', 'approvedCount'));
+        } catch (\Exception $e) {
+            \Log::error('Reviews index error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()->to(admin_route('dashboard'))->withErrors(['error' => 'An error occurred while loading the reviews: '.$e->getMessage()]);
         }
-
-        // Rating filter
-        if ($request->filled('rating')) {
-            $query->where('rating', $request->rating);
-        }
-
-        // Product filter
-        if ($request->filled('product_id')) {
-            $query->where('product_id', $request->product_id);
-        }
-
-        // Date range filter
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        // Sort
-        $sortBy = $request->get('sort', 'created_at');
-        $sortOrder = $request->get('order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
-
-        $reviews = $query->paginate(15)->withQueryString();
-
-        // Get products for filter dropdown
-        $products = \App\Models\Product::where('is_active', true)
-            ->orderBy('name')
-            ->pluck('name', 'id');
-
-        return view('admin.reviews.index', compact('reviews', 'products', 'totalReviews', 'averageRating', 'pendingCount', 'approvedCount'));
     }
 
     /**

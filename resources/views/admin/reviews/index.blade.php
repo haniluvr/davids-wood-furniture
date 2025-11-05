@@ -412,7 +412,8 @@ function approveReview(reviewId) {
     @endif
     
     if (confirm('Are you sure you want to approve this review?')) {
-        fetch(`{{ admin_route('reviews.approve', '') }}/${reviewId}`, {
+        const approveUrl = '{{ admin_route("reviews.approve", 0) }}'.replace('0', reviewId);
+        fetch(approveUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -452,7 +453,8 @@ function rejectReview(reviewId) {
     @endif
     
     if (confirm('Are you sure you want to reject this review?')) {
-        fetch(`{{ admin_route('reviews.reject', '') }}/${reviewId}`, {
+        const rejectUrl = '{{ admin_route("reviews.reject", 0) }}'.replace('0', reviewId);
+        fetch(rejectUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -492,7 +494,8 @@ function deleteReview(reviewId) {
     @endif
     
     if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
-        fetch(`{{ admin_route('reviews.index') }}/${reviewId}`, {
+        const deleteUrl = '{{ admin_route("reviews.destroy", 0) }}'.replace('0', reviewId);
+        fetch(deleteUrl, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

@@ -12,103 +12,113 @@ class AuditController extends Controller
 {
     public function index(Request $request)
     {
-        $query = AuditLog::with(['admin', 'user']);
+        try {
+            $query = AuditLog::with(['admin', 'user']);
 
-        // Apply filters
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
+            // Apply filters
+            if ($request->filled('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+
+            if ($request->filled('action')) {
+                $query->where('action', $request->action);
+            }
+
+            if ($request->filled('category')) {
+                $query->whereIn('action', $this->getActionsByCategory($request->category));
+            }
+
+            if ($request->filled('model')) {
+                $query->where('model', $request->model);
+            }
+
+            if ($request->filled('user_type')) {
+                $query->where('user_type', $request->user_type);
+            }
+
+            if ($request->filled('date_from')) {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+
+            if ($request->filled('date_to')) {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('action', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhere('model', 'like', "%{$search}%")
+                        ->orWhere('ip_address', 'like', "%{$search}%")
+                        ->orWhere('user_agent', 'like', "%{$search}%")
+                        ->orWhere('model_id', 'like', "%{$search}%")
+                        ->orWhereHas('admin', function ($adminQuery) use ($search) {
+                            $adminQuery->where('first_name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                            $userQuery->where('first_name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            $auditLogs = $query->orderBy('created_at', 'desc')->paginate(50);
+
+            // Get filter options
+            $adminUsers = Admin::select('id', 'first_name', 'last_name', 'email', 'role')
+                ->orderBy('first_name')
+                ->get();
+
+            // Get all possible actions (both from database and predefined list)
+            $dbActions = AuditLog::distinct()->whereNotNull('action')->pluck('action')->toArray();
+            $allActions = array_unique(array_merge($dbActions, $this->getAllPossibleActions()));
+            sort($allActions);
+            $actions = collect($allActions);
+
+            // Get all possible models (both from database and predefined list)
+            $dbModels = AuditLog::distinct()->whereNotNull('model')->pluck('model')->toArray();
+            $allModels = array_unique(array_merge($dbModels, $this->getAllPossibleModels()));
+            sort($allModels);
+            $models = collect($allModels);
+
+            // Get statistics
+            $stats = [
+                'total' => AuditLog::count(),
+                'today' => AuditLog::whereDate('created_at', today())->count(),
+                'this_week' => AuditLog::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+                'this_month' => AuditLog::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
+            ];
+
+            // Get activity summary
+            $activitySummary = AuditLog::select('action', DB::raw('count(*) as count'))
+                ->whereBetween('created_at', [now()->subDays(30), now()])
+                ->whereNotNull('action')
+                ->groupBy('action')
+                ->orderBy('count', 'desc')
+                ->limit(10)
+                ->get();
+
+            return view('admin.audit.index', compact(
+                'auditLogs',
+                'adminUsers',
+                'actions',
+                'models',
+                'stats',
+                'activitySummary'
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Audit index error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()->to(admin_route('dashboard'))->withErrors(['error' => 'An error occurred while loading the audit log: '.$e->getMessage()]);
         }
-
-        if ($request->filled('action')) {
-            $query->where('action', $request->action);
-        }
-
-        if ($request->filled('category')) {
-            $query->whereIn('action', $this->getActionsByCategory($request->category));
-        }
-
-        if ($request->filled('model')) {
-            $query->where('model', $request->model);
-        }
-
-        if ($request->filled('user_type')) {
-            $query->where('user_type', $request->user_type);
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('action', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('model', 'like', "%{$search}%")
-                    ->orWhere('ip_address', 'like', "%{$search}%")
-                    ->orWhere('user_agent', 'like', "%{$search}%")
-                    ->orWhere('model_id', 'like', "%{$search}%")
-                    ->orWhereHas('admin', function ($adminQuery) use ($search) {
-                        $adminQuery->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('user', function ($userQuery) use ($search) {
-                        $userQuery->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        $auditLogs = $query->orderBy('created_at', 'desc')->paginate(50);
-
-        // Get filter options
-        $adminUsers = Admin::select('id', 'first_name', 'last_name', 'email', 'role')
-            ->orderBy('first_name')
-            ->get();
-
-        // Get all possible actions (both from database and predefined list)
-        $dbActions = AuditLog::distinct()->whereNotNull('action')->pluck('action')->toArray();
-        $allActions = array_unique(array_merge($dbActions, $this->getAllPossibleActions()));
-        sort($allActions);
-        $actions = collect($allActions);
-
-        // Get all possible models (both from database and predefined list)
-        $dbModels = AuditLog::distinct()->whereNotNull('model')->pluck('model')->toArray();
-        $allModels = array_unique(array_merge($dbModels, $this->getAllPossibleModels()));
-        sort($allModels);
-        $models = collect($allModels);
-
-        // Get statistics
-        $stats = [
-            'total' => AuditLog::count(),
-            'today' => AuditLog::whereDate('created_at', today())->count(),
-            'this_week' => AuditLog::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-            'this_month' => AuditLog::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
-        ];
-
-        // Get activity summary
-        $activitySummary = AuditLog::select('action', DB::raw('count(*) as count'))
-            ->whereBetween('created_at', [now()->subDays(30), now()])
-            ->whereNotNull('action')
-            ->groupBy('action')
-            ->orderBy('count', 'desc')
-            ->limit(10)
-            ->get();
-
-        return view('admin.audit.index', compact(
-            'auditLogs',
-            'adminUsers',
-            'actions',
-            'models',
-            'stats',
-            'activitySummary'
-        ));
     }
 
     protected function getActionsByCategory(string $category): array
