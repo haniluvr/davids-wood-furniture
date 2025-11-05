@@ -17,9 +17,9 @@ class StoreIntendedUrl
     {
         // Only store intended URL for GET requests to avoid storing POST/PUT/DELETE URLs
         if ($request->isMethod('GET') && ! $request->expectsJson()) {
-            // Don't store URLs for login, register, or auth routes to avoid redirect loops
+            // Don't store URLs for login, register, auth routes, or API routes to avoid redirect loops and API endpoints
             $currentPath = $request->path();
-            $excludedPaths = ['login', 'register', 'auth/google', 'auth/google/callback'];
+            $excludedPaths = ['login', 'register', 'auth/google', 'auth/google/callback', 'api'];
 
             $shouldStore = true;
             foreach ($excludedPaths as $excludedPath) {

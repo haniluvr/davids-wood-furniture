@@ -109,8 +109,8 @@ class AuditLog extends Model
 
     public function getUserNameAttribute(): string
     {
-        if ($this->user_type === 'admin' && $this->user) {
-            return $this->user->full_name;
+        if ($this->user_type === 'admin' && $this->admin) {
+            return $this->admin->full_name;
         } elseif ($this->user_type === 'user' && $this->user) {
             return $this->user->first_name.' '.$this->user->last_name;
         }

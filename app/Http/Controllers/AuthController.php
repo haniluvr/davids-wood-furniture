@@ -251,6 +251,13 @@ class AuthController extends Controller
         try {
             // Store the current URL as intended URL before redirecting to Google
             $intendedUrl = request()->input('intended_url', request()->header('referer', route('home')));
+
+            // Validate that the intended URL is not an API endpoint
+            // If it's an API route, fallback to home to prevent redirecting to JSON responses
+            if ($intendedUrl && str_starts_with(parse_url($intendedUrl, PHP_URL_PATH) ?? '', '/api')) {
+                $intendedUrl = route('home');
+            }
+
             session()->put('url.intended', $intendedUrl);
 
             return Socialite::driver('google')->redirect();
@@ -389,6 +396,12 @@ class AuthController extends Controller
 
             // Get intended redirect URL from session, fallback to home
             $intendedUrl = session()->pull('url.intended', route('home'));
+
+            // Validate that the intended URL is not an API endpoint
+            // If it's an API route, fallback to home to prevent redirecting to JSON responses
+            if (str_starts_with(parse_url($intendedUrl, PHP_URL_PATH) ?? '', '/api')) {
+                $intendedUrl = route('home');
+            }
 
             // Final session save before redirect
             session()->save();

@@ -222,8 +222,8 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10">
-                                                @if($review->product->images && count($review->product->images) > 0)
-                                                    <img class="h-10 w-10 rounded-lg object-cover" src="{{ $review->product->images[0]['url'] ?? asset('images/placeholder.jpg') }}" alt="{{ $review->product->name }}">
+                                                @if($review->product && $review->product->images && count($review->product->images) > 0)
+                                                    <img class="h-10 w-10 rounded-lg object-cover" src="{{ $review->product->images[0]['url'] ?? asset('images/placeholder.jpg') }}" alt="{{ $review->product->name ?? 'Product' }}">
                                                 @else
                                                     <div class="h-10 w-10 rounded-lg bg-stone-100 flex items-center justify-center">
                                                         <svg class="h-5 w-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,8 +233,8 @@
                                                 @endif
                                             </div>
                                             <div class="ml-4">
-                                                <div class="text-sm font-medium text-stone-900">{{ $review->product->name }}</div>
-                                                <div class="text-sm text-stone-500">SKU: {{ $review->product->sku }}</div>
+                                                <div class="text-sm font-medium text-stone-900">{{ $review->product ? $review->product->name : 'Deleted Product' }}</div>
+                                                <div class="text-sm text-stone-500">SKU: {{ $review->product ? $review->product->sku : 'N/A' }}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -243,13 +243,23 @@
                                             <div class="flex-shrink-0 h-8 w-8">
                                                 <div class="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center">
                                                     <span class="text-sm font-medium text-emerald-600">
-                                                        {{ substr($review->user->first_name, 0, 1) }}{{ substr($review->user->last_name, 0, 1) }}
+                                                        @if($review->user && ($review->user->first_name || $review->user->last_name))
+                                                            {{ substr($review->user->first_name ?? '', 0, 1) }}{{ substr($review->user->last_name ?? '', 0, 1) }}
+                                                        @else
+                                                            ?
+                                                        @endif
                                                     </span>
                                                 </div>
                                             </div>
                                             <div class="ml-3">
-                                                <div class="text-sm font-medium text-stone-900">{{ $review->user->first_name }} {{ $review->user->last_name }}</div>
-                                                <div class="text-sm text-stone-500">{{ $review->user->email }}</div>
+                                                <div class="text-sm font-medium text-stone-900">
+                                                    @if($review->user)
+                                                        {{ $review->user->first_name ?? '' }} {{ $review->user->last_name ?? '' }}
+                                                    @else
+                                                        Deleted User
+                                                    @endif
+                                                </div>
+                                                <div class="text-sm text-stone-500">{{ $review->user ? $review->user->email : 'N/A' }}</div>
                                             </div>
                                         </div>
                                     </td>

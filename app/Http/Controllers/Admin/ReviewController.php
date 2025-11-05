@@ -369,8 +369,8 @@ class ReviewController extends Controller
             foreach ($reviews as $review) {
                 fputcsv($file, [
                     $review->id,
-                    $review->product->name,
-                    $review->user ? $review->user->first_name.' '.$review->user->last_name : 'Guest',
+                    $review->product ? $review->product->name : 'Deleted Product',
+                    $review->user ? ($review->user->first_name.' '.$review->user->last_name) : 'Deleted User',
                     $review->rating,
                     $review->title,
                     $review->review,
