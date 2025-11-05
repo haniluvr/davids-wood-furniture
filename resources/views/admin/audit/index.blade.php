@@ -299,18 +299,25 @@
                     </thead>
                     <tbody class="divide-y divide-stroke dark:divide-strokedark">
                         @forelse($auditLogs as $log)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors {{ $log->criticality === 'high' ? 'bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500' : ($log->criticality === 'medium' ? 'bg-yellow-50/50 dark:bg-yellow-900/10 border-l-4 border-l-yellow-500' : '') }}">
+                        @php
+                            $criticality = $log->criticality ?? 'low';
+                        @endphp
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors {{ $criticality === 'high' ? 'bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500' : ($criticality === 'medium' ? 'bg-yellow-50/50 dark:bg-yellow-900/10 border-l-4 border-l-yellow-500' : '') }}">
                             <td class="py-4 px-4">
+                                @if($log->created_at)
                                 <div class="text-sm font-medium text-gray-900 dark:text-white">
                                     {{ $log->created_at->format('M d, Y') }}
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400">
                                     {{ $log->created_at->format('H:i:s') }} UTC
                                 </div>
+                                @else
+                                <div class="text-sm font-medium text-gray-400">N/A</div>
+                                @endif
                             </td>
                             <td class="py-4 px-4">
                                 <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ $log->user_display }}
+                                    {{ $log->user_display ?? 'System' }}
                                 </div>
                                 @if($log->user_email)
                                 <div class="text-xs text-gray-500 dark:text-gray-400">
@@ -319,10 +326,10 @@
                                 @endif
                             </td>
                             <td class="py-4 px-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $log->action_badge_color }}">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $log->action_badge_color ?? 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' }}">
                                     {{ ucfirst(str_replace('_', ' ', $log->action ?? 'N/A')) }}
                                 </span>
-                                @if($log->criticality === 'high')
+                                @if(($log->criticality ?? 'low') === 'high')
                                 <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" title="High Risk Action">
                                     🔴
                                 </span>

@@ -124,7 +124,9 @@ class AuditLog extends Model
 
     public function getActionColorAttribute(): string
     {
-        return match ($this->action) {
+        $action = $this->action ?? '';
+
+        return match ($action) {
             'create', 'product.created', 'order.created', 'customer.created', 'admin_user.created' => 'text-green-600',
             'update', 'product.updated', 'order.status_updated', 'customer.updated' => 'text-blue-600',
             'delete', 'product.deleted', 'order.deleted', 'customer.deleted' => 'text-red-600',
@@ -139,7 +141,9 @@ class AuditLog extends Model
 
     public function getActionBadgeColorAttribute(): string
     {
-        return match ($this->action) {
+        $action = $this->action ?? '';
+
+        return match ($action) {
             'create', 'product.created', 'order.created', 'customer.created', 'admin_user.created' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
             'update', 'product.updated', 'order.status_updated', 'customer.updated' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
             'delete', 'product.deleted', 'order.deleted', 'customer.deleted' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
@@ -154,12 +158,13 @@ class AuditLog extends Model
 
     public function getCriticalityAttribute(): string
     {
+        $action = $this->action ?? '';
         $criticalActions = ['delete', 'product.deleted', 'order.deleted', 'customer.deleted', 'admin_user.role_changed', 'admin_user.deactivated', 'order.refund_issued'];
         $highActions = ['product.updated', 'order.status_updated', 'inventory.adjusted', 'password_changed'];
 
-        if (in_array($this->action, $criticalActions)) {
+        if (in_array($action, $criticalActions)) {
             return 'high';
-        } elseif (in_array($this->action, $highActions)) {
+        } elseif (in_array($action, $highActions)) {
             return 'medium';
         }
 

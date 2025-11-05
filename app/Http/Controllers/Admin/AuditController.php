@@ -69,38 +69,68 @@ class AuditController extends Controller
             $auditLogs = $query->orderBy('created_at', 'desc')->paginate(50);
 
             // Get filter options
-            $adminUsers = Admin::select('id', 'first_name', 'last_name', 'email', 'role')
-                ->orderBy('first_name')
-                ->get();
+            try {
+                $adminUsers = Admin::select('id', 'first_name', 'last_name', 'email', 'role')
+                    ->orderBy('first_name')
+                    ->get();
+            } catch (\Exception $e) {
+                \Log::warning('Failed to get admin users: '.$e->getMessage());
+                $adminUsers = collect([]);
+            }
 
             // Get all possible actions (both from database and predefined list)
-            $dbActions = AuditLog::distinct()->whereNotNull('action')->pluck('action')->toArray();
-            $allActions = array_unique(array_merge($dbActions, $this->getAllPossibleActions()));
-            sort($allActions);
-            $actions = collect($allActions);
+            try {
+                $dbActions = AuditLog::distinct()->whereNotNull('action')->pluck('action')->toArray();
+                $allActions = array_unique(array_merge($dbActions, $this->getAllPossibleActions()));
+                sort($allActions);
+                $actions = collect($allActions);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to get actions list: '.$e->getMessage());
+                $actions = collect($this->getAllPossibleActions());
+            }
 
             // Get all possible models (both from database and predefined list)
-            $dbModels = AuditLog::distinct()->whereNotNull('model')->pluck('model')->toArray();
-            $allModels = array_unique(array_merge($dbModels, $this->getAllPossibleModels()));
-            sort($allModels);
-            $models = collect($allModels);
+            try {
+                $dbModels = AuditLog::distinct()->whereNotNull('model')->pluck('model')->toArray();
+                $allModels = array_unique(array_merge($dbModels, $this->getAllPossibleModels()));
+                sort($allModels);
+                $models = collect($allModels);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to get models list: '.$e->getMessage());
+                $models = collect($this->getAllPossibleModels());
+            }
 
             // Get statistics
-            $stats = [
-                'total' => AuditLog::count(),
-                'today' => AuditLog::whereDate('created_at', today())->count(),
-                'this_week' => AuditLog::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-                'this_month' => AuditLog::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
-            ];
+            try {
+                $stats = [
+                    'total' => AuditLog::count(),
+                    'today' => AuditLog::whereDate('created_at', today())->count(),
+                    'this_week' => AuditLog::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+                    'this_month' => AuditLog::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->count(),
+                ];
+            } catch (\Exception $e) {
+                \Log::warning('Failed to get audit statistics: '.$e->getMessage());
+                $stats = [
+                    'total' => 0,
+                    'today' => 0,
+                    'this_week' => 0,
+                    'this_month' => 0,
+                ];
+            }
 
             // Get activity summary
-            $activitySummary = AuditLog::select('action', DB::raw('count(*) as count'))
-                ->whereBetween('created_at', [now()->subDays(30), now()])
-                ->whereNotNull('action')
-                ->groupBy('action')
-                ->orderBy('count', 'desc')
-                ->limit(10)
-                ->get();
+            try {
+                $activitySummary = AuditLog::select('action', DB::raw('count(*) as count'))
+                    ->whereBetween('created_at', [now()->subDays(30), now()])
+                    ->whereNotNull('action')
+                    ->groupBy('action')
+                    ->orderBy('count', 'desc')
+                    ->limit(10)
+                    ->get();
+            } catch (\Exception $e) {
+                \Log::warning('Failed to get activity summary: '.$e->getMessage());
+                $activitySummary = collect([]);
+            }
 
             return view('admin.audit.index', compact(
                 'auditLogs',
