@@ -157,15 +157,21 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10">
-                                                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-                                                    <span class="text-white font-semibold text-sm">
-                                                        {{ substr($admin->first_name, 0, 1) }}{{ substr($admin->last_name, 0, 1) }}
-                                                    </span>
-                                                </div>
+                                                @if($admin->avatar)
+                                                    <img src="{{ $admin->avatar_url }}" 
+                                                         alt="{{ $admin->full_name }}" 
+                                                         class="h-10 w-10 rounded-full object-cover border-2 border-stone-200 dark:border-strokedark">
+                                                @else
+                                                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+                                                        <span class="text-white font-semibold text-sm">
+                                                            {{ substr($admin->first_name, 0, 1) }}{{ substr($admin->last_name, 0, 1) }}
+                                                        </span>
+                                                    </div>
+                                                @endif
                                             </div>
                                             <div class="ml-4">
-                                                <div class="text-sm font-medium text-stone-900">{{ $admin->first_name }} {{ $admin->last_name }}</div>
-                                                <div class="text-sm text-stone-500">{{ $admin->email }}</div>
+                                                <div class="text-sm font-medium text-stone-900 dark:text-white">{{ $admin->first_name }} {{ $admin->last_name }}</div>
+                                                <div class="text-sm text-stone-500 dark:text-gray-400">{{ $admin->email }}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -190,13 +196,13 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex items-center space-x-2">
-                                            <a href="{{ admin_route('users.edit-admin', $admin) }}" class="text-emerald-600 hover:text-emerald-900 transition-colors duration-150" title="Edit">
+                                            <a href="{{ admin_route('users.edit-admin', str_replace('@dwatelier.co', '', $admin->email)) }}" class="text-emerald-600 hover:text-emerald-900 transition-colors duration-150" title="Edit">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                 </svg>
                                             </a>
                                             @if($admin->id !== auth('admin')->id())
-                                                <button onclick="confirmDelete({{ $admin->id }})" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Delete">
+                                                <button onclick="showDeleteModal('{{ str_replace('@dwatelier.co', '', $admin->email) }}', '{{ $admin->first_name }} {{ $admin->last_name }}')" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Delete">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                                     </svg>
@@ -228,28 +234,93 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div id="delete-admin-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeDeleteModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white dark:bg-boxdark shadow-xl">
+            <div class="p-6 border-b border-stone-200 dark:border-strokedark">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-stone-900 dark:text-white">Delete Admin User</h3>
+                        <p class="text-sm text-stone-500 dark:text-gray-400 mt-0.5">This action cannot be undone</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <p class="text-stone-600 dark:text-gray-400 mb-6">
+                    Are you sure you want to delete <strong id="admin-name-to-delete" class="text-stone-900 dark:text-white"></strong>? This will permanently remove the admin user account and all associated data. This action cannot be undone.
+                </p>
+                <div class="flex gap-3">
+                    <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 border border-stone-200 dark:border-strokedark bg-white dark:bg-boxdark text-stone-700 dark:text-white text-sm font-medium rounded-xl hover:bg-stone-50 dark:hover:bg-gray-800 transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button id="delete-admin-confirm" class="flex-1 px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                        Delete Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-function confirmDelete(adminId) {
-    if (confirm('Are you sure you want to delete this admin user? This action cannot be undone.')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/admin/admins/${adminId}`;
-        
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        
-        const methodField = document.createElement('input');
-        methodField.type = 'hidden';
-        methodField.name = '_method';
-        methodField.value = 'DELETE';
-        
-        form.appendChild(csrfToken);
-        form.appendChild(methodField);
-        document.body.appendChild(form);
-        form.submit();
-    }
+let adminToDeleteUsername = null;
+
+function showDeleteModal(adminUsername, adminName) {
+    adminToDeleteUsername = adminUsername;
+    document.getElementById('admin-name-to-delete').textContent = adminName;
+    document.getElementById('delete-admin-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Remove existing event listeners
+    const confirmBtn = document.getElementById('delete-admin-confirm');
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Add new event listener
+    newConfirmBtn.addEventListener('click', function() {
+        deleteAdmin();
+    });
 }
+
+function closeDeleteModal() {
+    document.getElementById('delete-admin-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+    adminToDeleteUsername = null;
+}
+
+function deleteAdmin() {
+    if (!adminToDeleteUsername) return;
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ admin_route("users.destroy-admin", ["username" => ":username"]) }}'.replace(':username', adminToDeleteUsername);
+    
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = '{{ csrf_token() }}';
+    
+    const methodField = document.createElement('input');
+    methodField.type = 'hidden';
+    methodField.name = '_method';
+    methodField.value = 'DELETE';
+    
+    form.appendChild(csrfToken);
+    form.appendChild(methodField);
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDeleteModal();
+    }
+});
 </script>
 @endsection

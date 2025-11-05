@@ -162,7 +162,15 @@
                             <input type="checkbox" id="selectAll" class="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500">
                             <span class="text-sm text-stone-600">Select All</span>
                         </div>
+                        @php
+                            $admin = auth()->guard('admin')->user();
+                            $isSuperAdmin = $admin && $admin->isSuperAdmin();
+                            $canModerate = $admin && ($isSuperAdmin || $admin->hasPermission('reviews.moderate'));
+                            $canDelete = $admin && ($isSuperAdmin || $admin->hasPermission('reviews.delete'));
+                        @endphp
+                        @if($canModerate || $canDelete)
                         <div class="flex items-center space-x-2">
+                            @if($canModerate)
                             <button onclick="bulkAction('approve')" class="inline-flex items-center px-3 py-1 border border-green-300 rounded text-sm text-green-700 bg-green-50 hover:bg-green-100">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
@@ -175,13 +183,17 @@
                                 </svg>
                                 Reject Selected
                             </button>
+                            @endif
+                            @if($canDelete)
                             <button onclick="bulkAction('delete')" class="inline-flex items-center px-3 py-1 border border-red-300 rounded text-sm text-red-700 bg-red-50 hover:bg-red-100">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                                 Delete Selected
                             </button>
+                            @endif
                         </div>
+                        @endif
                     </div>
                 </div>
 
@@ -288,25 +300,35 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
                                             </a>
-                                            @if(!$review->is_approved)
-                                                <button onclick="approveReview({{ $review->id }})" class="text-green-600 hover:text-green-900 transition-colors duration-150" title="Approve">
+                                            @php
+                                                $admin = auth()->guard('admin')->user();
+                                                $isSuperAdmin = $admin && $admin->isSuperAdmin();
+                                                $canModerate = $admin && ($isSuperAdmin || $admin->hasPermission('reviews.moderate'));
+                                                $canDelete = $admin && ($isSuperAdmin || $admin->hasPermission('reviews.delete'));
+                                            @endphp
+                                            @if($canModerate)
+                                                @if(!$review->is_approved)
+                                                    <button onclick="approveReview({{ $review->id }})" class="text-green-600 hover:text-green-900 transition-colors duration-150" title="Approve">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
+                                                        </svg>
+                                                    </button>
+                                                @endif
+                                                @if($review->is_approved)
+                                                    <button onclick="rejectReview({{ $review->id }})" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Reject">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                        </svg>
+                                                    </button>
+                                                @endif
+                                            @endif
+                                            @if($canDelete)
+                                                <button onclick="deleteReview({{ $review->id }})" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Delete">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                                     </svg>
                                                 </button>
                                             @endif
-                                            @if($review->is_approved)
-                                                <button onclick="rejectReview({{ $review->id }})" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Reject">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                    </svg>
-                                                </button>
-                                            @endif
-                                            <button onclick="deleteReview({{ $review->id }})" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Delete">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -366,16 +388,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+@php
+    $admin = auth()->guard('admin')->user();
+    $isSuperAdmin = $admin && $admin->isSuperAdmin();
+    $canModerate = $admin && ($isSuperAdmin || $admin->hasPermission('reviews.moderate'));
+    $canDelete = $admin && ($isSuperAdmin || $admin->hasPermission('reviews.delete'));
+@endphp
+
 function approveReview(reviewId) {
+    @if(!$canModerate)
+        showPermissionDenied('reviews.moderate');
+        return;
+    @endif
+    
     if (confirm('Are you sure you want to approve this review?')) {
-        fetch(`/admin/reviews/${reviewId}/approve`, {
+        fetch(`{{ admin_route('reviews.approve', '') }}/${reviewId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 403) {
+                return response.json().then(data => {
+                    showPermissionDenied(data.permission || 'reviews.moderate');
+                    throw new Error('Permission denied');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 location.reload();
@@ -384,22 +427,38 @@ function approveReview(reviewId) {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error approving review');
+            if (error.message !== 'Permission denied') {
+                console.error('Error:', error);
+                alert('Error approving review');
+            }
         });
     }
 }
 
 function rejectReview(reviewId) {
+    @if(!$canModerate)
+        showPermissionDenied('reviews.moderate');
+        return;
+    @endif
+    
     if (confirm('Are you sure you want to reject this review?')) {
-        fetch(`/admin/reviews/${reviewId}/reject`, {
+        fetch(`{{ admin_route('reviews.reject', '') }}/${reviewId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 403) {
+                return response.json().then(data => {
+                    showPermissionDenied(data.permission || 'reviews.moderate');
+                    throw new Error('Permission denied');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 location.reload();
@@ -408,22 +467,38 @@ function rejectReview(reviewId) {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error rejecting review');
+            if (error.message !== 'Permission denied') {
+                console.error('Error:', error);
+                alert('Error rejecting review');
+            }
         });
     }
 }
 
 function deleteReview(reviewId) {
+    @if(!$canDelete)
+        showPermissionDenied('reviews.delete');
+        return;
+    @endif
+    
     if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
-        fetch(`/admin/reviews/${reviewId}`, {
+        fetch(`{{ admin_route('reviews.index') }}/${reviewId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 403) {
+                return response.json().then(data => {
+                    showPermissionDenied(data.permission || 'reviews.delete');
+                    throw new Error('Permission denied');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 location.reload();
@@ -432,13 +507,38 @@ function deleteReview(reviewId) {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error deleting review');
+            if (error.message !== 'Permission denied') {
+                console.error('Error:', error);
+                alert('Error deleting review');
+            }
         });
     }
 }
 
 function bulkAction(action) {
+    // Check permissions before showing confirmation
+    @if($canModerate && $canDelete)
+    // User has both permissions, allow all actions
+    @elseif($canModerate && !$canDelete)
+    if (action === 'delete') {
+        showPermissionDenied('reviews.delete');
+        return;
+    }
+    @elseif(!$canModerate && $canDelete)
+    if (action === 'approve' || action === 'reject') {
+        showPermissionDenied('reviews.moderate');
+        return;
+    }
+    @else
+    // No permissions
+    if (action === 'approve' || action === 'reject') {
+        showPermissionDenied('reviews.moderate');
+    } else if (action === 'delete') {
+        showPermissionDenied('reviews.delete');
+    }
+    return;
+    @endif
+    
     const selectedReviews = document.querySelectorAll('input[name="selected_reviews[]"]:checked');
     
     if (selectedReviews.length === 0) {
@@ -452,17 +552,26 @@ function bulkAction(action) {
     if (confirm(confirmText)) {
         const reviewIds = Array.from(selectedReviews).map(checkbox => checkbox.value);
         
-        fetch(`/admin/reviews/bulk-${action}`, {
+        fetch(`{{ admin_route('reviews.bulk-approve') }}`.replace('bulk-approve', `bulk-${action}`), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({
                 review_ids: reviewIds
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 403) {
+                return response.json().then(data => {
+                    showPermissionDenied(data.permission || `reviews.${action === 'delete' ? 'delete' : 'moderate'}`);
+                    throw new Error('Permission denied');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 location.reload();
@@ -471,10 +580,73 @@ function bulkAction(action) {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert(`Error ${actionText}ing reviews`);
+            if (error.message !== 'Permission denied') {
+                console.error('Error:', error);
+                alert(`Error ${actionText}ing reviews`);
+            }
         });
     }
+}
+
+function showPermissionDenied(permission) {
+    // Create a simple modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'permission-denied-modal-temp';
+    modal.className = 'fixed inset-0 z-99999 flex items-center justify-center bg-black bg-opacity-50';
+    modal.innerHTML = `
+        <div class="relative bg-white dark:bg-boxdark rounded-2xl shadow-2xl max-w-md w-full mx-4">
+            <div class="flex items-center justify-between p-6 border-b border-stroke dark:border-strokedark">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30">
+                        <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Access Denied</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Permission Required</p>
+                    </div>
+                </div>
+                <button onclick="this.closest('#permission-denied-modal-temp').remove()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-700 dark:text-gray-300 mb-4">
+                    You do not have permission to perform this action.
+                </p>
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mb-4">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Required Permission:</p>
+                    <p class="text-sm font-mono text-gray-900 dark:text-white">${permission}</p>
+                </div>
+                <div class="flex justify-end">
+                    <button onclick="this.closest('#permission-denied-modal-temp').remove()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Close on backdrop click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    // Close on Escape key
+    const handleEscape = function(e) {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+    
+    document.body.appendChild(modal);
 }
 </script>
 @endsection

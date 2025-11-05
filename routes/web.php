@@ -19,6 +19,10 @@ $adminRoutes = function () {
         Route::get('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
         Route::post('/forgot-password', [App\Http\Controllers\Admin\AuthController::class, 'sendResetLink'])->name('forgot-password.post');
         Route::get('/verify-magic-link/{token}', [App\Http\Controllers\Admin\AuthController::class, 'verifyMagicLink'])->name('verify-magic-link');
+        Route::get('/setup-password/{token}', [App\Http\Controllers\Admin\AuthController::class, 'showSetupPasswordForm'])->name('setup-password');
+        Route::post('/setup-password', [App\Http\Controllers\Admin\AuthController::class, 'setupPassword'])->name('setup-password.post');
+        Route::get('/reset-password/{token}', [App\Http\Controllers\Admin\AuthController::class, 'showResetPasswordForm'])->name('reset-password');
+        Route::post('/reset-password', [App\Http\Controllers\Admin\AuthController::class, 'resetPassword'])->name('reset-password.post');
         Route::get('/check-email', [App\Http\Controllers\Admin\AuthController::class, 'checkEmail'])->name('check-email');
         Route::get('/verify-otp', [App\Http\Controllers\Admin\AuthController::class, 'showOtpVerification'])->name('verify-otp');
         Route::post('/verify-otp', [App\Http\Controllers\Admin\AuthController::class, 'verifyOtp'])->name('verify-otp.post');
@@ -51,6 +55,14 @@ $adminRoutes = function () {
     // Protected admin routes
     Route::middleware('admin')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+
+        // Profile Management
+        Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'showProfile'])->name('profile.index');
+        Route::post('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/account-settings', [App\Http\Controllers\Admin\ProfileController::class, 'showSettings'])->name('profile.settings');
+        Route::post('/account-settings', [App\Http\Controllers\Admin\ProfileController::class, 'updateSettings'])->name('profile.settings.update');
+        Route::get('/contacts', [App\Http\Controllers\Admin\ProfileController::class, 'showContacts'])->name('profile.contacts');
+        Route::get('/contacts/{username}', [App\Http\Controllers\Admin\ProfileController::class, 'showContactProfile'])->name('profile.contact-view');
 
         // Product Management
         Route::middleware('admin.permission:products.view')->group(function () {
@@ -148,9 +160,10 @@ $adminRoutes = function () {
             Route::get('admins', [App\Http\Controllers\Admin\UserController::class, 'admins'])->name('users.admins');
             Route::get('admins/create', [App\Http\Controllers\Admin\UserController::class, 'createAdmin'])->name('users.create-admin');
             Route::post('admins', [App\Http\Controllers\Admin\UserController::class, 'storeAdmin'])->name('users.store-admin');
-            Route::get('admins/{admin}/edit', [App\Http\Controllers\Admin\UserController::class, 'editAdmin'])->name('users.edit-admin');
+            Route::get('admins/{username}/edit', [App\Http\Controllers\Admin\UserController::class, 'editAdmin'])->name('users.edit-admin');
             Route::put('admins/{admin}', [App\Http\Controllers\Admin\UserController::class, 'updateAdmin'])->name('users.update-admin');
-            Route::delete('admins/{admin}', [App\Http\Controllers\Admin\UserController::class, 'destroyAdmin'])->name('users.destroy-admin');
+            Route::post('admins/{admin}/send-reset-link', [App\Http\Controllers\Admin\UserController::class, 'sendResetLink'])->name('users.send-reset-link');
+            Route::delete('admins/{username}', [App\Http\Controllers\Admin\UserController::class, 'destroyAdmin'])->name('users.destroy-admin');
         });
 
         // Inventory Management
@@ -245,16 +258,31 @@ $adminRoutes = function () {
 
         // Reviews Management
         Route::middleware('admin.permission:reviews.view')->group(function () {
-            Route::resource('reviews', App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'show', 'destroy']);
-            Route::post('reviews/{review}/approve', [App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('reviews.approve');
-            Route::post('reviews/{review}/reject', [App\Http\Controllers\Admin\ReviewController::class, 'reject'])->name('reviews.reject');
-            Route::post('reviews/{review}/respond', [App\Http\Controllers\Admin\ReviewController::class, 'respond'])->name('reviews.respond');
-            Route::put('reviews/{review}/response', [App\Http\Controllers\Admin\ReviewController::class, 'updateResponse'])->name('reviews.update-response');
-            Route::delete('reviews/{review}/response', [App\Http\Controllers\Admin\ReviewController::class, 'removeResponse'])->name('reviews.remove-response');
-            Route::post('reviews/bulk-approve', [App\Http\Controllers\Admin\ReviewController::class, 'bulkApprove'])->name('reviews.bulk-approve');
-            Route::post('reviews/bulk-reject', [App\Http\Controllers\Admin\ReviewController::class, 'bulkReject'])->name('reviews.bulk-reject');
-            Route::post('reviews/bulk-delete', [App\Http\Controllers\Admin\ReviewController::class, 'bulkDelete'])->name('reviews.bulk-delete');
+            // Export route must come BEFORE resource route to avoid route conflicts
             Route::get('reviews/export', [App\Http\Controllers\Admin\ReviewController::class, 'export'])->name('reviews.export');
+
+            Route::resource('reviews', App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'show']);
+
+            // Moderate actions require reviews.moderate permission
+            Route::middleware('admin.permission:reviews.moderate')->group(function () {
+                Route::post('reviews/{review}/approve', [App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('reviews.approve');
+                Route::post('reviews/{review}/reject', [App\Http\Controllers\Admin\ReviewController::class, 'reject'])->name('reviews.reject');
+                Route::post('reviews/bulk-approve', [App\Http\Controllers\Admin\ReviewController::class, 'bulkApprove'])->name('reviews.bulk-approve');
+                Route::post('reviews/bulk-reject', [App\Http\Controllers\Admin\ReviewController::class, 'bulkReject'])->name('reviews.bulk-reject');
+            });
+
+            // Delete actions require reviews.delete permission
+            Route::middleware('admin.permission:reviews.delete')->group(function () {
+                Route::delete('reviews/{review}', [App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');
+                Route::post('reviews/bulk-delete', [App\Http\Controllers\Admin\ReviewController::class, 'bulkDelete'])->name('reviews.bulk-delete');
+            });
+
+            // Response actions (require reviews.moderate as well)
+            Route::middleware('admin.permission:reviews.moderate')->group(function () {
+                Route::post('reviews/{review}/respond', [App\Http\Controllers\Admin\ReviewController::class, 'respond'])->name('reviews.respond');
+                Route::put('reviews/{review}/response', [App\Http\Controllers\Admin\ReviewController::class, 'updateResponse'])->name('reviews.update-response');
+                Route::delete('reviews/{review}/response', [App\Http\Controllers\Admin\ReviewController::class, 'removeResponse'])->name('reviews.remove-response');
+            });
         });
 
         // Permissions Management (Super Admin only)

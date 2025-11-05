@@ -57,8 +57,8 @@
 </div>
 
 <div style="text-align: center; margin: 30px 0;">
-    <a href="{{ url('/admin/reviews/' . $review->id) }}" class="button">View Review</a>
-    <a href="{{ url('/admin/products/' . $review->product->id) }}" class="button" style="background: #6b7280; margin-left: 10px;">View Product</a>
+    <a href="{{ admin_route('reviews.show', $review->id) }}" class="button">View Review</a>
+    <a href="{{ admin_route('products.show', $review->product->id) }}" class="button" style="background: #6b7280; margin-left: 10px;">View Product</a>
 </div>
 
 <h2>Quick Actions</h2>

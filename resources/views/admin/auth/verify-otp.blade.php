@@ -89,7 +89,7 @@
             @endif
             
             <!-- OTP Form -->
-            <form class="mt-8 space-y-6" method="POST" action="{{ route('admin.verify-otp') }}">
+            <form class="mt-8 space-y-6" method="POST" action="{{ admin_route('auth.verify-otp') }}">
                 @csrf
                 <div>
                     <label for="code" class="sr-only">Verification Code</label>
@@ -119,14 +119,14 @@
                 <div class="text-center space-y-2">
                     <p class="text-sm text-gray-500 dark:text-gray-400">
                         Didn't receive the code? 
-                        <a href="{{ route('admin.resend-otp') }}" 
+                        <a href="{{ admin_route('auth.resend-otp') }}" 
                            class="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300"
                            onclick="event.preventDefault(); document.getElementById('resend-form').submit();">
                             Resend Code
                         </a>
                     </p>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                        <a href="{{ route('admin.login') }}" class="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300">
+                        <a href="{{ admin_route('auth.login') }}" class="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300">
                             ← Back to Login
                         </a>
                     </p>
@@ -134,7 +134,7 @@
             </form>
 
             <!-- Hidden Resend Form -->
-            <form id="resend-form" method="POST" action="{{ route('admin.resend-otp') }}" style="display: none;">
+            <form id="resend-form" method="POST" action="{{ admin_route('auth.resend-otp') }}" style="display: none;">
                 @csrf
             </form>
         </div>

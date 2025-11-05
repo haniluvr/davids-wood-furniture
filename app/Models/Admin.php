@@ -63,7 +63,8 @@ class Admin extends Authenticatable
     public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar) {
-            return asset('storage/'.$this->avatar);
+            // Use dynamic storage URL (supports both local and S3)
+            return storage_url($this->avatar);
         }
 
         return 'https://ui-avatars.com/api/?name='.urlencode($this->full_name).'&color=3C50E0&background=EBF4FF';
@@ -96,9 +97,8 @@ class Admin extends Authenticatable
             return true;
         }
 
-        $permissions = $this->permissions ?? [];
-
-        return in_array($permission, $permissions);
+        // Use AdminPermission model (same as middleware)
+        return \App\Models\AdminPermission::hasPermission($this->role, $permission);
     }
 
     public function isActive(): bool

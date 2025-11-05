@@ -127,19 +127,17 @@ class PermissionController extends Controller
         // Create permissions for each role
         foreach ($defaultPermissions as $role => $permissions) {
             foreach ($permissions as $permission => $granted) {
-                if (is_bool($granted)) {
-                    AdminPermission::create([
-                        'role' => $role,
-                        'permission' => $permission,
-                        'granted' => $granted,
-                    ]);
-                } else {
-                    // Handle old format where permissions were just keys
-                    AdminPermission::create([
-                        'role' => $role,
-                        'permission' => $granted,
-                        'granted' => true,
-                    ]);
+                // Only create if granted is true
+                if ($granted === true) {
+                    AdminPermission::updateOrCreate(
+                        [
+                            'role' => strtolower($role), // Normalize role to lowercase
+                            'permission' => $permission,
+                        ],
+                        [
+                            'granted' => true,
+                        ]
+                    );
                 }
             }
         }

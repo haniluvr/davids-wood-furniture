@@ -31,7 +31,22 @@ class CheckAdminPermission
 
         // Check if admin has the required permission
         if (! AdminPermission::hasPermission($admin->role, $permission)) {
-            abort(403, 'You do not have permission to access this resource.');
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You do not have permission to access this resource.',
+                    'permission' => $permission,
+                ], 403);
+            }
+
+            // Store permission denied info in session for modal display
+            session()->flash('permission_denied', [
+                'message' => 'You do not have permission to access this resource.',
+                'permission' => $permission,
+            ]);
+
+            // Redirect back or to dashboard
+            return redirect()->back()->with('error', 'You do not have permission to access this resource.');
         }
 
         return $next($request);

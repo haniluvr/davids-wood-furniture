@@ -39,7 +39,10 @@ class AdminPermission extends Model
     // Static methods
     public static function hasPermission(string $role, string $permission): bool
     {
-        $permission = static::where('role', $role)
+        // Normalize role to lowercase for comparison (case-insensitive)
+        $role = strtolower($role);
+
+        $permission = static::whereRaw('LOWER(role) = ?', [$role])
             ->where('permission', $permission)
             ->first();
 
@@ -78,6 +81,7 @@ class AdminPermission extends Model
             'products.edit',
             'products.delete',
             'products.bulk_actions',
+            'products.export',
 
             // Orders
             'orders.view',
@@ -132,13 +136,14 @@ class AdminPermission extends Model
             'reviews.view',
             'reviews.moderate',
             'reviews.delete',
+            'reviews.export',
 
             // Settings
             'settings.view',
             'settings.edit',
 
             // Audit Logs
-            'audit_logs.view',
+            'audit.view',
 
             // Notifications
             'notifications.view',
@@ -159,6 +164,7 @@ class AdminPermission extends Model
             'products.edit' => 'Edit existing products',
             'products.delete' => 'Delete products',
             'products.bulk_actions' => 'Perform bulk actions on products',
+            'products.export' => 'Export product data',
 
             // Orders
             'orders.view' => 'View order listings and details',
@@ -213,13 +219,14 @@ class AdminPermission extends Model
             'reviews.view' => 'View product reviews',
             'reviews.moderate' => 'Moderate and approve reviews',
             'reviews.delete' => 'Delete reviews',
+            'reviews.export' => 'Export reviews data',
 
             // Settings
             'settings.view' => 'View system settings',
             'settings.edit' => 'Edit system settings',
 
             // Audit Logs
-            'audit_logs.view' => 'View audit trail and logs',
+            'audit.view' => 'View audit trail and logs',
 
             // Notifications
             'notifications.view' => 'View notifications',
@@ -258,6 +265,7 @@ class AdminPermission extends Model
                 'products.edit' => true,
                 'products.delete' => true,
                 'products.bulk_actions' => true,
+                'products.export' => true,
 
                 // Inventory
                 'inventory.view' => true,
@@ -293,13 +301,14 @@ class AdminPermission extends Model
                 'reviews.view' => true,
                 'reviews.moderate' => true,
                 'reviews.delete' => true,
+                'reviews.export' => true,
 
                 // Settings
                 'settings.view' => true,
                 'settings.edit' => true,
 
                 // Audit Logs
-                'audit_logs.view' => true,
+                'audit.view' => true,
 
                 // Notifications
                 'notifications.view' => true,
@@ -313,8 +322,11 @@ class AdminPermission extends Model
                 // admins.* => false (not granted)
             ],
 
-            // Sales Support Manager - 10/48 permissions
+            // Sales Support Manager - 11/48 permissions
             'sales_support_manager' => [
+                // Dashboard
+                'dashboard.view' => true,
+
                 // Orders (view, update status, refund, export only)
                 'orders.view' => true,
                 'orders.update_status' => true,
@@ -335,18 +347,22 @@ class AdminPermission extends Model
                 // Reviews - view and moderate only
                 'reviews.view' => true,
                 'reviews.moderate' => true,
+                'reviews.export' => true,
                 // reviews.delete => false
 
                 // Audit Logs
-                'audit_logs.view' => true,
+                'audit.view' => true,
 
                 // Notifications (for messages/respond)
                 'notifications.view' => true,
                 'notifications.edit' => true,
             ],
 
-            // Inventory Fulfillment Manager - 8/48 permissions
+            // Inventory Fulfillment Manager - 9/48 permissions
             'inventory_fulfillment_manager' => [
+                // Dashboard
+                'dashboard.view' => true,
+
                 // Inventory - full access
                 'inventory.view' => true,
                 'inventory.adjust' => true,
@@ -375,18 +391,22 @@ class AdminPermission extends Model
                 // shipping.create => false
                 // shipping.delete => false
 
-                // Audit Logs
-                'audit_logs.view' => true,
+                // Audit Logs (use audit.view for consistency with routes)
+                'audit.view' => true,
             ],
 
-            // Product Content Manager - 9/48 permissions
+            // Product Content Manager - 10/48 permissions
             'product_content_manager' => [
+                // Dashboard
+                'dashboard.view' => true,
+
                 // Products - full access
                 'products.view' => true,
                 'products.create' => true,
                 'products.edit' => true,
                 'products.delete' => true,
                 'products.bulk_actions' => true,
+                'products.export' => true,
 
                 // CMS - full access
                 'cms.view' => true,
@@ -406,11 +426,14 @@ class AdminPermission extends Model
                 // inventory.bulk_update => false
 
                 // Audit Logs
-                'audit_logs.view' => true,
+                'audit.view' => true,
             ],
 
-            // Finance Reporting Analyst - 5/48 permissions (read-only analytics/reports)
+            // Finance Reporting Analyst - 6/48 permissions (read-only analytics/reports)
             'finance_reporting_analyst' => [
+                // Dashboard
+                'dashboard.view' => true,
+
                 // Analytics - view and export
                 'analytics.view' => true,
                 'analytics.export' => true,
@@ -433,11 +456,14 @@ class AdminPermission extends Model
                 // users.export => false
 
                 // Audit Logs
-                'audit_logs.view' => true,
+                'audit.view' => true,
             ],
 
-            // Staff - 10/48 permissions (limited access for part-time/temporary workers)
+            // Staff - 11/48 permissions (limited access for part-time/temporary workers)
             'staff' => [
+                // Dashboard
+                'dashboard.view' => true,
+
                 // Orders - view and update status only
                 'orders.view' => true,
                 'orders.update_status' => true,
@@ -466,7 +492,7 @@ class AdminPermission extends Model
                 'notifications.edit' => true,
 
                 // Audit Logs
-                'audit_logs.view' => true,
+                'audit.view' => true,
             ],
 
             // Viewer - 12/48 permissions (read-only access)
@@ -480,6 +506,7 @@ class AdminPermission extends Model
 
                 // Products - view only
                 'products.view' => true,
+                'products.export' => true,
 
                 // Inventory - view only
                 'inventory.view' => true,
@@ -498,12 +525,13 @@ class AdminPermission extends Model
 
                 // Reviews - view only
                 'reviews.view' => true,
+                'reviews.export' => true,
 
                 // Settings - view only
                 'settings.view' => true,
 
                 // Audit Logs
-                'audit_logs.view' => true,
+                'audit.view' => true,
 
                 // Notifications - view only
                 'notifications.view' => true,

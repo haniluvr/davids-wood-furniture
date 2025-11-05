@@ -20,16 +20,19 @@ class AdminPermissionSeeder extends Seeder
 
         // Create permissions for each role
         foreach ($defaultPermissions as $role => $permissions) {
-            foreach ($permissions as $permission) {
-                AdminPermission::updateOrCreate(
-                    [
-                        'role' => $role,
-                        'permission' => $permission,
-                    ],
-                    [
-                        'granted' => true,
-                    ]
-                );
+            foreach ($permissions as $permission => $granted) {
+                // Only create if granted is true
+                if ($granted === true) {
+                    AdminPermission::updateOrCreate(
+                        [
+                            'role' => strtolower($role), // Normalize role to lowercase
+                            'permission' => $permission,
+                        ],
+                        [
+                            'granted' => true,
+                        ]
+                    );
+                }
             }
         }
 

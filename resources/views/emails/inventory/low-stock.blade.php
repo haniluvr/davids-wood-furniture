@@ -47,8 +47,8 @@
 </div>
 
 <div style="text-align: center; margin: 30px 0;">
-    <a href="{{ url('/admin/products/' . $product->id . '/edit') }}" class="button">Update Stock</a>
-    <a href="{{ url('/admin/products/' . $product->id) }}" class="button" style="background: #6b7280; margin-left: 10px;">View Product</a>
+    <a href="{{ admin_route('products.edit', $product->id) }}" class="button">Update Stock</a>
+    <a href="{{ admin_route('products.show', $product->id) }}" class="button" style="background: #6b7280; margin-left: 10px;">View Product</a>
 </div>
 
 <h2>Stock History</h2>

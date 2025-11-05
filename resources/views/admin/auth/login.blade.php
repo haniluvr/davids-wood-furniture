@@ -352,7 +352,7 @@
                                                 Keep me logged in
                                             </label>
                                         </div>
-                                        <a href="{{ url('/forgot-password') }}" class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">
+                                        <a href="{{ admin_route('forgot-password') }}" class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">
                                             Forgot password?
                                         </a>
                                     </div>

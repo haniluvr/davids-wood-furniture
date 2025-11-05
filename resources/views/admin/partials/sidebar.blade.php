@@ -123,6 +123,10 @@
             <ul class="mb-6 flex flex-col gap-1.5">
                 
                 <!-- Dashboard (Top-level) -->
+                @php
+                    $admin = auth()->guard('admin')->user();
+                @endphp
+                @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('dashboard.view')))
                 <li>
                                 <a
                                     class="group relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 duration-300 ease-in-out hover:bg-primary/5 hover:text-primary dark:text-bodydark1 dark:hover:bg-graydark/50 dark:hover:text-primary {{ request()->routeIs('admin.dashboard') ? 'bg-primary/10 text-primary shadow-sm dark:bg-graydark/50 dark:text-primary' : '' }}"
@@ -134,8 +138,10 @@
                                     <span x-show="!sidebarCollapsed" x-transition>Dashboard</span>
                     </a>
                 </li>
+                @endif
 
                 <!-- Orders Accordion -->
+                @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('orders.view')))
                 <li>
                     <button
                         @click="!sidebarCollapsed && (ordersOpen = !ordersOpen, window.closeAllAccordions('orders'))"
@@ -151,14 +157,18 @@
                     </button>
                     <ul x-show="ordersOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
                         <li><a href="{{ admin_route('orders.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.index') ? 'text-primary dark:text-primary' : '' }}">All Orders</a></li>
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('orders.create')))
                         <li><a href="{{ admin_route('orders.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.create') ? 'text-primary dark:text-primary' : '' }}">Create Order</a></li>
+                        @endif
                         <li><a href="{{ admin_route('orders.pending-approval') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.pending-approval') ? 'text-primary dark:text-primary' : '' }}">Pending Approval</a></li>
                         <li><a href="{{ admin_route('orders.fulfillment') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.fulfillment*') ? 'text-primary dark:text-primary' : '' }}">Fulfillment</a></li>
                         <li><a href="{{ admin_route('orders.returns-repairs.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.orders.returns-repairs*') ? 'text-primary dark:text-primary' : '' }}">Returns & Repairs</a></li>
                     </ul>
                 </li>
+                @endif
 
                 <!-- Products Accordion -->
+                @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('products.view')))
                 <li>
                     <button
                         @click="!sidebarCollapsed && (productsOpen = !productsOpen, window.closeAllAccordions('products'))"
@@ -173,11 +183,15 @@
                     </button>
                     <ul x-show="productsOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
                         <li><a href="{{ admin_route('products.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.products.index') ? 'text-primary dark:text-primary' : '' }}">All Products</a></li>
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('products.create')))
                         <li><a href="{{ admin_route('products.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.products.create') ? 'text-primary dark:text-primary' : '' }}">Add New Product</a></li>
+                        @endif
                     </ul>
                 </li>
+                @endif
 
                 <!-- Inventory Accordion -->
+                @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('inventory.view')))
                 <li>
                     <button
                         @click="!sidebarCollapsed && (inventoryOpen = !inventoryOpen, window.closeAllAccordions('inventory'))"
@@ -196,8 +210,10 @@
                         <li><a href="{{ admin_route('inventory.movements') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.inventory.movements') ? 'text-primary dark:text-primary' : '' }}">Inventory Movements</a></li>
                     </ul>
                 </li>
+                @endif
 
                 <!-- Customers Accordion -->
+                @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('users.view')))
                 <li>
                     <button
                         @click="!sidebarCollapsed && (customersOpen = !customersOpen, window.closeAllAccordions('customers'))"
@@ -212,13 +228,19 @@
                     </button>
                     <ul x-show="customersOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
                         <li><a href="{{ admin_route('users.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.index') ? 'text-primary dark:text-primary' : '' }}">All Customers</a></li>
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('users.create')))
                         <li><a href="{{ admin_route('users.create') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.users.create') ? 'text-primary dark:text-primary' : '' }}">Add Customer</a></li>
+                        @endif
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('notifications.view')))
                         <li><a href="{{ admin_route('messages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.messages.index') && !request('status') ? 'text-primary dark:text-primary' : '' }}">Messages</a></li>
+                        @endif
                     </ul>
                 </li>
+                @endif
 
 
                 <!-- Shipping & Logistics Accordion -->
+                @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('shipping.view')))
                 <li>
                     <button
                         @click="!sidebarCollapsed && (shippingOpen = !shippingOpen, window.closeAllAccordions('shipping'))"
@@ -236,9 +258,11 @@
                         <li><a href="{{ admin_route('delivery-tracking.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.delivery-tracking.*') ? 'text-primary dark:text-primary' : '' }}">Delivery Tracking</a></li>
                     </ul>
                 </li>
+                @endif
 
 
                 <!-- Content Accordion -->
+                @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('cms.view') || $admin->hasPermission('reviews.view')))
                 <li>
                     <button
                         @click="!sidebarCollapsed && (contentOpen = !contentOpen, window.closeAllAccordions('content'))"
@@ -252,15 +276,21 @@
                         <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200 flex-shrink-0" :class="contentOpen ? 'rotate-180' : ''" x-show="!sidebarCollapsed"></i>
                     </button>
                     <ul x-show="contentOpen && !sidebarCollapsed" x-transition class="mt-2 ml-6 space-y-1">
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('cms.view')))
                         <li><a href="{{ admin_route('cms-pages.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.cms-pages*') ? 'text-primary dark:text-primary' : '' }}">CMS Pages</a></li>
                         <li><a href="{{ admin_route('blogs.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.blogs*') ? 'text-primary dark:text-primary' : '' }}">Blogs</a></li>
                         <li><a href="{{ admin_route('media-library') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.media-library*') ? 'text-primary dark:text-primary' : '' }}">Media Library</a></li>
+                        @endif
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('reviews.view')))
                         <li><a href="{{ admin_route('reviews.index') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.reviews*') ? 'text-primary dark:text-primary' : '' }}">Product Reviews</a></li>
+                        @endif
                     </ul>
                 </li>
+                @endif
 
 
                 <!-- Reports Accordion -->
+                @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('analytics.view')))
                 <li>
                     <button
                         @click="!sidebarCollapsed && (reportsOpen = !reportsOpen, window.closeAllAccordions('reports'))"
@@ -281,6 +311,7 @@
                         <li><a href="{{ admin_route('analytics.revenue') }}" class="block px-4 py-2 text-sm text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary {{ request()->routeIs('admin.analytics.revenue') ? 'text-primary dark:text-primary' : '' }}">Revenue Reports</a></li>
                     </ul>
                 </li>
+                @endif
 
             </ul>
         </nav>
@@ -315,32 +346,48 @@
             >
                 <div class="p-2">
                     <div class="space-y-1">
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('settings.view')))
                         <a href="{{ admin_route('settings.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.settings.index') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="store" class="w-4 h-4"></i>
                             Store Settings
                         </a>
+                        @endif
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('admins.view')))
                         <a href="{{ admin_route('users.admins') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.users.admins') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="users" class="w-4 h-4"></i>
                             Manage Admins
                         </a>
+                        @endif
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('admins.edit')))
                         <a href="{{ admin_route('permissions.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.permissions*') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="shield" class="w-4 h-4"></i>
                             Permissions
                         </a>
+                        @endif
+                        @if(($admin && ($admin->isSuperAdmin() || $admin->hasPermission('settings.view'))) || ($admin && ($admin->isSuperAdmin() || $admin->hasPermission('admins.view'))) || ($admin && ($admin->isSuperAdmin() || $admin->hasPermission('admins.edit'))))
                         <hr class="my-2 border-stroke dark:border-strokedark">
+                        @endif
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('payment_gateways.view')))
                         <a href="{{ admin_route('payment-gateways.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.payment-gateways*') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="credit-card" class="w-4 h-4"></i>
                             Payment Gateways
                         </a>
+                        @endif
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('settings.view')))
                         <a href="{{ admin_route('integrations.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.integrations*') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="plug" class="w-4 h-4"></i>
                             Integrations
                         </a>
+                        @endif
+                        @if(($admin && ($admin->isSuperAdmin() || $admin->hasPermission('payment_gateways.view'))) || ($admin && ($admin->isSuperAdmin() || $admin->hasPermission('settings.view'))))
                         <hr class="my-2 border-stroke dark:border-strokedark">
+                        @endif
+                        @if($admin && ($admin->isSuperAdmin() || $admin->hasPermission('audit.view')))
                         <a href="{{ admin_route('audit.index') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 {{ request()->routeIs('admin.audit*') ? 'bg-primary/10 text-primary' : '' }}">
                             <i data-lucide="shield-check" class="w-4 h-4"></i>
                             Audit Trail
                         </a>
+                        @endif
                     </div>
                 </div>
             </div>

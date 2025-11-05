@@ -17,7 +17,8 @@ class MagicLinkService
     public function generateMagicLink($user, $type = '2fa')
     {
         $token = Str::random(64);
-        $expiresAt = now()->addHours(1);
+        // Password setup links expire in 24 hours, others in 1 hour
+        $expiresAt = $type === 'password-setup' ? now()->addHours(24) : now()->addHours(1);
 
         DB::table('magic_link_tokens')->insert([
             'email' => $user->email,
@@ -112,6 +113,21 @@ class MagicLinkService
         \Log::info('User email: '.$user->email);
 
         try {
+            // For password-setup type, we handle it separately (no automatic email)
+            // The email is sent manually in the controller with AdminWelcomeMail
+            if ($type === 'password-setup') {
+                \Log::info('Password setup link generated - email will be sent separately');
+
+                return; // Don't send automatic email for password-setup
+            }
+
+            // For password_reset type with Admin models, email is sent manually to personal_email
+            if ($type === 'password_reset' && $user instanceof \App\Models\Admin) {
+                \Log::info('Admin password reset link generated - email will be sent separately to personal email');
+
+                return; // Don't send automatic email for admin password reset
+            }
+
             if ($type === 'password_reset') {
                 $mail = new PasswordResetMail($user, $token, $expiresAt);
             } elseif ($type === 'email_verification') {

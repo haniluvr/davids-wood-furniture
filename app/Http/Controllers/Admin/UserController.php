@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -374,29 +375,72 @@ class UserController extends Controller
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:admins',
-            'password' => 'required|string|min:8|confirmed',
+            'email' => 'required|string|email|max:255|unique:employees',
+            'personal_email' => 'required|string|email|max:255',
             'role' => 'required|in:super_admin,admin,sales_support_manager,inventory_fulfillment_manager,product_content_manager,finance_reporting_analyst,staff,viewer',
+            'department' => 'nullable|string|max:255',
+            'position' => 'nullable|string|max:255',
         ]);
 
         $adminData = $validated;
-        $adminData['password'] = Hash::make($validated['password']);
-        $adminData['email_verified_at'] = now();
+        // Set a temporary password that will be changed via magic link
+        $adminData['password'] = Hash::make('temp_password_'.time().'_'.Str::random(16));
+        $adminData['email_verified_at'] = null; // Will be verified after password setup
 
         $admin = Admin::create($adminData);
 
         // Log admin user creation
         AuditLog::log('admin_user.created', Auth::guard('admin')->user(), $admin, [], [], "Created admin user {$admin->first_name} {$admin->last_name} ({$admin->email}) with role {$admin->role}");
 
+        // Generate magic link for password setup
+        try {
+            $magicLinkService = new \App\Services\MagicLinkService;
+            $token = $magicLinkService->generateMagicLink($admin, 'password-setup');
+
+            // Build the magic link URL using the current request's domain and port
+            $scheme = $request->getScheme();
+            $host = $request->getHost();
+            $port = $request->getPort();
+
+            // Construct URL with proper port handling
+            $portString = '';
+            if ($port && $port !== 80 && $port !== 443) {
+                // Only add port if it's not standard
+                if (($scheme === 'http' && $port !== 80) || ($scheme === 'https' && $port !== 443)) {
+                    $portString = ':'.$port;
+                }
+            }
+
+            $magicLink = $scheme.'://'.$host.$portString.'/setup-password/'.$token;
+
+            // Send welcome email to personal email
+            Mail::to($admin->personal_email)->send(new \App\Mail\AdminWelcomeMail($admin, $magicLink));
+        } catch (\Exception $e) {
+            // Log the error but don't fail the user creation
+            \Log::error('Failed to send welcome email to admin '.$admin->id.': '.$e->getMessage());
+
+            return redirect()->to(admin_route('users.admins'))
+                ->with('warning', 'Admin user created successfully, but failed to send welcome email. Please contact the user directly.');
+        }
+
         return redirect()->to(admin_route('users.admins'))
-            ->with('success', 'Admin user created successfully.');
+            ->with('success', 'Admin user created successfully. Welcome email with password setup link has been sent to '.$admin->personal_email.'.');
     }
 
     /**
      * Show the form for editing an admin user.
      */
-    public function editAdmin(Admin $admin)
+    public function editAdmin($username)
     {
+        // Find admin by username (email prefix before @dwatelier.co)
+        $email = $username.'@dwatelier.co';
+        $admin = Admin::where('email', $email)->first();
+
+        if (! $admin) {
+            return redirect()->to(admin_route('users.admins'))
+                ->with('error', 'Admin user not found.');
+        }
+
         return view('admin.users.edit-admin', compact('admin'));
     }
 
@@ -408,38 +452,127 @@ class UserController extends Controller
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('admins')->ignore($admin->id)],
-            'password' => 'nullable|string|min:8|confirmed',
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('employees')->ignore($admin->id)],
             'role' => 'required|in:super_admin,admin,sales_support_manager,inventory_fulfillment_manager,product_content_manager,finance_reporting_analyst,staff,viewer',
+            'department' => 'nullable|string|max:255',
+            'position' => 'nullable|string|max:255',
         ]);
 
-        $oldValues = $admin->only(['first_name', 'last_name', 'email', 'role']);
+        $oldValues = $admin->only(['first_name', 'last_name', 'email', 'role', 'department', 'position']);
 
         // Update admin data
         $admin->first_name = $validated['first_name'];
         $admin->last_name = $validated['last_name'];
         $admin->email = $validated['email'];
         $admin->role = $validated['role'];
-
-        // Update password if provided
-        if (! empty($validated['password'])) {
-            $admin->password = Hash::make($validated['password']);
-        }
+        $admin->department = $validated['department'] ?? null;
+        $admin->position = $validated['position'] ?? null;
 
         $admin->save();
 
         // Log admin user update
-        AuditLog::log('admin_user.updated', Auth::guard('admin')->user(), $admin, $oldValues, $admin->only(['first_name', 'last_name', 'email', 'role']), "Updated admin user {$admin->first_name} {$admin->last_name} ({$admin->email})");
+        AuditLog::log('admin_user.updated', Auth::guard('admin')->user(), $admin, $oldValues, $admin->only(['first_name', 'last_name', 'email', 'role', 'department', 'position']), "Updated admin user {$admin->first_name} {$admin->last_name} ({$admin->email})");
 
-        return redirect()->to(admin_route('users.admins'))
+        // Get username from email for redirect
+        $username = str_replace('@dwatelier.co', '', $admin->email);
+
+        return redirect()->to(admin_route('users.edit-admin', $username))
             ->with('success', 'Admin user updated successfully.');
+    }
+
+    /**
+     * Send password reset link to admin.
+     */
+    public function sendResetLink(Request $request, Admin $admin)
+    {
+        // Check if admin has personal email for sending reset link
+        $emailToUse = $admin->personal_email ?? $admin->email;
+
+        if (! $emailToUse) {
+            // Return JSON response for AJAX requests
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['error' => ['No email address configured for this admin account.']],
+                ], 422);
+            }
+
+            return back()->withErrors(['error' => 'No email address configured for this admin account.']);
+        }
+
+        try {
+            // Generate magic link for password reset
+            $magicLinkService = new \App\Services\MagicLinkService;
+            $token = $magicLinkService->generateMagicLink($admin, 'password_reset');
+
+            // Build the reset URL using the current request's domain and port
+            $scheme = $request->getScheme();
+            $host = $request->getHost();
+            $port = $request->getPort();
+
+            // Construct URL with proper port handling
+            $portString = '';
+            if ($port && $port !== 80 && $port !== 443) {
+                if (($scheme === 'http' && $port !== 80) || ($scheme === 'https' && $port !== 443)) {
+                    $portString = ':'.$port;
+                }
+            }
+
+            $resetUrl = $scheme.'://'.$host.$portString.'/reset-password/'.$token;
+
+            // Send password reset email
+            Mail::to($emailToUse)->send(new \App\Mail\AdminPasswordResetMail($admin, $resetUrl, now()->addHours(1)));
+
+            // Log password reset link sent
+            AuditLog::log('admin_user.password_reset_link_sent', Auth::guard('admin')->user(), $admin, [], [], "Sent password reset link to admin {$admin->first_name} {$admin->last_name} ({$admin->email})");
+
+            \Log::info('Admin password reset link sent from edit page', [
+                'admin_id' => $admin->id,
+                'admin_email' => $admin->email,
+                'email_sent_to' => $emailToUse,
+                'sent_by' => Auth::guard('admin')->id(),
+            ]);
+
+            // Return JSON response for AJAX requests
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Password reset link has been sent to {$emailToUse}.",
+                ]);
+            }
+
+            return back()->with('success', "Password reset link has been sent to {$emailToUse}.");
+        } catch (\Exception $e) {
+            \Log::error('Failed to send admin password reset email from edit page', [
+                'admin_id' => $admin->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            // Return JSON response for AJAX requests
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['error' => ['Failed to send password reset email. Please try again.']],
+                ], 422);
+            }
+
+            return back()->withErrors(['error' => 'Failed to send password reset email. Please try again.']);
+        }
     }
 
     /**
      * Delete admin user.
      */
-    public function destroyAdmin(Admin $admin)
+    public function destroyAdmin($username)
     {
+        // Find admin by username (email prefix before @dwatelier.co)
+        $email = $username.'@dwatelier.co';
+        $admin = Admin::where('email', $email)->first();
+
+        if (! $admin) {
+            return back()->withErrors(['error' => 'Admin user not found.']);
+        }
+
         // Prevent deleting the current admin
         if ($admin->id === Auth::guard('admin')->id()) {
             return back()->withErrors(['error' => 'You cannot delete your own account.']);

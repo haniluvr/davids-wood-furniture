@@ -395,6 +395,9 @@ x-init="
          class="fixed inset-0 z-9999 bg-black bg-opacity-50 lg:hidden"
          x-cloak></div>
     
+    <!-- Permission Denied Modal -->
+    @include('admin.partials.modal-permission-denied')
+    
     @stack('scripts')
     
     <!-- Initialize Lucide Icons -->

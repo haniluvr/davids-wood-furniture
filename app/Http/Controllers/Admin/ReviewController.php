@@ -118,6 +118,10 @@ class ReviewController extends Controller
         // Log the action
         AuditLog::logUpdate(Auth::guard('admin')->user(), $review, $oldValues);
 
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Review approved successfully.']);
+        }
+
         return redirect()->back()
             ->with('success', 'Review approved successfully.');
     }
@@ -135,6 +139,10 @@ class ReviewController extends Controller
 
         // Log the action
         AuditLog::logUpdate(Auth::guard('admin')->user(), $review, $oldValues);
+
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Review rejected successfully.']);
+        }
 
         return redirect()->back()
             ->with('success', 'Review rejected successfully.');
@@ -218,6 +226,10 @@ class ReviewController extends Controller
 
         $review->delete();
 
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Review deleted successfully.']);
+        }
+
         return redirect()->to(admin_route('reviews.index'))
             ->with('success', 'Review deleted successfully.');
     }
@@ -238,6 +250,10 @@ class ReviewController extends Controller
             $oldValues = $review->toArray();
             $review->update(['is_approved' => true]);
             AuditLog::logUpdate(Auth::guard('admin')->user(), $review, $oldValues);
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => count($reviews).' reviews approved successfully.']);
         }
 
         return redirect()->back()
@@ -262,6 +278,10 @@ class ReviewController extends Controller
             AuditLog::logUpdate(Auth::guard('admin')->user(), $review, $oldValues);
         }
 
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => count($reviews).' reviews rejected successfully.']);
+        }
+
         return redirect()->back()
             ->with('success', count($reviews).' reviews rejected successfully.');
     }
@@ -281,6 +301,10 @@ class ReviewController extends Controller
         foreach ($reviews as $review) {
             AuditLog::logDelete(Auth::guard('admin')->user(), $review);
             $review->delete();
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => count($reviews).' reviews deleted successfully.']);
         }
 
         return redirect()->back()
