@@ -377,20 +377,27 @@
                     <!-- Current Images -->
                     @if($product->images && count($product->images) > 0)
                     <div class="space-y-4">
-                        <h4 class="text-sm font-medium text-stone-700 dark:text-stone-300">Current Images</h4>
+                        <h4 class="text-sm font-medium text-stone-700 dark:text-stone-300">Current Images <span class="text-xs text-stone-500 dark:text-gray-400 font-normal">(Drag to reorder)</span></h4>
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="current-images">
                                 @foreach($product->images as $index => $image)
-                                    <div class="image-preview-item">
-                                        <div class="aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-gray-800 border border-stone-200 dark:border-strokedark">
-                                            @php $imageUrl = Storage::url($image); @endphp
-                                            <img src="{{ $imageUrl }}?v={{ time() }}" alt="Product Image" class="w-full h-full object-cover">
-                                        </div>
-                                        <div class="delete-overlay absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center">
-                                            <button type="button" class="delete-button" onclick="removeCurrentImage({{ $index }})" title="Click to mark/unmark for removal" id="delete-btn-{{ $index }}">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="delete-icon-{{ $index }}">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    <div class="image-preview-item cursor-move" data-image-index="{{ $index }}" data-image-path="{{ $image }}">
+                                        <div class="relative">
+                                            <div class="absolute top-2 left-2 z-10 bg-black bg-opacity-50 rounded-full p-1">
+                                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
                                                 </svg>
-                                        </button>
+                                            </div>
+                                            <div class="aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-gray-800 border border-stone-200 dark:border-strokedark">
+                                                @php $imageUrl = Storage::url($image); @endphp
+                                                <img src="{{ $imageUrl }}?v={{ time() }}" alt="Product Image" class="w-full h-full object-cover">
+                                            </div>
+                                            <div class="delete-overlay absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center">
+                                                <button type="button" class="delete-button" onclick="removeCurrentImage({{ $index }})" title="Click to mark/unmark for removal" id="delete-btn-{{ $index }}">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="delete-icon-{{ $index }}">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                            </button>
+                                            </div>
                                         </div>
                                         <p class="mt-2 text-xs text-stone-500 dark:text-gray-400 truncate">Current Image {{ $index + 1 }}</p>
                                     </div>
@@ -420,7 +427,7 @@
                     <!-- Image Preview Area -->
                     <div id="image-preview-container" class="mt-4 hidden">
                         <div class="mb-2">
-                            <h4 class="text-sm font-medium text-stone-700 dark:text-stone-300">New Images:</h4>
+                            <h4 class="text-sm font-medium text-stone-700 dark:text-stone-300">New Images: <span class="text-xs text-stone-500 dark:text-gray-400 font-normal">(Drag to reorder)</span></h4>
                         </div>
                         <div id="image-preview-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             <!-- Preview images will be inserted here -->
@@ -516,7 +523,24 @@
 .image-preview-item .delete-button:hover {
     background-color: #dc2626;
 }
+
+/* Sortable drag styles */
+.sortable-ghost {
+    opacity: 0.4;
+}
+
+.sortable-drag {
+    opacity: 0.8;
+    cursor: grabbing !important;
+}
+
+.image-preview-item.sortable-drag {
+    transform: rotate(5deg);
+}
 </style>
+
+<!-- SortableJS Library for Drag and Drop -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -632,6 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
         previewGrid.appendChild(loadingDiv);
         
         let processedCount = 0;
+        const totalFiles = imageFiles.length;
         
         imageFiles.forEach((file, index) => {
             if (file.size > 2 * 1024 * 1024) { // 2MB limit
@@ -654,18 +679,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 const previewDiv = document.createElement('div');
-                previewDiv.className = 'image-preview-item';
+                previewDiv.className = 'image-preview-item cursor-move';
                 previewDiv.dataset.filename = file.name;
+                previewDiv.dataset.fileIndex = filesDT.files.length - 1;
                 previewDiv.innerHTML = `
-                    <div class="aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-gray-800 border border-stone-200 dark:border-strokedark">
-                        <img src="${e.target.result}" alt="Preview ${index + 1}" class="w-full h-full object-cover">
-                    </div>
-                    <div class="delete-overlay absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center">
-                        <button type="button" class="delete-button" onclick="removeImagePreview(this)" title="Remove image">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    <div class="relative">
+                        <div class="absolute top-2 left-2 z-10 bg-black bg-opacity-50 rounded-full p-1">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
                             </svg>
-                        </button>
+                        </div>
+                        <div class="aspect-square rounded-xl overflow-hidden bg-stone-100 dark:bg-gray-800 border border-stone-200 dark:border-strokedark">
+                            <img src="${e.target.result}" alt="Preview ${index + 1}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="delete-overlay absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center">
+                            <button type="button" class="delete-button" onclick="removeImagePreview(this)" title="Remove image">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="mt-2 space-y-1">
                         <p class="text-xs text-stone-500 dark:text-gray-400 truncate font-medium">${file.name}</p>
@@ -673,6 +706,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     `;
                 previewGrid.appendChild(previewDiv);
+                
+                // Initialize or reinitialize sortable after each image is added
+                // This ensures sortable works even if images load at different times
+                setTimeout(function() {
+                    initializeNewImagesSortable();
+                }, 50);
                 };
                 reader.readAsDataURL(file);
         });
@@ -759,10 +798,108 @@ document.addEventListener('DOMContentLoaded', function() {
         
     }
     
+    // Initialize Sortable for Current Images
+    const currentImagesContainer = document.getElementById('current-images');
+    if (currentImagesContainer && typeof Sortable !== 'undefined') {
+        window.currentImagesSortable = new Sortable(currentImagesContainer, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
+            filter: '.delete-button, .delete-overlay',
+            preventOnFilter: false,
+            onEnd: function(evt) {
+                // Update image order indices after reordering
+                updateCurrentImagesOrder();
+            }
+        });
+    }
+    
+    // Function to initialize sortable for new images
+    function initializeNewImagesSortable() {
+        const previewGrid = document.getElementById('image-preview-grid');
+        if (previewGrid && typeof Sortable !== 'undefined') {
+            if (window.newImagesSortable) {
+                window.newImagesSortable.destroy();
+            }
+            window.newImagesSortable = new Sortable(previewGrid, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                filter: '.delete-button, .delete-overlay',
+                preventOnFilter: false,
+                onEnd: function(evt) {
+                    // Reorder files in DataTransfer object to match new order
+                    reorderNewImages();
+                }
+            });
+        }
+    }
+    
+    // Update current images order and store in hidden input
+    function updateCurrentImagesOrder() {
+        const currentImages = document.getElementById('current-images');
+        if (!currentImages) return;
+        
+        const imageItems = Array.from(currentImages.querySelectorAll('.image-preview-item'));
+        const imagePaths = imageItems.map(item => item.dataset.imagePath).filter(Boolean);
+        
+        // Store order in hidden input
+        let orderInput = document.getElementById('current-images-order');
+        if (!orderInput) {
+            orderInput = document.createElement('input');
+            orderInput.type = 'hidden';
+            orderInput.id = 'current-images-order';
+            orderInput.name = 'current_images_order';
+            document.getElementById('product-edit-form').appendChild(orderInput);
+        }
+        orderInput.value = JSON.stringify(imagePaths);
+    }
+    
+    // Reorder new images files in DataTransfer to match visual order
+    function reorderNewImages() {
+        const previewGrid = document.getElementById('image-preview-grid');
+        if (!previewGrid) return;
+        
+        const imageItems = Array.from(previewGrid.querySelectorAll('.image-preview-item'));
+        const filenames = imageItems.map(item => item.dataset.filename).filter(Boolean);
+        
+        // Create new DataTransfer with files in the correct order
+        const newDT = new DataTransfer();
+        filenames.forEach(filename => {
+            const file = Array.from(filesDT.files).find(f => f.name === filename);
+            if (file) {
+                newDT.items.add(file);
+            }
+        });
+        
+        // Update both DataTransfer and file input
+        filesDT.items.clear();
+        Array.from(newDT.files).forEach(f => filesDT.items.add(f));
+        fileInput.files = filesDT.files;
+    }
+    
+    // Make removeImagePreview update sortable after removal
+    const originalRemoveImagePreview = window.removeImagePreview;
+    window.removeImagePreview = function(button) {
+        originalRemoveImagePreview(button);
+        // Reinitialize sortable after removal
+        setTimeout(() => {
+            if (document.getElementById('image-preview-grid').querySelectorAll('.image-preview-item').length > 0) {
+                initializeNewImagesSortable();
+            }
+        }, 100);
+    };
+    
     // Ensure all marked images are added to form before submission
     document.getElementById('product-edit-form').addEventListener('submit', function(e) {
         // Ensure all marked images are added to form before submission
         ensureRemoveImagesInputs();
+        
+        // Update current images order before submission
+        updateCurrentImagesOrder();
+        
+        // Reorder new images before submission
+        reorderNewImages();
     });
 
 

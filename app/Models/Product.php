@@ -19,7 +19,8 @@ class Product extends Model
 
     /**
      * Retrieve the model for route model binding.
-     * Only allows active products to be accessed.
+     * Only allows active products to be accessed by customers.
+     * Admins can view inactive products.
      *
      * @param mixed $value
      * @param string|null $field
@@ -29,9 +30,21 @@ class Product extends Model
     {
         $field = $field ?: $this->getRouteKeyName();
 
-        return $this->where($field, $value)
-            ->where('is_active', true)
-            ->first();
+        $query = $this->where($field, $value);
+
+        // Allow admins to view and edit inactive products
+        // Check if user is authenticated as admin, on an admin route, or on admin subdomain
+        $isAdmin = auth()->guard('admin')->check() ||
+                   request()->is('admin/*') ||
+                   str_starts_with(request()->path(), 'admin/') ||
+                   str_contains(request()->getHost(), 'admin.');
+
+        if (! $isAdmin) {
+            // For customers, only show active products
+            $query->where('is_active', true);
+        }
+
+        return $query->first();
     }
 
     protected $fillable = [

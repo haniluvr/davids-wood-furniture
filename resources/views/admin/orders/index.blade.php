@@ -108,7 +108,7 @@
                 <div class="flex-1 min-w-[200px]">
                     <label for="status" class="block text-sm font-medium text-stone-700 mb-2">Status</label>
                     <select id="status" name="status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                        <option value="">All Status</option>
+                        <option value="all" {{ request('status') === 'all' || request('status') === '' ? 'selected' : '' }}>All Status</option>
                         <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>Processing</option>
                         <option value="shipped" {{ request('status') === 'shipped' ? 'selected' : '' }}>Shipped</option>
@@ -119,7 +119,7 @@
                 <div class="flex-1 min-w-[200px]">
                     <label for="payment_status" class="block text-sm font-medium text-stone-700 mb-2">Payment Status</label>
                     <select id="payment_status" name="payment_status" class="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                        <option value="">All Payment Status</option>
+                        <option value="all" {{ request('payment_status') === 'all' || request('payment_status') === '' ? 'selected' : '' }}>All Payment Status</option>
                         <option value="pending" {{ request('payment_status') === 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Paid</option>
                         <option value="failed" {{ request('payment_status') === 'failed' ? 'selected' : '' }}>Failed</option>

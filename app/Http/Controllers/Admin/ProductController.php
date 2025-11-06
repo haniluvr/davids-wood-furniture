@@ -282,7 +282,31 @@ class ProductController extends Controller
         // Get existing images exactly as stored so indices match the client
         $existingImages = $product->images ?: [];
 
+        // Handle reordering of current images if provided
+        $currentImagesOrder = $request->input('current_images_order');
+        if ($currentImagesOrder) {
+            $orderedPaths = json_decode($currentImagesOrder, true);
+            if (is_array($orderedPaths)) {
+                // Reorder existing images based on provided order
+                $reorderedImages = [];
+                foreach ($orderedPaths as $path) {
+                    $index = array_search($path, $existingImages);
+                    if ($index !== false) {
+                        $reorderedImages[] = $existingImages[$index];
+                    }
+                }
+                // Add any images not in the order list (shouldn't happen, but safety check)
+                foreach ($existingImages as $path) {
+                    if (! in_array($path, $orderedPaths)) {
+                        $reorderedImages[] = $path;
+                    }
+                }
+                $existingImages = $reorderedImages;
+            }
+        }
+
         // Handle images to remove if any indices were posted
+        // Note: Indices are based on the reordered array if reordering was done
         $imagesToRemove = $request->input('remove_images');
         if (! is_null($imagesToRemove)) {
             // Normalize payload into int indices; support comma-delimited strings and arrays
@@ -296,6 +320,7 @@ class ProductController extends Controller
                 ->values()
                 ->all();
 
+            // Delete the image files first
             foreach ($indices as $idx) {
                 if (! isset($existingImages[$idx])) {
                     continue;

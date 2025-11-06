@@ -173,22 +173,110 @@ document.addEventListener('DOMContentLoaded', function() {
                            wasBlurred = false;
                            try {
                                if (window.paymentWindowRef.closed) {
-                                   console.log('Payment window is closed (detected on focus), starting polling');
-                                   startPaymentStatusPolling();
-                               } else {
-                                   // Window might still be open, but start polling anyway after a short delay
-                                   // (user might have completed payment and window auto-closed)
-                                   setTimeout(function() {
-                                       if (!window.paymentPollingActive) {
-                                           console.log('Starting polling after focus (payment window may have closed)');
+                                   console.log('Payment window is closed (detected on focus), checking payment status immediately');
+                                   // Immediately check payment status when window is closed
+                                   fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
+                                       headers: {
+                                           'X-Requested-With': 'XMLHttpRequest',
+                                           'Accept': 'application/json',
+                                       },
+                                       method: 'GET',
+                                       credentials: 'same-origin',
+                                       cache: 'no-cache'
+                                   })
+                                   .then(response => {
+                                       if (response.ok) {
+                                           return response.json();
+                                       }
+                                       throw new Error('Network response was not ok');
+                                   })
+                                   .then(data => {
+                                       if (data && data.payment_status === 'paid') {
+                                           console.log('✅ Payment successful detected on focus! Refreshing page...');
+                                           window.location.reload();
+                                       } else {
+                                           // If not paid yet, start polling
                                            startPaymentStatusPolling();
                                        }
-                                   }, 2000);
+                                   })
+                                   .catch(error => {
+                                       console.error('Payment status check failed on focus:', error);
+                                       // Start polling as fallback
+                                       startPaymentStatusPolling();
+                                   });
+                               } else {
+                                   // Window might still be open, but check payment status anyway
+                                   // (user might have completed payment and window will auto-close)
+                                   fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
+                                       headers: {
+                                           'X-Requested-With': 'XMLHttpRequest',
+                                           'Accept': 'application/json',
+                                       },
+                                       method: 'GET',
+                                       credentials: 'same-origin',
+                                       cache: 'no-cache'
+                                   })
+                                   .then(response => {
+                                       if (response.ok) {
+                                           return response.json();
+                                       }
+                                       throw new Error('Network response was not ok');
+                                   })
+                                   .then(data => {
+                                       if (data && data.payment_status === 'paid') {
+                                           console.log('✅ Payment successful detected on focus (window still open)! Refreshing page...');
+                                           window.location.reload();
+                                       } else if (!window.paymentPollingActive) {
+                                           // Start polling as backup
+                                           setTimeout(function() {
+                                               if (!window.paymentPollingActive) {
+                                                   console.log('Starting polling after focus (payment window may have closed)');
+                                                   startPaymentStatusPolling();
+                                               }
+                                           }, 2000);
+                                       }
+                                   })
+                                   .catch(error => {
+                                       console.error('Payment status check failed on focus:', error);
+                                       if (!window.paymentPollingActive) {
+                                           setTimeout(function() {
+                                               if (!window.paymentPollingActive) {
+                                                   startPaymentStatusPolling();
+                                               }
+                                           }, 2000);
+                                       }
+                                   });
                                }
                            } catch (e) {
-                               // Cross-origin - assume closed and start polling
-                               console.log('Payment window likely closed (cross-origin on focus), starting polling');
-                               startPaymentStatusPolling();
+                               // Cross-origin - assume closed and check payment status
+                               console.log('Payment window likely closed (cross-origin on focus), checking payment status');
+                               fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
+                                   headers: {
+                                       'X-Requested-With': 'XMLHttpRequest',
+                                       'Accept': 'application/json',
+                                   },
+                                   method: 'GET',
+                                   credentials: 'same-origin',
+                                   cache: 'no-cache'
+                               })
+                               .then(response => {
+                                   if (response.ok) {
+                                       return response.json();
+                                   }
+                                   throw new Error('Network response was not ok');
+                               })
+                               .then(data => {
+                                   if (data && data.payment_status === 'paid') {
+                                       console.log('✅ Payment successful detected on focus (cross-origin)! Refreshing page...');
+                                       window.location.reload();
+                                   } else {
+                                       startPaymentStatusPolling();
+                                   }
+                               })
+                               .catch(error => {
+                                   console.error('Payment status check failed on focus (cross-origin):', error);
+                                   startPaymentStatusPolling();
+                               });
                            }
                        }
                    });
@@ -432,15 +520,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.paymentWindowCheckInterval = setInterval(function() {
                     try {
                         if (!manualWindow || manualWindow.closed) {
-                            console.log('Manual payment gateway window closed, starting polling');
+                            console.log('Manual payment gateway window closed, checking payment status immediately');
                             if (window.paymentWindowCheckInterval) {
                                 clearInterval(window.paymentWindowCheckInterval);
                                 window.paymentWindowCheckInterval = null;
                             }
                             window.paymentWindowRef = null;
-                            if (window.startPaymentStatusPolling) {
-                                window.startPaymentStatusPolling();
-                            }
+                            
+                            // Immediately check payment status when window closes
+                            fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                },
+                                method: 'GET',
+                                credentials: 'same-origin',
+                                cache: 'no-cache'
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    return response.json();
+                                }
+                                throw new Error('Network response was not ok');
+                            })
+                            .then(data => {
+                                if (data && data.payment_status === 'paid') {
+                                    console.log('✅ Payment successful detected on window close! Refreshing page...');
+                                    window.location.reload();
+                                } else {
+                                    // If not paid yet, start polling
+                                    if (window.startPaymentStatusPolling) {
+                                        window.startPaymentStatusPolling();
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Payment status check failed on window close:', error);
+                                // Start polling as fallback
+                                if (window.startPaymentStatusPolling) {
+                                    window.startPaymentStatusPolling();
+                                }
+                            });
                         }
                     } catch (e) {
                         console.log('Window check error:', e);

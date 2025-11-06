@@ -6,6 +6,7 @@ use App\Events\OrderCreated;
 use App\Events\OrderStatusChanged;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -40,12 +41,12 @@ class OrderController extends Controller
         }
 
         // Status filter
-        if ($request->has('status') && $request->status !== 'all') {
+        if ($request->has('status') && $request->status !== 'all' && $request->status !== '') {
             $query->where('status', $request->status);
         }
 
         // Payment status filter
-        if ($request->has('payment_status') && $request->payment_status !== 'all') {
+        if ($request->has('payment_status') && $request->payment_status !== 'all' && $request->payment_status !== '') {
             $query->where('payment_status', $request->payment_status);
         }
 
@@ -177,10 +178,22 @@ class OrderController extends Controller
                 $order->orderItems()->create($item);
             }
 
-            // Update product stock
-            foreach ($validated['items'] as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                $product->decrement('stock_quantity', $item['quantity']);
+            // Update product stock and create inventory movements
+            // Only decrement stock if payment status is paid (for COD or pre-paid orders)
+            if ($validated['payment_status'] === 'paid') {
+                foreach ($validated['items'] as $item) {
+                    $product = Product::findOrFail($item['product_id']);
+                    // Record inventory movement (this also decrements stock)
+                    InventoryMovement::recordStockOut(
+                        $item['product_id'],
+                        $item['quantity'],
+                        'order',
+                        "Order #{$order->order_number} - Admin created order (paid)",
+                        'App\Models\Order',
+                        $order->id,
+                        Auth::guard('admin')->id()
+                    );
+                }
             }
 
             DB::commit();
@@ -243,6 +256,41 @@ class OrderController extends Controller
 
         if ($validated['status'] === 'delivered' && $order->status !== 'delivered') {
             $validated['delivered_at'] = now();
+        }
+
+        // Handle payment status change to 'paid' - decrement stock if not already done
+        $oldPaymentStatus = $order->payment_status;
+        if ($validated['payment_status'] === 'paid' && $oldPaymentStatus !== 'paid') {
+            // Check if stock was already decremented for this order
+            $hasStockMovement = InventoryMovement::where('reference_type', 'App\Models\Order')
+                ->where('reference_id', $order->id)
+                ->where('type', 'out')
+                ->exists();
+
+            if (! $hasStockMovement) {
+                // Decrement stock for all items in the order
+                try {
+                    $order->load('orderItems');
+                    foreach ($order->orderItems as $orderItem) {
+                        // Record inventory movement (this also decrements stock)
+                        InventoryMovement::recordStockOut(
+                            $orderItem->product_id,
+                            $orderItem->quantity,
+                            'order',
+                            "Order #{$order->order_number} - Payment status changed to paid",
+                            'App\Models\Order',
+                            $order->id,
+                            Auth::guard('admin')->id()
+                        );
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to decrement stock when payment status changed to paid', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    // Don't fail the order update if stock update fails
+                }
+            }
         }
 
         $oldValues = $order->only(['status', 'payment_status', 'shipping_method', 'tracking_number']);

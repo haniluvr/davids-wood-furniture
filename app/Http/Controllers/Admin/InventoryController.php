@@ -338,9 +338,18 @@ class InventoryController extends Controller
             }
         }
 
-        // Filter by category
+        // Filter by category (main category - includes products in subcategories)
         if ($request->has('category_id') && $request->category_id) {
-            $query->where('category_id', $request->category_id);
+            $mainCategoryId = $request->category_id;
+            // Get subcategory IDs for this main category
+            $subcategoryIds = Category::where('parent_id', $mainCategoryId)->pluck('id');
+
+            $query->where(function ($q) use ($mainCategoryId, $subcategoryIds) {
+                // Products directly assigned to main category
+                $q->where('category_id', $mainCategoryId)
+                  // Or products assigned to subcategories of this main category
+                    ->orWhereIn('subcategory_id', $subcategoryIds);
+            });
         }
 
         // Sort
@@ -544,7 +553,8 @@ class InventoryController extends Controller
             'stock_out_movements' => InventoryMovement::where('type', 'out')->count(),
             'adjustments' => InventoryMovement::where('type', 'adjustment')->count(),
             'stock_in_30_days' => InventoryMovement::where('type', 'in')->where('created_at', '>=', $thirtyDaysAgo)->sum('quantity'),
-            'stock_out_30_days' => InventoryMovement::where('type', 'out')->where('created_at', '>=', $thirtyDaysAgo)->sum('quantity'),
+            // Stock out quantities are stored as negative, so we need to get the absolute value
+            'stock_out_30_days' => abs(InventoryMovement::where('type', 'out')->where('created_at', '>=', $thirtyDaysAgo)->sum('quantity') ?? 0),
             'net_change_30_days' => InventoryMovement::where('created_at', '>=', $thirtyDaysAgo)
                 ->selectRaw('SUM(CASE WHEN type = "in" THEN quantity ELSE -quantity END) as net')
                 ->value('net') ?? 0,

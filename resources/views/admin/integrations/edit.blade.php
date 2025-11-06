@@ -69,8 +69,8 @@
             <label for="enabled" class="text-sm text-gray-700 dark:text-gray-300">Enable Xendit</label>
           </div>
           <div class="flex gap-3">
-            <button type="button" id="testXendit" class="px-4 py-2 rounded-lg border border-stroke dark:border-strokedark text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-graydark">Test Connection</button>
-            <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90">Save</button>
+          <button type="button" id="testXendit" class="px-4 py-2 rounded-lg border border-stroke dark:border-strokedark text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-graydark">Test Connection</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90">Save</button>
           </div>
         </div>
       </form>

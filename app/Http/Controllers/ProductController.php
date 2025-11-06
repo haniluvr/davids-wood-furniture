@@ -67,6 +67,16 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         try {
+            // Check if user is admin - if so, allow viewing inactive products
+            $isAdmin = auth()->guard('admin')->check() ||
+                       request()->is('admin/*') ||
+                       str_contains(request()->getHost(), 'admin.');
+
+            // For customers, don't allow viewing inactive products
+            if (! $isAdmin && ! $product->is_active) {
+                abort(404, 'Product not found.');
+            }
+
             $sessionIdAtStart = session()->getId();
 
             \Log::info('Product show method called', [
@@ -78,6 +88,8 @@ class ProductController extends Controller
                 'url' => request()->url(),
                 'referer' => request()->header('referer'),
                 'route_parameters' => request()->route()->parameters(),
+                'is_admin' => $isAdmin,
+                'product_is_active' => $product->is_active,
             ]);
 
             // Get related products only if category_id exists

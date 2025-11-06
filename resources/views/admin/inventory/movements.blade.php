@@ -176,7 +176,13 @@
                             </td>
                             <td class="py-3 px-4">
                                 <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium {{ $movement->type_badge_color }}">
-                                    {{ ucfirst($movement->type) }}
+                                    @if($movement->type === 'in')
+                                        Stock In
+                                    @elseif($movement->type === 'out')
+                                        Stock Out
+                                    @else
+                                        {{ ucfirst($movement->type) }}
+                                    @endif
                                 </span>
                             </td>
                             <td class="py-3 px-4 text-sm font-medium {{ $movement->type === 'in' || $movement->quantity > 0 ? 'text-green-600' : 'text-red-600' }}">

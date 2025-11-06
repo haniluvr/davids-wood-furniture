@@ -101,7 +101,7 @@
                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
                 <select name="category_id" class="w-full rounded-lg border border-stroke px-3 py-2 text-sm dark:border-strokedark dark:bg-form-input">
                     <option value="">All Categories</option>
-                    @foreach(\App\Models\Category::orderBy('name')->get() as $category)
+                    @foreach(\App\Models\Category::whereNull('parent_id')->where('is_active', true)->orderBy('sort_order')->get() as $category)
                         <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
                             {{ $category->name }}
                         </option>

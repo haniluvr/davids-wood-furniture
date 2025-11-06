@@ -20,7 +20,7 @@
             <p class="text-sm font-medium text-stone-900 dark:text-white">{{ now()->format('M d, Y \a\t g:i A') }}</p>
         </div>
         <button id="refreshBtn" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 transition-all duration-200">
-            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            <i id="refreshIcon" data-lucide="refresh-cw" class="w-4 h-4"></i>
             Refresh
         </button>
     </div>
@@ -712,7 +712,10 @@ updatePeriodNavigation();
 
 // Refresh button functionality
 document.getElementById('refreshBtn').addEventListener('click', function() {
-    this.classList.add('animate-spin');
+    const icon = document.getElementById('refreshIcon');
+    if (icon) {
+        icon.classList.add('animate-spin');
+    }
     location.reload();
 });
 
