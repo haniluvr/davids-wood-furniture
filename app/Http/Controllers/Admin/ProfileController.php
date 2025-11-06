@@ -174,7 +174,166 @@ class ProfileController extends Controller
             ->orderBy('first_name')
             ->get();
 
-        return view('admin.profile.contacts', compact('admins'));
+        // Get active session IDs for all admins
+        $activeSessionIds = $this->getActiveAdminSessionIds();
+
+        return view('admin.profile.contacts', compact('admins', 'activeSessionIds'));
+    }
+
+    /**
+     * Get active session IDs for admin users from the sessions table.
+     */
+    private function getActiveAdminSessionIds(): array
+    {
+        try {
+            $sessionTable = config('session.table', 'sessions');
+            $currentTime = time();
+            $sessionLifetime = config('session.lifetime', 120) * 60; // Convert to seconds
+
+            // Query sessions table for active sessions
+            $sessions = \DB::table($sessionTable)
+                ->where('last_activity', '>', $currentTime - $sessionLifetime)
+                ->get();
+
+            $activeAdminIds = [];
+
+            foreach ($sessions as $session) {
+                try {
+                    // Decode the session payload - Laravel stores it as base64 encoded serialized data
+                    $decoded = base64_decode($session->payload, true);
+                    if ($decoded === false) {
+                        continue;
+                    }
+
+                    // Check if sessions are encrypted (Laravel encrypts by default)
+                    $payload = null;
+                    if (config('session.encrypt', false)) {
+                        try {
+                            // Decrypt the payload first - this gives us the serialized data
+                            $decrypted = \Illuminate\Support\Facades\Crypt::decrypt($decoded, false);
+
+                            // The decrypted data is a serialized string, so we need to unserialize it
+                            $payload = @unserialize($decrypted);
+
+                            // If it's still a string after unserialize, it might be double-serialized
+                            if (is_string($payload) && strlen($payload) > 0) {
+                                $payload = @unserialize($payload);
+                            }
+                        } catch (\Exception $e) {
+                            // If decryption fails, try without decryption (for unencrypted sessions)
+                            $payload = @unserialize($decoded);
+                        }
+                    } else {
+                        // Sessions are not encrypted, just unserialize
+                        $payload = @unserialize($decoded);
+                    }
+
+                    // If unserialize fails, try to decode as JSON (some Laravel versions)
+                    if ($payload === false || $payload === null || (! is_array($payload) && ! is_object($payload))) {
+                        // Try JSON decode on the original decoded data
+                        $jsonPayload = json_decode($decoded, true);
+                        if (is_array($jsonPayload)) {
+                            $payload = $jsonPayload;
+                        }
+                    }
+
+                    if (! is_array($payload)) {
+                        continue;
+                    }
+
+                    // Laravel stores authentication data with the guard name
+                    // For admin guard, it's typically: login_admin_{provider}_id or login_admin_id
+                    $adminId = null;
+
+                    // Try standard Laravel session key format
+                    $possibleKeys = [
+                        'login_admin_id',
+                        'login_admin_'.config('auth.guards.admin.provider', 'admins').'_id',
+                        'login_admin_web_id',
+                        'login_admin_admins_id', // Explicit provider name
+                        'login_web_admin_id',
+                        '_token', // Sometimes stored separately
+                    ];
+
+                    foreach ($possibleKeys as $key) {
+                        if (isset($payload[$key]) && $payload[$key]) {
+                            if (is_numeric($payload[$key])) {
+                                $adminId = (int) $payload[$key];
+
+                                break;
+                            }
+                        }
+                    }
+
+                    // If not found, search through all keys for admin-related authentication
+                    if (! $adminId) {
+                        foreach ($payload as $key => $value) {
+                            // Look for keys that contain 'admin' and 'id' or 'login'
+                            if (is_string($key) && is_numeric($value)) {
+                                $lowerKey = strtolower($key);
+                                if ((str_contains($lowerKey, 'admin') || str_contains($lowerKey, 'login'))
+                                    && (str_contains($lowerKey, 'id') || str_contains($lowerKey, 'user'))) {
+                                    $adminId = (int) $value;
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Alternative: Check if there's a nested structure
+                    if (! $adminId) {
+                        // Some Laravel versions nest auth data
+                        foreach ($payload as $key => $value) {
+                            if (is_array($value) && isset($value['id']) && is_numeric($value['id'])) {
+                                // Check if this looks like admin auth data
+                                if (str_contains(strtolower($key), 'admin') || str_contains(strtolower($key), 'login')) {
+                                    $adminId = (int) $value['id'];
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Last resort: Check all numeric values that might be admin IDs
+                    // (This is a fallback - should be refined based on actual payload structure)
+                    if (! $adminId) {
+                        foreach ($payload as $key => $value) {
+                            if (is_numeric($value) && $value > 0 && $value < 1000) { // Reasonable admin ID range
+                                $lowerKey = strtolower((string) $key);
+                                // If key mentions admin, login, or auth, it's likely an admin ID
+                                if (str_contains($lowerKey, 'admin') ||
+                                    str_contains($lowerKey, 'login') ||
+                                    str_contains($lowerKey, 'auth') ||
+                                    str_contains($lowerKey, 'user')) {
+                                    $adminId = (int) $value;
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if ($adminId && $adminId > 0) {
+                        $activeAdminIds[] = $adminId;
+                    }
+                } catch (\Exception $e) {
+                    // Skip invalid session data
+                    continue;
+                }
+            }
+
+            return array_unique($activeAdminIds);
+        } catch (\Exception $e) {
+            // If sessions table doesn't exist or query fails, return empty array
+            \Log::warning('Failed to get active admin sessions', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return [];
+        }
     }
 
     /**

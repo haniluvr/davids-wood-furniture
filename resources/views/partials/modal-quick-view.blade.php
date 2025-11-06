@@ -44,7 +44,7 @@
               <i data-lucide="chevron-left" class="w-3 h-3 text-gray-600"></i>
             </button>
             <div class="flex justify-start space-x-2 overflow-x-hidden scroll-smooth w-full" id="image-thumbnails" style="scrollbar-width: none; -ms-overflow-style: none;">
-              <!-- Thumbnails will be dynamically generated -->
+            <!-- Thumbnails will be dynamically generated -->
             </div>
             <button class="absolute right-0 z-10 w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-all hidden" id="quickViewThumbnailNextBtn" onclick="scrollQuickViewThumbnails(1)" style="top: 50%; transform: translate(50%, -50%);">
               <i data-lucide="chevron-right" class="w-3 h-3 text-gray-600"></i>
@@ -56,60 +56,60 @@
         <div class="flex flex-col h-full">
           <!-- Top Section: Price, Rating, Description -->
           <div class="space-y-4 flex-shrink-0">
-            <!-- Price and Rating -->
-            <div class="flex items-start justify-between">
-              <div class="space-y-2">
-                <div class="text-2xl font-bold text-gray-900" id="quick-view-price">₱0.00</div>
-                <div class="flex items-center space-x-1">
-                  <div class="flex items-center space-x-1" id="star-rating-container">
-                    <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
-                    <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
-                    <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
-                    <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
-                    <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
-                  </div>
-                  <span class="text-sm font-medium text-amber-500" id="quick-view-rating">0.0</span>
+          <!-- Price and Rating -->
+          <div class="flex items-start justify-between">
+            <div class="space-y-2">
+              <div class="text-2xl font-bold text-gray-900" id="quick-view-price">₱0.00</div>
+              <div class="flex items-center space-x-1">
+                <div class="flex items-center space-x-1" id="star-rating-container">
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
+                  <i data-lucide="star" class="w-4 h-4 text-amber-500"></i>
                 </div>
-              </div>
-              <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                In Stock
+                <span class="text-sm font-medium text-amber-500" id="quick-view-rating">0.0</span>
               </div>
             </div>
+            <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+              In Stock
+            </div>
+          </div>
 
-            <!-- Description -->
-            <div class="bg-gray-50 rounded-lg p-3">
-              <p class="text-gray-700 text-sm leading-relaxed" id="quick-view-desc">Product description will appear here...</p>
+          <!-- Description -->
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-gray-700 text-sm leading-relaxed" id="quick-view-desc">Product description will appear here...</p>
             </div>
           </div>
 
           <!-- Bottom Section: Quantity and Action Buttons (Grouped) -->
           <div class="mt-auto pt-4 space-y-3">
-            <!-- Quantity Selector -->
-            <div class="space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">Quantity</label>
-              <div class="flex items-center">
-                <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
-                  <button class="px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors" type="button" id="decrease-qty">
-                    <i data-lucide="minus" class="w-4 h-4"></i>
-                  </button>
-                  <input type="number" class="w-12 px-2 py-2 text-center font-semibold border-0 focus:outline-none focus:ring-0 text-sm" value="1" min="1" id="quantity-input">
-                  <button class="px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors" type="button" id="increase-qty">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                  </button>
-                </div>
+          <!-- Quantity Selector -->
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">Quantity</label>
+            <div class="flex items-center">
+              <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                <button class="px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors" type="button" id="decrease-qty">
+                  <i data-lucide="minus" class="w-4 h-4"></i>
+                </button>
+                <input type="number" class="w-12 px-2 py-2 text-center font-semibold border-0 focus:outline-none focus:ring-0 text-sm" value="1" min="1" id="quantity-input">
+                <button class="px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors" type="button" id="increase-qty">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                </button>
               </div>
             </div>
+          </div>
 
-            <!-- Action Buttons -->
+          <!-- Action Buttons -->
             <div class="flex space-x-3">
-              <button class="flex-1 bg-white border border-gray-200 hover:border-red-500 text-gray-700 hover:text-red-500 px-4 py-2 rounded-md font-medium flex items-center justify-center space-x-2 transition-all duration-200 text-sm" id="modalWishlistBtn" data-product-id="">
-                <i data-lucide="heart" class="w-4 h-4" id="modal-heart-icon"></i>
-                <span id="modal-wishlist-text">Wishlist</span>
-              </button>
-              <button class="btn btn-add-to-cart flex-1 flex items-center justify-center py-2 px-0" id="modalAddToCart" data-product-id="" style="cursor: pointer !important;">
-                <i data-lucide="shopping-cart" class="lucide-small"></i>
-                <span class="font-medium ml-2">Add to cart</span>
-              </button>
+            <button class="flex-1 bg-white border border-gray-200 hover:border-red-500 text-gray-700 hover:text-red-500 px-4 py-2 rounded-md font-medium flex items-center justify-center space-x-2 transition-all duration-200 text-sm" id="modalWishlistBtn" data-product-id="">
+              <i data-lucide="heart" class="w-4 h-4" id="modal-heart-icon"></i>
+              <span id="modal-wishlist-text">Wishlist</span>
+            </button>
+            <button class="btn btn-add-to-cart flex-1 flex items-center justify-center py-2 px-0" id="modalAddToCart" data-product-id="" style="cursor: pointer !important;">
+              <i data-lucide="shopping-cart" class="lucide-small"></i>
+              <span class="font-medium ml-2">Add to cart</span>
+            </button>
             </div>
           </div>
         </div>

@@ -82,10 +82,19 @@
                                     default => 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
                                 };
                                 
-                                // Check if user is online (logged in within last 15 minutes OR is the currently logged in user)
+                                // Check if user is online
                                 $currentUser = auth()->guard('admin')->user();
+                                
+                                // Check if user has active session
+                                $hasActiveSession = isset($activeSessionIds) && in_array($contact->id, $activeSessionIds);
+                                
+                                // User is online if:
+                                // 1. They are the currently logged in user, OR
+                                // 2. They have an active session in the sessions table, OR
+                                // 3. They logged in within the last 30 minutes (extended window for better detection)
                                 $isOnline = ($currentUser && $contact->id === $currentUser->id) || 
-                                           ($contact->last_login_at && $contact->last_login_at->diffInMinutes(now()) <= 15);
+                                           $hasActiveSession ||
+                                           ($contact->last_login_at && $contact->last_login_at->diffInMinutes(now()) <= 30);
                             @endphp
                             <tr class="hover:bg-stone-50 dark:hover:bg-gray-800 transition-colors duration-150">
                                 <td class="px-6 py-4 whitespace-nowrap">

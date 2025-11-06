@@ -351,6 +351,55 @@
                         @enderror
                     </div>
                 </div>
+
+                <!-- Room Categories (Tagging Style) -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                        Room Categories
+                    </label>
+                    <p class="text-xs text-stone-500 dark:text-gray-400 mb-3">Select one or more rooms where this product can be used</p>
+                    @php
+                        $roomOptions = [
+                            'bedroom' => ['name' => 'Bedroom', 'icon' => 'bed-double'],
+                            'living-room' => ['name' => 'Living Room', 'icon' => 'sofa'],
+                            'dining-room' => ['name' => 'Dining Room', 'icon' => 'utensils'],
+                            'bathroom' => ['name' => 'Bathroom', 'icon' => 'bath'],
+                            'office' => ['name' => 'Office', 'icon' => 'lamp-desk'],
+                            'garden-and-balcony' => ['name' => 'Garden & Balcony', 'icon' => 'flower'],
+                        ];
+                        $selectedRooms = old('room_category', []);
+                        if (!is_array($selectedRooms)) {
+                            $selectedRooms = [];
+                        }
+                    @endphp
+                    <div class="flex flex-wrap gap-2" id="room-tags-container">
+                        @foreach($roomOptions as $roomSlug => $roomData)
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" 
+                                       name="room_category[]" 
+                                       value="{{ $roomSlug }}"
+                                       {{ in_array($roomSlug, $selectedRooms) ? 'checked' : '' }}
+                                       class="sr-only room-checkbox">
+                                <span class="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 
+                                    {{ in_array($roomSlug, $selectedRooms) 
+                                        ? 'bg-primary text-white shadow-md' 
+                                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600' }}">
+                                    <i data-lucide="{{ $roomData['icon'] }}" class="w-4 h-4 mr-2"></i>
+                                    {{ $roomData['name'] }}
+                                    @if(in_array($roomSlug, $selectedRooms))
+                                        <i data-lucide="check" class="w-4 h-4 ml-2"></i>
+                                    @endif
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('room_category')
+                        <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                    @error('room_category.*')
+                        <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
         </div>
 
@@ -697,6 +746,35 @@ document.addEventListener('DOMContentLoaded', function() {
             previewContainer.classList.add('hidden');
         }
     };
+
+    // Room tag styling - update visual appearance when checkbox changes
+    document.querySelectorAll('.room-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const span = this.nextElementSibling;
+            if (this.checked) {
+                span.classList.remove('bg-stone-100', 'text-stone-700', 'hover:bg-stone-200', 'dark:bg-gray-700', 'dark:text-gray-300', 'dark:hover:bg-gray-600');
+                span.classList.add('bg-primary', 'text-white', 'shadow-md');
+                // Add check icon if not present
+                if (!span.querySelector('i[data-lucide="check"]')) {
+                    const checkIcon = document.createElement('i');
+                    checkIcon.setAttribute('data-lucide', 'check');
+                    checkIcon.className = 'w-4 h-4 ml-2';
+                    span.appendChild(checkIcon);
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                }
+            } else {
+                span.classList.remove('bg-primary', 'text-white', 'shadow-md');
+                span.classList.add('bg-stone-100', 'text-stone-700', 'hover:bg-stone-200', 'dark:bg-gray-700', 'dark:text-gray-300', 'dark:hover:bg-gray-600');
+                // Remove check icon if present
+                const checkIcon = span.querySelector('i[data-lucide="check"]');
+                if (checkIcon) {
+                    checkIcon.remove();
+                }
+            }
+        });
+    });
 });
 </script>
 @endsection

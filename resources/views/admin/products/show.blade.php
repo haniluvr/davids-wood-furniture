@@ -160,6 +160,31 @@
                                 <span class="text-gray-600 dark:text-gray-400 font-medium">Dimensions:</span>
                                 <span class="font-semibold text-black dark:text-white">{{ $product->dimensions ?? 'N/A' }}</span>
                             </div>
+                            @if($product->room_category && count($product->room_category) > 0)
+                            <div class="flex flex-col gap-2 py-2 border-t border-stone-100 dark:border-stone-700">
+                                <span class="text-gray-600 dark:text-gray-400 font-medium">Room Categories:</span>
+                                <div class="flex flex-wrap gap-2">
+                                    @php
+                                        $roomData = [
+                                            'bedroom' => ['name' => 'Bedroom', 'icon' => 'bed-double'],
+                                            'living-room' => ['name' => 'Living Room', 'icon' => 'sofa'],
+                                            'dining-room' => ['name' => 'Dining Room', 'icon' => 'utensils'],
+                                            'bathroom' => ['name' => 'Bathroom', 'icon' => 'bath'],
+                                            'office' => ['name' => 'Office', 'icon' => 'lamp-desk'],
+                                            'garden-and-balcony' => ['name' => 'Garden & Balcony', 'icon' => 'flower'],
+                                        ];
+                                    @endphp
+                                    @foreach($product->room_category as $roomSlug)
+                                        @if(isset($roomData[$roomSlug]))
+                                            <span class="inline-flex items-center rounded-full bg-primary/10 text-primary px-3 py-1 text-sm font-medium">
+                                                <i data-lucide="{{ $roomData[$roomSlug]['icon'] }}" class="w-4 h-4 mr-1.5"></i>
+                                                {{ $roomData[$roomSlug]['name'] }}
+                                            </span>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
                             <div class="flex items-center gap-3 pt-4 border-t border-stone-200 dark:border-strokedark">
                                 <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium {{ $product->is_active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' }}">
                                     {{ $product->is_active ? 'Active' : 'Inactive' }}
