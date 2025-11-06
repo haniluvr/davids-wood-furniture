@@ -19,6 +19,11 @@ class ProductController extends Controller
             });
         }
 
+        // Filter by room
+        if ($request->has('room') && $request->room !== 'all') {
+            $query->whereJsonContains('room_category', $request->room);
+        }
+
         // Search
         if ($request->has('search') && $request->search) {
             $query->where(function ($q) use ($request) {

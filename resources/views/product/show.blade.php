@@ -133,13 +133,65 @@
     color: white;
 }
 
+.thumbnail-container {
+    position: relative;
+    width: 100%;
+}
+
 .thumbnail-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    display: flex;
     gap: 0.75rem;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.thumbnail-grid::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.thumbnail-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.thumbnail-nav-btn:hover {
+    background: #f9fafb;
+    border-color: #1a1a1a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.thumbnail-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.thumbnail-nav-btn.prev {
+    left: -16px;
+}
+
+.thumbnail-nav-btn.next {
+    right: -16px;
 }
 
 .thumbnail {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
     aspect-ratio: 1;
     border-radius: 8px;
     overflow: hidden;
@@ -623,12 +675,20 @@
 
             <!-- Thumbnails -->
             @if($product->images && is_array($product->images) && count($product->images) > 1)
-                <div class="thumbnail-grid">
-                    @foreach($product->images as $index => $image)
-                        <div class="thumbnail {{ $index === 0 ? 'active' : '' }}" onclick="changeImage('{{ Storage::url($image) }}', this)">
-                            <img src="{{ Storage::url($image) }}" alt="{{ $product->name }} - Image {{ $index + 1 }}">
-                        </div>
-                    @endforeach
+                <div class="thumbnail-container">
+                    <button class="thumbnail-nav-btn prev" id="thumbnailPrevBtn" onclick="scrollThumbnails(-1)" style="display: none;">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    <div class="thumbnail-grid" id="thumbnailGrid">
+                        @foreach($product->images as $index => $image)
+                            <div class="thumbnail {{ $index === 0 ? 'active' : '' }}" onclick="changeImage('{{ Storage::url($image) }}', this)">
+                                <img src="{{ Storage::url($image) }}" alt="{{ $product->name }} - Image {{ $index + 1 }}">
+                            </div>
+                        @endforeach
+                    </div>
+                    <button class="thumbnail-nav-btn next" id="thumbnailNextBtn" onclick="scrollThumbnails(1)" style="display: none;">
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
                 </div>
             @endif
         </div>
@@ -1042,7 +1102,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize related products buttons
     initRelatedProductsButtons();
+    
+    // Initialize thumbnail navigation
+    initThumbnailNavigation();
 });
+
+// Thumbnail Navigation
+function initThumbnailNavigation() {
+    const thumbnailGrid = document.getElementById('thumbnailGrid');
+    const prevBtn = document.getElementById('thumbnailPrevBtn');
+    const nextBtn = document.getElementById('thumbnailNextBtn');
+    
+    if (!thumbnailGrid || !prevBtn || !nextBtn) return;
+    
+    function checkScrollButtons() {
+        const canScrollLeft = thumbnailGrid.scrollLeft > 0;
+        const canScrollRight = thumbnailGrid.scrollLeft < (thumbnailGrid.scrollWidth - thumbnailGrid.clientWidth - 1);
+        
+        prevBtn.style.display = canScrollLeft ? 'flex' : 'none';
+        nextBtn.style.display = canScrollRight ? 'flex' : 'none';
+    }
+    
+    // Check on load and resize
+    checkScrollButtons();
+    window.addEventListener('resize', checkScrollButtons);
+    thumbnailGrid.addEventListener('scroll', checkScrollButtons);
+}
+
+function scrollThumbnails(direction) {
+    const thumbnailGrid = document.getElementById('thumbnailGrid');
+    if (!thumbnailGrid) return;
+    
+    const scrollAmount = 100; // pixels to scroll
+    thumbnailGrid.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
+    });
+}
 
 // Image Gallery
 function changeImage(imageUrl, thumbnail) {

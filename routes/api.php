@@ -19,6 +19,11 @@ Route::get('/products', function (Request $request) {
             });
         }
 
+        // Handle room filtering
+        if ($request->has('room') && $request->get('room') !== 'all') {
+            $query->whereJsonContains('room_category', $request->get('room'));
+        }
+
         // Handle sorting
         switch ($request->get('sort')) {
             case 'price-low':

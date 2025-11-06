@@ -1,4 +1,9 @@
 <!-- Compact Quick View Modal -->
+<style>
+#image-thumbnails::-webkit-scrollbar {
+    display: none;
+}
+</style>
 <div class="modal fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden" id="modalQuickView">
   <div class="modal-content bg-stone-50 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 overflow-hidden transform transition-all duration-300 ease-out">
     
@@ -26,7 +31,7 @@
           <div class="relative group overflow-hidden rounded-xl">
             <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
             
-            <img src="" alt="Product Image" class="w-full h-80 object-cover rounded-xl shadow-lg transition-all duration-300" id="quick-view-image">
+            <img src="" alt="Product Image" class="w-full rounded-xl shadow-lg transition-all duration-300" id="quick-view-image" style="max-height: 80vh; object-fit: contain;">
             
             <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-lg z-20">
               <i data-lucide="zoom-in" class="w-4 h-4 text-gray-600"></i>
@@ -34,8 +39,16 @@
           </div>
 
           <!-- Image Thumbnails -->
-          <div class="flex justify-start space-x-2" id="image-thumbnails">
-            <!-- Thumbnails will be dynamically generated -->
+          <div class="relative" id="thumbnail-container">
+            <button class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-all hidden" id="quickViewThumbnailPrevBtn" onclick="scrollQuickViewThumbnails(-1)">
+              <i data-lucide="chevron-left" class="w-4 h-4 text-gray-600"></i>
+            </button>
+            <div class="flex justify-start space-x-2 overflow-x-hidden scroll-smooth" id="image-thumbnails" style="scrollbar-width: none; -ms-overflow-style: none;">
+              <!-- Thumbnails will be dynamically generated -->
+            </div>
+            <button class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-all hidden" id="quickViewThumbnailNextBtn" onclick="scrollQuickViewThumbnails(1)">
+              <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600"></i>
+            </button>
           </div>
         </div>
 

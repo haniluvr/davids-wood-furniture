@@ -156,23 +156,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // This ensures browsers respect the popup window request (user-initiated clicks are more likely to open as popup)
            @if($order->payment_method !== 'Cash on Delivery' && ($payment_status ?? 'pending') === 'pending' && !($isReturnFromPayment ?? false))
                (function() {
-                   // Store reference for window close detection
-                   window.paymentWindowRef = null;
-                   window.paymentWindowCheckInterval = null;
+                       // Store reference for window close detection
+                       window.paymentWindowRef = null;
+                       window.paymentWindowCheckInterval = null;
             
                    // Listen for window focus/blur events - when user returns to this tab after payment, start checking
-                   let wasBlurred = false;
-                   window.addEventListener('blur', function() {
-                       wasBlurred = true;
-                       console.log('Window blurred (user likely switched tabs/windows)');
-                   });
-                   
-                   window.addEventListener('focus', function() {
-                       if (wasBlurred && window.paymentWindowRef && !window.paymentPollingActive) {
-                           console.log('Window regained focus, checking if payment window is still open');
-                           wasBlurred = false;
-                           try {
-                               if (window.paymentWindowRef.closed) {
+            let wasBlurred = false;
+            window.addEventListener('blur', function() {
+                wasBlurred = true;
+                console.log('Window blurred (user likely switched tabs/windows)');
+            });
+            
+            window.addEventListener('focus', function() {
+                if (wasBlurred && window.paymentWindowRef && !window.paymentPollingActive) {
+                    console.log('Window regained focus, checking if payment window is still open');
+                    wasBlurred = false;
+                    try {
+                        if (window.paymentWindowRef.closed) {
                                    console.log('Payment window is closed (detected on focus), checking payment status immediately');
                                    // Immediately check payment status when window is closed
                                    fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
@@ -202,9 +202,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                    .catch(error => {
                                        console.error('Payment status check failed on focus:', error);
                                        // Start polling as fallback
-                                       startPaymentStatusPolling();
+                            startPaymentStatusPolling();
                                    });
-                               } else {
+                        } else {
                                    // Window might still be open, but check payment status anyway
                                    // (user might have completed payment and window will auto-close)
                                    fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
@@ -228,26 +228,26 @@ document.addEventListener('DOMContentLoaded', function() {
                                            window.location.reload();
                                        } else if (!window.paymentPollingActive) {
                                            // Start polling as backup
-                                           setTimeout(function() {
-                                               if (!window.paymentPollingActive) {
-                                                   console.log('Starting polling after focus (payment window may have closed)');
-                                                   startPaymentStatusPolling();
-                                               }
-                                           }, 2000);
-                                       }
+                            setTimeout(function() {
+                                if (!window.paymentPollingActive) {
+                                    console.log('Starting polling after focus (payment window may have closed)');
+                                    startPaymentStatusPolling();
+                                }
+                            }, 2000);
+                        }
                                    })
                                    .catch(error => {
                                        console.error('Payment status check failed on focus:', error);
                                        if (!window.paymentPollingActive) {
                                            setTimeout(function() {
                                                if (!window.paymentPollingActive) {
-                                                   startPaymentStatusPolling();
-                                               }
+                        startPaymentStatusPolling();
+                    }
                                            }, 2000);
                                        }
                                    });
-                               }
-                           } catch (e) {
+                                                    }
+                                                } catch (e) {
                                // Cross-origin - assume closed and check payment status
                                console.log('Payment window likely closed (cross-origin on focus), checking payment status');
                                fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
@@ -262,116 +262,116 @@ document.addEventListener('DOMContentLoaded', function() {
                                .then(response => {
                                    if (response.ok) {
                                        return response.json();
-                                   }
+                                    }
                                    throw new Error('Network response was not ok');
                                })
                                .then(data => {
                                    if (data && data.payment_status === 'paid') {
                                        console.log('✅ Payment successful detected on focus (cross-origin)! Refreshing page...');
                                        window.location.reload();
-                                   } else {
-                                       startPaymentStatusPolling();
-                                   }
+                        } else {
+                                                    startPaymentStatusPolling();
+                                                }
                                })
                                .catch(error => {
                                    console.error('Payment status check failed on focus (cross-origin):', error);
-                                   startPaymentStatusPolling();
+                                    startPaymentStatusPolling();
                                });
-                           }
+                                }
                        }
                    });
-                   
-                   // Function to start payment status polling (can be called immediately when window closes)
-                   // Make it globally accessible
-                   window.startPaymentStatusPolling = function() {
-                       // Don't start if already polling
-                       if (window.paymentPollingActive) {
-                           console.log('Payment polling already active');
-                           return;
-                       }
-                       window.paymentPollingActive = true;
-                       
-                       console.log('Starting payment status polling immediately');
-                       let pollCount = 0;
-                       const maxPolls = 120; // Poll for 4 minutes max (120 polls at 2 seconds each)
-                       
-                       // Do first check immediately, then continue with interval
-                       function checkPaymentStatus() {
-                           pollCount++;
-                           console.log('Polling payment status, attempt:', pollCount);
-                           
-                           if (pollCount >= maxPolls) {
-                               if (window.paymentPollInterval) {
-                                   clearInterval(window.paymentPollInterval);
-                                   window.paymentPollInterval = null;
-                               }
-                               window.paymentPollingActive = false;
-                               console.log('Max polls reached, stopping');
-                               return;
-                           }
-                           
-                           // Use poll parameter to get JSON status without triggering gateway opening
-                           fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
-                               headers: {
-                                   'X-Requested-With': 'XMLHttpRequest',
-                                   'Accept': 'application/json',
-                               },
-                               method: 'GET',
-                               credentials: 'same-origin',
-                               cache: 'no-cache'
-                           })
-                           .then(response => {
-                               if (response.ok) {
-                                   return response.json();
-                               }
-                               throw new Error('Network response was not ok');
-                           })
-                           .then(data => {
-                               if (!data || !data.payment_status) {
-                                   if (pollCount <= 3) { // Only log first few attempts to avoid spam
-                                       console.log('No payment status in response:', data);
-                                   }
-                                   return;
-                               }
-                               
-                               console.log('Current payment status:', data.payment_status, '- Poll #' + pollCount);
-                               
-                               // Handle JSON response
-                               if (data.payment_status === 'paid') {
-                                   console.log('✅✅✅ PAYMENT SUCCESS DETECTED! Reloading page immediately...');
-                                   if (window.paymentPollInterval) {
-                                       clearInterval(window.paymentPollInterval);
-                                       window.paymentPollInterval = null;
-                                   }
-                                   window.paymentPollingActive = false;
-                                   // Clear any window check intervals
-                                   if (window.paymentWindowCheckInterval) {
-                                       clearInterval(window.paymentWindowCheckInterval);
-                                       window.paymentWindowCheckInterval = null;
-                                   }
-                                   // Reload immediately
-                                   window.location.reload();
-                               } else if (data.payment_status === 'failed') {
-                                   console.log('❌ Payment status changed to failed, reloading page');
-                                   if (window.paymentPollInterval) {
-                                       clearInterval(window.paymentPollInterval);
-                                       window.paymentPollInterval = null;
-                                   }
-                                   window.paymentPollingActive = false;
-                                   window.location.reload();
-                               }
-                           })
-                           .catch(error => {
-                               console.error('Payment status check failed:', error);
-                           });
-                       }
-                       
-                       // Check immediately on first call (no delay)
-                       checkPaymentStatus();
-                       
-                       // Then continue checking every 1 second for faster detection
-                       window.paymentPollInterval = setInterval(checkPaymentStatus, 1000);
-                   };
+            
+            // Function to start payment status polling (can be called immediately when window closes)
+            // Make it globally accessible
+            window.startPaymentStatusPolling = function() {
+                // Don't start if already polling
+                if (window.paymentPollingActive) {
+                    console.log('Payment polling already active');
+                    return;
+                }
+                window.paymentPollingActive = true;
+                
+                console.log('Starting payment status polling immediately');
+                let pollCount = 0;
+                const maxPolls = 120; // Poll for 4 minutes max (120 polls at 2 seconds each)
+                
+                // Do first check immediately, then continue with interval
+                function checkPaymentStatus() {
+                    pollCount++;
+                    console.log('Polling payment status, attempt:', pollCount);
+                    
+                    if (pollCount >= maxPolls) {
+                        if (window.paymentPollInterval) {
+                            clearInterval(window.paymentPollInterval);
+                            window.paymentPollInterval = null;
+                        }
+                        window.paymentPollingActive = false;
+                        console.log('Max polls reached, stopping');
+                        return;
+                    }
+                    
+                    // Use poll parameter to get JSON status without triggering gateway opening
+                    fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        cache: 'no-cache'
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                        throw new Error('Network response was not ok');
+                    })
+                    .then(data => {
+                        if (!data || !data.payment_status) {
+                            if (pollCount <= 3) { // Only log first few attempts to avoid spam
+                                console.log('No payment status in response:', data);
+                            }
+                            return;
+                        }
+                        
+                        console.log('Current payment status:', data.payment_status, '- Poll #' + pollCount);
+                        
+                        // Handle JSON response
+                        if (data.payment_status === 'paid') {
+                            console.log('✅✅✅ PAYMENT SUCCESS DETECTED! Reloading page immediately...');
+                            if (window.paymentPollInterval) {
+                                clearInterval(window.paymentPollInterval);
+                                window.paymentPollInterval = null;
+                            }
+                            window.paymentPollingActive = false;
+                            // Clear any window check intervals
+                            if (window.paymentWindowCheckInterval) {
+                                clearInterval(window.paymentWindowCheckInterval);
+                                window.paymentWindowCheckInterval = null;
+                            }
+                            // Reload immediately
+                            window.location.reload();
+                        } else if (data.payment_status === 'failed') {
+                            console.log('❌ Payment status changed to failed, reloading page');
+                            if (window.paymentPollInterval) {
+                                clearInterval(window.paymentPollInterval);
+                                window.paymentPollInterval = null;
+                            }
+                            window.paymentPollingActive = false;
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Payment status check failed:', error);
+                    });
+                }
+                
+                // Check immediately on first call (no delay)
+                checkPaymentStatus();
+                
+                // Then continue checking every 1 second for faster detection
+                window.paymentPollInterval = setInterval(checkPaymentStatus, 1000);
+            };
                })();
            @endif
     
@@ -557,9 +557,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             .catch(error => {
                                 console.error('Payment status check failed on window close:', error);
                                 // Start polling as fallback
-                                if (window.startPaymentStatusPolling) {
-                                    window.startPaymentStatusPolling();
-                                }
+                            if (window.startPaymentStatusPolling) {
+                                window.startPaymentStatusPolling();
+                            }
                             });
                         }
                     } catch (e) {

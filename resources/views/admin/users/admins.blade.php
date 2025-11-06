@@ -176,10 +176,20 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            {{ $admin->role === 'super_admin' ? 'bg-purple-100 text-purple-800' : 
-                                               ($admin->role === 'admin' ? 'bg-blue-100 text-blue-800' : 
-                                               ($admin->role === 'manager' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800')) }}">
+                                        @php
+                                            $roleClasses = match($admin->role) {
+                                                'super_admin' => 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+                                                'admin' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+                                                'sales_support_manager' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+                                                'inventory_fulfillment_manager' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
+                                                'product_content_manager' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+                                                'finance_reporting_analyst' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+                                                'staff' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                                'viewer' => 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+                                                default => 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+                                            };
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $roleClasses }}">
                                             {{ ucfirst(str_replace('_', ' ', $admin->role)) }}
                                         </span>
                                     </td>

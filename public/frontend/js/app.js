@@ -177,16 +177,18 @@ async function initProductsSection() {
     const pageType = grid.getAttribute('data-page');
     const perPage = pageType === 'home' ? 8 : 28; // Show 8 on home, 28 on products page
     
-    // Get page/filter/sort from URL parameters (for server-side navigation persistence)
+    // Get page/filter/sort/room from URL parameters (for server-side navigation persistence)
     const urlParams = new URLSearchParams(window.location.search);
     const currentPage = parseInt(urlParams.get('page')) || 1;
     const initialCategory = urlParams.get('category') || 'all';
     const initialSort = urlParams.get('sort') || 'popularity';
+    const initialRoom = urlParams.get('room') || 'all';
     
-    // Store current pagination/filter/sort state
+    // Store current pagination/filter/sort/room state
     window.currentProductsPage = currentPage;
     window.currentProductsFilter = initialCategory;
     window.currentProductsSort = initialSort;
+    window.currentProductsRoom = initialRoom;
     window.productsPerPage = perPage;
     window.isProductsPage = pageType === 'products';
 
@@ -197,8 +199,14 @@ async function initProductsSection() {
             return;
         }
 
-        // Load products from API with current page and persisted filter/sort
-        const initialFilterParams = initialCategory === 'all' ? {} : { category: initialCategory };
+        // Load products from API with current page and persisted filter/sort/room
+        const initialFilterParams = {};
+        if (initialCategory !== 'all') {
+            initialFilterParams.category = initialCategory;
+        }
+        if (initialRoom !== 'all') {
+            initialFilterParams.room = initialRoom;
+        }
         const response = await window.api.getProducts({ 
             ...initialFilterParams,
             sort: initialSort,
@@ -220,9 +228,10 @@ async function initProductsSection() {
             renderPagination(response.meta);
         }
 
-        // Sync UI with URL-derived filter/sort
+        // Sync UI with URL-derived filter/sort/room
         const filterButtons = document.querySelectorAll('.filter-btn');
         const sortSelect = document.getElementById('sort-select');
+        const roomSelect = document.getElementById('room-select');
         
         // Set active filter button based on URL
         if (filterButtons && filterButtons.length) {
@@ -248,6 +257,11 @@ async function initProductsSection() {
             sortSelect.value = initialSort;
         }
         
+        // Set room dropdown based on URL
+        if (roomSelect) {
+            roomSelect.value = initialRoom;
+        }
+        
         filterButtons.forEach(btn => {
             btn.addEventListener('click', async () => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -258,10 +272,17 @@ async function initProductsSection() {
                 window.currentProductsPage = 1; // Reset to page 1 on filter change
                 
                 try {
-                    // Get current sort setting
+                    // Get current sort and room settings
                     const currentSort = sortSelect ? sortSelect.value : 'popularity';
+                    const currentRoom = roomSelect ? roomSelect.value : 'all';
                     
-                    const filterParams = filter === 'all' ? {} : { category: filter };
+                    const filterParams = {};
+                    if (filter !== 'all') {
+                        filterParams.category = filter;
+                    }
+                    if (currentRoom !== 'all') {
+                        filterParams.room = currentRoom;
+                    }
                     const response = await window.api.getProducts({ 
                         ...filterParams, 
                         sort: currentSort, 
@@ -283,6 +304,11 @@ async function initProductsSection() {
                             params.set('category', filter);
                         } else {
                             params.delete('category');
+                        }
+                        if (currentRoom && currentRoom !== 'all') {
+                            params.set('room', currentRoom);
+                        } else {
+                            params.delete('room');
                         }
                         if (currentSort && currentSort !== 'popularity') {
                             params.set('sort', currentSort);
@@ -316,7 +342,16 @@ async function initProductsSection() {
                 const currentFilter = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
             
                 try {
-                    const filterParams = currentFilter === 'all' ? {} : { category: currentFilter };
+                    // Get current room setting
+                    const currentRoom = roomSelect ? roomSelect.value : 'all';
+                    
+                    const filterParams = {};
+                    if (currentFilter !== 'all') {
+                        filterParams.category = currentFilter;
+                    }
+                    if (currentRoom !== 'all') {
+                        filterParams.room = currentRoom;
+                    }
                     const response = await window.api.getProducts({ 
                         ...filterParams, 
                         sort, 
@@ -339,6 +374,11 @@ async function initProductsSection() {
                         } else {
                             params.delete('category');
                         }
+                        if (currentRoom && currentRoom !== 'all') {
+                            params.set('room', currentRoom);
+                        } else {
+                            params.delete('room');
+                        }
                         if (sort && sort !== 'popularity') {
                             params.set('sort', sort);
                         } else {
@@ -351,6 +391,69 @@ async function initProductsSection() {
                 } catch (error) {
                     // Show error message instead of fallback
                     showNotification('Unable to sort products. Please try again.', 'error');
+                }
+            });
+        }
+
+        // Room dropdown
+        if (roomSelect) {
+            roomSelect.addEventListener('change', async () => {
+                const room = roomSelect.value;
+                window.currentProductsRoom = room;
+                window.currentProductsPage = 1; // Reset to page 1 on room change
+            
+                // Get current active filter and sort
+                const activeFilterBtn = document.querySelector('.filter-btn.active');
+                const currentFilter = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
+                const currentSort = sortSelect ? sortSelect.value : 'popularity';
+            
+                try {
+                    const filterParams = {};
+                    if (currentFilter !== 'all') {
+                        filterParams.category = currentFilter;
+                    }
+                    if (room !== 'all') {
+                        filterParams.room = room;
+                    }
+                    const response = await window.api.getProducts({ 
+                        ...filterParams, 
+                        sort: currentSort, 
+                        per_page: window.productsPerPage,
+                        page: 1
+                    });
+                    const filteredProducts = response.data || [];
+                    renderProductsWithFilter(filteredProducts);
+                    
+                    // Update pagination
+                    if (window.isProductsPage && response.meta) {
+                        renderPagination(response.meta);
+                    }
+
+                    // Update URL to persist state
+                    if (window.isProductsPage) {
+                        const params = new URLSearchParams(window.location.search);
+                        if (currentFilter && currentFilter !== 'all') {
+                            params.set('category', currentFilter);
+                        } else {
+                            params.delete('category');
+                        }
+                        if (room && room !== 'all') {
+                            params.set('room', room);
+                        } else {
+                            params.delete('room');
+                        }
+                        if (currentSort && currentSort !== 'popularity') {
+                            params.set('sort', currentSort);
+                        } else {
+                            params.delete('sort');
+                        }
+                        params.set('page', '1');
+                        const newUrl = window.location.pathname + '?' + params.toString();
+                        window.history.replaceState({}, '', newUrl);
+                    }
+                } catch (error) {
+                    // Show error message
+                    showNotification('Unable to filter by room. Please try again.', 'error');
                 }
             });
         }
@@ -1304,7 +1407,7 @@ function createThumbnailIndicators() {
     // Create thumbnail images
     productImages.forEach((imageSrc, index) => {
         const thumbnail = document.createElement('div');
-        thumbnail.className = `w-16 h-16 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 border-2 ${index === 0 ? 'border-amber-400' : 'border-gray-200'}`;
+        thumbnail.className = `flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 border-2 ${index === 0 ? 'border-amber-400' : 'border-gray-200'}`;
         thumbnail.setAttribute('data-slide', index);
         
         const img = document.createElement('img');
@@ -1321,6 +1424,43 @@ function createThumbnailIndicators() {
             updateMainImage();
             updateThumbnailSelection();
         });
+    });
+    
+    // Initialize thumbnail navigation after creating thumbnails
+    initQuickViewThumbnailNavigation();
+}
+
+// Initialize Quick View Thumbnail Navigation
+function initQuickViewThumbnailNavigation() {
+    const thumbnailsContainer = document.getElementById('image-thumbnails');
+    const prevBtn = document.getElementById('quickViewThumbnailPrevBtn');
+    const nextBtn = document.getElementById('quickViewThumbnailNextBtn');
+    
+    if (!thumbnailsContainer || !prevBtn || !nextBtn) return;
+    
+    function checkScrollButtons() {
+        const canScrollLeft = thumbnailsContainer.scrollLeft > 0;
+        const canScrollRight = thumbnailsContainer.scrollLeft < (thumbnailsContainer.scrollWidth - thumbnailsContainer.clientWidth - 1);
+        
+        prevBtn.classList.toggle('hidden', !canScrollLeft);
+        nextBtn.classList.toggle('hidden', !canScrollRight);
+    }
+    
+    // Check on load and resize
+    setTimeout(checkScrollButtons, 100); // Small delay to ensure thumbnails are rendered
+    window.addEventListener('resize', checkScrollButtons);
+    thumbnailsContainer.addEventListener('scroll', checkScrollButtons);
+}
+
+// Scroll Quick View Thumbnails
+function scrollQuickViewThumbnails(direction) {
+    const thumbnailsContainer = document.getElementById('image-thumbnails');
+    if (!thumbnailsContainer) return;
+    
+    const scrollAmount = 100; // pixels to scroll
+    thumbnailsContainer.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
     });
 }
 

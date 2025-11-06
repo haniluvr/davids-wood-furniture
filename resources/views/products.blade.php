@@ -27,13 +27,31 @@
     margin: 0.7rem 0;
 }
 
-.sort-group select {
-    background-color: rgba(255, 255, 255, 0.5);
+.sort-group,
+.room-group {
+    font-size: 0.875rem; /* 14px - match base text size */
 }
 
-.sticky-filter-bar.is-stuck .sort-group select {
+.sort-group select,
+.room-group select {
+    background-color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem; /* 14px */
+    color: #374151; /* gray-700 - match text color */
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.sticky-filter-bar.is-stuck .sort-group select,
+.sticky-filter-bar.is-stuck .room-group select {
     background-color: white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sort-group span,
+.room-group span {
+    font-size: 0.875rem; /* 14px */
+    color: #6b7280; /* gray-500 */
+    font-weight: 400;
 }
 
 @media (max-width: 1200px) {
@@ -129,15 +147,30 @@
                 <button class="filter-btn" data-filter="shelves">Shelves</button>
                 <button class="filter-btn" data-filter="sofas">Sofas</button>
             </div>
-            <div class="sort-group flex items-center">
-                <i data-lucide="list-filter" class="lucide-small mr-2"></i>
-                <span class="mr-2 text-gray-500">Sort</span>
-                <select class="rounded-lg font-medium border border-gray-300 px-3 py-2 bg-white" id="sort-select">
-                    <option value="popularity">Popularity</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="newest">Newest</option>
-                </select>
+            <div class="flex items-center gap-4">
+                <div class="sort-group flex items-center">
+                    <i data-lucide="list-filter" class="lucide-small mr-2"></i>
+                    <span class="mr-2 text-gray-500">Sort</span>
+                    <select class="rounded-lg font-medium border border-gray-300 px-3 py-2 bg-white" id="sort-select">
+                        <option value="popularity">Popularity</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="newest">Newest</option>
+                    </select>
+                </div>
+                <div class="room-group flex items-center">
+                    <i data-lucide="home" class="lucide-small mr-2"></i>
+                    <span class="mr-2 text-gray-500">Room</span>
+                    <select class="rounded-lg font-medium border border-gray-300 px-3 py-2 bg-white" id="room-select">
+                        <option value="all">All Rooms</option>
+                        <option value="bedroom">Bedroom</option>
+                        <option value="living-room">Living Room</option>
+                        <option value="dining-room">Dining Room</option>
+                        <option value="bathroom">Bathroom</option>
+                        <option value="office">Office</option>
+                        <option value="garden-and-balcony">Garden & Balcony</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>

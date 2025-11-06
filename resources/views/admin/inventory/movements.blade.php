@@ -181,7 +181,7 @@
                                     @elseif($movement->type === 'out')
                                         Stock Out
                                     @else
-                                        {{ ucfirst($movement->type) }}
+                                    {{ ucfirst($movement->type) }}
                                     @endif
                                 </span>
                             </td>
