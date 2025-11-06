@@ -688,11 +688,11 @@
                         <i data-lucide="chevron-left" class="w-3 h-3"></i>
                     </button>
                     <div class="thumbnail-grid" id="thumbnailGrid">
-                        @foreach($product->images as $index => $image)
-                            <div class="thumbnail {{ $index === 0 ? 'active' : '' }}" onclick="changeImage('{{ Storage::url($image) }}', this)">
-                                <img src="{{ Storage::url($image) }}" alt="{{ $product->name }} - Image {{ $index + 1 }}">
-                            </div>
-                        @endforeach
+                    @foreach($product->images as $index => $image)
+                        <div class="thumbnail {{ $index === 0 ? 'active' : '' }}" onclick="changeImage('{{ Storage::url($image) }}', this)">
+                            <img src="{{ Storage::url($image) }}" alt="{{ $product->name }} - Image {{ $index + 1 }}">
+                        </div>
+                    @endforeach
                     </div>
                     <button class="thumbnail-nav-btn next" id="thumbnailNextBtn" onclick="scrollThumbnails(1)" style="display: none;">
                         <i data-lucide="chevron-right" class="w-3 h-3"></i>

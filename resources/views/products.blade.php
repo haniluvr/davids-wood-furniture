@@ -148,15 +148,15 @@
                 <button class="filter-btn" data-filter="sofas">Sofas</button>
             </div>
             <div class="flex items-center gap-4">
-                <div class="sort-group flex items-center">
-                    <i data-lucide="list-filter" class="lucide-small mr-2"></i>
-                    <span class="mr-2 text-gray-500">Sort</span>
-                    <select class="rounded-lg font-medium border border-gray-300 px-3 py-2 bg-white" id="sort-select">
-                        <option value="popularity">Popularity</option>
-                        <option value="price-low">Price: Low to High</option>
-                        <option value="price-high">Price: High to Low</option>
-                        <option value="newest">Newest</option>
-                    </select>
+            <div class="sort-group flex items-center">
+                <i data-lucide="list-filter" class="lucide-small mr-2"></i>
+                <span class="mr-2 text-gray-500">Sort</span>
+                <select class="rounded-lg font-medium border border-gray-300 px-3 py-2 bg-white" id="sort-select">
+                    <option value="popularity">Popularity</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="newest">Newest</option>
+                </select>
                 </div>
                 <div class="room-group flex items-center">
                     <i data-lucide="home" class="lucide-small mr-2"></i>
