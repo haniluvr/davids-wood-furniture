@@ -218,8 +218,7 @@ class CheckoutController extends Controller
                 'last_name' => $user->last_name,
                 'email' => $user->email,
                 'phone' => $user->phone,
-                'address_line_1' => $user->street,
-                'address_line_2' => $user->address_line_2,
+                'address_line_1' => $user->street, // Philippines address: street, barangay, city, province, region, zip_code
                 'city' => $user->city,
                 'province' => $user->province,
                 'region' => $user->region,
@@ -240,8 +239,9 @@ class CheckoutController extends Controller
                 'zip_code' => 'required|string|max:10',
             ]);
 
+            // Philippines address structure: street (address_line_1), barangay, city, province, region, zip_code
             $shippingData = $request->only([
-                'address_line_1', 'address_line_2', 'city', 'province',
+                'address_line_1', 'city', 'province',
                 'region', 'barangay', 'zip_code',
             ]);
             // Get user info from authenticated user for shipping data
@@ -254,12 +254,12 @@ class CheckoutController extends Controller
             $shippingData['shipping_method_name'] = $shippingMethod->name;
 
             // Save as default address if requested
+            // Philippines address structure: street, barangay, city, province (n/a if NCR), region, zip_code
             if ($saveAsDefault) {
                 $user->update([
                     'street' => $shippingData['address_line_1'],
-                    'address_line_2' => $shippingData['address_line_2'] ?? null,
                     'city' => $shippingData['city'],
-                    'province' => $shippingData['province'] ?? null,
+                    'province' => $shippingData['province'] ?? null, // null for NCR region
                     'region' => $shippingData['region'],
                     'barangay' => $shippingData['barangay'],
                     'zip_code' => $shippingData['zip_code'],

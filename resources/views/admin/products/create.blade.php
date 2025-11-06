@@ -286,6 +286,74 @@
             </div>
         </div>
 
+        <!-- Product Details -->
+        <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-hidden">
+            <div class="px-8 py-6 border-b border-stone-200 dark:border-strokedark bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-gray-800 dark:to-gray-700">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-500 to-cyan-600 rounded-xl">
+                        <i data-lucide="ruler" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-stone-900 dark:text-white">Product Details</h3>
+                </div>
+                <p class="mt-1 text-sm text-stone-600 dark:text-gray-400">Specify physical characteristics of the product</p>
+            </div>
+            <div class="p-8 space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <label for="weight" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            Weight (kg)
+                        </label>
+                        <div class="relative">
+                            <input type="number" 
+                                   name="weight" 
+                                   id="weight"
+                                   step="0.01"
+                                   min="0"
+                                   value="{{ old('weight') }}"
+                                   placeholder="0.00"
+                                   class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400 @error('weight') border-red-300 @enderror">
+                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                <span class="text-stone-500 text-sm">kg</span>
+                            </div>
+                        </div>
+                        @error('weight')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="dimensions" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            Dimensions
+                        </label>
+                        <input type="text" 
+                               name="dimensions" 
+                               id="dimensions"
+                               value="{{ old('dimensions') }}"
+                               placeholder="e.g., 100cm x 50cm x 30cm"
+                               class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400 @error('dimensions') border-red-300 @enderror">
+                        @error('dimensions')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="material" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                            Material
+                        </label>
+                        <input type="text" 
+                               name="material" 
+                               id="material"
+                               value="{{ old('material') }}"
+                               placeholder="e.g., Oak Wood, Pine, MDF"
+                               class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400 @error('material') border-red-300 @enderror">
+                        @error('material')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Product Images -->
         <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-hidden">
             <div class="px-8 py-6 border-b border-stone-200 dark:border-strokedark bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700">

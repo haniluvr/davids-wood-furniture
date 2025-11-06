@@ -431,6 +431,15 @@ class AuthController extends Controller
             $intendedUrl = $request->input('intended_url');
 
             if ($intendedUrl) {
+                // Don't store API endpoints as intended URLs to prevent redirecting to JSON responses
+                $path = parse_url($intendedUrl, PHP_URL_PATH) ?? '';
+                if (str_starts_with($path, '/api')) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'API endpoints cannot be stored as intended URLs',
+                    ], 400);
+                }
+
                 session()->put('url.intended', $intendedUrl);
 
                 return response()->json([
@@ -498,6 +507,12 @@ class AuthController extends Controller
         // Get intended redirect URL
         $intendedUrl = session('pending_intended_url', route('home'));
         session()->forget('pending_intended_url');
+
+        // Validate that the intended URL is not an API endpoint
+        // If it's an API route, fallback to home to prevent redirecting to JSON responses
+        if (str_starts_with(parse_url($intendedUrl, PHP_URL_PATH) ?? '', '/api')) {
+            $intendedUrl = route('home');
+        }
 
         return redirect($intendedUrl)
             ->with('success', 'Email verified successfully! Welcome to David\'s Wood Furniture.');
