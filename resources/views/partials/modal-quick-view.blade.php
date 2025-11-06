@@ -39,15 +39,15 @@
           </div>
 
           <!-- Image Thumbnails -->
-          <div class="relative" id="thumbnail-container">
-            <button class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-all hidden" id="quickViewThumbnailPrevBtn" onclick="scrollQuickViewThumbnails(-1)">
-              <i data-lucide="chevron-left" class="w-4 h-4 text-gray-600"></i>
+          <div class="relative flex items-center" id="thumbnail-container">
+            <button class="absolute left-0 -translate-x-4 z-10 w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-all hidden" id="quickViewThumbnailPrevBtn" onclick="scrollQuickViewThumbnails(-1)" style="top: 50%; transform: translate(-100%, -50%);">
+              <i data-lucide="chevron-left" class="w-3 h-3 text-gray-600"></i>
             </button>
-            <div class="flex justify-start space-x-2 overflow-x-hidden scroll-smooth" id="image-thumbnails" style="scrollbar-width: none; -ms-overflow-style: none;">
+            <div class="flex justify-start space-x-2 overflow-x-hidden scroll-smooth w-full" id="image-thumbnails" style="scrollbar-width: none; -ms-overflow-style: none;">
               <!-- Thumbnails will be dynamically generated -->
             </div>
-            <button class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-all hidden" id="quickViewThumbnailNextBtn" onclick="scrollQuickViewThumbnails(1)">
-              <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600"></i>
+            <button class="absolute right-0 translate-x-4 z-10 w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-all hidden" id="quickViewThumbnailNextBtn" onclick="scrollQuickViewThumbnails(1)" style="top: 50%; transform: translate(100%, -50%);">
+              <i data-lucide="chevron-right" class="w-3 h-3 text-gray-600"></i>
             </button>
           </div>
         </div>

@@ -54,6 +54,10 @@
     margin-bottom: 4rem;
 }
 
+.product-grid-layout > * {
+    min-width: 0; /* Prevent grid items from overflowing */
+}
+
 @media (max-width: 968px) {
     .product-grid-layout {
         grid-template-columns: 1fr;
@@ -136,6 +140,8 @@
 .thumbnail-container {
     position: relative;
     width: 100%;
+    display: flex;
+    align-items: center;
 }
 
 .thumbnail-grid {
@@ -145,6 +151,7 @@
     scroll-behavior: smooth;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
+    width: 100%;
 }
 
 .thumbnail-grid::-webkit-scrollbar {
@@ -155,8 +162,8 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     background: white;
     border: 1px solid #e5e5e5;
     border-radius: 50%;
@@ -167,6 +174,7 @@
     z-index: 10;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.2s;
+    flex-shrink: 0;
 }
 
 .thumbnail-nav-btn:hover {
@@ -181,11 +189,11 @@
 }
 
 .thumbnail-nav-btn.prev {
-    left: -16px;
+    left: -14px;
 }
 
 .thumbnail-nav-btn.next {
-    right: -16px;
+    right: -14px;
 }
 
 .thumbnail {
@@ -677,7 +685,7 @@
             @if($product->images && is_array($product->images) && count($product->images) > 1)
                 <div class="thumbnail-container">
                     <button class="thumbnail-nav-btn prev" id="thumbnailPrevBtn" onclick="scrollThumbnails(-1)" style="display: none;">
-                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        <i data-lucide="chevron-left" class="w-3 h-3"></i>
                     </button>
                     <div class="thumbnail-grid" id="thumbnailGrid">
                         @foreach($product->images as $index => $image)
@@ -687,7 +695,7 @@
                         @endforeach
                     </div>
                     <button class="thumbnail-nav-btn next" id="thumbnailNextBtn" onclick="scrollThumbnails(1)" style="display: none;">
-                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        <i data-lucide="chevron-right" class="w-3 h-3"></i>
                     </button>
                 </div>
             @endif
