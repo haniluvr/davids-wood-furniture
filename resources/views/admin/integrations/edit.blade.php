@@ -61,35 +61,19 @@
                 </label>
               @endforeach
             </div>
-            <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
-              <strong>Important:</strong> Payment methods must be:
-              <br>1. ✅ <strong>Activated</strong> in your <a href="https://dashboard.xendit.co/configuration/payment_channels" target="_blank" class="text-primary hover:underline">Xendit Dashboard Payment Channels</a> (you've already done this)
-              <br>2. ⚠️ <strong>Note:</strong> The Invoice API may only show channels that are activated in Payment Channels, regardless of the `payment_methods` parameter sent via API
-              <br><strong>Current setting value:</strong> <code class="text-xs">{{ $config['payment_methods'] ?? 'CREDIT_CARD,DEBIT_CARD,EWALLET' }}</code>
-            </p>
-            <div class="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <p class="text-xs text-yellow-800 dark:text-yellow-200">
-                <strong>🔍 Debugging Info:</strong> If payment methods still don't appear:
-                <br>• Check <code>storage/logs/laravel.log</code> for "Xendit invoice created successfully" entries
-                <br>• Look for <code>available_ewallets</code>, <code>available_banks</code> arrays in the response
-                <br>• If these arrays are empty, Xendit Invoice API may only show channels configured at account level
-                <br>• Try contacting Xendit support to verify your account's invoice configuration
-              </p>
-            </div>
           </div>
-          <div class="md:col-span-2 flex items-center gap-3">
+        </div>
+        <div class="mt-6 flex justify-between items-center gap-3">
+          <div class="flex items-center gap-3">
             <input type="checkbox" id="enabled" name="enabled" value="1" {{ old('enabled', $config['enabled']) ? 'checked' : '' }} class="rounded" />
             <label for="enabled" class="text-sm text-gray-700 dark:text-gray-300">Enable Xendit</label>
           </div>
-        </div>
-        <div class="mt-6 flex justify-end gap-3">
-          <button type="button" id="testXendit" class="px-4 py-2 rounded-lg border border-stroke dark:border-strokedark text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-graydark">Test Connection</button>
-          <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90">Save</button>
+          <div class="flex gap-3">
+            <button type="button" id="testXendit" class="px-4 py-2 rounded-lg border border-stroke dark:border-strokedark text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-graydark">Test Connection</button>
+            <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90">Save</button>
+          </div>
         </div>
       </form>
-      <div class="mt-6 text-sm text-gray-500 dark:text-gray-400">
-        <p>Note: API calls are not configured yet. This page stores credentials in the `settings` table and reads defaults from `config/services.php`.</p>
-      </div>
     </div>
   @endif
   @push('scripts')
