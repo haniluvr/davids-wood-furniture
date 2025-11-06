@@ -223,6 +223,49 @@ class MessageController extends Controller
     }
 
     /**
+     * Send a reply email to the customer.
+     */
+    public function reply(Request $request, ContactMessage $message)
+    {
+        $validated = $request->validate([
+            'to' => 'required|email',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string|max:5000',
+        ]);
+
+        try {
+            // Send the reply email
+            \Illuminate\Support\Facades\Mail::to($validated['to'])->send(
+                new \App\Mail\MessageReplyMail(
+                    $validated['subject'],
+                    $validated['message'],
+                    $message,
+                    auth('admin')->user()
+                )
+            );
+
+            // Optionally mark as responded (can be done manually by admin)
+            // The frontend will ask if they want to mark as responded
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reply sent successfully',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send reply email', [
+                'error' => $e->getMessage(),
+                'message_id' => $message->id,
+                'to' => $validated['to'],
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send reply: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Get messages by status for tabs.
      */
     public function getByStatus($status)

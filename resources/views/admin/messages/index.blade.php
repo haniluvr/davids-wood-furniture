@@ -191,20 +191,35 @@
                                         <div class="text-sm text-stone-500">{{ $message->created_at->format('h:i A') }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div class="flex items-center space-x-2" x-data="{ dropdownOpen: false }">
-                                            <button @click="dropdownOpen = !dropdownOpen" class="text-stone-600 hover:text-stone-900 transition-colors duration-150">
+                                        <div class="relative flex items-center justify-end" x-data="{ dropdownOpen: false }">
+                                            <button @click="dropdownOpen = !dropdownOpen" class="text-stone-600 hover:text-stone-900 transition-colors duration-150 p-1">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
                                                 </svg>
                                             </button>
                                             
-                                            <div x-show="dropdownOpen" @click.outside="dropdownOpen = false" class="absolute right-0 top-full z-40 w-48 space-y-1 rounded-lg border border-stone-200 bg-white p-1.5 shadow-lg" x-cloak>
+                                            <div x-show="dropdownOpen" 
+                                                 @click.outside="dropdownOpen = false" 
+                                                 x-transition:enter="transition ease-out duration-100"
+                                                 x-transition:enter-start="opacity-0 scale-95"
+                                                 x-transition:enter-end="opacity-100 scale-100"
+                                                 x-transition:leave="transition ease-in duration-75"
+                                                 x-transition:leave-start="opacity-100 scale-100"
+                                                 x-transition:leave-end="opacity-0 scale-95"
+                                                 class="absolute right-0 top-full mt-1 z-50 w-48 space-y-1 rounded-lg border border-stone-200 bg-white p-1.5 shadow-xl" 
+                                                 x-cloak>
                                                 <a href="{{ admin_route('messages.show', $message) }}" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-50">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                     </svg>
                                                     View Message
+                                                </a>
+                                                <a href="{{ admin_route('messages.show', $message) }}#reply" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-blue-600 hover:bg-blue-50">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    Reply
                                                 </a>
                                                 @if($message->status !== 'responded')
                                                 <button onclick="markAsResponded({{ $message->id }})" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-green-600 hover:bg-green-50">

@@ -346,6 +346,7 @@ $adminRoutes = function () {
         Route::patch('messages/{message}', [App\Http\Controllers\Admin\MessageController::class, 'update'])->name('messages.update');
         Route::delete('messages/{message}', [App\Http\Controllers\Admin\MessageController::class, 'destroy'])->name('messages.destroy');
         Route::post('messages/{message}/respond', [App\Http\Controllers\Admin\MessageController::class, 'markAsResponded'])->name('messages.respond');
+        Route::post('messages/{message}/reply', [App\Http\Controllers\Admin\MessageController::class, 'reply'])->name('messages.reply');
         Route::post('messages/{message}/assign', [App\Http\Controllers\Admin\MessageController::class, 'assign'])->name('messages.assign');
         Route::post('messages/{message}/tags', [App\Http\Controllers\Admin\MessageController::class, 'addTags'])->name('messages.add-tags');
         Route::post('messages/{message}/remove-tag', [App\Http\Controllers\Admin\MessageController::class, 'removeTag'])->name('messages.remove-tag');

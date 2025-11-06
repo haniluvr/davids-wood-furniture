@@ -99,6 +99,34 @@
                     </button>
                 </form>
             </div>
+
+            <!-- Reply Section -->
+            <div class="mb-6" id="reply">
+                <h4 class="text-lg font-semibold text-stone-900 dark:text-white mb-3">Reply to Customer</h4>
+                <form id="reply-form" class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">To</label>
+                        <input type="email" id="reply-to" value="{{ $message->email }}" readonly class="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-2 text-sm text-stone-600 dark:border-strokedark dark:bg-stone-800 dark:text-stone-400">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">Subject</label>
+                        <input type="text" id="reply-subject" value="Re: {{ Str::limit($message->message, 50) }}" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">Message</label>
+                        <textarea id="reply-message" rows="6" placeholder="Type your reply here..." class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400"></textarea>
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-primary/90">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                            Send Reply
+                        </button>
+                        <button type="button" onclick="clearReplyForm()" class="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                            Clear
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -225,6 +253,20 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Scroll to reply section if hash is present
+    if (window.location.hash === '#reply') {
+        setTimeout(function() {
+            const replySection = document.getElementById('reply');
+            if (replySection) {
+                replySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Focus on the message textarea
+                setTimeout(function() {
+                    document.getElementById('reply-message').focus();
+                }, 500);
+            }
+        }, 100);
+    }
+
     // Add tag form
     document.getElementById('add-tag-form').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -240,6 +282,12 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const notes = document.getElementById('internal-notes').value;
         updateInternalNotes(notes);
+    });
+
+    // Reply form
+    document.getElementById('reply-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendReply();
     });
 });
 
@@ -378,6 +426,66 @@ function deleteMessage() {
             alert('An error occurred while processing the request.');
         });
     }
+}
+
+function sendReply() {
+    const to = document.getElementById('reply-to').value;
+    const subject = document.getElementById('reply-subject').value;
+    const message = document.getElementById('reply-message').value;
+
+    if (!subject.trim() || !message.trim()) {
+        alert('Please fill in both subject and message fields.');
+        return;
+    }
+
+    if (!confirm('Are you sure you want to send this reply to ' + to + '?')) {
+        return;
+    }
+
+    // Disable submit button
+    const submitBtn = document.querySelector('#reply-form button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Sending...';
+
+    fetch(`/admin/messages/{{ $message->id }}/reply`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            to: to,
+            subject: subject,
+            message: message
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Reply sent successfully!');
+            clearReplyForm();
+            // Optionally mark as responded
+            if (confirm('Would you like to mark this message as responded?')) {
+                markAsResponded();
+            }
+        } else {
+            alert('Error: ' + (data.message || 'Failed to send reply'));
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while sending the reply.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+}
+
+function clearReplyForm() {
+    document.getElementById('reply-subject').value = 'Re: {{ Str::limit($message->message, 50) }}';
+    document.getElementById('reply-message').value = '';
 }
 </script>
 @endpush

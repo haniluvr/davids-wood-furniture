@@ -45,13 +45,39 @@ class ProductController extends Controller
                 break;
             case 'popularity':
             default:
-                // Order by average rating (5 stars first, then 4, 3, 2, 1, 0)
+                // Calculate popularity based on: most bought + most wishlisted + most cart items
+                // Then order by rating (5 stars to least), then by popularity score
+                //
+                // Popularity score = (total units bought from paid orders) + (wishlist count) + (cart items count)
+                // Ordering: First by average rating (5 stars first), then by popularity score (highest first)
                 $query->addSelect([
                     'avg_rating' => \App\Models\ProductReview::selectRaw('COALESCE(AVG(rating), 0)')
                         ->whereColumn('product_id', 'products.id')
                         ->where('is_approved', true),
                 ])
+                    ->selectRaw('(
+                        COALESCE((SELECT COALESCE(SUM(quantity), 0) 
+                            FROM order_items 
+                            WHERE order_items.product_id = products.id 
+                            AND EXISTS (
+                                SELECT 1 
+                                FROM orders 
+                                WHERE orders.id = order_items.order_id 
+                                AND orders.payment_status = "paid" 
+                                AND orders.status != "cancelled"
+                            )
+                        ), 0) +
+                        COALESCE((SELECT COUNT(*) 
+                            FROM wishlist_items 
+                            WHERE wishlist_items.product_id = products.id
+                        ), 0) +
+                        COALESCE((SELECT COUNT(*) 
+                            FROM cart_items 
+                            WHERE cart_items.product_id = products.id
+                        ), 0)
+                    ) as popularity_score')
                     ->orderBy('avg_rating', 'desc')
+                    ->orderBy('popularity_score', 'desc')
                     ->orderBy('sort_order', 'asc')
                     ->orderBy('created_at', 'desc');
 
