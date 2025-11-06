@@ -219,6 +219,7 @@ class CheckoutController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'address_line_1' => $user->street, // Philippines address: street, barangay, city, province, region, zip_code
+                'address_line_2' => null, // Not used in Philippines address structure
                 'city' => $user->city,
                 'province' => $user->province,
                 'region' => $user->region,
@@ -249,6 +250,7 @@ class CheckoutController extends Controller
             $shippingData['last_name'] = $user->last_name;
             $shippingData['email'] = $user->email;
             $shippingData['phone'] = $user->phone;
+            $shippingData['address_line_2'] = null; // Not used in Philippines address structure
             $shippingData['address_option'] = 'custom';
             $shippingData['shipping_method_id'] = $shippingMethod->id;
             $shippingData['shipping_method_name'] = $shippingMethod->name;

@@ -152,404 +152,138 @@ document.addEventListener('DOMContentLoaded', function() {
         lucide.createIcons();
     }
     
-    // DISABLED: Auto-redirect to Xendit payment gateway
-    // User must manually click the "Open Payment Gateway" button
-           @if(false && $order->payment_method !== 'Cash on Delivery' && ($payment_status ?? 'pending') === 'pending' && !($isReturnFromPayment ?? false))
-               // CRITICAL: Wait for DOM to be fully loaded before setting up auto-open
-               // This prevents the page from opening the gateway immediately on load
+    // Payment gateway - user must manually click button to open
+    // This ensures browsers respect the popup window request (user-initiated clicks are more likely to open as popup)
+           @if($order->payment_method !== 'Cash on Delivery' && ($payment_status ?? 'pending') === 'pending' && !($isReturnFromPayment ?? false))
                (function() {
-                   // Wait a bit to ensure page is fully loaded
-                   setTimeout(function() {
-                       // STRICT: Check if window already exists and is open
-                       const windowName = 'XenditPayment_{{ $order->order_number }}';
-                       let paymentWindow = null;
-                       
-                       // Check if a window with this name already exists
-                       try {
-                           paymentWindow = window.open('', windowName);
-                           if (paymentWindow && !paymentWindow.closed && paymentWindow.location.href !== 'about:blank') {
-                               console.log('Payment gateway window already exists and is open, skipping auto-open');
-                               paymentWindow.focus();
-                               const countdownParent = document.getElementById('redirect-countdown');
-                               if (countdownParent) {
-                                   countdownParent.innerHTML = '<span class="text-green-600 font-medium">Payment gateway is already open. Please complete payment there. This page will automatically update when payment is successful.</span>';
+                   // Store reference for window close detection
+                   window.paymentWindowRef = null;
+                   window.paymentWindowCheckInterval = null;
+            
+                   // Listen for window focus/blur events - when user returns to this tab after payment, start checking
+                   let wasBlurred = false;
+                   window.addEventListener('blur', function() {
+                       wasBlurred = true;
+                       console.log('Window blurred (user likely switched tabs/windows)');
+                   });
+                   
+                   window.addEventListener('focus', function() {
+                       if (wasBlurred && window.paymentWindowRef && !window.paymentPollingActive) {
+                           console.log('Window regained focus, checking if payment window is still open');
+                           wasBlurred = false;
+                           try {
+                               if (window.paymentWindowRef.closed) {
+                                   console.log('Payment window is closed (detected on focus), starting polling');
+                                   startPaymentStatusPolling();
+                               } else {
+                                   // Window might still be open, but start polling anyway after a short delay
+                                   // (user might have completed payment and window auto-closed)
+                                   setTimeout(function() {
+                                       if (!window.paymentPollingActive) {
+                                           console.log('Starting polling after focus (payment window may have closed)');
+                                           startPaymentStatusPolling();
+                                       }
+                                   }, 2000);
                                }
-                               const manualLink = document.getElementById('manual-payment-link');
-                               if (manualLink) {
-                                   manualLink.style.display = 'none';
-                               }
-                               return;
+                           } catch (e) {
+                               // Cross-origin - assume closed and start polling
+                               console.log('Payment window likely closed (cross-origin on focus), starting polling');
+                               startPaymentStatusPolling();
                            }
-                       } catch (e) {
-                           console.log('Could not check for existing window (cross-origin):', e);
                        }
-                       
-                       // Check sessionStorage as additional safeguard
-                       const alreadyOpened = sessionStorage.getItem('paymentGatewayOpened_{{ $order->order_number }}');
-                       if (alreadyOpened === 'true') {
-                           console.log('Payment gateway already opened for this order (sessionStorage), skipping auto-open');
-                           const countdownParent = document.getElementById('redirect-countdown');
-                           if (countdownParent) {
-                               countdownParent.innerHTML = '<span class="text-green-600 font-medium">Payment gateway is already open. Please complete payment there. This page will automatically update when payment is successful.</span>';
-                           }
-                           const manualLink = document.getElementById('manual-payment-link');
-                           if (manualLink) {
-                               manualLink.style.display = 'none';
-                           }
+                   });
+                   
+                   // Function to start payment status polling (can be called immediately when window closes)
+                   // Make it globally accessible
+                   window.startPaymentStatusPolling = function() {
+                       // Don't start if already polling
+                       if (window.paymentPollingActive) {
+                           console.log('Payment polling already active');
                            return;
                        }
+                       window.paymentPollingActive = true;
                        
-                       console.log('Setting up auto-redirect to Xendit payment gateway (will open in 5 seconds as WINDOW)');
-                       const paymentUrl = '{{ route('payments.xendit.pay', ['order' => $order->id]) }}';
-                       const countdownElement = document.getElementById('countdown');
-                       const countdownParent = countdownElement ? countdownElement.parentElement : null;
-                       const manualLink = document.getElementById('manual-payment-link');
-                       let countdown = 5;
-                       let opened = false;
+                       console.log('Starting payment status polling immediately');
+                       let pollCount = 0;
+                       const maxPolls = 120; // Poll for 4 minutes max (120 polls at 2 seconds each)
                        
-                       console.log('Payment URL:', paymentUrl);
-                       console.log('Window name:', windowName);
-                       console.log('Will open as WINDOW (popup) after countdown completes');
+                       // Do first check immediately, then continue with interval
+                       function checkPaymentStatus() {
+                           pollCount++;
+                           console.log('Polling payment status, attempt:', pollCount);
+                           
+                           if (pollCount >= maxPolls) {
+                               if (window.paymentPollInterval) {
+                                   clearInterval(window.paymentPollInterval);
+                                   window.paymentPollInterval = null;
+                               }
+                               window.paymentPollingActive = false;
+                               console.log('Max polls reached, stopping');
+                               return;
+                           }
+                           
+                           // Use poll parameter to get JSON status without triggering gateway opening
+                           fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
+                               headers: {
+                                   'X-Requested-With': 'XMLHttpRequest',
+                                   'Accept': 'application/json',
+                               },
+                               method: 'GET',
+                               credentials: 'same-origin',
+                               cache: 'no-cache'
+                           })
+                           .then(response => {
+                               if (response.ok) {
+                                   return response.json();
+                               }
+                               throw new Error('Network response was not ok');
+                           })
+                           .then(data => {
+                               if (!data || !data.payment_status) {
+                                   if (pollCount <= 3) { // Only log first few attempts to avoid spam
+                                       console.log('No payment status in response:', data);
+                                   }
+                                   return;
+                               }
+                               
+                               console.log('Current payment status:', data.payment_status, '- Poll #' + pollCount);
+                               
+                               // Handle JSON response
+                               if (data.payment_status === 'paid') {
+                                   console.log('✅✅✅ PAYMENT SUCCESS DETECTED! Reloading page immediately...');
+                                   if (window.paymentPollInterval) {
+                                       clearInterval(window.paymentPollInterval);
+                                       window.paymentPollInterval = null;
+                                   }
+                                   window.paymentPollingActive = false;
+                                   // Clear any window check intervals
+                                   if (window.paymentWindowCheckInterval) {
+                                       clearInterval(window.paymentWindowCheckInterval);
+                                       window.paymentWindowCheckInterval = null;
+                                   }
+                                   // Reload immediately
+                                   window.location.reload();
+                               } else if (data.payment_status === 'failed') {
+                                   console.log('❌ Payment status changed to failed, reloading page');
+                                   if (window.paymentPollInterval) {
+                                       clearInterval(window.paymentPollInterval);
+                                       window.paymentPollInterval = null;
+                                   }
+                                   window.paymentPollingActive = false;
+                                   window.location.reload();
+                               }
+                           })
+                           .catch(error => {
+                               console.error('Payment status check failed:', error);
+                           });
+                       }
                        
-                       // Store reference for window close detection
-                       window.paymentWindowRef = null;
-                       window.paymentWindowCheckInterval = null;
-            
-            // Also listen for window focus/blur events - when user returns to this tab after payment, start checking
-            let wasBlurred = false;
-            window.addEventListener('blur', function() {
-                wasBlurred = true;
-                console.log('Window blurred (user likely switched tabs/windows)');
-            });
-            
-            window.addEventListener('focus', function() {
-                if (wasBlurred && window.paymentWindowRef && !window.paymentPollingActive) {
-                    console.log('Window regained focus, checking if payment window is still open');
-                    wasBlurred = false;
-                    try {
-                        if (window.paymentWindowRef.closed) {
-                            console.log('Payment window is closed (detected on focus), starting polling');
-                            startPaymentStatusPolling();
-                        } else {
-                            // Window might still be open, but start polling anyway after a short delay
-                            // (user might have completed payment and window auto-closed)
-                            setTimeout(function() {
-                                if (!window.paymentPollingActive) {
-                                    console.log('Starting polling after focus (payment window may have closed)');
-                                    startPaymentStatusPolling();
-                                }
-                            }, 2000);
-                        }
-                    } catch (e) {
-                        // Cross-origin - assume closed and start polling
-                        console.log('Payment window likely closed (cross-origin on focus), starting polling');
-                        startPaymentStatusPolling();
-                    }
-                }
-            });
-            
-            function openPaymentGateway() {
-                // Double-check: if already opened, return immediately
-                if (opened || sessionStorage.getItem('paymentGatewayOpened_{{ $order->order_number }}') === 'true') {
-                    console.log('Payment gateway already opened, skipping');
-                    return;
-                }
-                
-                // Mark as opened IMMEDIATELY to prevent multiple opens
-                opened = true;
-                sessionStorage.setItem('paymentGatewayOpened_{{ $order->order_number }}', 'true');
-                
-                console.log('Opening payment gateway:', paymentUrl);
-                
-                try {
-                    // Force window opening (not tab) by specifying window features
-                    // This ensures it opens as a popup window, not a new tab
-                    // The key is specifying width, height, and position - this forces a popup window
-                    const windowFeatures = [
-                        'width=1200',
-                        'height=800',
-                        'left=' + Math.round((screen.width - 1200) / 2),
-                        'top=' + Math.round((screen.height - 800) / 2),
-                        'resizable=yes',
-                        'scrollbars=yes',
-                        'status=yes',
-                        'toolbar=no',
-                        'menubar=no',
-                        'location=yes',
-                        'noopener=yes',
-                        'noreferrer=yes'
-                    ].join(',');
-                    
-                    console.log('Opening payment gateway as WINDOW (popup) with features:', windowFeatures);
-                    // Use named window to ensure only one window opens (will reuse if exists)
-                    paymentWindow = window.open(paymentUrl, windowName, windowFeatures);
-                    window.paymentWindowRef = paymentWindow;
-                    
-                    // Check if window opened (not blocked) - use setTimeout to allow window to initialize
-                    setTimeout(function() {
-                        // More thorough check for popup blocker
-                        let isBlocked = false;
-                        let isOpened = false;
-                        
-                        // Check if window exists and is not closed
-                        if (paymentWindow) {
-                            try {
-                                // Check if window is closed
-                                if (paymentWindow.closed) {
-                                    isBlocked = true;
-                                } else {
-                                    // Try to access window location to verify it opened
-                                    try {
-                                        // For same-origin, we can check location
-                                        if (paymentWindow.location.href === 'about:blank' || !paymentWindow.location.href) {
-                                            // Window opened but hasn't navigated - might still be loading
-                                            setTimeout(function() {
-                                                // Check again after a delay
-                                                try {
-                                                    if (paymentWindow.closed) {
-                                                        isBlocked = true;
-                                                    } else if (paymentWindow.location.href && paymentWindow.location.href !== 'about:blank') {
-                                                        isOpened = true;
-                                                    }
-                                                } catch (e) {
-                                                    // Cross-origin - assume opened
-                                                    isOpened = true;
-                                                }
-                                            }, 1000);
-                                        } else {
-                                            isOpened = true;
-                                        }
-                                    } catch (e) {
-                                        // Cross-origin - can't check location directly, but window exists
-                                        // Assume it opened if window is not closed
-                                        isOpened = true;
-                                    }
-                                }
-                            } catch (e) {
-                                // Error accessing window - might be blocked or closed
-                                console.log('Error checking window status:', e);
-                                isBlocked = true;
-                            }
-                        } else {
-                            // No window reference - definitely blocked
-                            isBlocked = true;
-                        }
-                        
-                        if (isOpened || (!isBlocked && paymentWindow && !paymentWindow.closed)) {
-                            console.log('Payment gateway opened successfully');
-                            
-                            // Update UI
-                            if (countdownParent) {
-                                countdownParent.innerHTML = '<span class="text-green-600 font-medium">Payment gateway opened. Please complete payment there. This page will automatically update when payment is successful.</span>';
-                            }
-                            if (manualLink) {
-                                manualLink.style.display = 'none';
-                            }
-                            const popupBlockedMsg = document.getElementById('popup-blocked-message');
-                            if (popupBlockedMsg) {
-                                popupBlockedMsg.style.display = 'none';
-                            }
-                            
-                            // Start checking if window closes - when it does, start polling immediately
-                            window.paymentWindowCheckInterval = setInterval(function() {
-                                try {
-                                    if (!paymentWindow || paymentWindow.closed) {
-                                        console.log('Payment gateway window/tab closed, starting immediate polling');
-                                        if (window.paymentWindowCheckInterval) {
-                                            clearInterval(window.paymentWindowCheckInterval);
-                                            window.paymentWindowCheckInterval = null;
-                                        }
-                                        window.paymentWindowRef = null;
-                                        
-                                        // Start polling immediately when window closes
-                                        startPaymentStatusPolling();
-                                        return;
-                                    }
-                                    
-                                    // Try to access window properties to detect if still valid
-                                    try {
-                                        const test = paymentWindow.location;
-                                    } catch (err) {
-                                        // Cross-origin error - window might be closed or navigated
-                                        // But also might just be cross-origin, so check with a timeout
-                                        setTimeout(function() {
-                                            try {
-                                                if (!paymentWindow || paymentWindow.closed) {
-                                                    console.log('Payment gateway window closed (delayed cross-origin check), starting polling');
-                                                    if (window.paymentWindowCheckInterval) {
-                                                        clearInterval(window.paymentWindowCheckInterval);
-                                                        window.paymentWindowCheckInterval = null;
-                                                    }
-                                                    window.paymentWindowRef = null;
-                                                    startPaymentStatusPolling();
-                                                }
-                                            } catch (e) {
-                                                // Still can't check, but don't assume closed yet
-                                            }
-                                        }, 2000);
-                                    }
-                                } catch (e) {
-                                    // Any error - be conservative, don't assume closed immediately
-                                    console.log('Payment gateway window check error:', e.message);
-                                }
-                            }, 500); // Check every 500ms for faster detection
-                            
-                            // Also start polling after 3 seconds as backup (in case window close detection fails)
-                            setTimeout(function() {
-                                if (!window.paymentPollingActive) {
-                                    console.log('Starting backup polling (window may be open but close detection not working)');
-                                    startPaymentStatusPolling();
-                                }
-                            }, 3000);
-                            
-                            // Focus the new window
-                            try {
-                                if (paymentWindow && !paymentWindow.closed) {
-                                    paymentWindow.focus();
-                                }
-                            } catch (e) {
-                                console.log('Could not focus window:', e);
-                            }
-                            return;
-                        }
-                        
-                        // If we get here, popup was blocked
-                        console.log('Popup appears blocked or failed to open');
-                        if (countdownParent) {
-                            countdownParent.innerHTML = '<span class="text-orange-600 font-medium">Popup blocked. Please allow pop-ups or click the button below.</span>';
-                        }
-                        if (manualLink) {
-                            manualLink.style.display = 'block';
-                        }
-                        const popupBlockedMsg = document.getElementById('popup-blocked-message');
-                        if (popupBlockedMsg) {
-                            popupBlockedMsg.style.display = 'block';
-                        }
-                        // Remove the sessionStorage flag if blocked so user can try again
-                        sessionStorage.removeItem('paymentGatewayOpened_{{ $order->order_number }}');
-                        opened = false;
-                    }, 800); // Slightly longer delay to ensure window initializes
-                } catch (e) {
-                    console.error('Error opening payment gateway:', e);
-                    if (countdownParent) {
-                        countdownParent.innerHTML = '<span class="text-orange-600 font-medium">Error opening gateway. Please click the button below.</span>';
-                    }
-                    if (manualLink) {
-                        manualLink.style.display = 'block';
-                    }
-                    // Remove the sessionStorage flag on error
-                    sessionStorage.removeItem('paymentGatewayOpened_{{ $order->order_number }}');
-                    opened = false;
-                }
-            }
-            
-            // Function to start payment status polling (can be called immediately when window closes)
-            // Make it globally accessible
-            window.startPaymentStatusPolling = function() {
-                // Don't start if already polling
-                if (window.paymentPollingActive) {
-                    console.log('Payment polling already active');
-                    return;
-                }
-                window.paymentPollingActive = true;
-                
-                console.log('Starting payment status polling immediately');
-                let pollCount = 0;
-                const maxPolls = 120; // Poll for 4 minutes max (120 polls at 2 seconds each)
-                
-                // Do first check immediately, then continue with interval
-                function checkPaymentStatus() {
-                    pollCount++;
-                    console.log('Polling payment status, attempt:', pollCount);
-                    
-                    if (pollCount >= maxPolls) {
-                        if (window.paymentPollInterval) {
-                            clearInterval(window.paymentPollInterval);
-                            window.paymentPollInterval = null;
-                        }
-                        window.paymentPollingActive = false;
-                        console.log('Max polls reached, stopping');
-                        return;
-                    }
-                    
-                    // Use poll parameter to get JSON status without triggering gateway opening
-                    fetch('{{ route('checkout.confirmation', ['order' => $order->order_number]) }}?poll=1', {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
-                        },
-                        method: 'GET',
-                        credentials: 'same-origin',
-                        cache: 'no-cache'
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            return response.json();
-                        }
-                        throw new Error('Network response was not ok');
-                    })
-                    .then(data => {
-                        if (!data || !data.payment_status) {
-                            if (pollCount <= 3) { // Only log first few attempts to avoid spam
-                                console.log('No payment status in response:', data);
-                            }
-                            return;
-                        }
-                        
-                        console.log('Current payment status:', data.payment_status, '- Poll #' + pollCount);
-                        
-                        // Handle JSON response
-                        if (data.payment_status === 'paid') {
-                            console.log('✅✅✅ PAYMENT SUCCESS DETECTED! Reloading page immediately...');
-                            if (window.paymentPollInterval) {
-                                clearInterval(window.paymentPollInterval);
-                                window.paymentPollInterval = null;
-                            }
-                            window.paymentPollingActive = false;
-                            // Clear any window check intervals
-                            if (window.paymentWindowCheckInterval) {
-                                clearInterval(window.paymentWindowCheckInterval);
-                                window.paymentWindowCheckInterval = null;
-                            }
-                            // Reload immediately
-                            window.location.reload();
-                        } else if (data.payment_status === 'failed') {
-                            console.log('❌ Payment status changed to failed, reloading page');
-                            if (window.paymentPollInterval) {
-                                clearInterval(window.paymentPollInterval);
-                                window.paymentPollInterval = null;
-                            }
-                            window.paymentPollingActive = false;
-                            window.location.reload();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Payment status check failed:', error);
-                    });
-                }
-                
-                // Check immediately on first call (no delay)
-                checkPaymentStatus();
-                
-                // Then continue checking every 1 second for faster detection
-                window.paymentPollInterval = setInterval(checkPaymentStatus, 1000);
-            };
-            
-            // Update countdown every second
-            const countdownInterval = setInterval(function() {
-                countdown--;
-                if (countdownElement) {
-                    countdownElement.textContent = countdown;
-                }
-                if (countdown <= 0) {
-                    clearInterval(countdownInterval);
-                    openPaymentGateway();
-                }
-            }, 1000);
-            
-            // DO NOT add a fallback setTimeout - it causes multiple opens
-            // The countdown interval already handles the opening
-                   }, 100); // Small delay to ensure DOM is ready before starting countdown
+                       // Check immediately on first call (no delay)
+                       checkPaymentStatus();
+                       
+                       // Then continue checking every 1 second for faster detection
+                       window.paymentPollInterval = setInterval(checkPaymentStatus, 1000);
+                   };
                })();
            @endif
     
@@ -648,11 +382,13 @@ document.addEventListener('DOMContentLoaded', function() {
         })();
     @endif
     
-    // Function for manual button click - also opens as window, not tab
+    // Function for manual button click - opens as window (popup) when triggered by user click
+    // User clicks are more likely to be respected by browsers for popup windows
     window.openPaymentGatewayManual = function(url, windowName) {
-        console.log('Manual payment gateway open requested');
+        console.log('Manual payment gateway open requested (user click - should open as popup)');
         try {
             // Force window opening (not tab) with explicit window features
+            // User clicks are more likely to be respected by browsers for popup windows
             const windowFeatures = [
                 'width=1200',
                 'height=800',
@@ -665,7 +401,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 'menubar=no',
                 'location=yes',
                 'noopener=yes',
-                'noreferrer=yes'
+                'noreferrer=yes',
+                'popup=yes' // Explicit popup flag
             ].join(',');
             
             console.log('Opening payment gateway manually as WINDOW (popup) with features:', windowFeatures);

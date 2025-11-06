@@ -44,10 +44,10 @@
                     <p class="text-sm text-gray-600">Address</p>
                     <p class="font-medium text-gray-900">
                         {{ $shippingInfo['address_line_1'] }}
-                        @if($shippingInfo['address_line_2'])
+                        @if(isset($shippingInfo['address_line_2']) && $shippingInfo['address_line_2'])
                             <br>{{ $shippingInfo['address_line_2'] }}
                         @endif
-                        <br>{{ $shippingInfo['city'] }}, {{ $shippingInfo['province'] }} {{ $shippingInfo['zip_code'] }}
+                        <br>{{ $shippingInfo['city'] }}, {{ $shippingInfo['province'] ?? 'N/A' }} {{ $shippingInfo['zip_code'] }}
                     </p>
                 </div>
             </div>

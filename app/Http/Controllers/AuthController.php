@@ -184,6 +184,12 @@ class AuthController extends Controller
             // Get intended redirect URL from session, fallback to home
             $intendedUrl = session()->pull('url.intended', route('home'));
 
+            // Validate that the intended URL is not an API endpoint
+            // If it's an API route, fallback to home to prevent redirecting to JSON responses
+            if (str_starts_with(parse_url($intendedUrl, PHP_URL_PATH) ?? '', '/api')) {
+                $intendedUrl = route('home');
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',
