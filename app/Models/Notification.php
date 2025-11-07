@@ -165,6 +165,7 @@ class Notification extends Model
             'title' => $title,
             'message' => $message,
             'data' => $data,
+            'status' => 'pending',
         ]);
     }
 
@@ -177,6 +178,7 @@ class Notification extends Model
             'title' => $title,
             'message' => $message,
             'data' => $data,
+            'status' => 'sent', // Set status to 'sent' so it shows as unread
         ]);
     }
 

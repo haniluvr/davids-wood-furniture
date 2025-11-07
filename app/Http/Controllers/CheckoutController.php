@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderCreated;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -550,6 +551,9 @@ class CheckoutController extends Controller
             Session::forget(['checkout.shipping', 'checkout.payment']);
 
             DB::commit();
+
+            // Fire order created event to notify admins
+            event(new OrderCreated($order));
 
             // If payment is COD, clear only the ordered cart items immediately and go to summary
             if (($paymentInfo['payment_method'] ?? 'cod') === 'cod') {

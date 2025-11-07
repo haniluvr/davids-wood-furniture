@@ -306,6 +306,10 @@ function markAsResponded() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Reload notifications to remove read ones from dropdown
+                if (typeof loadNotifications === 'function') {
+                    loadNotifications();
+                }
                 location.reload();
             } else {
                 alert('Error: ' + data.message);
@@ -416,7 +420,7 @@ function deleteMessage() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.href = '/admin/messages';
+                window.location.href = '{{ admin_route("messages.index") }}';
             } else {
                 alert('Error: ' + data.message);
             }
@@ -429,16 +433,13 @@ function deleteMessage() {
 }
 
 function sendReply() {
-    const to = document.getElementById('reply-to').value;
+    // Always use the message sender's email, not the form value
+    const to = '{{ $message->email }}';
     const subject = document.getElementById('reply-subject').value;
     const message = document.getElementById('reply-message').value;
 
     if (!subject.trim() || !message.trim()) {
-        alert('Please fill in both subject and message fields.');
-        return;
-    }
-
-    if (!confirm('Are you sure you want to send this reply to ' + to + '?')) {
+        showNotification('Please fill in both subject and message fields.', 'error');
         return;
     }
 
@@ -448,39 +449,147 @@ function sendReply() {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Sending...';
 
-    fetch(`/admin/messages/{{ $message->id }}/reply`, {
+    // Hide any previous error messages
+    hideNotification();
+
+    fetch('{{ admin_route("messages.reply", $message) }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
         },
         body: JSON.stringify({
-            to: to,
             subject: subject,
             message: message
         })
     })
-    .then(response => response.json())
+    .then(async response => {
+        // Clone response for potential multiple reads
+        const responseClone = response.clone();
+        let data;
+        const contentType = response.headers.get('content-type');
+        
+        try {
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                // If not JSON, get text
+                const text = await response.text();
+                throw new Error(text || `Server returned an invalid response (Status: ${response.status})`);
+            }
+        } catch (parseError) {
+            // If JSON parsing fails, try to get text from cloned response
+            try {
+                const text = await responseClone.text();
+                throw new Error(`Server response error: ${text || 'Unknown error'}`);
+            } catch (textError) {
+                throw new Error(`Failed to parse server response: ${parseError.message || 'Unknown error'}`);
+            }
+        }
+        
+        // Check if response indicates an error
+        if (!response.ok) {
+            const errorMsg = data?.message || data?.error || `Server error: ${response.status} ${response.statusText}`;
+            throw new Error(errorMsg);
+        }
+        
+        // Check if success flag is false
+        if (data && data.success === false) {
+            throw new Error(data.message || 'Failed to send reply');
+        }
+        
+        return data;
+    })
     .then(data => {
         if (data.success) {
-            alert('Reply sent successfully!');
+            showNotification('Reply sent successfully!', 'success');
             clearReplyForm();
-            // Optionally mark as responded
-            if (confirm('Would you like to mark this message as responded?')) {
-                markAsResponded();
+            // Reload notifications to remove read ones from dropdown
+            if (typeof loadNotifications === 'function') {
+                loadNotifications();
             }
-        } else {
-            alert('Error: ' + (data.message || 'Failed to send reply'));
+            // Optionally mark as responded (without confirmation)
+            // Admin can manually mark if needed
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
+        } else {
+            throw new Error(data.message || 'Failed to send reply');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while sending the reply.');
+        console.error('Error sending reply:', error);
+        
+        // Extract error message
+        let errorMessage = 'An error occurred while sending the reply.';
+        
+        if (error.message) {
+            errorMessage = error.message;
+        } else if (error.toString && error.toString() !== '[object Object]') {
+            errorMessage = error.toString();
+        }
+        
+        // Show error notification prominently
+        showNotification(errorMessage, 'error');
+        
+        // Re-enable button
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
+        
+        // Also log to console for debugging
+        console.error('Full error details:', error);
     });
+}
+
+function showNotification(message, type) {
+    // Remove existing notification if any
+    hideNotification();
+    
+    const notification = document.createElement('div');
+    notification.id = 'reply-notification';
+    notification.className = `fixed top-4 right-4 z-[9999] px-6 py-4 rounded-xl shadow-2xl max-w-md animate-in slide-in-from-top-5 ${
+        type === 'success' 
+            ? 'bg-green-50 border-2 border-green-300 text-green-900 dark:bg-green-900/30 dark:border-green-600 dark:text-green-100' 
+            : 'bg-red-50 border-2 border-red-300 text-red-900 dark:bg-red-900/30 dark:border-red-600 dark:text-red-100'
+    }`;
+    
+    // Escape HTML to prevent XSS
+    const escapedMessage = message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    notification.innerHTML = `
+        <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 mt-0.5">
+                <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i>
+            </div>
+            <p class="flex-1 text-sm font-medium leading-relaxed">${escapedMessage}</p>
+            <button onclick="hideNotification()" class="flex-shrink-0 text-current opacity-70 hover:opacity-100 transition-opacity" title="Close">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Reinitialize Lucide icons
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+    }
+    
+    // Scroll notification into view if needed
+    notification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+    // Auto-hide after 8 seconds for success messages, 15 seconds for errors (so user can read them)
+    const timeout = type === 'success' ? 8000 : 15000;
+    setTimeout(() => {
+        hideNotification();
+    }, timeout);
+}
+
+function hideNotification() {
+    const notification = document.getElementById('reply-notification');
+    if (notification) {
+        notification.remove();
+    }
 }
 
 function clearReplyForm() {

@@ -58,7 +58,7 @@ class NotificationController extends Controller
             })
                 ->orWhere('recipient_type', 'all');
         })
-            ->whereNull('read_at')
+            ->whereIn('status', ['pending', 'sent']) // Unread notifications have status 'pending' or 'sent'
             ->count();
 
         return response()->json(['count' => $count]);
@@ -106,7 +106,7 @@ class NotificationController extends Controller
                 ->where('recipient_id', $user->id);
         })
             ->orWhere('recipient_type', 'all')
-            ->where('status', 'sent')
+            ->whereIn('status', ['pending', 'sent']) // Mark both pending and sent as read
             ->update([
                 'status' => 'read',
                 'read_at' => now(),

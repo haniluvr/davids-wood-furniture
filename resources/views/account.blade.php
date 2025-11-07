@@ -1036,7 +1036,7 @@
 <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 overflow-hidden">
         <!-- Modal Header -->
-        <div class="bg-gradient-to-r from-[#8b7355] to-[#6b5b47] px-6 py-4 flex justify-between items-center">
+        <div class="bg-[#8b7355] px-6 py-4 flex justify-between items-center">
             <h3 class="text-xl font-bold text-white">Write a Review</h3>
             <button onclick="closeReviewModal()" class="text-white hover:text-gray-200 transition-colors">
                 <i data-lucide="x" class="w-6 h-6"></i>
@@ -1120,6 +1120,131 @@
                         class="flex-1 bg-[#8b7355] text-white px-6 py-3 rounded-lg hover:bg-[#6b5b47] transition-colors font-semibold"
                     >
                         Submit Review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Refund Request Modal -->
+<div id="refundModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 overflow-hidden max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="bg-[#8b7355] px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+            <h3 class="text-xl font-bold text-white">Request a Refund</h3>
+            <button onclick="closeRefundModal()" class="text-white hover:text-gray-200 transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        
+        <!-- Modal Body -->
+        <div class="p-6">
+            <div class="mb-4">
+                <p class="text-sm text-gray-600">Product:</p>
+                <p id="refundProductName" class="text-lg font-semibold text-gray-900"></p>
+            </div>
+            
+            <form id="refundForm" onsubmit="submitRefundRequest(event)">
+                <input type="hidden" id="refundProductId" name="product_id">
+                <input type="hidden" id="refundOrderId" name="order_id">
+                <input type="hidden" id="refundOrderItemId" name="order_item_id">
+                
+                <!-- Reason -->
+                <div class="mb-6">
+                    <label for="refundReason" class="block text-sm font-medium text-gray-700 mb-2">Reason for Refund *</label>
+                    <select id="refundReason" name="reason" required class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 focus:border-[#8b7355] focus:outline-none focus:ring-2 focus:ring-[#8b7355]">
+                        <option value="">Select a reason...</option>
+                        <option value="defective">Defective Item</option>
+                        <option value="item_not_as_described">Item Not as Described</option>
+                        <option value="item_does_not_fit">Item Does Not Fit</option>
+                        <option value="quality_issues">Quality Issues</option>
+                        <option value="customer_dissatisfaction">Customer Dissatisfaction</option>
+                        <option value="wrong_item">Wrong Item Received</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">Please select the primary reason for your refund request</p>
+                </div>
+                
+                <!-- Description -->
+                <div class="mb-6">
+                    <label for="refundDescription" class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                    <textarea 
+                        id="refundDescription" 
+                        name="description" 
+                        required 
+                        minlength="10"
+                        maxlength="1000"
+                        rows="4"
+                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 focus:border-[#8b7355] focus:outline-none focus:ring-2 focus:ring-[#8b7355] resize-none"
+                        placeholder="Please provide a detailed description of why you're requesting a refund (minimum 10 characters)..."
+                    ></textarea>
+                    <p class="mt-1 text-xs text-gray-500">
+                        <span id="refundDescriptionCount">0</span>/1000 characters
+                    </p>
+                </div>
+                
+                <!-- Customer Notes -->
+                <div class="mb-6">
+                    <label for="refundCustomerNotes" class="block text-sm font-medium text-gray-700 mb-2">Additional Notes (Optional)</label>
+                    <textarea 
+                        id="refundCustomerNotes" 
+                        name="customer_notes" 
+                        maxlength="1000"
+                        rows="3"
+                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 focus:border-[#8b7355] focus:outline-none focus:ring-2 focus:ring-[#8b7355] resize-none"
+                        placeholder="Any additional information that might help us process your request..."
+                    ></textarea>
+                    <p class="mt-1 text-xs text-gray-500">
+                        <span id="refundNotesCount">0</span>/1000 characters
+                    </p>
+                </div>
+                
+                <!-- Photos -->
+                <div class="mb-6">
+                    <label for="refundPhotos" class="block text-sm font-medium text-gray-700 mb-2">Photos (Optional)</label>
+                    <p class="text-xs text-gray-500 mb-2">Upload up to 5 photos to support your refund request (max 2MB each)</p>
+                    <input 
+                        type="file" 
+                        id="refundPhotos" 
+                        name="photos[]" 
+                        multiple 
+                        accept="image/jpeg,image/png,image/gif,image/webp,image/avif"
+                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 focus:border-[#8b7355] focus:outline-none focus:ring-2 focus:ring-[#8b7355]"
+                    >
+                    <div id="refundPhotoPreview" class="mt-3 grid grid-cols-5 gap-2 hidden"></div>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="refundErrorMessage" class="mb-4 hidden">
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                        <p id="refundErrorText"></p>
+                    </div>
+                </div>
+                
+                <!-- Success Message -->
+                <div id="refundSuccessMessage" class="mb-4 hidden">
+                    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+                        <p id="refundSuccessText"></p>
+                    </div>
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="flex gap-3">
+                    <button 
+                        type="button" 
+                        onclick="closeRefundModal()" 
+                        class="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit" 
+                        id="refundSubmitBtn"
+                        class="flex-1 bg-[#8b7355] text-white px-6 py-3 rounded-lg hover:bg-[#6b5b47] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span id="refundSubmitText">Submit Request</span>
+                        <span id="refundSubmitLoading" class="hidden">Submitting...</span>
                     </button>
                 </div>
             </form>
@@ -3030,6 +3155,168 @@
         } catch (error) {
             console.error('Error submitting review:', error);
             showNotification('An error occurred while submitting your review', 'error');
+        }
+    }
+
+    // Open Refund Modal
+    function openRefundModal(productId, orderId, orderItemId, productName) {
+        const modal = document.getElementById('refundModal');
+        const modalProductName = document.getElementById('refundProductName');
+        const refundForm = document.getElementById('refundForm');
+        
+        // Set product name
+        modalProductName.textContent = productName;
+        
+        // Set hidden form values
+        document.getElementById('refundProductId').value = productId;
+        document.getElementById('refundOrderId').value = orderId;
+        document.getElementById('refundOrderItemId').value = orderItemId;
+        
+        // Reset form
+        refundForm.reset();
+        document.getElementById('refundDescriptionCount').textContent = '0';
+        document.getElementById('refundNotesCount').textContent = '0';
+        document.getElementById('refundPhotoPreview').classList.add('hidden');
+        document.getElementById('refundPhotoPreview').innerHTML = '';
+        document.getElementById('refundErrorMessage').classList.add('hidden');
+        document.getElementById('refundSuccessMessage').classList.add('hidden');
+        document.getElementById('refundSubmitBtn').disabled = false;
+        document.getElementById('refundSubmitText').classList.remove('hidden');
+        document.getElementById('refundSubmitLoading').classList.add('hidden');
+        
+        // Add character counters
+        const descriptionField = document.getElementById('refundDescription');
+        const notesField = document.getElementById('refundCustomerNotes');
+        
+        descriptionField.addEventListener('input', function() {
+            document.getElementById('refundDescriptionCount').textContent = this.value.length;
+        });
+        
+        notesField.addEventListener('input', function() {
+            document.getElementById('refundNotesCount').textContent = this.value.length;
+        });
+        
+        // Add photo preview
+        const photoInput = document.getElementById('refundPhotos');
+        photoInput.addEventListener('change', function(e) {
+            const preview = document.getElementById('refundPhotoPreview');
+            preview.innerHTML = '';
+            
+            if (e.target.files.length > 0) {
+                preview.classList.remove('hidden');
+                
+                Array.from(e.target.files).slice(0, 5).forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'w-full h-20 object-cover rounded-lg border border-gray-300';
+                        img.alt = `Preview ${index + 1}`;
+                        preview.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                preview.classList.add('hidden');
+            }
+        });
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Reinitialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    // Close Refund Modal
+    function closeRefundModal() {
+        const modal = document.getElementById('refundModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Submit Refund Request
+    async function submitRefundRequest(event) {
+        event.preventDefault();
+        
+        const form = event.target;
+        const formData = new FormData(form);
+        
+        // Hide previous messages
+        document.getElementById('refundErrorMessage').classList.add('hidden');
+        document.getElementById('refundSuccessMessage').classList.add('hidden');
+        
+        // Validate description
+        const description = formData.get('description');
+        if (!description || description.trim().length < 10) {
+            document.getElementById('refundErrorText').textContent = 'Description must be at least 10 characters';
+            document.getElementById('refundErrorMessage').classList.remove('hidden');
+            return;
+        }
+        
+        // Validate reason
+        const reason = formData.get('reason');
+        if (!reason) {
+            document.getElementById('refundErrorText').textContent = 'Please select a reason for the refund';
+            document.getElementById('refundErrorMessage').classList.remove('hidden');
+            return;
+        }
+        
+        // Disable submit button
+        const submitBtn = document.getElementById('refundSubmitBtn');
+        submitBtn.disabled = true;
+        document.getElementById('refundSubmitText').classList.add('hidden');
+        document.getElementById('refundSubmitLoading').classList.remove('hidden');
+        
+        try {
+            const response = await fetch('{{ route("account.refund-request.store") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                credentials: 'include',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                document.getElementById('refundSuccessText').textContent = result.message || 'Refund request submitted successfully!';
+                document.getElementById('refundSuccessMessage').classList.remove('hidden');
+                
+                // Reload orders after a short delay
+                setTimeout(() => {
+                    closeRefundModal();
+                    // Reload orders to update the refund request status (preserving current filter)
+                    if (typeof loadOrdersPage === 'function') {
+                        loadOrdersPage(1, currentOrderStatus);
+                    } else {
+                        location.reload();
+                    }
+                }, 2000);
+            } else {
+                // Show error message
+                const errorMsg = result.message || (result.errors ? Object.values(result.errors).flat().join(', ') : 'Failed to submit refund request');
+                document.getElementById('refundErrorText').textContent = errorMsg;
+                document.getElementById('refundErrorMessage').classList.remove('hidden');
+                
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                document.getElementById('refundSubmitText').classList.remove('hidden');
+                document.getElementById('refundSubmitLoading').classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('Error submitting refund request:', error);
+            document.getElementById('refundErrorText').textContent = 'An error occurred while submitting your refund request. Please try again.';
+            document.getElementById('refundErrorMessage').classList.remove('hidden');
+            
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            document.getElementById('refundSubmitText').classList.remove('hidden');
+            document.getElementById('refundSubmitLoading').classList.add('hidden');
         }
     }
 

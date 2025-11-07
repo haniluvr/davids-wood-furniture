@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ContactMessage;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
@@ -68,6 +69,9 @@ class MessageController extends Controller
             $message->update(['status' => 'read', 'read_at' => now()]);
         }
 
+        // Mark related notifications as read
+        $this->markMessageNotificationsAsRead($message->id);
+
         return view('admin.messages.show', compact('message'));
     }
 
@@ -88,6 +92,9 @@ class MessageController extends Controller
             if ($validated['status'] === 'responded' && $message->status !== 'responded') {
                 $validated['responded_at'] = now();
                 $validated['responded_by'] = auth('admin')->id();
+
+                // Mark related notifications as read
+                $this->markMessageNotificationsAsRead($message->id);
             }
         }
 
@@ -113,6 +120,9 @@ class MessageController extends Controller
         if ($request->response_notes) {
             $message->update(['internal_notes' => $request->response_notes]);
         }
+
+        // Mark related notifications as read
+        $this->markMessageNotificationsAsRead($message->id);
 
         return response()->json([
             'success' => true,
@@ -228,14 +238,16 @@ class MessageController extends Controller
     public function reply(Request $request, ContactMessage $message)
     {
         $validated = $request->validate([
-            'to' => 'required|email',
             'subject' => 'required|string|max:255',
             'message' => 'required|string|max:5000',
         ]);
 
+        // Always use the message sender's email, not the request value
+        $to = $message->email;
+
         try {
             // Send the reply email
-            \Illuminate\Support\Facades\Mail::to($validated['to'])->send(
+            \Illuminate\Support\Facades\Mail::to($to)->send(
                 new \App\Mail\MessageReplyMail(
                     $validated['subject'],
                     $validated['message'],
@@ -244,6 +256,9 @@ class MessageController extends Controller
                 )
             );
 
+            // Mark related notifications as read when replying
+            $this->markMessageNotificationsAsRead($message->id);
+
             // Optionally mark as responded (can be done manually by admin)
             // The frontend will ask if they want to mark as responded
 
@@ -251,16 +266,39 @@ class MessageController extends Controller
                 'success' => true,
                 'message' => 'Reply sent successfully',
             ]);
-        } catch (\Exception $e) {
-            \Log::error('Failed to send reply email', [
+        } catch (\Illuminate\Mail\SendException $e) {
+            \Log::error('Failed to send reply email (Mail Exception)', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'message_id' => $message->id,
-                'to' => $validated['to'],
+                'to' => $to,
+            ]);
+
+            // Provide more helpful error messages
+            $errorMessage = 'Failed to send reply email. ';
+            if (str_contains($e->getMessage(), 'Connection') || str_contains($e->getMessage(), 'SMTP')) {
+                $errorMessage .= 'Please check your mail server configuration.';
+            } elseif (str_contains($e->getMessage(), 'Authentication')) {
+                $errorMessage .= 'Mail server authentication failed. Please check your credentials.';
+            } else {
+                $errorMessage .= $e->getMessage();
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage,
+            ], 500);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send reply email (General Exception)', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'message_id' => $message->id,
+                'to' => $to,
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to send reply: '.$e->getMessage(),
+                'message' => 'An unexpected error occurred: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -288,5 +326,27 @@ class MessageController extends Controller
                 'total' => $messages->total(),
             ],
         ]);
+    }
+
+    /**
+     * Mark all notifications related to a message as read for the current admin.
+     */
+    private function markMessageNotificationsAsRead(int $messageId): void
+    {
+        $admin = auth('admin')->user();
+
+        if (! $admin) {
+            return;
+        }
+
+        // Find all unread notifications for this admin related to this message
+        Notification::where('recipient_type', 'admin')
+            ->where('recipient_id', $admin->id)
+            ->whereIn('status', ['pending', 'sent'])
+            ->where('type', 'message')
+            ->whereJsonContains('data->message_id', $messageId)
+            ->each(function ($notification) {
+                $notification->markAsRead();
+            });
     }
 }

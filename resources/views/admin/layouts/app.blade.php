@@ -368,8 +368,32 @@ x-init="
         sidebarCollapsed = false;
     }
     
+    // Store component reference for notification functions
+    window.notificationComponent = this;
+    
+    // Load notifications immediately after Alpine initializes
+    $nextTick(() => {
+        if (typeof loadNotifications === 'function') {
+            loadNotifications();
+        }
+    });
+    
+    // Also try after a short delay to ensure everything is ready
+    setTimeout(() => {
+        if (typeof loadNotifications === 'function') {
+            loadNotifications();
+        }
+    }, 1000);
+    
     // Initialize real-time notifications
     initializeRealtimeNotifications();
+    
+    // Refresh notifications every 30 seconds
+    setInterval(() => {
+        if (typeof loadNotifications === 'function') {
+            loadNotifications();
+        }
+    }, 30000);
 " 
 :class="{ 'dark': darkMode }">
     <div class="flex h-screen overflow-hidden">
@@ -663,6 +687,147 @@ x-init="
         window.uploadNewImage = uploadNewImage;
         window.handleImageUpload = handleImageUpload;
         
+        // Store reference to Alpine component
+        let notificationComponent = null;
+        
+        // Load notifications from database
+        function loadNotifications() {
+            // Get the Alpine component from the body element
+            let component = null;
+            const bodyEl = document.body;
+            
+            if (bodyEl && bodyEl.__x) {
+                component = bodyEl.__x.$data;
+            } else if (typeof Alpine !== 'undefined' && Alpine.$data) {
+                try {
+                    component = Alpine.$data(document.body);
+                } catch (e) {
+                    // Ignore errors
+                }
+            }
+            
+            // If component not found, try again after a short delay
+            if (!component) {
+                setTimeout(() => {
+                    loadNotifications();
+                }, 100);
+                return;
+            }
+            
+            // Store reference for other functions
+            notificationComponent = component;
+            
+            fetch('{{ admin_route("notifications.api") }}?limit=10', {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Notifications API response:', data);
+                if (data.success && component) {
+                    // Map notifications with data field
+                    const mappedNotifications = (data.notifications || []).map(n => ({
+                        id: n.id,
+                        title: n.title || 'Notification',
+                        message: n.message || '',
+                        type: n.type || 'info',
+                        priority: 'medium',
+                        timestamp: new Date(n.timestamp),
+                        read: n.read || false,
+                        data: n.data || {}
+                    }));
+                    
+                    const unreadNotifications = mappedNotifications.filter(n => !n.read);
+                    console.log('Mapped notifications:', mappedNotifications);
+                    console.log('Unread notifications count:', unreadNotifications.length);
+                    console.log('Unread notifications:', unreadNotifications);
+                    console.log('Component before update:', component);
+                    
+                    // Update notifications array directly - use Alpine's reactivity
+                    if (component.notifications) {
+                        // Clear and add new notifications - this triggers Alpine reactivity
+                        component.notifications.length = 0;
+                        component.notifications.push(...mappedNotifications);
+                    } else {
+                        component.notifications = mappedNotifications;
+                    }
+                    
+                    // Update unread count
+                    component.unreadCount = data.unread_count || 0;
+                    
+                    console.log('Updated component notifications:', component.notifications);
+                    console.log('Updated unread count:', component.unreadCount);
+                    console.log('Unread after update:', component.notifications.filter(n => !n.read).length);
+                    console.log('Component after update:', component);
+                    
+                    // Dispatch custom event to notify dropdown
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('notifications-updated', {
+                            detail: { notifications: mappedNotifications, unreadCount: data.unread_count || 0 }
+                        }));
+                    }
+                    
+                    // Force Alpine to update
+                    if (typeof Alpine !== 'undefined') {
+                        // Trigger reactivity
+                        if (component.$nextTick) {
+                            component.$nextTick(() => {
+                                // Reinitialize Lucide icons for new notifications
+                                if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                                    lucide.createIcons();
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    console.error('Failed to load notifications:', data);
+                    if (component) {
+                        console.error('Component state:', component);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading notifications:', error);
+            });
+        }
+        
+        // Make loadNotifications available globally
+        window.loadNotifications = loadNotifications;
+        
+        // Store component reference when Alpine initializes
+        document.addEventListener('alpine:init', () => {
+            setTimeout(() => {
+                loadNotifications();
+            }, 500);
+        });
+        
+        // Also try to load when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                }, 1500);
+            });
+        } else {
+            // DOM is already ready
+            setTimeout(() => {
+                if (typeof loadNotifications === 'function') {
+                    loadNotifications();
+                }
+            }, 1500);
+        }
+        
         // Real-time Notifications
         function initializeRealtimeNotifications() {
             // Check if Pusher and Echo are available
@@ -700,10 +865,24 @@ x-init="
                 })
                 .listen('.review.created', (e) => {
                     addNotification(e);
+                })
+                .listen('.refund.request.created', (e) => {
+                    addNotification(e);
                 });
         }
         
         function addNotification(data) {
+            console.log('addNotification called with data:', data);
+            // When a real-time notification comes in, reload from database
+            // This ensures we get the actual database ID and all details
+            if (typeof loadNotifications === 'function') {
+                setTimeout(() => {
+                    console.log('Refreshing notifications after real-time event');
+                    loadNotifications();
+                }, 1500); // Increased delay to ensure notification is saved to DB
+            }
+            
+            // Also add to local array for immediate display
             const notification = {
                 id: Date.now(),
                 title: data.title || getNotificationTitle(data.type),
@@ -715,27 +894,19 @@ x-init="
             };
             
             // Add to notifications array
-            this.notifications.unshift(notification);
-            
-            // Update unread count
-            this.unreadCount++;
+            if (notificationComponent) {
+                notificationComponent.notifications.unshift(notification);
+                notificationComponent.unreadCount++;
+            }
             
             // Show browser notification if permission granted
-            if (Notification.permission === 'granted') {
+            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
                 new Notification(notification.title, {
                     body: notification.message,
                     icon: '/favicon.ico',
                     tag: notification.id
                 });
             }
-            
-            // Auto-remove after 10 seconds
-            setTimeout(() => {
-                const index = this.notifications.findIndex(n => n.id === notification.id);
-                if (index > -1) {
-                    this.notifications.splice(index, 1);
-                }
-            }, 10000);
         }
         
         function getNotificationTitle(type) {
@@ -750,18 +921,95 @@ x-init="
         }
         
         function markNotificationAsRead(notificationId) {
-            const notification = this.notifications.find(n => n.id === notificationId);
+            if (!notificationComponent) {
+                const bodyEl = document.body;
+                if (bodyEl && bodyEl.__x) {
+                    notificationComponent = bodyEl.__x.$data;
+                }
+            }
+            
+            if (!notificationComponent) return;
+            
+            const notification = notificationComponent.notifications.find(n => n.id === notificationId);
             if (notification && !notification.read) {
-                notification.read = true;
-                this.unreadCount = Math.max(0, this.unreadCount - 1);
+                // Mark as read on server first
+                fetch(`{{ admin_route("notifications.mark-read", ["id" => ":id"]) }}`.replace(':id', notificationId), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove notification from dropdown when marked as read
+                        const index = notificationComponent.notifications.findIndex(n => n.id === notificationId);
+                        if (index !== -1) {
+                            notificationComponent.notifications.splice(index, 1);
+                        }
+                        
+                        // Update unread count
+                        notificationComponent.unreadCount = Math.max(0, notificationComponent.unreadCount - 1);
+                        
+                        // Dispatch event to update dropdown
+                        window.dispatchEvent(new CustomEvent('notifications-updated', {
+                            detail: { 
+                                notifications: notificationComponent.notifications, 
+                                unreadCount: notificationComponent.unreadCount 
+                            }
+                        }));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marking notification as read:', error);
+                });
             }
         }
         
         function markAllAsRead() {
-            this.notifications.forEach(notification => {
-                notification.read = true;
+            if (!notificationComponent) {
+                const bodyEl = document.body;
+                if (bodyEl && bodyEl.__x) {
+                    notificationComponent = bodyEl.__x.$data;
+                }
+            }
+            
+            if (!notificationComponent) return;
+            
+            // Mark all as read on server
+            fetch('{{ admin_route("notifications.mark-all-read") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear all notifications from dropdown
+                    notificationComponent.notifications = [];
+                    notificationComponent.unreadCount = 0;
+                    
+                    // Dispatch event to update dropdown
+                    window.dispatchEvent(new CustomEvent('notifications-updated', {
+                        detail: { 
+                            notifications: [], 
+                            unreadCount: 0 
+                        }
+                    }));
+                }
+            })
+            .catch(error => {
+                console.error('Error marking all notifications as read:', error);
+                // Reload notifications on error
+                if (typeof loadNotifications === 'function') {
+                    loadNotifications();
+                }
             });
-            this.unreadCount = 0;
         }
         
         function formatTime(timestamp) {
@@ -783,6 +1031,98 @@ x-init="
             }
         }
         
+        function getNotificationIcon(type) {
+            const icons = {
+                'order': 'O',
+                'order_status': 'S',
+                'inventory': 'L',
+                'message': 'M',
+                'customer': 'C',
+                'review': 'R',
+                'refund': 'R',
+                'info': 'I'
+            };
+            return icons[type] || 'N';
+        }
+        
+        function getNotificationTitle(type) {
+            const titles = {
+                'order': 'New Order',
+                'order_status': 'Order Status Update',
+                'inventory': 'Low Stock Alert',
+                'message': 'Customer Message',
+                'customer': 'New Customer',
+                'review': 'Product Review',
+                'refund': 'Refund Request',
+                'info': 'System Notification'
+            };
+            return titles[type] || 'Notification';
+        }
+        
+        function getNotificationContent(notification) {
+            const data = notification.data || {};
+            const type = notification.type;
+            
+            switch(type) {
+                case 'order':
+                    // New Order - must include ORD number
+                    if (data.order_number) {
+                        const customerName = data.customer_name || 'Guest';
+                        return `Order #${data.order_number} from ${customerName}`;
+                    }
+                    return `New order received`;
+                    
+                case 'order_status':
+                    // Order Status Update - must include ORD number saying order status has been updated
+                    if (data.order_number && data.new_status) {
+                        return `Order #${data.order_number} status updated to ${data.new_status}`;
+                    } else if (data.order_number) {
+                        return `Order #${data.order_number} status has been updated`;
+                    }
+                    return `Order status has been updated`;
+                    
+                case 'message':
+                    // Customer Message - new message from customer's name
+                    if (data.customer_name) {
+                        return `New message from ${data.customer_name}`;
+                    }
+                    return `New customer message received`;
+                    
+                case 'inventory':
+                    // Low Stock Alert - product's name saying low stock
+                    if (data.product_name) {
+                        return `${data.product_name} is low on stock`;
+                    }
+                    return `Product is running low on stock`;
+                    
+                case 'customer':
+                    // New Customer - idk (I'll use a reasonable default)
+                    if (data.customer_name) {
+                        return `New customer registered: ${data.customer_name}`;
+                    }
+                    return `New customer registration`;
+                    
+                case 'review':
+                    // Product Review - new review on product's name
+                    if (data.product_name) {
+                        return `New review on ${data.product_name}`;
+                    }
+                    return `New product review received`;
+                    
+                case 'refund':
+                    // Refund Request - request for refund with RMA number
+                    if (data.rma_number) {
+                        return `Refund request for RMA #${data.rma_number}`;
+                    } else if (data.order_number) {
+                        return `Refund request for Order #${data.order_number}`;
+                    }
+                    return `New refund request received`;
+                    
+                default:
+                    return notification.message || 'New notification';
+            }
+        }
+        
         // Request notification permission
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
@@ -793,6 +1133,9 @@ x-init="
         window.markNotificationAsRead = markNotificationAsRead;
         window.markAllAsRead = markAllAsRead;
         window.formatTime = formatTime;
+        window.getNotificationIcon = getNotificationIcon;
+        window.getNotificationTitle = getNotificationTitle;
+        window.getNotificationContent = getNotificationContent;
     </script>
 </body>
 </html>

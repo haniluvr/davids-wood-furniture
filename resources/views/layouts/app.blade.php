@@ -21,7 +21,7 @@
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
         <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" defer></script>
         <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
-        <script src='https://www.noupe.com/embed/019a1fbba6967b649fb5061d5d5f459ea1ea.js'></script>
+        <script src='https://www.noupe.com/embed/019a5e5cee507dd2b76a5d76f7befc6b9eb6.js'></script>
         <!-- Preline UI -->
         <script src="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.js" defer></script>
         
@@ -1126,5 +1126,68 @@
             // Also try on window load
             window.addEventListener('load', initClientIcons);
         </script>
+        
+        <!-- Real-time Notification Listeners for Refund Events -->
+        @auth
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Only set up listeners if Echo is available and user is authenticated
+                if (typeof window.Echo !== 'undefined' && window.Echo.private) {
+                    const userId = {{ auth()->id() ?? 'null' }};
+                    
+                    if (userId) {
+                        // Listen for refund approval events
+                        window.Echo.private('user.' + userId)
+                            .listen('.refund.request.approved', (e) => {
+                                console.log('Refund approved event received:', e);
+                                
+                                // Show browser notification if permission granted
+                                if ('Notification' in window && Notification.permission === 'granted') {
+                                    new Notification('Refund Request Approved', {
+                                        body: e.message || 'Your refund request has been approved',
+                                        icon: '{{ asset("frontend/assets/favicon.png") }}'
+                                    });
+                                }
+                                
+                                // Reload notifications if function exists
+                                if (typeof loadUserNotifications === 'function') {
+                                    loadUserNotifications();
+                                }
+                                
+                                // Reload page if on account/orders page
+                                if (window.location.pathname.includes('/account')) {
+                                    setTimeout(() => {
+                                        location.reload();
+                                    }, 1000);
+                                }
+                            })
+                            .listen('.refund.request.rejected', (e) => {
+                                console.log('Refund rejected event received:', e);
+                                
+                                // Show browser notification if permission granted
+                                if ('Notification' in window && Notification.permission === 'granted') {
+                                    new Notification('Refund Request Rejected', {
+                                        body: e.message || 'Your refund request has been rejected',
+                                        icon: '{{ asset("frontend/assets/favicon.png") }}'
+                                    });
+                                }
+                                
+                                // Reload notifications if function exists
+                                if (typeof loadUserNotifications === 'function') {
+                                    loadUserNotifications();
+                                }
+                                
+                                // Reload page if on account/orders page
+                                if (window.location.pathname.includes('/account')) {
+                                    setTimeout(() => {
+                                        location.reload();
+                                    }, 1000);
+                                }
+                            });
+                    }
+                }
+            });
+        </script>
+        @endauth
     </body>
 </html>

@@ -3,7 +3,7 @@
 @section('content')
 <h1>Order Status Update</h1>
 
-<p>Hello {{ $order->user->name }},</p>
+<p>Hello {{ ($order->user->first_name ?? '') . ' ' . ($order->user->last_name ?? '') ?: $order->user->email }},</p>
 
 <p>Your order status has been updated. Here are the details:</p>
 

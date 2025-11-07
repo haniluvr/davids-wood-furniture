@@ -61,6 +61,7 @@ $adminRoutes = function () {
         Route::post('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'updateProfile'])->name('profile.update');
         Route::get('/account-settings', [App\Http\Controllers\Admin\ProfileController::class, 'showSettings'])->name('profile.settings');
         Route::post('/account-settings', [App\Http\Controllers\Admin\ProfileController::class, 'updateSettings'])->name('profile.settings.update');
+        Route::post('/account-settings/notifications', [App\Http\Controllers\Admin\ProfileController::class, 'updateNotificationPreferences'])->name('profile.settings.update-notifications');
         Route::get('/contacts', [App\Http\Controllers\Admin\ProfileController::class, 'showContacts'])->name('profile.contacts');
         Route::get('/contacts/{username}', [App\Http\Controllers\Admin\ProfileController::class, 'showContactProfile'])->name('profile.contact-view');
 
@@ -303,6 +304,9 @@ $adminRoutes = function () {
         // Notifications Management
         Route::middleware('admin.permission:notifications.view')->group(function () {
             Route::get('notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
+            Route::get('notifications/api', [App\Http\Controllers\Admin\NotificationController::class, 'getNotifications'])->name('notifications.api');
+            Route::post('notifications/{id}/read', [App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+            Route::post('notifications/read-all', [App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
             Route::get('notifications/templates', [App\Http\Controllers\Admin\NotificationController::class, 'templates'])->name('notifications.templates');
             Route::post('notifications/templates/{template}', [App\Http\Controllers\Admin\NotificationController::class, 'updateTemplate'])->name('notifications.update-template');
             Route::post('notifications/send', [App\Http\Controllers\Admin\NotificationController::class, 'send'])->name('notifications.send');
@@ -554,6 +558,9 @@ Route::middleware(['auth', 'store.intended'])->group(function () {
 
     // Product Reviews
     Route::post('/api/reviews/submit', [App\Http\Controllers\ProductReviewController::class, 'store'])->name('reviews.store');
+
+    // Refund Requests
+    Route::post('/account/refund-request', [App\Http\Controllers\RefundRequestController::class, 'store'])->name('account.refund-request.store');
 
     // Checkout routes
     Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');

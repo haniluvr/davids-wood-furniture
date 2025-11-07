@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $subject ?? 'Email from David\'s Wood Furniture' }}</title>
+    <link rel="icon" type="image/png" href="{{ config('app.url') }}/frontend/assets/favicon.png">
+    <meta name="author" content="David's Wood Furniture">
+    <meta property="og:image" content="{{ config('app.url') }}/frontend/assets/favicon.png">
     <style>
         /* Reset styles */
         body, table, td, p, a, li, blockquote {
@@ -228,7 +231,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <img src="{{ asset('frontend/assets/favicon.png') }}" alt="David's Wood Furniture" class="logo">
+            <img src="{{ config('app.url') }}/frontend/assets/favicon.png" alt="David's Wood Furniture" class="logo" style="display: block; margin: 0 auto;">
             <h1 class="company-name">DAVID'S WOOD FURNITURES</h1>
             <p class="tagline">Nature's grain shaped by artistry</p>
         </div>

@@ -260,25 +260,71 @@
                                         <p class="font-medium text-gray-900">₱{{ number_format($item->total_price, 2) }}</p>
                                         <p class="text-sm text-gray-600">₱{{ number_format($item->unit_price, 2) }} each</p>
                                     </div>
-                                    @if($order->status === 'delivered' && $item->product_id)
-                                        @php
-                                            $hasReview = \App\Models\ProductReview::where('user_id', $order->user_id)
-                                                ->where('product_id', $item->product_id)
-                                                ->where('order_id', $order->id)
-                                                ->exists();
-                                        @endphp
-                                        @if($hasReview)
-                                            <span class="text-xs text-green-600 flex items-center gap-1">
-                                                <i data-lucide="check-circle" class="w-3 h-3"></i>
-                                                Reviewed
-                                            </span>
-                                        @else
-                                            <button onclick="openReviewModal({{ $item->product_id }}, {{ $order->id }}, '{{ addslashes($item->product_name) }}')" class="text-xs text-[#8b7355] hover:text-[#6b5b47] font-medium flex items-center gap-1 transition-colors">
-                                                <i data-lucide="star" class="w-3 h-3"></i>
-                                                Write Review
-                                            </button>
+                                    <div class="flex items-center gap-2">
+                                        @if($order->status === 'delivered' && $item->product_id)
+                                            @php
+                                                $hasReview = \App\Models\ProductReview::where('user_id', $order->user_id)
+                                                    ->where('product_id', $item->product_id)
+                                                    ->where('order_id', $order->id)
+                                                    ->exists();
+                                            @endphp
+                                            @if($hasReview)
+                                                <span class="text-xs text-green-600 flex items-center gap-1">
+                                                    <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                                    Reviewed
+                                                </span>
+                                            @else
+                                                <button onclick="openReviewModal({{ $item->product_id }}, {{ $order->id }}, '{{ addslashes($item->product_name) }}')" class="text-xs text-[#8b7355] hover:text-[#6b5b47] font-medium flex items-center gap-1 transition-colors">
+                                                    <i data-lucide="star" class="w-3 h-3"></i>
+                                                    Write Review
+                                                </button>
+                                            @endif
                                         @endif
-                                    @endif
+                                        
+                                        @if(in_array($order->status, ['delivered', 'shipped', 'processing']) && $item->product_id)
+                                            @php
+                                                $refundRequest = \App\Models\ReturnRepair::where('order_id', $order->id)
+                                                    ->where('user_id', $order->user_id)
+                                                    ->whereJsonContains('products', [['product_id' => $item->product_id]])
+                                                    ->whereIn('status', ['requested', 'approved', 'received', 'processing', 'rejected'])
+                                                    ->first();
+                                            @endphp
+                                            @if($refundRequest)
+                                                @php
+                                                    $statusLabels = [
+                                                        'requested' => 'Refund Requested',
+                                                        'approved' => 'Refund Approved',
+                                                        'received' => 'Refund Received',
+                                                        'processing' => 'Processing Refund',
+                                                        'rejected' => 'Refund Rejected',
+                                                        'refunded' => 'Refunded',
+                                                        'completed' => 'Completed',
+                                                    ];
+                                                    $statusColors = [
+                                                        'requested' => 'text-yellow-600',
+                                                        'approved' => 'text-blue-600',
+                                                        'received' => 'text-purple-600',
+                                                        'processing' => 'text-indigo-600',
+                                                        'rejected' => 'text-red-600',
+                                                        'refunded' => 'text-green-600',
+                                                        'completed' => 'text-green-600',
+                                                    ];
+                                                @endphp
+                                                <span class="text-xs {{ $statusColors[$refundRequest->status] ?? 'text-gray-600' }} flex items-center gap-1">
+                                                    <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                                                    {{ $statusLabels[$refundRequest->status] ?? 'Refund Request' }}
+                                                </span>
+                                            @else
+                                                @if($order->status === 'delivered' && $item->product_id)
+                                                    <span class="text-gray-300">|</span>
+                                                @endif
+                                                <button onclick="openRefundModal({{ $item->product_id }}, {{ $order->id }}, {{ $item->id }}, '{{ addslashes($item->product_name) }}')" class="text-xs !text-[#8b7355] hover:!text-[#6b5b47] font-medium flex items-center gap-1 transition-colors" style="color: #8b7355 !important;">
+                                                    <i data-lucide="refresh-cw" class="w-3 h-3" style="color: #8b7355;"></i>
+                                                    Request a Refund
+                                                </button>
+                                            @endif
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         @endforeach

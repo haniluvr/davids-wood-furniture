@@ -352,4 +352,32 @@ class ProfileController extends Controller
 
         return view('admin.profile.contact-view', compact('admin'));
     }
+
+    /**
+     * Update notification preferences.
+     */
+    public function updateNotificationPreferences(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+
+        $preferences = [
+            'new_orders' => $request->has('new_orders') && $request->new_orders == '1',
+            'order_status_updates' => $request->has('order_status_updates') && $request->order_status_updates == '1',
+            'customer_messages' => $request->has('customer_messages') && $request->customer_messages == '1',
+            'low_stock' => $request->has('low_stock') && $request->low_stock == '1',
+            'new_customers' => $request->has('new_customers') && $request->new_customers == '1',
+            'product_reviews' => $request->has('product_reviews') && $request->product_reviews == '1',
+            'refund_requests' => $request->has('refund_requests') && $request->refund_requests == '1',
+        ];
+
+        $admin->update([
+            'notification_preferences' => $preferences,
+        ]);
+
+        // Log the update
+        AuditLog::log('admin_user.notification_preferences_updated', $admin, $admin, [], ['notification_preferences' => $preferences], "Admin user {$admin->first_name} {$admin->last_name} updated their notification preferences");
+
+        return redirect()->to(admin_route('profile.settings'))
+            ->with('success', 'Notification preferences updated successfully.');
+    }
 }

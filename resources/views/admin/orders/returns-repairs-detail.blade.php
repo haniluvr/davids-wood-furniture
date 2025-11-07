@@ -183,11 +183,15 @@
                 <div class="p-8">
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         @foreach($returnRepair->photos as $photo)
+                        @php
+                            // Use dynamic storage URL (S3 for production, local for local)
+                            $photoUrl = function_exists('storage_url') ? storage_url($photo) : \Illuminate\Support\Facades\Storage::dynamic()->url($photo);
+                        @endphp
                         <div class="relative group">
-                            <img src="{{ asset('storage/' . $photo) }}" 
+                            <img src="{{ $photoUrl }}" 
                                  alt="RMA Photo" 
                                  class="w-full h-48 object-cover rounded-lg border border-stone-200 dark:border-strokedark">
-                            <a href="{{ asset('storage/' . $photo) }}" target="_blank" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity rounded-lg">
+                            <a href="{{ $photoUrl }}" target="_blank" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity rounded-lg">
                                 <i data-lucide="zoom-in" class="w-6 h-6 text-white opacity-0 group-hover:opacity-100"></i>
                             </a>
                         </div>

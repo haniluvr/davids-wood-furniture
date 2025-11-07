@@ -16,7 +16,7 @@ class MessageReplyMail extends Mailable
 
     public $subject;
 
-    public $message;
+    public $replyMessage;
 
     public $contactMessage;
 
@@ -25,10 +25,10 @@ class MessageReplyMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(string $subject, string $message, ContactMessage $contactMessage, Admin $admin)
+    public function __construct(string $subject, string $replyMessage, ContactMessage $contactMessage, Admin $admin)
     {
         $this->subject = $subject;
-        $this->message = $message;
+        $this->replyMessage = $replyMessage;
         $this->contactMessage = $contactMessage;
         $this->admin = $admin;
     }
@@ -40,6 +40,8 @@ class MessageReplyMail extends Mailable
     {
         return new Envelope(
             subject: $this->subject,
+            from: config('mail.from.address', 'noreply@davidswood.shop'),
+            replyTo: 'hello@davidswood.shop',
         );
     }
 
@@ -52,7 +54,7 @@ class MessageReplyMail extends Mailable
             view: 'emails.messages.reply',
             with: [
                 'subject' => $this->subject,
-                'message' => $this->message,
+                'replyMessage' => $this->replyMessage,
                 'contactMessage' => $this->contactMessage,
                 'admin' => $this->admin,
             ],

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewReview;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductReview;
@@ -80,6 +81,12 @@ class ProductReviewController extends Controller
             'is_verified_purchase' => true,
             'is_approved' => false, // Requires approval
         ]);
+
+        // Load relationships for event
+        $review->load(['product', 'user']);
+
+        // Fire new review event to notify admins
+        event(new NewReview($review));
 
         return response()->json([
             'success' => true,

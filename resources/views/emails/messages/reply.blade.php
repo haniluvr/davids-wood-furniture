@@ -16,13 +16,13 @@
 
 <div style="background-color: #F8F8F8; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #E5E5E5;">
     <p style="margin: 0 0 10px 0; font-weight: 600; color: #374151;">Our Response:</p>
-    <div style="color: #333333; white-space: pre-wrap;">{{ $message }}</div>
+    <div style="color: #333333; white-space: pre-wrap;">{!! nl2br(e($replyMessage)) !!}</div>
 </div>
 
 <p>If you have any further questions or concerns, please don't hesitate to reach out to us. We're here to help!</p>
 
 <p>Best regards,<br>
-<strong>{{ $admin->name }}</strong><br>
+<strong>{{ $admin->full_name }}</strong><br>
 David's Wood Furniture Team</p>
 
 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #E5E5E5;">

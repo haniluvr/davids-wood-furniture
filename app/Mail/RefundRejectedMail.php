@@ -2,27 +2,28 @@
 
 namespace App\Mail;
 
-use App\Models\Order;
+use App\Models\ReturnRepair;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class OrderCreatedMail extends Mailable
+class RefundRejectedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $order;
+    public $returnRepair;
+
+    public $rejectionReason;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Order $order)
+    public function __construct(ReturnRepair $returnRepair, string $rejectionReason)
     {
-        $this->order = $order;
-        // Load relationships needed for the email template
-        $this->order->load('orderItems', 'user');
+        $this->returnRepair = $returnRepair;
+        $this->rejectionReason = $rejectionReason;
     }
 
     /**
@@ -31,7 +32,7 @@ class OrderCreatedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Order Confirmation - #'.$this->order->order_number.' - David\'s Wood Furniture',
+            subject: 'Refund Request Update - '.$this->returnRepair->rma_number.' - David\'s Wood Furniture',
             from: config('mail.from.address', 'noreply@davidswood.shop'),
             replyTo: 'hello@davidswood.shop',
         );
@@ -43,20 +44,11 @@ class OrderCreatedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.orders.created',
+            view: 'emails.refunds.rejected',
             with: [
-                'order' => $this->order,
+                'returnRepair' => $this->returnRepair,
+                'rejectionReason' => $this->rejectionReason,
             ],
         );
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
     }
 }

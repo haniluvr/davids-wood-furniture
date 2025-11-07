@@ -138,6 +138,9 @@ class UserController extends Controller
 
         $all_customer = User::create($all_customerData);
 
+        // Fire event for new customer registration
+        event(new \App\Events\NewCustomerRegistered($all_customer));
+
         // Log customer creation
         AuditLog::log('customer.created', Auth::guard('admin')->user(), $all_customer, [], [], "Created customer {$all_customer->first_name} {$all_customer->last_name} ({$all_customer->email})");
 

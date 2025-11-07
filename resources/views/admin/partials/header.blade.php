@@ -128,11 +128,61 @@
                 <!-- Dark Mode Toggle Button -->
 
                 <!-- Notification Menu Area -->
-                <li class="relative" x-data="{ dropdownOpen: false }">
+                <li class="relative" x-data="{ 
+                    dropdownOpen: false,
+                    notifications: [],
+                    unreadCount: 0
+                }" x-init="
+                    // Sync with parent scope
+                    function syncNotifications() {
+                        if ($root && $root.notifications) {
+                            // Create new array to trigger reactivity
+                            notifications = [...$root.notifications];
+                            unreadCount = $root.unreadCount || 0;
+                            console.log('Synced notifications in dropdown:', notifications.length);
+                        }
+                    }
+                    // Watch parent scope for changes
+                    $watch('$root.notifications', () => {
+                        syncNotifications();
+                    });
+                    $watch('$root.unreadCount', () => {
+                        if ($root) {
+                            unreadCount = $root.unreadCount || 0;
+                        }
+                    });
+                    // Listen for custom event
+                    window.addEventListener('notifications-updated', (e) => {
+                        notifications = [...e.detail.notifications];
+                        unreadCount = e.detail.unreadCount;
+                        const unreadNotifications = notifications.filter(n => !n.read);
+                        console.log('Dropdown received notifications-updated event:', {
+                            total: notifications.length,
+                            unread: unreadNotifications.length,
+                            unreadCount: unreadCount,
+                            unreadNotifications: unreadNotifications
+                        });
+                    });
+                    // Initial sync
+                    syncNotifications();
+                    // Also sync periodically as fallback
+                    setInterval(syncNotifications, 1000);
+                ">
                     <a
                         class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-brand-brown/20 bg-white/80 backdrop-blur-sm hover:text-brand-green hover:bg-brand-green/5 hover:border-brand-green/20 transition-all duration-200 dark:border-brand-brown/30 dark:bg-brand-dark-dm/80 dark:text-brand-beige dark:hover:bg-brand-green/10"
                         href="#"
-                        @click.prevent="dropdownOpen = ! dropdownOpen"
+                        @click.prevent="
+                            dropdownOpen = ! dropdownOpen;
+                            if (dropdownOpen && typeof loadNotifications === 'function') {
+                                setTimeout(() => {
+                                    loadNotifications();
+                                    // Reinitialize icons after loading
+                                    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                                        setTimeout(() => lucide.createIcons(), 200);
+                                    }
+                                }, 100);
+                            }
+                        "
                     >
                         <span
                             x-show="unreadCount > 0"
@@ -162,58 +212,70 @@
                         <div class="px-6 py-4 border-b border-stroke/50 dark:border-strokedark/50">
                             <div class="flex items-center justify-between">
                                 <h5 class="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h5>
-                                <span x-show="unreadCount > 0" class="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary" x-text="unreadCount + ' new'"></span>
+                                <div class="flex items-center gap-2">
+                                    <span x-show="unreadCount > 0" class="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary" x-text="unreadCount + ' new'"></span>
+                                    <button x-show="unreadCount > 0" @click="if (typeof markAllAsRead === 'function') markAllAsRead()" class="text-xs text-primary hover:text-primary/80 font-medium">Mark All Read</button>
+                                </div>
                             </div>
                         </div>
 
-                        <ul class="flex h-auto flex-col overflow-y-auto">
-                            <template x-for="notification in notifications.slice(0, 5)" :key="notification.id">
+                        <ul class="flex flex-1 flex-col overflow-y-auto min-h-0">
+                            <template x-for="notification in (notifications.filter(n => !n.read) || []).slice(0, 10)" :key="notification.id">
                                 <li>
                                     <a
-                                        class="flex flex-col gap-3 border-b border-stroke/30 px-6 py-4 hover:bg-gray-50/80 dark:border-strokedark/30 dark:hover:bg-gray-800/50 transition-colors duration-200"
+                                        class="flex items-start gap-3 border-b border-stroke/30 px-6 py-4 hover:bg-gray-50/80 dark:border-strokedark/30 dark:hover:bg-gray-800/50 transition-colors duration-200"
                                         :class="notification.read ? 'opacity-60' : 'bg-blue-50/50 dark:bg-blue-900/10'"
-                                        href="#"
+                                        :href="notification.data && notification.data.link ? notification.data.link : (notification.data && notification.data.message_id ? '{{ admin_route("messages.show", ":id") }}'.replace(':id', notification.data.message_id) : (notification.data && notification.data.order_id ? '{{ admin_route("orders.show", ":id") }}'.replace(':id', notification.data.order_id) : '#'))"
                                         @click="markNotificationAsRead(notification.id)"
                                     >
-                                        <div class="flex items-start gap-3">
-                                            <div class="flex h-8 w-8 items-center justify-center rounded-full"
+                                        <!-- Profile Picture / Avatar -->
+                                        <div class="flex-shrink-0">
+                                            <div class="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
                                                  :class="{
-                                                     'bg-green-100 dark:bg-green-900/30': notification.type === 'order',
-                                                     'bg-yellow-100 dark:bg-yellow-900/30': notification.type === 'inventory',
-                                                     'bg-blue-100 dark:bg-blue-900/30': notification.type === 'review',
-                                                     'bg-purple-100 dark:bg-purple-900/30': notification.type === 'order_status',
-                                                     'bg-gray-100 dark:bg-gray-900/30': notification.type === 'info'
-                                                 }">
-                                                <i data-lucide="shopping-cart" class="h-4 w-4" 
-                                                   :class="{
-                                                       'text-green-600 dark:text-green-400': notification.type === 'order',
-                                                       'text-yellow-600 dark:text-yellow-400': notification.type === 'inventory',
-                                                       'text-blue-600 dark:text-blue-400': notification.type === 'review',
-                                                       'text-purple-600 dark:text-purple-400': notification.type === 'order_status',
-                                                       'text-gray-600 dark:text-gray-400': notification.type === 'info'
-                                                   }"></i>
+                                                     'bg-green-500': notification.type === 'order',
+                                                     'bg-blue-500': notification.type === 'order_status',
+                                                     'bg-yellow-500': notification.type === 'inventory',
+                                                     'bg-purple-500': notification.type === 'message',
+                                                     'bg-pink-500': notification.type === 'customer',
+                                                     'bg-orange-500': notification.type === 'review',
+                                                     'bg-red-500': notification.type === 'refund',
+                                                     'bg-gray-500': notification.type === 'info' || !notification.type
+                                                 }"
+                                                 x-text="getNotificationIcon(notification.type)">
                                             </div>
-                                            <div class="flex-1">
-                                                <p class="text-sm font-medium text-gray-900 dark:text-white" x-text="notification.title"></p>
-                                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1" x-text="notification.message"></p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-2" x-text="formatTime(notification.timestamp)"></p>
+                                        </div>
+                                        
+                                        <!-- Notification Content -->
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate" 
+                                                       x-text="getNotificationTitle(notification.type)">
+                                                    </p>
+                                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-2" 
+                                                       x-text="getNotificationContent(notification)">
+                                                    </p>
+                                                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-1.5" 
+                                                       x-text="formatTime(notification.timestamp)">
+                                                    </p>
+                                                </div>
+                                                <div x-show="!notification.read" class="flex-shrink-0 h-2 w-2 rounded-full bg-primary mt-1"></div>
                                             </div>
-                                            <div x-show="!notification.read" class="h-2 w-2 rounded-full bg-primary mt-2"></div>
                                         </div>
                                     </a>
                                 </li>
                             </template>
-                            <li x-show="notifications.length === 0" class="px-6 py-8 text-center">
+                            <li x-show="notifications.filter(n => !n.read).length === 0" class="px-6 py-8 text-center">
                                 <div class="text-gray-500 dark:text-gray-400">
                                     <i data-lucide="bell-off" class="h-8 w-8 mx-auto mb-2 opacity-50"></i>
-                                    <p class="text-sm">No notifications yet</p>
+                                    <p class="text-sm">No unread notifications</p>
                                 </div>
                             </li>
                         </ul>
                         
                         <div class="px-6 py-3 border-t border-stroke/50 dark:border-strokedark/50">
-                            <a href="#" class="block text-center text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200">
-                                View all notifications
+                            <a href="{{ admin_route('notifications.index') }}" class="block text-center text-sm font-medium text-primary hover:text-primary/80 transition-colors duration-200">
+                                View All Notifications
                             </a>
                         </div>
                     </div>

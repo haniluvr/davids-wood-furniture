@@ -2,25 +2,25 @@
 
 namespace App\Events;
 
-use App\Models\Order;
+use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderCreated implements ShouldBroadcast
+class NewCustomerRegistered implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $order;
+    public $user;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(Order $order)
+    public function __construct(User $user)
     {
-        $this->order = $order;
+        $this->user = $user;
     }
 
     /**
@@ -31,7 +31,7 @@ class OrderCreated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('admin.orders'),
+            new PrivateChannel('admin.customers'),
             new PrivateChannel('admin.notifications'),
         ];
     }
@@ -41,7 +41,7 @@ class OrderCreated implements ShouldBroadcast
      */
     public function broadcastAs(): string
     {
-        return 'order.created';
+        return 'customer.registered';
     }
 
     /**
@@ -50,17 +50,14 @@ class OrderCreated implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'order' => [
-                'id' => $this->order->id,
-                'order_number' => $this->order->order_number,
-                'customer_name' => ($this->order->user ? (($this->order->user->first_name ?? '').' '.($this->order->user->last_name ?? '')) : 'Guest'),
-                'total' => $this->order->total_amount ?? 0,
-                'status' => $this->order->status,
-                'created_at' => $this->order->created_at->toISOString(),
+            'user' => [
+                'id' => $this->user->id,
+                'name' => $this->user->first_name.' '.$this->user->last_name,
+                'email' => $this->user->email,
+                'created_at' => $this->user->created_at->toISOString(),
             ],
-            'message' => 'New order #'.$this->order->order_number.' has been placed',
-            'type' => 'order',
-            'priority' => 'high',
+            'type' => 'customer',
+            'priority' => 'low',
         ];
     }
 }

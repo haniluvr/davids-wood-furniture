@@ -35,6 +35,7 @@ class Admin extends Authenticatable
         'two_factor_verified_at',
         'otp_code',
         'otp_expires_at',
+        'notification_preferences',
     ];
 
     protected $hidden = [
@@ -52,6 +53,7 @@ class Admin extends Authenticatable
         'two_factor_enabled' => 'boolean',
         'two_factor_verified_at' => 'datetime',
         'otp_expires_at' => 'datetime',
+        'notification_preferences' => 'array',
     ];
 
     // Accessors
@@ -246,5 +248,36 @@ class Admin extends Authenticatable
         ]);
 
         return true;
+    }
+
+    /**
+     * Check if admin wants to receive a specific notification type.
+     */
+    public function wantsNotification(string $type): bool
+    {
+        $preferences = $this->notification_preferences ?? [];
+
+        // Default to true if preferences not set
+        if (empty($preferences)) {
+            return true;
+        }
+
+        return $preferences[$type] ?? true;
+    }
+
+    /**
+     * Get default notification preferences.
+     */
+    public static function getDefaultNotificationPreferences(): array
+    {
+        return [
+            'new_orders' => true,
+            'order_status_updates' => true,
+            'customer_messages' => true,
+            'low_stock' => true,
+            'new_customers' => false,
+            'product_reviews' => true,
+            'refund_requests' => true,
+        ];
     }
 }

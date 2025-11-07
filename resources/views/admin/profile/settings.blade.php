@@ -236,6 +236,143 @@
                 </div>
             </div>
         </div>
+
+        <!-- Notification Preferences Section -->
+        <div class="bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-stone-200 dark:border-strokedark overflow-hidden">
+            <div class="px-8 py-6 border-b border-stone-200 dark:border-strokedark bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
+                        <i data-lucide="bell" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-stone-900 dark:text-white">Notification Preferences</h3>
+                </div>
+                <p class="mt-1 text-sm text-stone-600 dark:text-gray-400">Choose which notifications you want to receive</p>
+            </div>
+            <div class="p-8" x-data="{
+                preferences: @js($admin->notification_preferences ?? \App\Models\Admin::getDefaultNotificationPreferences()),
+                toggle(key) {
+                    this.preferences[key] = !this.preferences[key];
+                }
+            }">
+                <form action="{{ admin_route('profile.settings.update-notifications') }}" method="POST" id="notification-preferences-form">
+                    @csrf
+                    <div class="space-y-4">
+                        <!-- New Orders -->
+                        <div class="flex items-center justify-between p-4 bg-stone-50 dark:bg-gray-800 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="shopping-cart" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-stone-900 dark:text-white">New Orders</p>
+                                    <p class="text-xs text-stone-600 dark:text-gray-400">Get notified when new orders are placed</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="toggle('new_orders')" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" :class="preferences.new_orders ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200" :class="preferences.new_orders ? 'translate-x-6' : 'translate-x-1'"></span>
+                            </button>
+                            <input type="hidden" name="new_orders" :value="preferences.new_orders ? '1' : '0'">
+                        </div>
+
+                        <!-- Order Status Updates -->
+                        <div class="flex items-center justify-between p-4 bg-stone-50 dark:bg-gray-800 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="truck" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-stone-900 dark:text-white">Order Status Updates</p>
+                                    <p class="text-xs text-stone-600 dark:text-gray-400">Get notified when order status changes</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="toggle('order_status_updates')" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" :class="preferences.order_status_updates ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200" :class="preferences.order_status_updates ? 'translate-x-6' : 'translate-x-1'"></span>
+                            </button>
+                            <input type="hidden" name="order_status_updates" :value="preferences.order_status_updates ? '1' : '0'">
+                        </div>
+
+                        <!-- Customer Messages -->
+                        <div class="flex items-center justify-between p-4 bg-stone-50 dark:bg-gray-800 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="message-circle" class="w-5 h-5 text-purple-600 dark:text-purple-400"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-stone-900 dark:text-white">Customer Messages</p>
+                                    <p class="text-xs text-stone-600 dark:text-gray-400">Get notified when customers send messages</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="toggle('customer_messages')" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" :class="preferences.customer_messages ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200" :class="preferences.customer_messages ? 'translate-x-6' : 'translate-x-1'"></span>
+                            </button>
+                            <input type="hidden" name="customer_messages" :value="preferences.customer_messages ? '1' : '0'">
+                        </div>
+
+                        <!-- Low Stock Alerts -->
+                        <div class="flex items-center justify-between p-4 bg-stone-50 dark:bg-gray-800 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-600 dark:text-yellow-400"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-stone-900 dark:text-white">Low Stock Alerts</p>
+                                    <p class="text-xs text-stone-600 dark:text-gray-400">Get notified when products are running low on stock</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="toggle('low_stock')" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" :class="preferences.low_stock ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200" :class="preferences.low_stock ? 'translate-x-6' : 'translate-x-1'"></span>
+                            </button>
+                            <input type="hidden" name="low_stock" :value="preferences.low_stock ? '1' : '0'">
+                        </div>
+
+                        <!-- New Customers -->
+                        <div class="flex items-center justify-between p-4 bg-stone-50 dark:bg-gray-800 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="user-plus" class="w-5 h-5 text-pink-600 dark:text-pink-400"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-stone-900 dark:text-white">New Customers</p>
+                                    <p class="text-xs text-stone-600 dark:text-gray-400">Get notified when new customers register</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="toggle('new_customers')" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" :class="preferences.new_customers ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200" :class="preferences.new_customers ? 'translate-x-6' : 'translate-x-1'"></span>
+                            </button>
+                            <input type="hidden" name="new_customers" :value="preferences.new_customers ? '1' : '0'">
+                        </div>
+
+                        <!-- Product Reviews -->
+                        <div class="flex items-center justify-between p-4 bg-stone-50 dark:bg-gray-800 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="star" class="w-5 h-5 text-orange-600 dark:text-orange-400"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-stone-900 dark:text-white">Product Reviews</p>
+                                    <p class="text-xs text-stone-600 dark:text-gray-400">Get notified when customers leave product reviews</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="toggle('product_reviews')" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" :class="preferences.product_reviews ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200" :class="preferences.product_reviews ? 'translate-x-6' : 'translate-x-1'"></span>
+                            </button>
+                            <input type="hidden" name="product_reviews" :value="preferences.product_reviews ? '1' : '0'">
+                        </div>
+
+                        <!-- Refund Requests -->
+                        <div class="flex items-center justify-between p-4 bg-stone-50 dark:bg-gray-800 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="refresh-ccw" class="w-5 h-5 text-red-600 dark:text-red-400"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-stone-900 dark:text-white">Refund Requests</p>
+                                    <p class="text-xs text-stone-600 dark:text-gray-400">Get notified when customers request refunds</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="toggle('refund_requests')" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" :class="preferences.refund_requests ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200" :class="preferences.refund_requests ? 'translate-x-6' : 'translate-x-1'"></span>
+                            </button>
+                            <input type="hidden" name="refund_requests" :value="preferences.refund_requests ? '1' : '0'">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end mt-6">
+                        <button type="submit" 
+                                class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-sm font-medium text-white rounded-xl shadow-lg transition-all duration-200 hover:from-purple-700 hover:to-pink-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            Save Preferences
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

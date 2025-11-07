@@ -142,11 +142,12 @@ class ReturnsRepairsController extends Controller
                 'admin_notes' => $request->admin_notes,
             ];
 
-            // Handle photo uploads if new photos are provided
+            // Handle photo uploads if new photos are provided (using dynamic storage)
             if ($request->hasFile('photos')) {
                 $photoPaths = $returnRepair->photos ?? [];
+                $disk = Storage::getDynamicDisk();
                 foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('returns-photos', 'public');
+                    $path = $photo->store('returns-photos', $disk);
                     $photoPaths[] = $path;
                 }
                 $updateData['photos'] = $photoPaths;
@@ -188,11 +189,12 @@ class ReturnsRepairsController extends Controller
                 'customer_notes' => $request->customer_notes,
             ]);
 
-            // Handle photo uploads
+            // Handle photo uploads (using dynamic storage)
             if ($request->hasFile('photos')) {
                 $photoPaths = [];
+                $disk = Storage::getDynamicDisk();
                 foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('returns-photos', 'public');
+                    $path = $photo->store('returns-photos', $disk);
                     $photoPaths[] = $path;
                 }
                 $returnRepair->update(['photos' => $photoPaths]);
@@ -200,6 +202,14 @@ class ReturnsRepairsController extends Controller
 
             // Update order return status
             Order::find($request->order_id)->update(['return_status' => 'requested']);
+
+            // Load order relationship for event
+            $returnRepair->load('order.user');
+
+            // Fire new refund request event to notify admins (only for return/refund types)
+            if (in_array($returnRepair->type, ['return', 'exchange'])) {
+                event(new \App\Events\NewRefundRequest($returnRepair));
+            }
 
             // Log return/repair creation
             AuditLog::log('return_repair.created', Auth::guard('admin')->user(), $returnRepair, [], [], "Created {$returnRepair->type} request {$returnRepair->rma_number} for order {$returnRepair->order->order_number}");
@@ -225,6 +235,14 @@ class ReturnsRepairsController extends Controller
 
         $returnRepair->order->update(['return_status' => 'approved']);
 
+        // Load relationships for event
+        $returnRepair->load(['order.user']);
+
+        // Fire refund approved event (only for return/refund types)
+        if (in_array($returnRepair->type, ['return', 'exchange'])) {
+            event(new \App\Events\RefundRequestApproved($returnRepair));
+        }
+
         // Log approval
         AuditLog::log('return_repair.approved', Auth::guard('admin')->user(), $returnRepair, ['status' => $oldStatus], ['status' => 'approved'], "Approved {$returnRepair->type} request {$returnRepair->rma_number}");
 
@@ -248,6 +266,14 @@ class ReturnsRepairsController extends Controller
         ]);
 
         $returnRepair->order->update(['return_status' => 'none']);
+
+        // Load relationships for event
+        $returnRepair->load(['order.user']);
+
+        // Fire refund rejected event (only for return/refund types)
+        if (in_array($returnRepair->type, ['return', 'exchange'])) {
+            event(new \App\Events\RefundRequestRejected($returnRepair, $request->admin_notes));
+        }
 
         // Log rejection
         AuditLog::log('return_repair.rejected', Auth::guard('admin')->user(), $returnRepair, ['status' => $oldStatus], ['status' => 'rejected'], "Rejected {$returnRepair->type} request {$returnRepair->rma_number}. Notes: {$request->admin_notes}");

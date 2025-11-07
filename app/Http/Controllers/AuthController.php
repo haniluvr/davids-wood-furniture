@@ -115,6 +115,9 @@ class AuthController extends Controller
             'provider' => 'local',
         ]);
 
+        // Fire event for new customer registration
+        event(new \App\Events\NewCustomerRegistered($user));
+
         $guestSessionId = session()->getId();
 
         // Store guest session ID and user ID for later migration after email verification

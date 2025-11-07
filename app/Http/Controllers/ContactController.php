@@ -31,6 +31,9 @@ class ContactController extends Controller
                 'status' => 'new',
             ]);
 
+            // Fire event for new customer message
+            event(new \App\Events\NewCustomerMessage($contactMessage));
+
             // Log the submission
             Log::info('Contact form submitted', [
                 'contact_message_id' => $contactMessage->id,

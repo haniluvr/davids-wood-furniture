@@ -9,18 +9,24 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class OrderCreatedMail extends Mailable
+class OrderStatusChangedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $order;
 
+    public $oldStatus;
+
+    public $newStatus;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(Order $order)
+    public function __construct(Order $order, string $oldStatus, string $newStatus)
     {
         $this->order = $order;
+        $this->oldStatus = $oldStatus;
+        $this->newStatus = $newStatus;
         // Load relationships needed for the email template
         $this->order->load('orderItems', 'user');
     }
@@ -31,7 +37,7 @@ class OrderCreatedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Order Confirmation - #'.$this->order->order_number.' - David\'s Wood Furniture',
+            subject: 'Order Status Update - #'.$this->order->order_number.' - David\'s Wood Furniture',
             from: config('mail.from.address', 'noreply@davidswood.shop'),
             replyTo: 'hello@davidswood.shop',
         );
@@ -43,9 +49,11 @@ class OrderCreatedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.orders.created',
+            view: 'emails.orders.status-changed',
             with: [
                 'order' => $this->order,
+                'oldStatus' => $this->oldStatus,
+                'newStatus' => $this->newStatus,
             ],
         );
     }
