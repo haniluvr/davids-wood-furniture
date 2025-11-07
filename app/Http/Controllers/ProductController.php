@@ -21,7 +21,12 @@ class ProductController extends Controller
 
         // Filter by room
         if ($request->has('room') && $request->room !== 'all') {
-            $query->whereJsonContains('room_category', $request->room);
+            $roomValue = $request->room;
+            // Only filter if room is specified and not 'all'
+            // whereJsonContains works for JSON columns - checks if the JSON array contains the value
+            $query->whereNotNull('room_category')
+                ->where('room_category', '!=', '[]')
+                ->whereJsonContains('room_category', $roomValue);
         }
 
         // Search

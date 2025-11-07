@@ -461,6 +461,16 @@ Route::get('/api/products', function (Illuminate\Http\Request $request) {
             });
         }
 
+        // Handle room filtering
+        if ($request->has('room') && $request->get('room') !== 'all') {
+            $roomValue = $request->get('room');
+            // Only filter if room is specified and not 'all'
+            // whereJsonContains works for JSON columns - checks if the JSON array contains the value
+            $query->whereNotNull('room_category')
+                ->where('room_category', '!=', '[]')
+                ->whereJsonContains('room_category', $roomValue);
+        }
+
         // Handle sorting
         switch ($request->get('sort')) {
             case 'price-low':

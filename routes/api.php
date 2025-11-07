@@ -21,7 +21,12 @@ Route::get('/products', function (Request $request) {
 
         // Handle room filtering
         if ($request->has('room') && $request->get('room') !== 'all') {
-            $query->whereJsonContains('room_category', $request->get('room'));
+            $roomValue = $request->get('room');
+            // Only filter if room is specified and not 'all'
+            // whereJsonContains works for JSON columns - checks if the JSON array contains the value
+            $query->whereNotNull('room_category')
+                ->where('room_category', '!=', '[]')
+                ->whereJsonContains('room_category', $roomValue);
         }
 
         // Handle sorting
