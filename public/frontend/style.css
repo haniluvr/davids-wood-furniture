@@ -3153,7 +3153,6 @@ select.form-input:disabled {
 
 .notification-item.unread {
   background-color: #eff6ff;
-  border-left: 3px solid #3b82f6;
 }
 
 .notification-item.read {

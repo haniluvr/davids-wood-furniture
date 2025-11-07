@@ -926,7 +926,135 @@ davids-wood-furniture/
 
 ## Recent Updates
 
-### Version 1.9.23 (January 2025)
+### Version 1.9.24 (November 2025)
+
+#### Comprehensive Notification System
+- **Admin Notification System**: Complete notification management for admin users
+  - Real-time notification bell with dropdown in admin header
+  - "View All Notifications" page with filtering and pagination
+  - Notification preferences in admin account settings with toggle switches
+  - Support for all notification types: new orders, order status updates, customer messages, low stock alerts, new customers, product reviews, refund requests
+  - Notification type-specific icons, titles, and content display
+  - Unread notification indicators and count badges
+  - Auto-refresh functionality and real-time updates via Laravel Echo/Pusher
+  - Notification seeder for generating sample notifications for testing
+  - Environment-aware URL generation for notification links
+  - Automatic removal of read notifications from dropdown
+
+- **User-Side Notification System**: Complete notification system for customers
+  - Notification offcanvas panel with real-time updates
+  - Color-coded notification system: green for approved/success, red for rejected/failed, blue for order changes and other notifications
+  - Background and border color coding matching notification status
+  - Order status change notifications (shipped, delivered, etc.)
+  - Refund request approval/rejection notifications
+  - Mark as read and delete functionality
+  - Real-time browser notifications for refund events
+  - Notification API endpoints for fetching, marking as read, and clearing notifications
+
+- **Event-Driven Notification Architecture**: Laravel 11 event system integration
+  - Event listeners for all notification types (orders, messages, reviews, refunds, etc.)
+  - Laravel Broadcasting integration for real-time notification delivery
+  - EventServiceProvider registration for centralized event handling
+  - Database notification persistence with custom notifications table
+  - Admin preference checking before notification creation
+  - User notification creation for order confirmations and status updates
+
+#### Message Management Enhancements
+- **Message Reply System**: Complete message reply functionality
+  - Fixed message reply route and controller handling
+  - Email reply system with proper from/replyTo addresses (`hello@davidswood.shop` for replies)
+  - Custom notification UI replacing browser-native alerts
+  - Improved error visibility and user feedback
+  - Automatic notification marking as read when message is viewed/replied
+  - HTML email template with proper line break rendering
+  - Email template fixes for logo loading consistency
+
+#### Refund Request System (User-Side)
+- **User-Side Refund Requests**: Complete refund request functionality for customers
+  - "Request a Refund" button on order items (for delivered, shipped, processing orders)
+  - Refund request modal with reason, description, customer notes, and photo uploads
+  - Dynamic storage support (S3 for production, local for development)
+  - Refund status tracking and display (requested, approved, rejected)
+  - Real-time notifications for refund approval/rejection with reasons
+  - Email notifications for refund status changes
+  - Integration with existing RMA (Return/Repair) system
+  - Per-order-item refund request support
+
+- **Refund Notification Events**: Event-driven refund notifications
+  - `NewRefundRequest` event for admin notifications
+  - `RefundRequestApproved` event for user notifications and emails
+  - `RefundRequestRejected` event with rejection reason
+  - Real-time broadcasting for instant notification delivery
+  - Email templates for refund approval and rejection
+
+#### Admin RMA Management Improvements
+- **Custom Modals for RMA Actions**: Enhanced admin interface for return/repair management
+  - Replaced native browser `confirm()` and `prompt()` dialogs with custom-styled modals
+  - Separate modals for: Approve, Reject, Mark as Received, Process Refund, Mark as Completed, Update Admin Notes
+  - Improved z-index management (z-[9999]) for proper modal layering
+  - Environment-aware routing using `admin_route()` helper
+  - Better user experience with consistent UI/UX
+  - Dynamic storage support for refund request photos
+
+#### Email System Enhancements
+- **Email Template Fixes**: Improved email template consistency
+  - Fixed logo loading for all email templates (using absolute URLs)
+  - Consistent email branding across all templates
+  - Order status change emails for users
+  - Refund approval/rejection emails with proper formatting
+  - Email configuration for proper from/replyTo addresses
+
+#### Route & URL Management
+- **Environment-Aware Routing**: Centralized route generation system
+  - `AdminRouteHelper` for dynamic URL generation based on environment
+  - Automatic detection of local vs. production environments
+  - Support for multiple local environments (admin.localhost, admin.davidswood.test)
+  - Port-aware URL generation (8080, 8443, etc.)
+  - `rebuildUrl()` method for fixing notification links
+  - Consistent URL generation across all admin routes
+
+#### UI/UX Improvements
+- **Notification UI Enhancements**: Improved notification display and interaction
+  - Type-specific notification icons and colors
+  - Color-coded notification items (background and borders)
+  - Removed left border from notification items for cleaner design
+  - Improved notification dropdown layout and positioning
+  - "View All Notifications" link positioned at bottom of dropdown
+  - Filtering and pagination on notifications index page
+  - Auto-refresh functionality on notifications page
+
+- **Modal System**: Enhanced modal system for admin actions
+  - Custom modals replacing native browser dialogs
+  - Consistent styling and z-index management
+  - Better user feedback and error handling
+  - Improved accessibility and keyboard navigation
+
+#### Database & Seeding
+- **Notification Preferences**: Admin notification preference system
+  - JSON column for storing notification preferences in admins table
+  - Default notification preferences for new admins
+  - Preference checking before notification creation
+  - Toggle switches in admin settings for each notification type
+
+- **Notification Seeder**: Testing and development support
+  - `AdminNotificationSeeder` for generating sample notifications
+  - Support for all notification types
+  - Target-specific admin for testing (Hannah Marquez - ID 2)
+
+#### Technical Infrastructure
+- **Laravel 11 Event System**: Modern event handling
+  - EventServiceProvider registration in `bootstrap/app.php`
+  - Centralized event-listener mappings
+  - Event broadcasting for real-time updates
+  - Database notification persistence
+
+- **Code Quality**: Improved code organization
+  - Consistent error handling and logging
+  - Better separation of concerns
+  - Enhanced security measures
+  - Performance optimizations for notification queries
+
+### Version 1.9.23 (November 2025)
 
 #### Admin Profile Management System
 - **Comprehensive Profile Management**: Complete admin profile system with personal information management
@@ -1075,7 +1203,7 @@ davids-wood-furniture/
   - Better logging and audit trails
   - Performance optimizations
 
-### Version 1.9.11 (January 2025)
+### Version 1.9.11 (November 2025)
 
 #### Payment Gateway Integration - Xendit
 - **Xendit Payment Processing**: Complete payment gateway integration for Southeast Asian markets

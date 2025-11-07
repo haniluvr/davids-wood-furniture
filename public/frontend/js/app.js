@@ -2485,12 +2485,15 @@ function renderNotifications(notifications) {
         const isUnread = ['pending', 'sent'].includes(notification.status);
         const timeAgo = getTimeAgo(notification.created_at);
         const iconClass = getNotificationIcon(notification.type);
+        const iconColor = getNotificationColor(notification.type, isUnread);
+        const bgColor = getNotificationBgColor(notification.type, isUnread);
+        const borderColor = getNotificationBorderColor(notification.type, isUnread);
         
         return `
             <div class="notification-item ${isUnread ? 'unread' : 'read'}" data-id="${notification.id}">
-                <div class="flex items-start space-x-3 p-3 border-b border-gray-100 last:border-b-0">
+                <div class="flex items-start space-x-3 p-3 border-b ${borderColor} last:border-b-0 ${bgColor}">
                     <div class="flex-shrink-0">
-                        <i data-lucide="${iconClass}" class="w-5 h-5 ${isUnread ? 'text-blue-600' : 'text-gray-400'}"></i>
+                        <i data-lucide="${iconClass}" class="w-5 h-5 ${iconColor}"></i>
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between">
@@ -2661,10 +2664,73 @@ function getNotificationIcon(type) {
         'push': 'smartphone',
         'system': 'bell',
         'order': 'package',
+        'order_status': 'truck',
         'payment': 'credit-card',
-        'shipping': 'truck'
+        'shipping': 'truck',
+        'refund_approved': 'check-circle',
+        'refund_rejected': 'x-circle'
     };
     return iconMap[type] || 'bell';
+}
+
+function getNotificationColor(type, isUnread) {
+    // Green for success/approved notifications
+    if (type === 'refund_approved') {
+        return 'text-green-600';
+    }
+    
+    // Red for failed/rejected notifications
+    if (type === 'refund_rejected') {
+        return 'text-red-600';
+    }
+    
+    // Blue for order changes and everything else
+    // If unread, use blue; if read, use gray
+    if (isUnread) {
+        return 'text-blue-600';
+    }
+    
+    return 'text-gray-400';
+}
+
+function getNotificationBgColor(type, isUnread) {
+    // Green background for success/approved notifications
+    if (type === 'refund_approved') {
+        return 'bg-green-50';
+    }
+    
+    // Red background for failed/rejected notifications
+    if (type === 'refund_rejected') {
+        return 'bg-red-50';
+    }
+    
+    // Blue background for unread order changes and other notifications
+    if (isUnread) {
+        return 'bg-blue-50';
+    }
+    
+    // Gray background for read notifications
+    return 'bg-gray-50';
+}
+
+function getNotificationBorderColor(type, isUnread) {
+    // Green border for success/approved notifications
+    if (type === 'refund_approved') {
+        return 'border-green-200';
+    }
+    
+    // Red border for failed/rejected notifications
+    if (type === 'refund_rejected') {
+        return 'border-red-200';
+    }
+    
+    // Blue border for unread order changes and other notifications
+    if (isUnread) {
+        return 'border-blue-200';
+    }
+    
+    // Gray border for read notifications
+    return 'border-gray-100';
 }
 
 function getStatusBadgeClass(status) {

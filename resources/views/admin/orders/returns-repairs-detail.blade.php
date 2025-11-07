@@ -365,134 +365,417 @@
     </div>
 </div>
 
+<!-- Approve RMA Confirmation Modal -->
+<div id="approve-rma-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeApproveModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900 dark:text-white">Approve RMA Request</h3>
+                <p class="text-sm text-stone-600 dark:text-gray-400 mt-1">Are you sure you want to approve this RMA request?</p>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeApproveModal()" class="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                    Cancel
+                </button>
+                <button type="button" onclick="confirmApproveRMA()" class="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700">
+                    Approve
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject RMA Modal -->
+<div id="reject-rma-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeRejectModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900 dark:text-white">Reject RMA Request</h3>
+                <p class="text-sm text-stone-600 dark:text-gray-400 mt-1">Please provide a reason for rejection:</p>
+            </div>
+            <form id="reject-rma-form" onsubmit="confirmRejectRMA(event)">
+                <div class="mb-4">
+                    <textarea id="reject-reason" rows="4" required class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400" placeholder="Enter rejection reason..."></textarea>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeRejectModal()" class="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-red-700">
+                        Reject
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Mark as Received Confirmation Modal -->
+<div id="mark-received-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeMarkReceivedModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900 dark:text-white">Mark as Received</h3>
+                <p class="text-sm text-stone-600 dark:text-gray-400 mt-1">Mark this RMA as received?</p>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeMarkReceivedModal()" class="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                    Cancel
+                </button>
+                <button type="button" onclick="confirmMarkReceived()" class="flex-1 rounded-xl bg-cyan-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-cyan-700">
+                    Mark as Received
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Process Refund Modal -->
+<div id="process-refund-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeProcessRefundModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900 dark:text-white">Process Refund</h3>
+                <p class="text-sm text-stone-600 dark:text-gray-400 mt-1">Enter refund details</p>
+            </div>
+            <form id="process-refund-form" onsubmit="confirmProcessRefund(event)">
+                <div class="mb-4">
+                    <label for="refund-amount" class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">Refund Amount (₱)</label>
+                    <input type="number" id="refund-amount" step="0.01" min="0" required class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400" placeholder="0.00">
+                </div>
+                <div class="mb-4">
+                    <label for="refund-method" class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">Refund Method</label>
+                    <select id="refund-method" required class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white">
+                        <option value="">Select refund method...</option>
+                        <option value="original_payment">Original Payment Method</option>
+                        <option value="store_credit">Store Credit</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="check">Check</option>
+                    </select>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeProcessRefundModal()" class="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-green-700">
+                        Process Refund
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Mark as Completed Confirmation Modal -->
+<div id="mark-completed-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeMarkCompletedModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900 dark:text-white">Mark as Completed</h3>
+                <p class="text-sm text-stone-600 dark:text-gray-400 mt-1">Mark this RMA as completed?</p>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeMarkCompletedModal()" class="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                    Cancel
+                </button>
+                <button type="button" onclick="confirmMarkCompleted()" class="flex-1 rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-green-700">
+                    Mark as Completed
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Admin Notes Modal -->
+<div id="update-notes-modal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeUpdateNotesModal()"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-boxdark">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-stone-900 dark:text-white">Update Admin Notes</h3>
+                <p class="text-sm text-stone-600 dark:text-gray-400 mt-1">Add or update admin notes for this RMA</p>
+            </div>
+            <form id="update-notes-form" onsubmit="confirmUpdateNotes(event)">
+                <div class="mb-4">
+                    <textarea id="admin-notes" rows="4" class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-500 focus:border-primary focus:outline-none dark:border-strokedark dark:bg-boxdark dark:text-white dark:placeholder-stone-400" placeholder="Enter admin notes...">{{ $returnRepair->admin_notes ?? '' }}</textarea>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeUpdateNotesModal()" class="flex-1 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-all duration-200 hover:bg-stone-50 dark:border-strokedark dark:bg-boxdark dark:text-white dark:hover:bg-gray-800">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-primary/90">
+                        Update Notes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
+let currentRMAId = null;
+
+// Approve RMA Functions
 function approveRMA(id) {
-    // Implementation for approve action
-    if (confirm('Are you sure you want to approve this RMA request?')) {
-        // AJAX call to approve endpoint
-        fetch(`{{ url('admin/orders/returns-repairs') }}/${id}/approve`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            }
-        });
-    }
+    currentRMAId = id;
+    document.getElementById('approve-rma-modal').classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-function rejectRMA(id) {
-    const notes = prompt('Please provide a reason for rejection:');
-    if (notes) {
-        fetch(`{{ url('admin/orders/returns-repairs') }}/${id}/reject`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ admin_notes: notes })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            }
-        });
-    }
+function closeApproveModal() {
+    document.getElementById('approve-rma-modal').classList.add('hidden');
+    currentRMAId = null;
 }
 
-function markReceived(id) {
-    if (confirm('Mark this RMA as received?')) {
-        fetch(`{{ url('admin/orders/returns-repairs') }}/${id}/received`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            }
-        });
-    }
-}
-
-function processRefund(id) {
-    const amount = prompt('Enter refund amount:');
-    if (amount) {
-        const method = prompt('Enter refund method (original_payment, store_credit, bank_transfer, check):');
-        if (method) {
-            fetch(`{{ url('admin/orders/returns-repairs') }}/${id}/refund`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    refund_amount: amount,
-                    refund_method: method
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            });
+function confirmApproveRMA() {
+    if (!currentRMAId) return;
+    
+    const approveUrl = '{{ admin_route("orders.returns-repairs.approve", $returnRepair->id) }}'.replace('{{ $returnRepair->id }}', currentRMAId);
+    fetch(approveUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeApproveModal();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to approve RMA'));
         }
-    }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while approving the RMA');
+    });
 }
 
+// Reject RMA Functions
+function rejectRMA(id) {
+    currentRMAId = id;
+    document.getElementById('reject-reason').value = '';
+    document.getElementById('reject-rma-modal').classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function closeRejectModal() {
+    document.getElementById('reject-rma-modal').classList.add('hidden');
+    currentRMAId = null;
+}
+
+function confirmRejectRMA(event) {
+    event.preventDefault();
+    if (!currentRMAId) return;
+    
+    const notes = document.getElementById('reject-reason').value.trim();
+    if (!notes) {
+        alert('Please provide a reason for rejection');
+        return;
+    }
+    
+    const rejectUrl = '{{ admin_route("orders.returns-repairs.reject", $returnRepair->id) }}'.replace('{{ $returnRepair->id }}', currentRMAId);
+    fetch(rejectUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ admin_notes: notes })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeRejectModal();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to reject RMA'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while rejecting the RMA');
+    });
+}
+
+// Mark as Received Functions
+function markReceived(id) {
+    currentRMAId = id;
+    document.getElementById('mark-received-modal').classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function closeMarkReceivedModal() {
+    document.getElementById('mark-received-modal').classList.add('hidden');
+    currentRMAId = null;
+}
+
+function confirmMarkReceived() {
+    if (!currentRMAId) return;
+    
+    const receivedUrl = '{{ admin_route("orders.returns-repairs.received", $returnRepair->id) }}'.replace('{{ $returnRepair->id }}', currentRMAId);
+    fetch(receivedUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeMarkReceivedModal();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to mark RMA as received'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while marking the RMA as received');
+    });
+}
+
+// Process Refund Functions
+function processRefund(id) {
+    currentRMAId = id;
+    document.getElementById('refund-amount').value = '';
+    document.getElementById('refund-method').value = '';
+    document.getElementById('process-refund-modal').classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function closeProcessRefundModal() {
+    document.getElementById('process-refund-modal').classList.add('hidden');
+    currentRMAId = null;
+}
+
+function confirmProcessRefund(event) {
+    event.preventDefault();
+    if (!currentRMAId) return;
+    
+    const amount = document.getElementById('refund-amount').value;
+    const method = document.getElementById('refund-method').value;
+    
+    if (!amount || !method) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    const refundUrl = '{{ admin_route("orders.returns-repairs.refund", $returnRepair->id) }}'.replace('{{ $returnRepair->id }}', currentRMAId);
+    fetch(refundUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            refund_amount: amount,
+            refund_method: method
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeProcessRefundModal();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to process refund'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing the refund');
+    });
+}
+
+// Mark as Completed Functions
 function markCompleted(id) {
-    if (confirm('Mark this RMA as completed?')) {
-        fetch(`{{ url('admin/orders/returns-repairs') }}/${id}/complete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            }
-        });
-    }
+    currentRMAId = id;
+    document.getElementById('mark-completed-modal').classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
+function closeMarkCompletedModal() {
+    document.getElementById('mark-completed-modal').classList.add('hidden');
+    currentRMAId = null;
+}
+
+function confirmMarkCompleted() {
+    if (!currentRMAId) return;
+    
+    const completeUrl = '{{ admin_route("orders.returns-repairs.complete", $returnRepair->id) }}'.replace('{{ $returnRepair->id }}', currentRMAId);
+    fetch(completeUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeMarkCompletedModal();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to mark RMA as completed'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while marking the RMA as completed');
+    });
+}
+
+// Update Notes Functions
 function showUpdateNotesModal() {
-    const currentNotes = `{{ $returnRepair->admin_notes ?? '' }}`;
-    const notes = prompt('Update admin notes:', currentNotes);
-    if (notes !== null) {
-        fetch(`{{ url('admin/orders/returns-repairs') }}/{{ $returnRepair->id }}/notes`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ admin_notes: notes })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            }
-        });
-    }
+    document.getElementById('update-notes-modal').classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function closeUpdateNotesModal() {
+    document.getElementById('update-notes-modal').classList.add('hidden');
+}
+
+function confirmUpdateNotes(event) {
+    event.preventDefault();
+    
+    const notes = document.getElementById('admin-notes').value;
+    
+    fetch(`{{ admin_route('orders.returns-repairs.notes', $returnRepair->id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ admin_notes: notes })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeUpdateNotesModal();
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Failed to update notes'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the notes');
+    });
 }
 
 lucide.createIcons();
