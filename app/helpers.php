@@ -27,6 +27,26 @@ if (! function_exists('admin_route')) {
     }
 }
 
+if (! function_exists('frontend_route')) {
+    /**
+     * Generate an environment-aware URL for frontend routes.
+     *
+     * @param string $routeName The route name
+     * @param array|object $parameters Route parameters (array or model objects)
+     * @return string The generated URL
+     */
+    function frontend_route(string $routeName, $parameters = []): string
+    {
+        // Use AdminRouteHelper if available
+        if (class_exists(\App\Helpers\AdminRouteHelper::class)) {
+            return \App\Helpers\AdminRouteHelper::frontendUrl($routeName, $parameters);
+        }
+
+        // Fallback: Use standard route helper
+        return route($routeName, $parameters);
+    }
+}
+
 if (! function_exists('storage_disk')) {
     /**
      * Get the appropriate storage disk based on environment
