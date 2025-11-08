@@ -103,10 +103,29 @@
                 <div class="customer-care text-sm">
                     <h3 class="text-lg font-semibold mb-2">Customer care</h3>
                     <ul>
-                        <li><a href="#">Shipping information</a></li>
-                        <li><a href="#">Returns & exchanges</a></li>
-                        <li><a href="#">Care & maintenance</a></li>
-                        <li><a href="#">Custom orders</a></li>
+                        @php
+                            $customerCareLinks = [
+                                'Shipping information' => 'shipping-information',
+                                'Returns & exchanges' => 'returns-exchanges',
+                                'Care & maintenance' => 'care-maintenance',
+                                'Custom orders' => 'custom-orders',
+                            ];
+                            
+                            $customerCarePages = \App\Models\CmsPage::whereIn('slug', array_values($customerCareLinks))
+                                ->where('is_active', true)
+                                ->get()
+                                ->keyBy('slug');
+                        @endphp
+                        @foreach($customerCareLinks as $label => $slug)
+                            @php
+                                $page = $customerCarePages->get($slug);
+                            @endphp
+                            <li>
+                                <a href="{{ $page ? frontend_route('cms.show', $page->slug) : '#' }}">
+                                    {{ $label }}
+                                </a>
+                            </li>
+                        @endforeach
                     </ul>
                 </div>
             </div>
@@ -114,17 +133,66 @@
             <div class="w-full col-links text-sm">
                 <h3 class="text-lg font-semibold mb-2">Company</h3>
                 <ul>
-                    <li><a href="#">About David's Wood</a></li>
-                    <li><a href="#">Journal</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Contact</a></li>
+                    @php
+                        $companyLinks = [
+                            'About David\'s Wood' => 'about-davids-wood',
+                            'Journal' => 'journal',
+                            'Careers' => 'careers',
+                            'Contact' => 'contact',
+                        ];
+                        
+                        $companyPages = \App\Models\CmsPage::whereIn('slug', array_values($companyLinks))
+                            ->where('is_active', true)
+                            ->get()
+                            ->keyBy('slug');
+                    @endphp
+                    @foreach($companyLinks as $label => $slug)
+                        @php
+                            $page = $companyPages->get($slug);
+                        @endphp
+                        <li>
+                            <a href="{{ $page ? frontend_route('cms.show', $page->slug) : '#' }}">
+                                {{ $label }}
+                            </a>
+                        </li>
+                    @endforeach
                 </ul>
                 <hr class="divider">
                 <h3 class="text-lg font-semibold mb-2">Policies</h3>
                 <ul>
-                    <li><a href="{{ route('privacy-policy') }}">Privacy policy</a></li>
-                    <li><a href="{{ route('terms-of-service') }}">Terms of service</a></li>
-                    <li><a href="#">Warranty</a></li>
+                    @php
+                        $policyLinks = [
+                            'Privacy policy' => 'privacy-policy',
+                            'Terms of service' => 'terms-of-service',
+                            'Warranty' => 'warranty',
+                        ];
+                        
+                        // Fetch all policy pages that are active
+                        $policyPages = \App\Models\CmsPage::whereIn('slug', array_values($policyLinks))
+                            ->where('is_active', true)
+                            ->get()
+                            ->keyBy('slug');
+                    @endphp
+                    @foreach($policyLinks as $label => $slug)
+                        @php
+                            $page = $policyPages->get($slug);
+                        @endphp
+                        <li>
+                            @if($page)
+                                {{-- Use CMS page if it exists and is active --}}
+                                <a href="{{ frontend_route('cms.show', $page->slug) }}">{{ $label }}</a>
+                            @elseif($slug === 'privacy-policy')
+                                {{-- Fall back to dedicated route if CMS page doesn't exist --}}
+                                <a href="{{ frontend_route('privacy-policy') }}">{{ $label }}</a>
+                            @elseif($slug === 'terms-of-service')
+                                {{-- Fall back to dedicated route if CMS page doesn't exist --}}
+                                <a href="{{ frontend_route('terms-of-service') }}">{{ $label }}</a>
+                            @else
+                                {{-- No link if page doesn't exist or is inactive --}}
+                                <a href="#" onclick="return false;" style="cursor: default; opacity: 0.6;">{{ $label }}</a>
+                            @endif
+                        </li>
+                    @endforeach
                 </ul>
             </div>
         </div>

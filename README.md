@@ -69,14 +69,17 @@ A modern, full-featured e-commerce platform for a wood furniture business, built
 - **Customer Management** - View and manage customer accounts
 - **Order Management** - Process orders, update status, generate reports, track shipments
 - **Order Fulfillment** - Complete fulfillment workflow with packing, shipping, and tracking
+- **Delivery Tracking** - Advanced delivery tracking system with carrier management and status updates
 - **Returns & Repairs Management** - Handle returns, repairs, and exchanges with RMA system
 - **Message Management** - Advanced contact message system with status tracking and assignment
-- **Review Moderation** - Approve/reject customer reviews
+- **Review Moderation** - Approve/reject customer reviews with bulk operations
 - **Email Preview System** - Preview all email templates before sending
 - **Admin Authentication** - Secure admin login with magic link 2FA system
 - **Magic Link 2FA** - Two-factor authentication for admin accounts via email
 - **Analytics** - Sales trends, revenue reports, customer insights with deep BI analytics and interactive charts
 - **Payment Gateway Integration** - Xendit payment gateway configuration and management
+- **Shipping Method Management** - Configure shipping methods, rates, zones, and delivery estimates
+- **Bulk Operations** - Bulk actions for products, orders, users, and reviews with CSV export
 - **Notifications** - Admin alerts and activity monitoring
 - **Audit Logs** - Complete activity tracking for security
 - **Employee Management** - Role-based access control
@@ -762,13 +765,25 @@ davids-wood-furniture/
 │   │   │   │   ├── ProductController.php        # Product management with dynamic storage
 │   │   │   │   ├── UserController.php           # Customer management
 │   │   │   │   ├── InventoryController.php      # Inventory tracking
-│   │   │   │   └── ImageUploadController.php    # Image upload management
+│   │   │   │   ├── ImageUploadController.php    # Image upload management
+│   │   │   │   ├── DeliveryTrackingController.php # Delivery tracking management
+│   │   │   │   ├── BulkActionController.php     # Bulk operations for products, orders, users, reviews
+│   │   │   │   ├── ShippingMethodController.php # Shipping method configuration
+│   │   │   │   ├── PermissionController.php     # Permission management
+│   │   │   │   ├── AuditController.php          # Audit log management
+│   │   │   │   ├── IntegrationController.php    # Third-party integrations
+│   │   │   │   ├── PaymentGatewayController.php # Payment gateway configuration
+│   │   │   │   ├── CmsPageController.php        # CMS page management
+│   │   │   │   ├── ProfileController.php        # Admin profile management
+│   │   │   │   └── NotificationController.php  # Admin notification management
 │   │   │   ├── AuthController.php           # User authentication with email verification
 │   │   │   ├── CartController.php
 │   │   │   ├── OrderController.php
 │   │   │   ├── ProductController.php
 │   │   │   ├── ProductReviewController.php  # Review system
-│   │   │   └── ContactController.php        # Contact form
+│   │   │   ├── ContactController.php        # Contact form
+│   │   │   ├── RefundRequestController.php  # User-side refund requests
+│   │   │   └── NotificationController.php # User notification management
 │   │   └── Middleware/
 │   │       ├── AdminMiddleware.php           # Admin authentication
 │   │       ├── ForceHttps.php                # HTTPS enforcement
@@ -925,6 +940,127 @@ davids-wood-furniture/
 ---
 
 ## Recent Updates
+
+### Version 1.10.16 (November 2025) - Latest Updates
+
+#### Email Template Enhancements
+- **Order Status Change Email Improvements**: Enhanced order status change notification emails
+  - Improved email template with better status color coding (shipped, delivered, cancelled, processing)
+  - Enhanced shipping information display with tracking numbers and estimated delivery dates
+  - Better delivery confirmation messaging
+  - Improved order timeline display with detailed status progression
+  - Enhanced cancellation messaging with reason display
+  - Better processing status notifications
+  - Improved email formatting and responsive design
+
+#### RMA/Returns Management UI Improvements
+- **Enhanced RMA Details Page**: Improved returns and repairs detail interface
+  - Modern gradient-based UI design with improved visual hierarchy
+  - Better status display and action buttons
+  - Enhanced layout with responsive grid system
+  - Improved iconography and visual feedback
+  - Better mobile responsiveness
+  - Enhanced user experience for RMA management
+
+#### Email System Refinements
+- **Refund Email Templates**: Improved refund notification emails
+  - Enhanced refund approval email with clear next steps
+  - Improved refund rejection email with detailed reason display
+  - Better email formatting and branding consistency
+  - Clear call-to-action buttons for order viewing
+  - Improved customer communication flow
+
+#### Bug Fixes & Improvements
+- **Recent Fixes**: Various bug fixes and stability improvements
+  - Email template rendering improvements
+  - UI/UX refinements across admin and customer interfaces
+  - Performance optimizations
+  - Code quality improvements
+
+### Version 1.10.15 (November 2025)
+
+#### Delivery Tracking System
+- **Advanced Delivery Tracking**: Comprehensive order tracking and delivery management
+  - Dedicated delivery tracking page for shipped and delivered orders
+  - Search functionality by order number, tracking number, or customer name
+  - Filter by order status (shipped, delivered)
+  - Filter by carrier with dynamic carrier list
+  - Date range filtering for shipment dates
+  - Real-time tracking statistics (total shipped, total delivered, in transit)
+  - Detailed order tracking view with fulfillment information
+  - Update tracking information (tracking number, carrier, status)
+  - Automatic status updates when marking orders as shipped or delivered
+  - Integration with order fulfillment system
+
+#### Bulk Operations System
+- **Bulk Action Management**: Comprehensive bulk operations for efficient admin management
+  - **Product Bulk Actions**: 
+    - Bulk delete, activate, deactivate products
+    - Bulk category updates
+    - Bulk CSV export with selected products
+  - **Order Bulk Actions**:
+    - Bulk status updates (pending, processing, shipped, delivered, cancelled)
+    - Bulk order export to CSV
+    - Bulk order deletion
+  - **User Bulk Actions**:
+    - Bulk user activation/deactivation
+    - Bulk user deletion
+    - Bulk user export to CSV
+    - Bulk email sending to selected users
+  - **Review Bulk Actions**:
+    - Bulk approve/reject reviews
+    - Bulk review deletion
+    - Bulk review export to CSV
+  - Transaction-safe operations with rollback on errors
+  - Comprehensive error handling and user feedback
+
+#### Shipping Method Management
+- **Complete Shipping Configuration**: Advanced shipping method management system
+  - Full CRUD operations for shipping methods
+  - Multiple shipping types: flat rate, free shipping, weight-based, price-based
+  - Configurable shipping costs and thresholds
+  - Free shipping threshold configuration
+  - Minimum and maximum order amount restrictions
+  - Estimated delivery days (min/max range)
+  - Shipping zone configuration
+  - Weight-based rate tables
+  - Active/inactive status management
+  - Sort order management for display priority
+  - Search and filter functionality
+  - Audit logging for all shipping method changes
+  - Integration with checkout and order processing
+
+#### Enhanced Admin Features
+- **Improved Admin Interface**: Additional admin panel enhancements
+  - Better error handling and validation across all admin pages
+  - Enhanced search and filtering capabilities
+  - Improved CSV export functionality with proper formatting
+  - Better audit trail integration
+  - Enhanced user feedback and notification system
+  - Performance optimizations for bulk operations
+  - Improved mobile responsiveness
+
+#### Technical Improvements
+- **Code Quality & Performance**: Ongoing improvements and optimizations
+  - Enhanced error handling and validation
+  - Improved database query optimization
+  - Better transaction management for bulk operations
+  - Enhanced security measures
+  - Improved code organization and structure
+  - Better logging and debugging capabilities
+  - Performance optimizations for large datasets
+
+### Version 1.9.25 - 1.10.14 (November - December 2025)
+
+#### Continuous Improvements
+- **Incremental Updates**: Regular bug fixes, performance improvements, and feature enhancements
+  - Various bug fixes and stability improvements
+  - Performance optimizations across the application
+  - UI/UX refinements and improvements
+  - Security enhancements and patches
+  - Database query optimizations
+  - Code refactoring and improvements
+  - Documentation updates
 
 ### Version 1.9.24 (November 2025)
 
