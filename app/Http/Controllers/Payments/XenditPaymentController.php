@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CartItem;
 use App\Models\Notification;
 use App\Models\Order;
+use App\Models\PaymentGateway;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,23 +33,53 @@ class XenditPaymentController extends Controller
         $successUrl = URL::route('payments.xendit.return.success', ['order' => $order->order_number]);
         $failedUrl = URL::route('payments.xendit.return.failed', ['order' => $order->order_number]);
 
-        // Build invoice payload - configure available payment methods
-        // Available payment_methods options:
-        // - 'CREDIT_CARD': Credit cards (Visa, Mastercard, Amex, etc.)
-        // - 'DEBIT_CARD': Debit cards
-        // - 'EWALLET': E-wallets (GCash, PayMaya, GrabPay, etc. - shows all enabled in Xendit)
-        // - 'BANK_TRANSFER': Bank transfers (BPI, BDO, etc.)
-        // - 'RETAIL_OUTLET': Retail outlets (7-Eleven, etc.)
-        // - 'DIRECT_DEBIT': Direct debit (BPI, RCBC, etc.)
-        // - 'QR_CODE': QR code payments (GCash QR, PayMaya QR, etc.)
-        // You can also use 'should_exclude' to exclude specific methods if needed
-        $paymentMethods = Setting::get('xendit_payment_methods', 'CREDIT_CARD,DEBIT_CARD,EWALLET');
-        $paymentMethodsArray = array_values(array_filter(array_map('trim', explode(',', $paymentMethods)))); // Filter out empty values and reset keys
+        // Get payment methods from Payment Gateway config (if configured)
+        // Otherwise fall back to Settings for backward compatibility
+        $paymentMethodsArray = [];
+        $methodsSource = 'default';
 
-        // If no payment methods found, use default
+        // Try to get from Payment Gateway config first
+        $paymentGateway = PaymentGateway::where('gateway_key', 'xendit')->first();
+        if ($paymentGateway && $paymentGateway->is_active) {
+            $paymentType = $paymentGateway->getConfigValue('type');
+            $enabledMethods = $paymentGateway->getConfigValue('enabled_methods', []);
+
+            Log::info('Payment Gateway config check', [
+                'gateway_id' => $paymentGateway->id,
+                'payment_type' => $paymentType,
+                'enabled_methods' => $enabledMethods,
+                'enabled_methods_type' => gettype($enabledMethods),
+                'enabled_methods_count' => is_array($enabledMethods) ? count($enabledMethods) : 0,
+                'is_active' => $paymentGateway->is_active,
+            ]);
+
+            // Use enabled_methods if they exist (regardless of payment type)
+            if (is_array($enabledMethods) && ! empty($enabledMethods)) {
+                $paymentMethodsArray = $enabledMethods;
+                $methodsSource = 'payment_gateway_config';
+                Log::info('Using payment methods from Payment Gateway config', [
+                    'gateway_id' => $paymentGateway->id,
+                    'payment_type' => $paymentType,
+                    'methods' => $paymentMethodsArray,
+                ]);
+            }
+        }
+
+        // Fallback to Settings if no gateway config found
+        if (empty($paymentMethodsArray)) {
+            $paymentMethods = Setting::get('xendit_payment_methods', 'CREDIT_CARD,DEBIT_CARD,EWALLET');
+            $paymentMethodsArray = array_values(array_filter(array_map('trim', explode(',', $paymentMethods))));
+            $methodsSource = 'settings_fallback';
+            Log::info('Using payment methods from Settings (fallback)', [
+                'methods' => $paymentMethodsArray,
+            ]);
+        }
+
+        // If still no payment methods found, use default
         if (empty($paymentMethodsArray)) {
             $paymentMethodsArray = ['CREDIT_CARD', 'DEBIT_CARD', 'EWALLET'];
-            Log::warning('No payment methods found in settings, using default', ['default' => $paymentMethodsArray]);
+            $methodsSource = 'default';
+            Log::warning('No payment methods found, using default', ['default' => $paymentMethodsArray]);
         }
 
         // Ensure all values are uppercase (Xendit expects uppercase)
@@ -64,10 +95,10 @@ class XenditPaymentController extends Controller
 
         Log::info('Xendit payment methods configured', [
             'environment' => $env,
-            'setting_value' => $paymentMethods,
             'methods_array' => $paymentMethodsArray,
             'count' => count($paymentMethodsArray),
             'array_type' => gettype($paymentMethodsArray),
+            'source' => $methodsSource,
         ]);
 
         // Build payload
@@ -84,9 +115,16 @@ class XenditPaymentController extends Controller
             'should_send_email' => true,
         ];
 
-        // Only include payment_methods if we have specific methods to include
-        // If omitted, Xendit should show all activated channels for the account
-        // However, based on testing, it seems Xendit may still require account-level configuration
+        // Xendit behavior:
+        // - If payment_methods is omitted, Xendit shows ALL activated payment methods in the account
+        // - If payment_methods is included, Xendit ONLY shows those methods (if they're activated)
+        // - In test mode, only certain methods may be available
+        //
+        // For maximum compatibility, we'll omit payment_methods to let Xendit show all available methods
+        // This matches the behavior of your other working project
+        //
+        // If you want to restrict to specific methods, uncomment the code below:
+        /*
         if (! empty($paymentMethodsArray) && count($paymentMethodsArray) > 0) {
             $payload['payment_methods'] = $paymentMethodsArray;
             Log::info('Including payment_methods in payload', ['methods' => $paymentMethodsArray]);
@@ -95,6 +133,13 @@ class XenditPaymentController extends Controller
                 'note' => 'All activated channels in Payment Channels should appear',
             ]);
         }
+        */
+
+        // Always omit payment_methods to show all activated methods
+        Log::info('Omitting payment_methods parameter - Xendit will show all activated payment methods', [
+            'configured_methods' => $paymentMethodsArray,
+            'note' => 'Xendit will display all payment methods activated in your Xendit dashboard',
+        ]);
 
         // Log the payload being sent to Xendit (excluding sensitive data)
         Log::info('Xendit invoice creation payload', [

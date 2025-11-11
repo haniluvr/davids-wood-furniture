@@ -68,6 +68,17 @@ class PaymentGateway extends Model
     {
         $config = $this->config ?? [];
 
+        // Special handling for backward compatibility: 'type' vs 'types'
+        if ($key === 'type') {
+            // If 'types' array exists, return the first type (for backward compatibility)
+            if (isset($config['types']) && is_array($config['types']) && ! empty($config['types'])) {
+                return $config['types'][0];
+            }
+
+            // Otherwise, return the old 'type' value if it exists
+            return $config['type'] ?? $default;
+        }
+
         return $config[$key] ?? $default;
     }
 
@@ -122,6 +133,26 @@ class PaymentGateway extends Model
         }
 
         return true;
+    }
+
+    /**
+     * Get payment types as an array (handles both old 'type' and new 'types' format).
+     */
+    public function getPaymentTypes(): array
+    {
+        $config = $this->config ?? [];
+
+        // If 'types' array exists, return it
+        if (isset($config['types']) && is_array($config['types'])) {
+            return $config['types'];
+        }
+
+        // Otherwise, if old 'type' string exists, return it as array
+        if (isset($config['type']) && is_string($config['type'])) {
+            return [$config['type']];
+        }
+
+        return [];
     }
 
     public function getDisplayName(): string

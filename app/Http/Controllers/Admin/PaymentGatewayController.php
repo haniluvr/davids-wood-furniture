@@ -75,6 +75,14 @@ class PaymentGatewayController extends Controller
         $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : false;
         $data['is_test_mode'] = $request->has('is_test_mode') ? (bool) $request->is_test_mode : true;
 
+        // Sync status and environment from config if provided
+        if (isset($data['config']['status'])) {
+            $data['is_active'] = $data['config']['status'] === 'active';
+        }
+        if (isset($data['config']['environment'])) {
+            $data['is_test_mode'] = $data['config']['environment'] === 'sandbox';
+        }
+
         // Encrypt sensitive configuration data
         if (isset($data['config']) && is_array($data['config'])) {
             $encryptedConfig = [];
@@ -84,6 +92,10 @@ class PaymentGatewayController extends Controller
                 } else {
                     $encryptedConfig[$key] = $value;
                 }
+            }
+            // Remove old 'types' array if 'type' exists (migration back to single type)
+            if (isset($encryptedConfig['type']) && ! empty($encryptedConfig['type'])) {
+                unset($encryptedConfig['types']);
             }
             $data['config'] = $encryptedConfig;
         }
@@ -133,15 +145,46 @@ class PaymentGatewayController extends Controller
         $oldValues = $paymentGateway->only(['name', 'display_name', 'is_active', 'is_test_mode']);
         $data = $request->all();
 
-        // Encrypt sensitive configuration data
+        // Set default values for boolean fields if not present (unchecked checkboxes)
+        if (! $request->has('is_active')) {
+            $data['is_active'] = $paymentGateway->is_active;
+        } else {
+            $data['is_active'] = (bool) $request->is_active;
+        }
+        if (! $request->has('is_test_mode')) {
+            $data['is_test_mode'] = $paymentGateway->is_test_mode;
+        } else {
+            $data['is_test_mode'] = (bool) $request->is_test_mode;
+        }
+
+        // Sync status and environment from config if provided
+        if (isset($data['config']['status'])) {
+            $data['is_active'] = $data['config']['status'] === 'active';
+        }
+        if (isset($data['config']['environment'])) {
+            $data['is_test_mode'] = $data['config']['environment'] === 'sandbox';
+        }
+
+        // Handle configuration data
         if (isset($data['config']) && is_array($data['config'])) {
-            $encryptedConfig = [];
+            $encryptedConfig = $paymentGateway->config ?? [];
+            $sensitiveFields = ['api_key', 'secret_key', 'webhook_secret', 'private_key'];
+
             foreach ($data['config'] as $key => $value) {
-                if (in_array($key, ['api_key', 'secret_key', 'webhook_secret', 'private_key'])) {
-                    $encryptedConfig[$key] = Crypt::encryptString($value);
+                // For sensitive fields, only update if a value is provided (not empty)
+                if (in_array($key, $sensitiveFields)) {
+                    if (! empty($value)) {
+                        $encryptedConfig[$key] = Crypt::encryptString($value);
+                    }
+                    // If empty, keep the existing value (don't update)
                 } else {
+                    // For non-sensitive fields, update even if empty
                     $encryptedConfig[$key] = $value;
                 }
+            }
+            // Remove old 'types' array if 'type' exists (migration back to single type)
+            if (isset($encryptedConfig['type']) && ! empty($encryptedConfig['type'])) {
+                unset($encryptedConfig['types']);
             }
             $data['config'] = $encryptedConfig;
         }
