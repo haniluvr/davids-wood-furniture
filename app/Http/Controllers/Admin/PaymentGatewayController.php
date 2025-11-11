@@ -71,6 +71,10 @@ class PaymentGatewayController extends Controller
 
         $data = $request->all();
 
+        // Set default values for boolean fields if not present (unchecked checkboxes)
+        $data['is_active'] = $request->has('is_active') ? (bool) $request->is_active : false;
+        $data['is_test_mode'] = $request->has('is_test_mode') ? (bool) $request->is_test_mode : true;
+
         // Encrypt sensitive configuration data
         if (isset($data['config']) && is_array($data['config'])) {
             $encryptedConfig = [];
