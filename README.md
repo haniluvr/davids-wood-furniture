@@ -788,7 +788,7 @@ davids-wood-furniture/
 │   │       ├── AdminMiddleware.php           # Admin authentication
 │   │       ├── ForceHttps.php                # HTTPS enforcement
 │   │       ├── RequireEmailVerification.php  # Email verification requirement
-│   │       └── StoreIntendedUrl.php          # Remember intended URL after login
+│   │       └── StoreIntendedUrl.php          # Remember intended URL after login 
 │   ├── Helpers/
 │   │   ├── RouteHelper.php                   # Dynamic route generation for production
 │   │   └── AdminRouteHelper.php              # Admin route management
